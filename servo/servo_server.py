@@ -127,10 +127,12 @@ class Servod(object):
 
       if isinstance(result, tuple):
         result_len = len(result)
-        shifted += result_len - 1
-        self._interface_list += [None] * result_len
+        # More than one interface return. Extend the list.
+        self._interface_list += [None] * (result_len - 1)
         for result_index, r in enumerate(result):
-          self._interface_list[i + result_index] = r
+          self._interface_list[i + shifted + result_index] = r
+        # Shift the remaining interfaces.
+        shifted += result_len - 1
       else:
         self._interface_list[i + shifted] = result
 
