@@ -338,6 +338,15 @@ def discover_servo(logger, options, servodrc):
   if len(all_servos) == 1:
     return all_servos[0]
 
+  # See if only one primary servo. Filter secordary servos, like servo-micro.
+  SECONDARY_SERVOS = (servo_interfaces.SERVO_MICRO_DEFAULTS +
+                      servo_interfaces.CCD_DEFAULTS)
+  all_primary_servos = [servo for servo in all_servos if
+                        (servo.idVendor, servo.idProduct) not in
+                        SECONDARY_SERVOS]
+  if len(all_primary_servos) == 1:
+    return all_primary_servos[0]
+
   # Let user choose a servo
   matching_servo = choose_servo(logger, all_servos)
   if matching_servo:
