@@ -59,28 +59,21 @@ class crosEcPdSoftrecPower(cros_ec_softrec_power.crosEcSoftrecPower):
     # In order to reliably enter recovery mode, we must:
     #
     # 0. Hold PD MCU in reset.
-    # 1. Assert and deassert cold_reset. (This will reset both the AP and EC.)
-    # 2. Reboot the EC and have the EC now hold the AP in reset. (Now, the EC is
+    # 1. Reboot the EC and have the EC now hold the AP in reset. (Now, the EC is
     # the only one running and it's in its RO image.  This also clears the
     # EC_IN_RW signal, so that the AP will trust the upcoming recovery mode
     # requests)
-    # 3. Release PD MCU reset. (Now, EC and PD MCU are both running in RO code -
+    # 2. Release PD MCU reset. (Now, EC and PD MCU are both running in RO code -
     # a requirement to enter recovery mode.)
-    #
-    # Steps 0-3 will cause EC software sync to fail for the PD MCU, since we
-    # held it in reset when the AP booted up in step 1.  This failure will set a
-    # recovery reason, but the wrong reason (0x23 / EC software sync - unable to
-    # determine active EC image).
-    #
-    # Therefore, we need to set the _correct_ recovery reason by:
-    #
-    # 4. Enter recovery mode.  (This will clear the current recovery reason.)
-    # 5. Power down the AP.
-    # 6. Issue recovery request. (This will set the desired recovery reason.)
-
     if rec_mode == self.REC_ON:
       self._reboot_to_ro_with_ap_off()
-      self._toggle_recovery_boot(rec_type)
+      # Request recovery boot.
+      try:
+        self._interface.set('ec_uart_regexp', "['Events:']")
+        self._interface.set('ec_uart_cmd',
+                            self._REC_TYPE_HOSTEVENT_CMD_DICT[rec_type])
+      finally:
+        self._interface.set('ec_uart_regexp', 'None')
 
     self._power_on_ap()
     if rec_mode == self.REC_ON:
@@ -88,13 +81,8 @@ class crosEcPdSoftrecPower(cros_ec_softrec_power.crosEcSoftrecPower):
       time.sleep(self._boot_to_rec_screen_delay)
 
   def _reboot_to_ro_with_ap_off(self):
-    """Reboot the EC and PD MCU to RO and leave the AP off.
-
-    This will cause software sync to fail for the PD MCU and set the recovery
-    reason.
-    """
+    """Reboot the EC and PD MCU to RO and leave the AP off."""
     self._interface.set('usbpd_reset', 'on')
-    super(crosEcPdSoftrecPower, self)._cold_reset()
     try:
       # Pexpect is minimally greedy, so we can't match the exact reset cause
       # string.  But checking for 'Reset cause' will be enough proof that the EC
@@ -107,24 +95,3 @@ class crosEcPdSoftrecPower(cros_ec_softrec_power.crosEcSoftrecPower):
     # Allow enough time for the EC to come up
     time.sleep(self._reset_recovery_time)
     self._interface.set('usbpd_reset', 'off')
-
-  def _toggle_recovery_boot(self, rec_type=_REC_TYPE_REC_ON):
-    """Make 2 recovery requests so that the reason is 0x02 ("button pressed")"""
-    # Request recovery boot.
-    try:
-      self._interface.set('ec_uart_regexp', "['Events:']")
-      self._interface.set('ec_uart_cmd',
-                          self._REC_TYPE_HOSTEVENT_CMD_DICT[rec_type])
-      self._power_on_ap()
-      # Allow time to reach recovery screen.
-      time.sleep(self._boot_to_rec_screen_delay)
-      # Power down AP.
-      self._power_off()
-      #  Repeat our recovery request to the AP.
-      self._interface.set('ec_uart_regexp', "['Events:']")
-      self._interface.set('ec_uart_cmd',
-                          self._REC_TYPE_HOSTEVENT_CMD_DICT[rec_type])
-      # Now, when we power up, we should be in recovery mode and our recovery
-      # reason should be correct for the recovery button press.
-    finally:
-      self._interface.set('ec_uart_regexp', 'None')
