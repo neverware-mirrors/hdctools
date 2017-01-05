@@ -182,7 +182,7 @@ for board in ['asuka', 'caroline', 'cave', 'chell', 'glados',
 
 # TODO(crosbug.com/p/60939) re-purpose JTAG to H1 uart at some point but dummy
 # for now.
-for board in ['eve']:
+for board in ['eve', 'poppy']:
   INTERFACE_BOARDS[board][0x18d1][0x5002] = \
       list(INTERFACE_DEFAULTS[0x18d1][0x5002])
   INTERFACE_BOARDS[board][0x18d1][0x5002][0] = 'dummy'
