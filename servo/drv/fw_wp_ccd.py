@@ -2,15 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import cr50
 import fw_wp_state
-import pty_driver
 
 
 class fwWpCcdError(Exception):
   """Exception class for fwWpCcd."""
 
 
-class fwWpCcd(fw_wp_state.FwWpStateDriver, pty_driver.ptyDriver):
+class fwWpCcd(fw_wp_state.FwWpStateDriver, cr50.cr50):
   """Driver for fw_wp_state for boards with CCD."""
 
   def __init__(self, interface, params):
@@ -35,6 +35,7 @@ class fwWpCcd(fw_wp_state.FwWpStateDriver, pty_driver.ptyDriver):
     # The WP is totally controlled by CCD chip. Do nothing to reset.
     pass
 
+  @cr50.restricted_command
   def _get_state(self):
     """Get the firmware write-protection state."""
     # The output string is defined in ec/board/cr50/wp.c

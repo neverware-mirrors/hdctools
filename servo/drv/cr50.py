@@ -10,11 +10,27 @@ Provides the following Cr50 controlled function:
   ccd_ec_uart_en
 """
 
+import functools
 import pty_driver
 
 
 class cr50Error(Exception):
   """Exception class for Cr50."""
+
+
+def restricted_command(func):
+  """Decorator for methods which use restricted console command."""
+  @functools.wraps(func)
+  def wrapper(instance, *args, **kwargs):
+    try:
+      return func(instance, *args, **kwargs)
+    except pty_driver.ptyError, e:
+      if str(e) == 'Timeout waiting for response.':
+        if instance._Get_ccd_lock():
+          raise cr50Error("CCD console is locked. Perform the unlock process!")
+      # Raise the original exception
+      raise
+  return wrapper
 
 
 class cr50(pty_driver.ptyDriver):
@@ -90,6 +106,7 @@ class cr50(pty_driver.ptyDriver):
     else:
       self._issue_cmd("sysrst on")
 
+  @restricted_command
   def _Get_pwr_button(self):
     """Getter of pwr_button.
 
@@ -103,6 +120,7 @@ class cr50(pty_driver.ptyDriver):
       raise cr50Error("Cannot retrieve power button result on cr50 console.")
     return 1 if result[1] == "released" else 0
 
+  @restricted_command
   def _Set_pwr_button(self, value):
     """Setter of pwr_button.
 
@@ -114,6 +132,20 @@ class cr50(pty_driver.ptyDriver):
     else:
       self._issue_cmd("powerbtn release")
 
+  def _Get_ccd_lock(self):
+    """Getter of ccd_lock.
+
+    Returns:
+      0: CCD restricted console lock disabled.
+      1: CCD restricted console lock enabled.
+    """
+    result = self._issue_cmd_get_results(
+        "lock", ["The restricted console lock is (enabled|disabled)"])[0]
+    if result is None:
+      raise cr50Error("Cannot retrieve ccd lock result on cr50 console.")
+    return 1 if result[1] == "enabled" else 0
+
+  @restricted_command
   def _Get_ccd_ec_uart_en(self):
     """Getter of ccd_ec_uart_en.
 
