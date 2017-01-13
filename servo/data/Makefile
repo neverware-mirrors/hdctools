@@ -19,7 +19,7 @@ INAS		= wario.xml waluigi.xml servo_loc.xml link_dvt.xml link.xml    \
 		  kevin_r1_loc.xml kevin_r2_loc.xml caroline_evt_loc.xml \
                   samus.xml whale_samus_dut.xml gru_r0.xml servo_v4_inas.xml \
                   glados_p1_inas.xml glados_r2_inas.xml chell_r1_inas.xml \
-                  reef_r1_inas.xml eve_r0_inas.xml
+                  reef_r1_inas.xml eve_r0_inas.xml poppy.xml
 
 # TODO(tbroch) should probably be added to setup.py if possible
 all:	$(INAS) $(XML_DST)
