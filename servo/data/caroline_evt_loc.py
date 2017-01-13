@@ -21,20 +21,20 @@ inline = """
   </control>
 """
 
-inas = [(0x40, 'cpu_gt', 1, 0.002, "loc0", True),
-        (0x41, 'vbat', 7.6, 0.01, "loc0", True),
-        (0x42, 'vdd_lcd', 24, 0.002, "loc0", True),
-        (0x43, 'p1.8v_alw', 1.8, 0.1, "loc0", True),
-        (0x44, 'p1.8v_mem', 1.8, 0.1, "loc0", True),
-        (0x45, 'p1.2v_aux', 1.2, 0.007, "loc0", True),
-        (0x46, 'p3.3v_dsw', 3.3, 0.1, "loc0", True),
-        (0x47, 'p5.0v_alw', 5, 0.015, "loc0", True),
-        (0x48, 'p3.3v_alw', 3.3, 0.018, "loc0", True),
-        (0x49, 'p1.0v_alw', 1, 0.018, "loc0", True),
-        (0x4A, 'vccio', 0.975, 0.018, "loc0", True),
-        (0x4B, 'pch_prim_core', 0.85, 0.015, "loc0", True),
-        (0x4C, 'p3.3v_dsw_usbc', 3.3, 0.1, "loc0", True),
-        (0x4D, 'p3.3v_dx_edp', 3.3, 0.1, "loc0", True),
-        (0x4E, 'cpu_sa', 1, 0.002, "loc0", True),
-        (0x4F, 'cpu_la', 1, 0.002, "loc0", True)]
+inas = [('ina219', 0x40, 'cpu_gt', 1, 0.002, "loc0", True),
+        ('ina219', 0x41, 'vbat', 7.6, 0.01, "loc0", True),
+        ('ina219', 0x42, 'vdd_lcd', 24, 0.002, "loc0", True),
+        ('ina219', 0x43, 'p1.8v_alw', 1.8, 0.1, "loc0", True),
+        ('ina219', 0x44, 'p1.8v_mem', 1.8, 0.1, "loc0", True),
+        ('ina219', 0x45, 'p1.2v_aux', 1.2, 0.007, "loc0", True),
+        ('ina219', 0x46, 'p3.3v_dsw', 3.3, 0.1, "loc0", True),
+        ('ina219', 0x47, 'p5.0v_alw', 5, 0.015, "loc0", True),
+        ('ina219', 0x48, 'p3.3v_alw', 3.3, 0.018, "loc0", True),
+        ('ina219', 0x49, 'p1.0v_alw', 1, 0.018, "loc0", True),
+        ('ina219', 0x4A, 'vccio', 0.975, 0.018, "loc0", True),
+        ('ina219', 0x4B, 'pch_prim_core', 0.85, 0.015, "loc0", True),
+        ('ina219', 0x4C, 'p3.3v_dsw_usbc', 3.3, 0.1, "loc0", True),
+        ('ina219', 0x4D, 'p3.3v_dx_edp', 3.3, 0.1, "loc0", True),
+        ('ina219', 0x4E, 'cpu_sa', 1, 0.002, "loc0", True),
+        ('ina219', 0x4F, 'cpu_la', 1, 0.002, "loc0", True)]
 

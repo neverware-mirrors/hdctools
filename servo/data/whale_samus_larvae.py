@@ -17,7 +17,7 @@ def _rewrite_control_name(ina):
   if type(ina) != tuple:
     raise Exception('Invalid ina definition %r' % adc)
   r = list(ina)
-  r[1] = 'whale_' + r[1]
+  r[2] = 'whale_' + r[2]
   return tuple(r)
 
 
