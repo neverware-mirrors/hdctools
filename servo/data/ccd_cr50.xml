@@ -19,6 +19,17 @@
     </params>
   </control>
   <control>
+    <name>cpu_uart_capture</name>
+    <doc>cpu_uart_capture</doc>
+    <params subtype="uart_capture" interface="3" drv="uart"
+            map="onoff"></params>
+  </control>
+  <control>
+    <name>cpu_uart_stream</name>
+    <doc>Cpu uart stream collected while cpu_uart_capture is set to 'on'</doc>
+    <params cmd="get" subtype="uart_stream" interface="3" drv="uart"></params>
+  </control>
+  <control>
     <name>raw_cr50_console_pty</name>
     <doc>CCD cr50 console.</doc>
     <params cmd="get" subtype="pty" interface="4" drv="uart">
