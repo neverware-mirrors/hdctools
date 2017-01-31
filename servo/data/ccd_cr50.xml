@@ -55,6 +55,17 @@
     <params cmd="get" subtype="pty" interface="8" drv="uart"></params>
   </control>
   <control>
+    <name>cr50_console_capture</name>
+    <doc>cr50_console_capture</doc>
+    <params subtype="uart_capture" interface="8" drv="uart"
+            map="onoff"></params>
+  </control>
+  <control>
+    <name>cr50_console_stream</name>
+    <doc>Cr50 console stream collected while cr50_console_capture on</doc>
+    <params cmd="get" subtype="uart_stream" interface="8" drv="uart"></params>
+  </control>
+  <control>
     <name>cr50_ec3po_interp_connect</name>
     <doc>State indicating if interpreter is listening to the cr50 console.</doc>
     <params interface="8" drv="ec3po_driver" map="onoff" init="on"
