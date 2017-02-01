@@ -24,7 +24,7 @@ serialno = "Uninitialized"
 LOGNAME = "logfiles/mfg_servo_micro"
 TESTERLOGNAME="logfiles/mfg_servo_micro_run"
 
-RE_SERIALNO = re.compile('^SM(C[0-9]{10}|N[PDQ][0-9]{5})$')
+RE_SERIALNO = re.compile('^S[MN](C[PDQ][0-9]{5}|N[PDQ][0-9]{5})$')
 
 
 def main():
