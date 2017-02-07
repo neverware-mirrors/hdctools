@@ -119,6 +119,30 @@ class cr50(pty_driver.ptyDriver):
       raise cr50Error("Cannot retrieve power button result on cr50 console.")
     return 1 if result[1] == "released" else 0
 
+  def _Get_reset_count(self):
+    """Getter of ccd_lock.
+
+    Returns:
+        The reset count
+    """
+    result = self._issue_cmd_get_results(
+        "sysinfo", ["Reset count: (\d+)"])[0]
+    if result is None:
+      raise cr50Error("Cannot retrieve the reset count on cr50 console.")
+    return result[1]
+
+  def _Get_ver(self):
+    """Getter of ver.
+
+    Returns:
+        The cr50 version string
+    """
+    result = self._issue_cmd_get_results(
+        "ver", ["RW_(A|B):\s+\*\s+(.+)"])[0]
+    if result is None:
+      raise cr50Error("Cannot retrieve the version result on cr50 console.")
+    return result[2]
+
   def _Get_ccd_lock(self):
     """Getter of ccd_lock.
 

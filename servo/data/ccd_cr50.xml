@@ -92,6 +92,18 @@
     clobber_ok=""></params>
   </control>
   <control>
+    <name>cr50_reset_count</name>
+    <doc>Cr50 reset count</doc>
+    <params cmd="get" subtype="reset_count" interface="8" drv="cr50" map="str"
+    clobber_ok=""></params>
+  </control>
+  <control>
+    <name>cr50_version</name>
+    <doc>current cr50 version</doc>
+    <params cmd="get" subtype="ver" interface="8" drv="cr50" map="str"
+    clobber_ok=""></params>
+  </control>
+  <control>
     <name>ccd_lock</name>
     <doc>State of CCD restricted console lock</doc>
     <params cmd="get" subtype="ccd_lock" interface="8" drv="cr50" map="onoff"
