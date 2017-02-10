@@ -9,6 +9,7 @@ import os
 import pexpect
 from pexpect import fdpexpect
 import re
+import time
 
 import hw_driver
 import servo.terminal_freezer
@@ -101,6 +102,8 @@ class ptyDriver(hw_driver.HwDriver):
     for cmd in cmds:
       if self._child.sendline(cmd) != len(cmd) + 1:
         raise ptyError("Failed to send command.")
+      # Multiple commands sent together choke the console queue.
+      time.sleep(.01)
 
   def _issue_cmd(self, cmds):
     """Send command to the device and do not wait for response.

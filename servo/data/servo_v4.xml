@@ -39,6 +39,11 @@
     <doc>Determines whether DUT or host sees USB port</doc>
     <params servo_sees_usbkey="0" dut_sees_usbkey="1"></params>
   </map>
+  <map>
+    <name>servo_v4_cc_map</name>
+    <doc>Enable CC and power config for various CCD modes</doc>
+    <params usbsnk="0" ccd="1" rpusb="2" rpchg="3" disconnect="4" usbchg="5"></params>
+  </map>
 
   <!-- GPIO on chip settings -->
   <control>
@@ -313,5 +318,13 @@
     console.</doc>
     <params interface="26" drv="ec3po_driver" map="onoff" init="on"
     subtype="interp_connect"></params>
+  </control>
+
+
+  <control>
+    <name>servo_v4_ccd_mode</name>
+    <doc>Set CCD/USB mode</doc>
+    <params interface="26" drv="ec3po_servo_v4"
+    subtype="ccvalues" map="servo_v4_cc_map"></params>
   </control>
 </root>
