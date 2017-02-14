@@ -83,6 +83,11 @@ class Servod(object):
     Raises:
       ServodError if unable to locate init method for particular interface.
     """
+    # If it is a new device add it to the list
+    device = "%x:%x" % (vendor, product)
+    if device not in self._devices:
+        self._devices.append(device)
+
     # Extend the interface list if we need to.
     interfaces_len = len(interfaces)
     interface_list_len = len(self._interface_list)
@@ -160,6 +165,7 @@ class Servod(object):
     self._logger.debug("")
     self._vendor = vendor
     self._product = product
+    self._devices = []
     self._serialnames = {self.MAIN_SERIAL: serialname}
     self._syscfg = config
     # Hold the last image path so we can reduce downloads to the usb device.
@@ -185,6 +191,28 @@ class Servod(object):
 
     self.init_servo_interfaces(vendor, product, serialname, interfaces)
     servo_postinit.post_init(self)
+
+  def reinitialize(self):
+    """Reinitialize all interfaces that support reinitialization"""
+
+    # If all of the devices that were originally connected are not connected
+    # now, wait up to max_tries * sleep_time for the devices to reconnect
+    max_tries = 10
+    sleep_time = 0.5
+    for i in range(max_tries):
+        try:
+            for device in self._devices:
+                # This will raise an error if the device is not found
+                subprocess.check_output(["lsusb", "-vd", device])
+            break
+        except:
+            time.sleep(sleep_time)
+
+    for i, interface in enumerate(self._interface_list):
+        if hasattr(interface, "reinitialize"):
+            interface.reinitialize()
+        else:
+            self._logger.debug("interface %d has no reset functionality", i)
 
   def _init_keyboard_handler(self, servo, board=''):
     """Initialize the correct keyboard handler for board.

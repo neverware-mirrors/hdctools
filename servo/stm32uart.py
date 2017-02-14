@@ -67,6 +67,10 @@ class Suart(uart.Uart):
     """Suart destructor."""
     self._logger.debug('')
 
+  def reinitialize(self):
+    """Reinitialize the usb endpoint"""
+    self._susb.reset_usb()
+
   def run_rx_thread(self):
     self._logger.debug('rx thread started on %s' % self.get_pty())
 

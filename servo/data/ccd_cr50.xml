@@ -112,7 +112,7 @@
   <control>
     <name>ccd_ec_uart_en</name>
     <doc>Enable/disable EC UART on CCD</doc>
-    <params subtype="ccd_ec_uart_en" interface="8" drv="cr50" map="onoff"
+    <params subtype="ccd_ec_uart_en" interface="8" drv="cr50" input_type="str"
     clobber_ok="" init="on"></params>
   </control>
   <control>

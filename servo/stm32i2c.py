@@ -57,6 +57,10 @@ class Si2cBus(object):
     """Si2c destructor."""
     self._logger.debug("Close")
 
+  def reinitialize(self):
+    """Reinitialize the usb endpoint"""
+    self._susb.reset_usb()
+
   def wr_rd(self, slave_address, write_list, read_count=None):
     """Implements hdctools wr_rd() interface.
 

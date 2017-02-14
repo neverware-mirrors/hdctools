@@ -35,6 +35,7 @@ class PowerStateDriver(hw_driver.HwDriver):
   _STATE_REC_MODE = 'rec'
   _STATE_FASTBOOT = 'fastboot'
   _STATE_RESET_CYCLE = 'reset'
+  _STATE_CCD_RESET = 'ccd_reset'
 
   REC_ON = 'on'
   REC_OFF = 'off'
@@ -125,6 +126,19 @@ class PowerStateDriver(hw_driver.HwDriver):
     """
     self._cold_reset()
 
+  def _reset_ccd(self):
+    """Reinitialize all servo interfaces.
+
+    When running servo through ccd, the usb endpoints may reset. This
+    function will reinitialize all of the servo interfaces to recover
+    from the usb reset.
+    """
+    self._logger.info("Reinitialize all interfaces")
+    self._interface.reinitialize()
+
+    # Restore the ccd settings from before the usb reset
+    self._interface.set('ccd_ec_uart_en', 'restore')
+
   def set(self, statename):
     """Set power state according to `statename`."""
     if statename == self._STATE_OFF:
@@ -137,9 +151,11 @@ class PowerStateDriver(hw_driver.HwDriver):
       self._power_on_fastboot()
     elif statename == self._STATE_RESET_CYCLE:
       self._reset_cycle()
+    elif statename == self._STATE_CCD_RESET:
+      self._reset_ccd()
     else:
       raise ValueError("Invalid power_state setting: '%s'. Try one of "
-                       "'%s', '%s', '%s', '%s', or '%s'." % (statename,
+                       "'%s', '%s', '%s', '%s', '%s', or '%s'." % (statename,
                            self._STATE_ON, self._STATE_OFF,
                            self._STATE_REC_MODE, self._STATE_FASTBOOT,
-                           self._STATE_RESET_CYCLE))
+                           self._STATE_RESET_CYCLE, self._STATE_CCD_RESET))

@@ -55,25 +55,43 @@ class Susb():
     self._logger = logger
     self._logger.debug("")
 
+    self._vendor = vendor
+    self._product = product
+    self._interface = interface
+    self._serialname = serialname
+    self._find_device()
+
+  def reset_usb(self):
+    """Reinitializes USB based on the device based settings from __init__"""
+    try:
+      self._find_device()
+    except:
+        self._logger.info("device not found: %04x:%04x %s" %
+                          (self._vendor, self._product, self._serialname))
+
+  def _find_device(self):
+    """Set up the usb endpoint"""
     # Find the stm32.
-    dev_list = usb.core.find(idVendor=vendor, idProduct=product, find_all=True)
-    if dev_list is None:
+    dev_list = usb.core.find(idVendor=self._vendor, idProduct=self._product,
+                             find_all=True)
+    if dev_list is None or len(dev_list) is 0:
       raise SusbError("USB device not found")
 
     # Check if we have multiple stm32s and we've specified the serial.
     dev = None
-    if len(dev_list) > 1 and serialname is not None:
+    if len(dev_list) > 1 and self._serialname is not None:
       for d in dev_list:
-        if usb.util.get_string(d, 256, d.iSerialNumber) == serialname:
+        if usb.util.get_string(d, 256, d.iSerialNumber) == self._serialname:
           dev = d
           break
       if dev is None:
-        raise SusbError("USB device(%s) not found" % serialname)
+        raise SusbError("USB device(%s) not found" % self._serialname)
     else:
       dev = dev_list[0]
 
-    serial = '(%s)' % serialname if serialname else ''
-    self._logger.debug("Found stm32%s: %04x:%04x" % (serial, vendor, product))
+    serial = '(%s)' % self._serialname if self._serialname else ''
+    self._logger.debug("Found stm32%s: %04x:%04x" % (serial, self._vendor,
+                                                     self._product))
     # If we can't set configuration, it's already been set.
     try:
       dev.set_configuration()
@@ -82,7 +100,7 @@ class Susb():
 
     # Get an endpoint instance.
     cfg = dev.get_active_configuration()
-    intf = usb.util.find_descriptor(cfg, bInterfaceNumber=interface)
+    intf = usb.util.find_descriptor(cfg, bInterfaceNumber=self._interface)
     self._intf = intf
 
     # Detatch raiden.ko if it is loaded.

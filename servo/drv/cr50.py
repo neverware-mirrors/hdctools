@@ -56,6 +56,7 @@ class cr50(pty_driver.ptyDriver):
     """
     super(cr50, self).__init__(interface, params)
     self._logger.debug("")
+    self._ec_uart_en = None
 
   def _Get_cold_reset(self):
     """Getter of cold_reset.
@@ -169,7 +170,7 @@ class cr50(pty_driver.ptyDriver):
         "ccd", ["EC UART:\s*(enabled|disabled)"])[0]
     if result is None:
       raise cr50Error("Cannot retrieve ccd uart result on cr50 console.")
-    return 1 if result[1] == "enabled" else 0
+    return "on" if result[1] == "enabled" else "off"
 
   def _Set_ccd_ec_uart_en(self, value):
     """Setter of ccd_ec_uart_en.
@@ -177,7 +178,12 @@ class cr50(pty_driver.ptyDriver):
     Args:
       value: 0=off, 1=on.
     """
-    if value == 0:
-      self._issue_cmd("ccd uart off")
+    if value == "off" or value == "on":
+      self._issue_cmd("ccd uart %s" % value)
+      self._ec_uart_en = value
+    elif value == "restore":
+      if self._ec_uart_en:
+        self._issue_cmd("ccd uart %s" % self._ec_uart_en)
     else:
-      self._issue_cmd("ccd uart on")
+      raise ValueError("Invalid ec_uart_en setting: '%s'. Try one of "
+                       "'on', 'off', or 'restore'." % value)
