@@ -1,6 +1,12 @@
 <root>
   <!-- ******** Controls ******** -->
   <control>
+    <name>pwr_button_hold</name>
+    <doc>milliseconds to hold the power button</doc>
+    <params cmd="set" subtype='pwr_button_hold' interface="10" drv="ec"
+    input_type="int"/>
+  </control>
+  <control>
     <name>power_state</name>
     <doc>Used to turn the DUT off and on</doc>
     <params cmd="set" interface="servo" drv="cros_ec_power" input_type="str"

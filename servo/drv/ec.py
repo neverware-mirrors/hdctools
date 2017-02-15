@@ -229,6 +229,14 @@ class ec(pty_driver.ptyDriver):
     """
     self._issue_cmd("btnpress voldown %d" % int(value))
 
+  def _Set_pwr_button_hold(self, value):
+    """Setter of pwr_button_hold.
+
+    Args:
+      value: hold interval, unit: msec.
+    """
+    self._issue_cmd("powerbtn %d" % value)
+
   def _Get_cpu_temp(self):
     """Getter of cpu_temp.
 
