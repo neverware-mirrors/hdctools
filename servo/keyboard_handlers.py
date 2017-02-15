@@ -83,6 +83,37 @@ class _BaseHandler(object):
         if secs is '':
             secs = self.NORMAL_TRANSITION_DELAY
 
+        # Check if pwr_button control available. Use it by default.
+        # Otherwise, use pwr_button_hold which calls a single EC
+        # console command to toggle power button, for the CCD case.
+        try:
+            self._servo.get('pwr_button')
+            use_hold_command = False
+        except NameError:
+            use_hold_command = True
+
+        if use_hold_command:
+            self.power_key_hold(secs)
+        else:
+            self.power_key_press_release(secs)
+
+
+    def power_key_hold(self, secs):
+        """Simulate a power button by a single EC console command.
+
+        Args:
+          secs: Time in seconds to simulate the keypress.
+        """
+        # Convert to milliseconds
+        self._servo.set('pwr_button_hold', int(secs * 1000))
+
+
+    def power_key_press_release(self, secs):
+        """Simulate a power button by setting it to press and then release.
+
+        Args:
+          secs: Time in seconds to simulate the keypress.
+        """
         logging.info("Pressing power button for %.4f secs", secs)
         self._servo.set_get_all(['pwr_button:press',
                           'sleep:%.4f' % secs,

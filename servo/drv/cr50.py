@@ -6,7 +6,6 @@
 Provides the following Cr50 controlled function:
   cold_reset
   warm_reset
-  pwr_button
   ccd_ec_uart_en
 """
 
@@ -105,32 +104,6 @@ class cr50(pty_driver.ptyDriver):
       self._issue_cmd("sysrst off")
     else:
       self._issue_cmd("sysrst on")
-
-  @restricted_command
-  def _Get_pwr_button(self):
-    """Getter of pwr_button.
-
-    Returns:
-      0: power button press.
-      1: power button release.
-    """
-    result = self._issue_cmd_get_results(
-        "powerbtn", ["powerbtn: (forced press|pressed|released)"])[0]
-    if result is None:
-      raise cr50Error("Cannot retrieve power button result on cr50 console.")
-    return 1 if result[1] == "released" else 0
-
-  @restricted_command
-  def _Set_pwr_button(self, value):
-    """Setter of pwr_button.
-
-    Args:
-      value: 0=press, 1=release.
-    """
-    if value == 0:
-      self._issue_cmd("powerbtn press")
-    else:
-      self._issue_cmd("powerbtn release")
 
   def _Get_ccd_lock(self):
     """Getter of ccd_lock.
