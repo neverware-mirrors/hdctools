@@ -105,6 +105,20 @@ class cr50(pty_driver.ptyDriver):
     else:
       self._issue_cmd("sysrst on")
 
+  @restricted_command
+  def _Get_pwr_button(self):
+    """Getter of pwr_button.
+
+    Returns:
+      0: power button press.
+      1: power button release.
+    """
+    result = self._issue_cmd_get_results(
+        "powerbtn", ["powerbtn: (forced press|pressed|released)"])[0]
+    if result is None:
+      raise cr50Error("Cannot retrieve power button result on cr50 console.")
+    return 1 if result[1] == "released" else 0
+
   def _Get_ccd_lock(self):
     """Getter of ccd_lock.
 

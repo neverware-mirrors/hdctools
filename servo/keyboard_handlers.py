@@ -10,6 +10,8 @@ import os
 import serial
 import time
 
+from drv.hw_driver import HwDriverError
+
 
 class _BaseHandler(object):
     """Base class for keyboard handlers.
@@ -83,13 +85,15 @@ class _BaseHandler(object):
         if secs is '':
             secs = self.NORMAL_TRANSITION_DELAY
 
-        # Check if pwr_button control available. Use it by default.
+        # Check if pwr_button control available, by setting it to
+        # its current value. Use pwr_button control by default.
         # Otherwise, use pwr_button_hold which calls a single EC
         # console command to toggle power button, for the CCD case.
         try:
-            self._servo.get('pwr_button')
+            value = self._servo.get('pwr_button')
+            self._servo.set('pwr_button', value)
             use_hold_command = False
-        except NameError:
+        except HwDriverError:
             use_hold_command = True
 
         if use_hold_command:

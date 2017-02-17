@@ -86,6 +86,12 @@
     clobber_ok=""></params>
   </control>
   <control>
+    <name>pwr_button</name>
+    <doc>Power button GPIO</doc>
+    <params cmd="get" subtype="pwr_button" interface="8" drv="cr50" map="press"
+    clobber_ok=""></params>
+  </control>
+  <control>
     <name>ccd_lock</name>
     <doc>State of CCD restricted console lock</doc>
     <params cmd="get" subtype="ccd_lock" interface="8" drv="cr50" map="onoff"
