@@ -6,7 +6,6 @@ import contextlib
 import datetime
 import fcntl
 import fnmatch
-import imp
 import logging
 import os
 import random
@@ -17,8 +16,7 @@ import tempfile
 import time
 import urllib
 
-# TODO(tbroch) deprecate use of relative imports
-from drv.hw_driver import HwDriverError
+import drv as servo_drv
 import bbadc
 import bbi2c
 import bbgpio
@@ -36,6 +34,7 @@ import stm32gpio
 import stm32i2c
 import stm32uart
 
+HwDriverError = servo_drv.hw_driver.HwDriverError
 
 MAX_I2C_CLOCK_HZ = 100000
 
@@ -555,11 +554,8 @@ class Servod(object):
       index = int(interface_id) - 1
       interface = self._interface_list[index]
 
-    servo_pkg = imp.load_module('servo', *imp.find_module('servo'))
-    drv_pkg = imp.load_module('drv',
-                              *imp.find_module('drv', servo_pkg.__path__))
     drv_name = params['drv']
-    drv_module = getattr(drv_pkg, drv_name)
+    drv_module = getattr(servo_drv, drv_name)
     drv_class = getattr(drv_module, self._camel_case(drv_name))
     drv = drv_class(interface, params)
     if control_name not in self._drv_dict:
