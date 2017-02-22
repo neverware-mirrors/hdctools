@@ -71,6 +71,12 @@
     <params interface="8" drv="ec3po_driver" map="onoff" init="on"
     subtype="interp_connect"></params>
   </control>
+  <control>
+    <name>cr50_reboot</name>
+    <doc>reboot cr50</doc>
+    <params cmd="set" subtype="cr50_reboot" interface="8" drv="cr50" map="onoff"
+    clobber_ok=""></params>
+  </control>
 
   <!-- Controls overwritten by Cr50 -->
   <control>

@@ -144,6 +144,10 @@ class cr50(pty_driver.ptyDriver):
       raise cr50Error("Cannot retrieve the version result on cr50 console.")
     return result[2]
 
+  def _Set_cr50_reboot(self, value):
+    """Reboot cr50 ignoring the value."""
+    self._issue_cmd("reboot")
+
   def _Get_ccd_lock(self):
     """Getter of ccd_lock.
 

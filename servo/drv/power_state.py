@@ -36,6 +36,7 @@ class PowerStateDriver(hw_driver.HwDriver):
   _STATE_FASTBOOT = 'fastboot'
   _STATE_RESET_CYCLE = 'reset'
   _STATE_CCD_RESET = 'ccd_reset'
+  _STATE_CR50_RESET = 'cr50_reset'
 
   REC_ON = 'on'
   REC_OFF = 'off'
@@ -139,6 +140,14 @@ class PowerStateDriver(hw_driver.HwDriver):
     # Restore the ccd settings from before the usb reset
     self._interface.set('ccd_ec_uart_en', 'restore')
 
+  def _reset_cr50(self):
+    """Reboot cr50 and reset CCD.
+
+    Reboot cr50 and reset ccd to recover from the usb reset.
+    """
+    self._interface.set('cr50_reboot', 'on')
+    self._reset_ccd()
+
   def set(self, statename):
     """Set power state according to `statename`."""
     if statename == self._STATE_OFF:
@@ -153,6 +162,8 @@ class PowerStateDriver(hw_driver.HwDriver):
       self._reset_cycle()
     elif statename == self._STATE_CCD_RESET:
       self._reset_ccd()
+    elif statename == self._STATE_CR50_RESET:
+      self._reset_cr50()
     else:
       raise ValueError("Invalid power_state setting: '%s'. Try one of "
                        "'%s', '%s', '%s', '%s', '%s', or '%s'." % (statename,
