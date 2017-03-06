@@ -118,7 +118,7 @@
   <control>
     <name>dev_mode</name>
     <alias>fpmcu_boot_mode,usbpd_boot_mode</alias>
-    <params clobber_ok="" od="PU" map="onoff_i"></params>
+    <params clobber_ok="" od="PP" map="onoff"></params>
   </control>
   <control>
     <name>pch_disable</name>
