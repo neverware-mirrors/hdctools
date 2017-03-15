@@ -107,6 +107,12 @@
     clobber_ok=""></params>
   </control>
   <control>
+    <name>ccd_state</name>
+    <doc>ccd_state</doc>
+    <params cmd="get" subtype="ccd_state" interface="8" drv="cr50" map="onoff"
+    clobber_ok=""></params>
+  </control>
+  <control>
     <name>warm_reset</name>
     <doc>warm_reset</doc>
     <params subtype="warm_reset" interface="8" drv="cr50" map="onoff"

@@ -82,6 +82,21 @@ class cr50(pty_driver.ptyDriver):
     else:
       self._issue_cmd("ecrst on")
 
+  def _Get_ccd_state(self):
+    """Run a basic command that should take a short amount of time to check
+    if ccd endpoints are still working.
+    Returns:
+      0: ccd is off.
+      1: ccd is on.
+    """
+    try:
+        # If gettime fails then the cr50 console is not working, which means
+        # ccd is not working
+        result = self._issue_cmd_get_results("gettime", ['.'], 3)
+    except:
+        return 0
+    return 1
+
   def _Get_warm_reset(self):
     """Getter of warm_reset.
 
