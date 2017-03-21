@@ -49,14 +49,13 @@
   <control>
     <name>dut_charge_enable</name>
     <doc>GPIO_DUT_CHG_EN</doc>
-    <params interface="21" drv="gpio" offset="0" map="onoff"
-    init="off"></params>
+    <params interface="21" drv="gpio" offset="0" map="onoff"></params>
   </control>
   <control>
     <name>dut_charge_source</name>
     <doc>GPIO_HOST_OR_CHG_CTL</doc>
     <params interface="21" drv="gpio" offset="1"
-    map="onoff_pwrsrc_sel" init="typec"></params>
+    map="onoff_pwrsrc_sel"></params>
   </control>
   <control>
     <name>dp_hpd</name>
