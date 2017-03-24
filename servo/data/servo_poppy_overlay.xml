@@ -24,4 +24,68 @@
     <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
     drv="cros_chip" chip="npcx_spi"/>
   </control>
+  <!-- cr50 is also named 'usbpd' for compatibility with previous scripts -->
+  <control>
+    <name>uart4_pty</name>
+    <alias>raw_cr50_console_pty,raw_usbpd_uart_pty</alias>
+    <doc>Pseudo-terminal (pty) thats connnected to cr50 uart console</doc>
+    <params cmd="get" subtype="pty" interface="1" drv="uart" clobber_ok=""
+    servo_v4_interface="2" servo_micro_interface="2"></params>
+  </control>
+  <!-- EC-3PO console interpreter for cr50 -->
+  <control>
+    <name>ec3po_cr50_uart_pty</name>
+    <alias>ec3po_usbpd_uart_pty,cr50_console_pty,usbpd_uart_pty</alias>
+    <doc>cr50 UART console provided via EC-3PO console interpreter.</doc>
+    <params cmd="get" subtype="pty" interface="9" drv="uart"></params>
+  </control>
+  <control>
+    <name>cr50_ec3po_interp_connect</name>
+    <alias>usbpd_ec3po_interp_connect</alias>
+    <doc>State indicating if interpreter is listening to the EC UART.</doc>
+    <params interface="9" drv="ec3po_driver" map="onoff" init="on"
+    subtype="interp_connect" clobber_ok=""></params>
+  </control>
+  <control>
+    <name>uart4_baudrate</name>
+    <alias>cr50_console_baudrate,usbpd_console_baudrate</alias>
+    <doc>Baudrate for cr50 uart console</doc>
+    <params drv="uart" subtype="props" line_prop="baudrate" clobber_ok=""
+    interface="1"></params>
+  </control>
+  <control>
+    <name>uart4_parity</name>
+    <alias>cr50_console_parity,usbpd_console_parity</alias>
+    <doc>Parity for cr50 uart console</doc>
+    <params drv="uart" subtype="props" line_prop="parity" clobber_ok=""
+    interface="1" map="uart_parity"></params>
+  </control>
+  <control>
+    <name>uart4_sbits</name>
+    <alias>cr50_console_sbits,usbpd_console_sbits</alias>
+    <doc>Number of stop bits for cr50 uart console</doc>
+    <params drv="uart" subtype="props" line_prop="sbits" clobber_ok=""
+    interface="1" map="uart_sbits"></params>
+  </control>
+  <control>
+    <name>uart4_bits</name>
+    <alias>cr50_console_bits,usbpd_console_bits</alias>
+    <doc>Number of data bits for cr50 uart console</doc>
+    <params drv="uart" subtype="props" line_prop="bits" clobber_ok=""
+    interface="1" map="uart_bits"></params>
+  </control>
+  <!-- cr50 UART Buffers & VREF Controls -->
+  <control>
+    <name>jtag_buf_en</name>
+    <alias>cr50_console_en,usbpd_uart_en</alias>
+    <doc>Enabled JTAG buffer on servo ... re-purposed to uart4.</doc>
+    <params clobber_ok="" init="on"></params>
+  </control>
+  <control>
+    <name>uart4_on_flex_en</name>
+    <alias>cr50_console_on_flex_en,usbpd_uart_on_flex_en</alias>
+    <doc>Enables JTAG buffer on servo flex ... repurposed to uart4.</doc>
+    <params interface="2" servo_v3_interface="4" drv="pca95xx" subtype="gpio"
+    slv="0x26" offset="3" map="onoff_i" init="on" clobber_ok=""></params>
+  </control>
 </root>
