@@ -3,8 +3,16 @@
   <include>
     <name>common.xml</name>
   </include>
-
-
+  <include>
+    <name>cr50.xml</name>
+  </include>
+  <!-- ********** Maps ********** -->
+  <map>
+    <name>dummy_vref</name>
+    <doc>Determine VREF between pp3300, pp2500, pp1800 and off.
+    Default is off</doc>
+    <params pp3300="0" pp2500="0" pp1800="1" off="1"></params>
+  </map>
   <!-- UART and CONSOLE settings -->
   <control>
     <name>raw_ec_uart_pty</name>
@@ -30,13 +38,6 @@
     <params cmd="get" subtype="uart_stream" interface="3" drv="uart"></params>
   </control>
   <control>
-    <name>raw_cr50_console_pty</name>
-    <doc>CCD cr50 console.</doc>
-    <params cmd="get" subtype="pty" interface="4" drv="uart">
-    </params>
-  </control>
-
-  <control>
     <name>ec3po_ec_console</name>
     <alias>ec_uart_pty</alias>
     <doc>EC UART console provided via EC-3PO console interpreter.</doc>
@@ -48,57 +49,6 @@
     <params interface="10" drv="ec3po_driver" map="onoff" init="on"
     subtype="interp_connect"></params>
   </control>
-  <control>
-    <name>ec3po_cr50_console</name>
-    <alias>cr50_console_pty</alias>
-    <doc>cr50 console provided via EC-3PO console interpreter.</doc>
-    <params cmd="get" subtype="pty" interface="8" drv="uart"></params>
-  </control>
-  <!-- Cr50 Console Automation Controls -->
-  <control>
-    <name>cr50_console_cmd</name>
-    <doc>Set to send command to the Cr50 console. Get to obtain the matched
-    results with the regular expression of cr50_console_regexp.</doc>
-    <params subtype="uart_cmd" interface="8" drv="uart"
-    input_type="str"></params>
-  </control>
-  <control>
-    <name>cr50_console_multicmd</name>
-    <doc>Set to send multiple commands to the Cr50 console.</doc>
-    <params subtype="uart_multicmd" interface="8" drv="uart"
-    input_type="str" cmd="set"></params>
-  </control>
-  <control>
-    <name>cr50_console_regexp</name>
-    <doc>List of regular expressions to match the response of
-    cr50_console_cmd.</doc>
-    <params subtype="uart_regexp" interface="8" drv="uart"
-    input_type="str"></params>
-  </control>
-  <control>
-    <name>cr50_console_capture</name>
-    <doc>cr50_console_capture</doc>
-    <params subtype="uart_capture" interface="8" drv="uart"
-            map="onoff"></params>
-  </control>
-  <control>
-    <name>cr50_console_stream</name>
-    <doc>Cr50 console stream collected while cr50_console_capture on</doc>
-    <params cmd="get" subtype="uart_stream" interface="8" drv="uart"></params>
-  </control>
-  <control>
-    <name>cr50_ec3po_interp_connect</name>
-    <doc>State indicating if interpreter is listening to the cr50 console.</doc>
-    <params interface="8" drv="ec3po_driver" map="onoff" init="on"
-    subtype="interp_connect"></params>
-  </control>
-  <control>
-    <name>cr50_reboot</name>
-    <doc>reboot cr50</doc>
-    <params cmd="set" subtype="cr50_reboot" interface="8" drv="cr50" map="onoff"
-    clobber_ok=""></params>
-  </control>
-
   <!-- Controls overwritten by Cr50 -->
   <control>
     <name>cold_reset</name>
@@ -125,24 +75,6 @@
     clobber_ok=""></params>
   </control>
   <control>
-    <name>cr50_reset_count</name>
-    <doc>Cr50 reset count</doc>
-    <params cmd="get" subtype="reset_count" interface="8" drv="cr50" map="str"
-    clobber_ok=""></params>
-  </control>
-  <control>
-    <name>cr50_version</name>
-    <doc>current cr50 version</doc>
-    <params cmd="get" subtype="ver" interface="8" drv="cr50" map="str"
-    clobber_ok=""></params>
-  </control>
-  <control>
-    <name>ccd_lock</name>
-    <doc>State of CCD restricted console lock</doc>
-    <params cmd="get" subtype="ccd_lock" interface="8" drv="cr50" map="onoff"
-    clobber_ok=""></params>
-  </control>
-  <control>
     <name>ccd_ec_uart_en</name>
     <doc>Enable/disable EC UART on CCD</doc>
     <params subtype="ccd_ec_uart_en" interface="8" drv="cr50" input_type="str"
@@ -152,5 +84,32 @@
     <name>fw_wp_state</name>
     <doc>Used to turn fw wp off and on</doc>
     <params interface="8" drv="fw_wp_ccd" input_type="str"/>
+  </control>
+  <!-- cr50 UART Buffers & VREF Controls -->
+  <control>
+    <name>uart4_on_flex_en</name>
+    <alias>cr50_console_on_flex_en,usbpd_uart_on_flex_en</alias>
+    <doc>Override control not needed for ccd.</doc>
+    <params interface="8" drv="cr50" subtype="ccd_noop" map="onoff"
+    clobber_ok=""></params>
+  </control>
+  <control>
+    <name>jtag_buf_en</name>
+    <alias>cr50_console_en,usbpd_uart_en</alias>
+    <doc>Override control not needed for ccd.</doc>
+    <params interface="8" drv="cr50" subtype="ccd_noop" map="onoff"
+    clobber_ok=""></params>
+  </control>
+  <control>
+    <name>jtag_vref_sel0</name>
+    <doc>Override control not needed for ccd.</doc>
+    <params cmd="get" interface="8" drv="cr50" subtype="ccd_noop"
+    map="dummy_vref" clobber_ok=""></params>
+  </control>
+  <control>
+    <name>jtag_vref_sel1</name>
+    <doc>Override control not needed for ccd.</doc>
+    <params cmd="get" interface="8" drv="cr50" subtype="ccd_noop"
+    map="dummy_vref" clobber_ok=""></params>
   </control>
 </root>

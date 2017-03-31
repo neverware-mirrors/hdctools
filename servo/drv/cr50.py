@@ -176,6 +176,14 @@ class cr50(pty_driver.ptyDriver):
       raise cr50Error("Cannot retrieve ccd lock result on cr50 console.")
     return 1 if result[1] == "enabled" else 0
 
+  def _Set_ccd_noop(self, value):
+    """Used to ignore servo controls"""
+    pass
+
+  def _Get_ccd_noop(self):
+    """Used to ignore servo controls"""
+    return "ERR"
+
   @restricted_command
   def _Get_ccd_ec_uart_en(self):
     """Getter of ccd_ec_uart_en.
