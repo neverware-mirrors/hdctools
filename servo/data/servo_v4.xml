@@ -326,4 +326,11 @@
     <params interface="26" drv="ec3po_servo_v4"
     subtype="ccvalues" map="servo_v4_cc_map"></params>
   </control>
+  <!-- DTS mode control -->
+  <control>
+    <name>servo_v4_dts_mode</name>
+    <doc>Enable/disable DTS mode on servo_v4</doc>
+    <params subtype="servo_v4_dts_mode" interface="26" drv="ec3po_servo_v4"
+    input_type="str" clobber_ok="" init="on"></params>
+  </control>
 </root>

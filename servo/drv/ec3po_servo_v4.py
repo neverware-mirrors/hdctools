@@ -87,3 +87,29 @@ class ec3poServoV4(pty_driver.ptyDriver):
       value: An integer value, see "servo_v4_cc_map"
     """
     self.batch_set(ccd_typec_config, value)
+
+  def _Get_servo_v4_dts_mode(self):
+    """Getter of servo_v4_dts_mode.
+
+    Returns:
+      "off": DTS mode is disabled.
+      "on": DTS mode is enabled.
+    """
+    # Get the current DTS mode
+    result = self._issue_cmd_get_results(
+        "dts", ["dts mode:\s*(off|on)"])[0]
+    if result is None:
+      raise ec3poServoV4Error("Cannot retrieve dts mode from console.")
+    return result[1]
+
+  def _Set_servo_v4_dts_mode(self, value):
+    """Setter of servo_v4_dts_mode.
+
+    Args:
+      value: "off", "on"
+    """
+    if value == "off" or value == "on":
+      self._issue_cmd("dts %s" % value)
+    else:
+      raise ValueError("Invalid dts_mode setting: '%s'. Try one of "
+                       "'on' or 'off'." % value)
