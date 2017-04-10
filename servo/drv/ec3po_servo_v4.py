@@ -8,6 +8,7 @@ Provides the following console controlled function subtypes:
 """
 
 import logging
+import time
 
 import pty_driver
 import servo
@@ -41,6 +42,8 @@ class ec3poServoV4(pty_driver.ptyDriver):
   HwDriver's get/set method. That method ultimately calls:
     "_[GS]et_%s" % params['subtype'] below.
   """
+  SWAP_DELAY = 1
+  DUT_PORT = 1
 
   def __init__(self, interface, params):
     """Constructor.
@@ -113,3 +116,60 @@ class ec3poServoV4(pty_driver.ptyDriver):
     else:
       raise ValueError("Invalid dts_mode setting: '%s'. Try one of "
                        "'on' or 'off'." % value)
+
+  def _get_pd_info(self, port):
+    """Get the current PD state
+
+    Args:
+      port: Type C PD port 0/1
+    Returns:
+      "src|snk" for role  and state value
+    """
+    pd_cmd = "pd %s state" % port
+    # Two FW versions for this command, get full line.
+    m = self._issue_cmd_get_results(pd_cmd, ["State:\s+([\w]+)_([\w]+)"])[0]
+    if m is None:
+      raise ec3poServoV4Error("Cannot retrieve pd state.")
+
+    info = {}
+    info["role"] = m[1].lower()
+    info["state"] = m[2].lower()
+
+    return info
+
+  def _Get_servo_v4_power_role(self):
+    """Setter of servo_v4_role.
+
+    @returns: Current power role
+    """
+    pd = self._get_pd_info(self.DUT_PORT)
+    return pd["role"]
+
+  def _Set_servo_v4_power_role(self, role):
+    """Setter of servo_v4_role.
+
+    This method is used to set the PD power role to the desired value. The
+    power role is changed by executing a 'pd <port> swap power' console
+    command. This requires that the DUT port be in an explicit contract
+    (i.e. SRC_READY or SNK_READY state).
+    Args:
+      role: src, snk
+    """
+    role = role.lower()
+    if role != "src" and role != "snk":
+      raise ValueError("Invalid power role: '%s'. Try one of "
+                       "'snk' or 'src'." % role)
+
+    # Get current power role and state
+    pd = self._get_pd_info(self.DUT_PORT)
+    # If not in desired role and connected, then issue role swap
+    if pd["role"] != role and pd["state"] == "ready":
+      # Send pd power role swap command
+      self._issue_cmd("pd %s swap power" % self.DUT_PORT)
+      # Give a little time for role swap to complete
+      time.sleep(self.SWAP_DELAY)
+      pd_new = self._get_pd_info(self.DUT_PORT)
+      # Check if power role swap completed
+      if pd_new["state"] != "ready" or pd["role"] == pd_new["role"]:
+        raise ec3poServoV4Error("Power role swap failed")
+
