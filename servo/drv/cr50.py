@@ -153,6 +153,18 @@ class cr50(pty_driver.ptyDriver):
       raise cr50Error("Cannot retrieve the reset count on cr50 console.")
     return result[1]
 
+  def _Get_devid(self):
+    """Getter of devid.
+
+    Returns:
+        The cr50 devid string
+    """
+    result = self._issue_cmd_get_results(
+        "sysinfo", ["DEV_ID:\s+(0x[0-9a-z]{8} 0x[0-9a-z]{8})"])[0][1]
+    if result is None:
+      raise cr50Error("Cannot retrieve the devid result on cr50 console.")
+    return result
+
   def _Get_ver(self):
     """Getter of ver.
 

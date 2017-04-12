@@ -111,6 +111,12 @@
     drv="cr50" map="str" clobber_ok=""></params>
   </control>
   <control>
+    <name>cr50_devid</name>
+    <doc>current cr50 devid</doc>
+    <params cmd="get" subtype="devid" interface="9" servo_v4_interface="8"
+    drv="cr50" map="str" clobber_ok=""></params>
+  </control>
+  <control>
     <name>cr50_version</name>
     <doc>current cr50 version</doc>
     <params cmd="get" subtype="ver" interface="9" servo_v4_interface="8"
