@@ -58,6 +58,12 @@ class cr50(pty_driver.ptyDriver):
     self._logger.debug("")
     self._ec_uart_en = None
 
+  def _issue_cmd_get_results(self, cmds, regex_list,
+                             timeout=pty_driver.DEFAULT_UART_TIMEOUT):
+    """Send \n to cr50 to make sure it is awake before sending cmds"""
+    super(cr50, self)._issue_cmd_get_results('\n', [])
+    return super(cr50, self)._issue_cmd_get_results(cmds, regex_list, timeout)
+
   def _Get_cold_reset(self):
     """Getter of cold_reset.
 
