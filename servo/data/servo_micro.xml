@@ -19,7 +19,8 @@
   </map>
 
   <control>
-    <name>uart1_enable</name>
+    <name>uart1_en</name>
+    <alias>ec_uart_en</alias>
     <doc>UART1_EN_L</doc>
     <params interface="7" drv="ec3po_gpio" name="UART1_EN_L"
     subtype="single" map="onoff_i" init="on"></params>
@@ -43,7 +44,8 @@
     subtype="single" map="onoff_i" init="off"></params>
   </control>
   <control>
-    <name>uart2_enable</name>
+    <name>uart2_en</name>
+    <alias>cpu_uart_en</alias>
     <doc>UART2_EN_L</doc>
     <params interface="7" drv="ec3po_gpio" name="UART2_EN_L"
     subtype="single" map="onoff_i" init="on"></params>
