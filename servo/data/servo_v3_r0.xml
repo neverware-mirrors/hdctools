@@ -8,6 +8,9 @@
   <include>
     <name>keyboard.xml</name>
   </include>
+  <include>
+    <name>uart_common.xml</name>
+  </include>
   <map>
     <name>vref_sel_v3</name>
     <doc>Determine VREF between pp3300, pp2500, pp1800 and off.
@@ -623,41 +626,6 @@
     <doc>Number of data bits for atmega uart</doc>
     <params drv="uart" subtype="props" line_prop="bits"
     interface="4" map="uart_bits"></params>
-  </control>
-
-
-
-  <control>
-    <name>cpu_uart_cmd</name>
-    <doc>Set to send command to CPU UART. Get to obtain the matched
-    results with the regular expression of cpu_uart_regexp.</doc>
-    <params subtype="uart_cmd" interface="8" drv="uart"
-    input_type="str"></params>
-  </control>
-  <control>
-    <name>cpu_uart_regexp</name>
-    <doc>List of regular expressions which matches the response of
-    cpu_uart_cmd.</doc>
-    <params subtype="uart_regexp" interface="8" drv="uart"
-    input_type="str"></params>
-  </control>
-  <control>
-    <name>cpu_uart_timeout</name>
-    <doc>Timeout value for waiting CPU UART response of issuing an
-    EC command.</doc>
-    <params subtype="uart_timeout" interface="8" drv="uart"
-    input_type="float"></params>
-  </control>
-  <control>
-    <name>cpu_uart_capture</name>
-    <doc>cpu_uart_capture</doc>
-    <params subtype="uart_capture" interface="8" drv="uart"
-            map="onoff"></params>
-  </control>
-  <control>
-    <name>cpu_uart_stream</name>
-    <doc>Cpu uart stream collected while cpu_uart_capture is set to 'on'</doc>
-    <params cmd="get" subtype="uart_stream" interface="8" drv="uart"></params>
   </control>
   <control>
     <name>ec3po_ec_console</name>

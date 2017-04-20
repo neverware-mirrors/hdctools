@@ -6,6 +6,10 @@
   <include>
     <name>cr50.xml</name>
   </include>
+  <include>
+    <name>uart_common.xml</name>
+  </include>
+
   <!-- ********** Maps ********** -->
   <map>
     <name>dummy_vref</name>
@@ -13,6 +17,7 @@
     Default is off</doc>
     <params pp3300="0" pp2500="0" pp1800="1" off="1"></params>
   </map>
+
   <!-- UART and CONSOLE settings -->
   <control>
     <name>raw_ec_uart_pty</name>
@@ -25,17 +30,6 @@
     <doc>CCD AP console.</doc>
     <params cmd="get" subtype="pty" interface="8" drv="uart">
     </params>
-  </control>
-  <control>
-    <name>cpu_uart_capture</name>
-    <doc>cpu_uart_capture</doc>
-    <params subtype="uart_capture" interface="8" drv="uart"
-            map="onoff"></params>
-  </control>
-  <control>
-    <name>cpu_uart_stream</name>
-    <doc>Cpu uart stream collected while cpu_uart_capture is set to 'on'</doc>
-    <params cmd="get" subtype="uart_stream" interface="8" drv="uart"></params>
   </control>
   <control>
     <name>ec3po_ec_console</name>
