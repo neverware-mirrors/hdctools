@@ -471,63 +471,17 @@ class Servod(object):
       An EC3PO object representing the EC-3PO interface or None if there's no
       interface for the USB PD UART.
     """
-    vid = vendor
-    pid = product
-    # The current PID might be incremented if there are multiple FTDI.
-    # Therefore, try rewinding the PID back one if we don't find the base PID in
-    # the SERVO_ID_DEFAULTS
-    if (vid, pid) not in servo_interfaces.SERVO_ID_DEFAULTS:
-      self._logger.debug('VID:PID pair not found.  Rewinding PID back one...')
-      pid -= 1
-    self._logger.debug('vid:0x%04x, pid:0x%04x', vid, pid)
-
-    if 'raw_pty' in interface:
-      # We have specified an explicit target for this ec3po.
-      raw_uart_name = interface['raw_pty']
+    raw_uart_name = interface['raw_pty']
+    if self._syscfg.is_control(raw_uart_name):
       raw_ec_uart = self.get(raw_uart_name)
-
-    # Servo V2 / V3 should have the interface indicies in the same spot.
-    elif ((vid, pid) in servo_interfaces.SERVO_V2_DEFAULTS or
-        (vid, pid) in servo_interfaces.SERVO_V3_DEFAULTS):
-      # Determine if it's a PD interface or just main EC console.
-      if interface['index'] == servo_interfaces.EC3PO_USBPD_INTERFACE_NUM:
-        try:
-          # Obtain the raw EC UART PTY and create the EC-3PO interface.
-          raw_ec_uart = self.get('raw_usbpd_uart_pty')
-        except NameError:
-          # This overlay doesn't have a USB PD MCU, so skip init.
-          self._logger.info('No PD MCU UART.')
-          return None
-        except AttributeError:
-          # This overlay has no get method for the interface so skip init.  For
-          # servo v2, it's common for interfaces to be overridden such as
-          # reusing JTAG pins for the PD MCU UART instead.  Therefore, print an
-          # error message indicating that the interface might be set
-          # incorrectly.
-          if (vid, pid) in servo_interfaces.SERVO_V2_DEFAULTS:
-            self._logger.warn('No interface for PD MCU UART.')
-            self._logger.warn('Usually, this happens because the interface is '
-                              'set incorrectly.  If you\'re overriding an '
-                              'existing interface, be sure to update the '
-                              'interface lists for your board at the end of '
-                              'servo/servo_interfaces.py')
-          return None
-
-      elif interface['index'] == servo_interfaces.EC3PO_EC_INTERFACE_NUM:
-        raw_ec_uart = self.get('raw_ec_uart_pty')
-
-    # Servo V3, miniservo, Toad, Reston, Fruitpie, or Plankton
-    elif ((vid, pid) in servo_interfaces.MINISERVO_ID_DEFAULTS or
-          (vid, pid) in servo_interfaces.TOAD_ID_DEFAULTS or
-          (vid, pid) in servo_interfaces.RESTON_ID_DEFAULTS or
-          (vid, pid) in servo_interfaces.FRUITPIE_ID_DEFAULTS or
-          (vid, pid) in servo_interfaces.PLANKTON_ID_DEFAULTS):
-      raw_ec_uart = self.get('raw_ec_uart_pty')
+      return ec3po_interface.EC3PO(raw_ec_uart)
     else:
-      raise ServodError(('Unexpected EC-3PO interface!'
-                         ' (0x%04x:0x%04x) %r') % (vid, pid, interface))
-
-    return ec3po_interface.EC3PO(raw_ec_uart)
+      # The overlay doesn't have the raw PTY defined, therefore we can skip
+      # initializing this interface since no control relies on it.
+      self._logger.debug(
+          'Skip initializing EC3PO for %s, no control specified.',
+          raw_uart_name)
+      return None
 
   def _camel_case(self, string):
     output = ''
