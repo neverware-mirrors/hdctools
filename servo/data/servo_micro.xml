@@ -22,129 +22,129 @@
     <name>uart1_en</name>
     <alias>ec_uart_en</alias>
     <doc>UART1_EN_L</doc>
-    <params interface="7" drv="ec3po_gpio" name="UART1_EN_L"
+    <params interface="6" drv="ec3po_gpio" name="UART1_EN_L"
     subtype="single" map="onoff_i" init="on"></params>
   </control>
   <control>
     <name>servo_jtag_trst</name>
     <doc>SERVO_JTAG_TRST_L</doc>
-    <params interface="7" drv="ec3po_gpio" name="SERVO_JTAG_TRST_L"
+    <params interface="6" drv="ec3po_gpio" name="SERVO_JTAG_TRST_L"
     subtype="single" map="onoff_i" init="off"></params>
   </control>
   <control>
     <name>spi1_buf_en</name>
     <doc>SPI1_BUF_EN_L</doc>
-    <params interface="7" drv="ec3po_gpio" name="SPI1_BUF_EN_L"
+    <params interface="6" drv="ec3po_gpio" name="SPI1_BUF_EN_L"
     subtype="single" map="onoff_i" init="off"></params>
   </control>
   <control>
     <name>spi2_buf_en</name>
     <doc>SPI2_BUF_EN_L</doc>
-    <params interface="7" drv="ec3po_gpio" name="SPI2_BUF_EN_L"
+    <params interface="6" drv="ec3po_gpio" name="SPI2_BUF_EN_L"
     subtype="single" map="onoff_i" init="off"></params>
   </control>
   <control>
     <name>uart2_en</name>
     <alias>cpu_uart_en</alias>
     <doc>UART2_EN_L</doc>
-    <params interface="7" drv="ec3po_gpio" name="UART2_EN_L"
+    <params interface="6" drv="ec3po_gpio" name="UART2_EN_L"
     subtype="single" map="onoff_i" init="on"></params>
   </control>
   <control>
     <name>spi1_vref</name>
     <doc>VREF applied to SPI1</doc>
-    <params interface="7" drv="ec3po_gpio" names="SPI1_VREF_33, SPI1_VREF_18"
+    <params interface="6" drv="ec3po_gpio" names="SPI1_VREF_33, SPI1_VREF_18"
     subtype="multi" map="onoff_vref_sel" init="off"></params>
   </control>
   <control>
     <name>spi2_vref</name>
     <alias>fw_wp_vref</alias>
     <doc>VREF applied to SPI2 (coreboot)</doc>
-    <params interface="7" drv="ec3po_gpio" names="SPI2_VREF_33, SPI2_VREF_18"
+    <params interface="6" drv="ec3po_gpio" names="SPI2_VREF_33, SPI2_VREF_18"
     subtype="multi" map="onoff_vref_sel" init="off"></params>
   </control>
   <control>
     <name>servo_jtag_trst_dir</name>
     <doc>SERVO_JTAG_TRST_DIR</doc>
-    <params interface="7" drv="ec3po_gpio" name="SERVO_JTAG_TRST_DIR"
+    <params interface="6" drv="ec3po_gpio" name="SERVO_JTAG_TRST_DIR"
     subtype="single" map="onoff" init="off"></params>
   </control>
   <control>
     <name>servo_jtag_tdi_dir</name>
     <doc>SERVO_JTAG_TDI_DIR</doc>
-    <params interface="7" drv="ec3po_gpio" name="SERVO_JTAG_TDI_DIR"
+    <params interface="6" drv="ec3po_gpio" name="SERVO_JTAG_TDI_DIR"
     subtype="single" map="onoff" init="off"></params>
   </control>
   <control>
     <name>gpio_expander_reset</name>
     <doc>TCA6416_RESET_L</doc>
-    <params interface="7" drv="ec3po_gpio" name="TCA6416_RESET_L"
+    <params interface="6" drv="ec3po_gpio" name="TCA6416_RESET_L"
     subtype="single" map="onoff_i" init="off"></params>
   </control>
   <control>
     <name>uart3_on_spi1</name>
     <doc>SPI1_MUX_SEL</doc>
-    <params interface="7" drv="ec3po_gpio" name="SPI1_MUX_SEL"
+    <params interface="6" drv="ec3po_gpio" name="SPI1_MUX_SEL"
     subtype="single" map="onoff_i" init="off"></params>
   </control>
   <control>
     <name>SERVO_JTAG_TMS_DIR</name>
     <doc>SERVO_JTAG_TMS_DIR</doc>
-    <params interface="7" drv="ec3po_gpio" name="SERVO_JTAG_TMS_DIR"
+    <params interface="6" drv="ec3po_gpio" name="SERVO_JTAG_TMS_DIR"
     subtype="single" map="onoff" init="off"></params>
   </control>
   <control>
     <name>SERVO_JTAG_TDO_SEL</name>
     <doc>SERVO_JTAG_TDO_SEL</doc>
-    <params interface="7" drv="ec3po_gpio" name="SERVO_JTAG_TDO_SEL"
+    <params interface="6" drv="ec3po_gpio" name="SERVO_JTAG_TDO_SEL"
     subtype="single" map="onoff" init="off"></params>
   </control>
   <control>
     <name>SERVO_JTAG_TMS</name>
     <doc>SERVO_JTAG_TMS</doc>
-    <params interface="7" drv="ec3po_gpio" name="SERVO_JTAG_TMS"
+    <params interface="6" drv="ec3po_gpio" name="SERVO_JTAG_TMS"
     subtype="single" map="onoff" init="off"></params>
   </control>
   <control>
     <name>UART3_TX_SERVO_JTAG_TCK</name>
     <doc>UART3_TX_SERVO_JTAG_TCK</doc>
-    <params interface="7" drv="ec3po_gpio" name="UART3_TX_SERVO_JTAG_TCK"
+    <params interface="6" drv="ec3po_gpio" name="UART3_TX_SERVO_JTAG_TCK"
     subtype="single" map="onoff" init="off"></params>
   </control>
   <control>
     <name>UART3_RX_JTAG_BUFFER_TO_SERVO_TDO</name>
     <doc>UART3_RX_JTAG_BUFFER_TO_SERVO_TDO</doc>
-    <params interface="7" drv="ec3po_gpio" name="UART3_RX_JTAG_BUFFER_TO_SERVO_TDO"
+    <params interface="6" drv="ec3po_gpio" name="UART3_RX_JTAG_BUFFER_TO_SERVO_TDO"
     subtype="single" map="onoff" init="off"></params>
   </control>
   <control>
     <name>SERVO_JTAG_TDO_BUFFER_EN</name>
     <doc>SERVO_JTAG_TDO_BUFFER_EN</doc>
-    <params interface="7" drv="ec3po_gpio" name="SERVO_JTAG_TDO_BUFFER_EN"
+    <params interface="6" drv="ec3po_gpio" name="SERVO_JTAG_TDO_BUFFER_EN"
     subtype="single" map="onoff" init="off"></params>
   </control>
   <control>
     <name>SERVO_JTAG_TDI</name>
     <doc>SERVO_JTAG_TDI</doc>
-    <params interface="7" drv="ec3po_gpio" name="SERVO_JTAG_TDI"
+    <params interface="6" drv="ec3po_gpio" name="SERVO_JTAG_TDI"
     subtype="single" map="onoff" init="off"></params>
   </control>
   <control>
     <name>SERVO_JTAG_RTCK</name>
     <doc>SERVO_JTAG_RTCK</doc>
-    <params interface="7" drv="ec3po_gpio" name="SERVO_JTAG_RTCK"
+    <params interface="6" drv="ec3po_gpio" name="SERVO_JTAG_RTCK"
     subtype="single" map="onoff" init="off"></params>
   </control>
   <control>
     <name>JTAG_BUFOUT_EN_L</name>
     <doc>JTAG_BUFOUT_EN_L</doc>
-    <params interface="7" drv="ec3po_gpio" name="JTAG_BUFOUT_EN_L"
+    <params interface="6" drv="ec3po_gpio" name="JTAG_BUFOUT_EN_L"
     subtype="single" map="onoff_i" init="off"></params>
   </control>
   <control>
     <name>JTAG_BUFIN_EN_L</name>
     <doc>JTAG_BUFIN_EN_L</doc>
-    <params interface="7" drv="ec3po_gpio" name="JTAG_BUFIN_EN_L"
+    <params interface="6" drv="ec3po_gpio" name="JTAG_BUFIN_EN_L"
     subtype="single" map="onoff_i" init="off"></params>
   </control>
 
@@ -189,13 +189,13 @@
     <name>pwr_button</name>
     <doc>Power button GPIO</doc>
     <params interface="4" drv="tca6416" slv="0x20" od="PU" port="0"
-    offset="6" map="press" init="release"></params>
+    offset="7" map="press" init="release"></params>
   </control>
   <control>
     <name>warm_reset</name>
     <doc>warm_reset</doc>
     <params interface="4" drv="tca6416" slv="0x20" od="PU" port="0"
-    offset="7" map="onoff_i" init="off"></params>
+    offset="6" map="onoff_i" init="off"></params>
   </control>
 
   <control>
@@ -267,7 +267,7 @@
     <name>uart1_pty</name>
     <alias>raw_ec_uart_pty</alias>
     <doc>UART console. USART2: PA2/PA3 - Servo header UART1</doc>
-    <params cmd="get" subtype="pty" interface="6" drv="uart">
+    <params cmd="get" subtype="pty" interface="7" drv="uart">
     </params>
   </control>
   <control>
@@ -315,12 +315,12 @@
     <name>ec3po_servo_console</name>
     <alias>servo_console_pty</alias>
     <doc>Servo micro console provided via EC-3PO console interpreter.</doc>
-    <params cmd="get" subtype="pty" interface="7" drv="uart"></params>
+    <params cmd="get" subtype="pty" interface="6" drv="uart"></params>
   </control>
   <control>
     <name>servo_ec3po_interp_connect</name>
     <doc>State indicating if interpreter is listening to the servo console.</doc>
-    <params interface="7" drv="ec3po_driver" map="onoff" init="on"
+    <params interface="6" drv="ec3po_driver" map="onoff" init="on"
     subtype="interp_connect"></params>
   </control>
   <control>
@@ -351,7 +351,7 @@
   <control>
     <name>usbpd_uart_routing</name>
     <doc>enable pd uart routing</doc>
-    <params interface="7" drv="ec3po_servo_micro"
+    <params interface="6" drv="ec3po_servo_micro"
     subtype="usbpd_console" map="usbpd_uart_map"></params>
   </control>
 </root>
