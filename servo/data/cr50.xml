@@ -127,7 +127,7 @@
     <name>uart4_on_flex_en</name>
     <alias>cr50_console_on_flex_en,usbpd_uart_on_flex_en</alias>
     <doc>Enables JTAG buffer on servo flex ... repurposed to uart4.</doc>
-    <params interface="2" servo_v3_interface="4" drv="pca95xx" subtype="gpio"
+    <params interface="2" servo_v3_interface="6" drv="pca95xx" subtype="gpio"
     slv="0x26" offset="3" map="onoff_i" init="on" clobber_ok=""></params>
   </control>
   <control>

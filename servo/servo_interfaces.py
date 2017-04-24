@@ -38,17 +38,17 @@ SERVO_V2_DEFAULTS = [(0x18d1, 0x5002)]
 for vid, pid in SERVO_V2_DEFAULTS:
   INTERFACE_DEFAULTS[vid][pid] = \
     ['dummy',
-     'ftdi_dummy',
-     'ftdi_i2c',
-     'ftdi_uart',
-     'ftdi_uart',
-     'ftdi_dummy',
-     'ftdi_dummy',
-     'ftdi_uart',
-     'ftdi_uart',
-     {'name': 'ec3po_uart',
+     'ftdi_dummy',                      # 1
+     'ftdi_i2c',                        # 2
+     'ftdi_uart',                       # 3: uart3/legacy
+     'ftdi_uart',                       # 4: ATMEGA
+     'ftdi_dummy',                      # 5
+     'ftdi_dummy',                      # 6
+     'ftdi_uart',                       # 7: EC
+     'ftdi_uart',                       # 8: AP
+     {'name': 'ec3po_uart',             # 9: EC3PO(USBPD)
       'raw_pty': 'raw_usbpd_uart_pty'},
-     {'name': 'ec3po_uart',
+     {'name': 'ec3po_uart',             #10: EC3PO(EC)
       'raw_pty': 'raw_ec_uart_pty'},
     ]
 
@@ -57,19 +57,19 @@ SERVO_V3_DEFAULTS = [(0x18d1, 0x5004)]
 for vid, pid in SERVO_V3_DEFAULTS:
   INTERFACE_DEFAULTS[vid][pid] = \
     ['dummy',
-     'bb_gpio',
-     {'name': 'dev_i2c', 'bus_num': 1},
-     {'name': 'bb_uart', 'uart_num': 5,
-      'txd': ['lcd_data8', 0x4], 'rxd': ['lcd_data9', 0x4]},
-     {'name': 'dev_i2c', 'bus_num': 2},
-     'bb_adc',
-     'dummy',
-     {'name': 'bb_uart', 'uart_num': 1},
-     {'name': 'bb_uart', 'uart_num': 2},
-     'dummy',
-     {'name': 'ec3po_uart',
+     'bb_gpio',                          # 1
+     {'name': 'dev_i2c', 'bus_num': 1},  # 2
+     {'name': 'bb_uart', 'uart_num': 5,  # 3: uart3/legacy
+      'txd': ['lcd_data8', 0x4],
+      'rxd': ['lcd_data9', 0x4]},
+     {'name': 'bb_uart', 'uart_num': 4}, # 4: ATMEGA
+     'bb_adc',                           # 5
+     {'name': 'dev_i2c', 'bus_num': 2},  # 6
+     {'name': 'bb_uart', 'uart_num': 1}, # 7: EC
+     {'name': 'bb_uart', 'uart_num': 2}, # 8: AP
+     'dummy',                            # 9
+     {'name': 'ec3po_uart',              #10: EC3PO(EC)
       'raw_pty': 'raw_ec_uart_pty'},
-     {'name': 'bb_uart', 'uart_num': 4},
     ]
 
 INTERFACE_DEFAULTS[0x0403][0x6014] = INTERFACE_DEFAULTS[0x18d1][0x5004]

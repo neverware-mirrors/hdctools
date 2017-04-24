@@ -593,7 +593,7 @@
     <name>uart4_pty</name>
     <alias>atmega_pty</alias>
     <doc>USB Keyboard Emulator</doc>
-    <params cmd="get" subtype="pty" interface="11" drv="uart">
+    <params cmd="get" subtype="pty" interface="4" drv="uart">
     </params>
   </control>
   <control>
@@ -601,28 +601,28 @@
     <alias>atmega_baudrate</alias>
     <doc>Baudrate for atmega uart</doc>
     <params drv="uart" subtype="props" line_prop="baudrate"
-    interface="11"></params>
+    interface="4"></params>
   </control>
   <control>
     <name>uart4_parity</name>
     <alias>atmega_parity</alias>
     <doc>Parity for atmega uart</doc>
     <params drv="uart" subtype="props" line_prop="parity"
-    interface="11" map="uart_parity"></params>
+    interface="4" map="uart_parity"></params>
   </control>
   <control>
     <name>uart4_sbits</name>
     <alias>atmega_sbits</alias>
     <doc>Number of stop bits for atmega uart</doc>
     <params drv="uart" subtype="props" line_prop="sbits"
-    interface="11" map="uart_sbits"></params>
+    interface="4" map="uart_sbits"></params>
   </control>
   <control>
     <name>uart4_bits</name>
     <alias>atmega_bits</alias>
     <doc>Number of data bits for atmega uart</doc>
     <params drv="uart" subtype="props" line_prop="bits"
-    interface="11" map="uart_bits"></params>
+    interface="4" map="uart_bits"></params>
   </control>
 
 
