@@ -104,8 +104,8 @@ class Servod(object):
         interface['index'] = i
       elif type(interface) is str and interface != 'dummy':
         name = interface
-        # It's a FTDI related interface.
-        interface = (i % ftdi_common.MAX_FTDI_INTERFACES_PER_DEVICE) + 1
+        # It's a FTDI related interface. #0 is reserved for no use.
+        interface = ((i - 1) % ftdi_common.MAX_FTDI_INTERFACES_PER_DEVICE) + 1
         is_ftdi_interface = True
       elif type(interface) is str and interface == 'dummy':
         # 'dummy' reserves the interface for future use.  Typically the
@@ -117,18 +117,19 @@ class Servod(object):
         raise ServodError("Illegal interface type %s" % type(interface))
 
       # servos with multiple FTDI are guaranteed to have contiguous USB PIDs
-      if is_ftdi_interface and i and \
-            ((i % ftdi_common.MAX_FTDI_INTERFACES_PER_DEVICE) == 0):
-        product += 1
-        self._logger.info("Changing to next FTDI part @ pid = 0x%04x",
-                          product)
+      product_increment = 0
+      if is_ftdi_interface:
+        product_increment = (i - 1) / ftdi_common.MAX_FTDI_INTERFACES_PER_DEVICE
+        if product_increment:
+          self._logger.info("Use the next FTDI part @ pid = 0x%04x",
+                            product + product_increment)
 
-      self._logger.info("Initializing interface %d to %s", i + 1, name)
+      self._logger.info("Initializing interface %d to %s", i, name)
       try:
         func = getattr(self, '_init_%s' % name)
       except AttributeError:
         raise ServodError("Unable to locate init for interface %s" % name)
-      result = func(vendor, product, serialname, interface)
+      result = func(vendor, product + product_increment, serialname, interface)
 
       if isinstance(result, tuple):
         result_len = len(result)
@@ -183,7 +184,6 @@ class Servod(object):
     # Seed the random generator with the serial to differentiate from other
     # servod processes.
     random.seed(serialname if serialname else time.time())
-    # Note, interface i is (i - 1) in list
     if not interfaces:
       try:
         interfaces = servo_interfaces.INTERFACE_BOARDS[board][vendor][product]
@@ -340,7 +340,7 @@ class Servod(object):
   def _init_stm32_gpio(self, vendor, product, serialname, interface):
     """Initialize stm32 gpio interface.
     Args:
-      interface: interface number of stm32 device to use.
+      interface: dict of interface parameters.
 
     Returns:
       Instance object of interface
@@ -359,7 +359,7 @@ class Servod(object):
     """Initialize stm32 USB to I2C bridge interface and open for use
 
     Args:
-      interface: USB interface number of stm32 device to use
+      interface: dict of interface parameters.
 
     Returns:
       Instance object of interface.
@@ -545,7 +545,7 @@ class Servod(object):
     if interface_id == 'servo':
       interface = self
     else:
-      index = int(interface_id) - 1
+      index = int(interface_id)
       interface = self._interface_list[index]
 
     drv_name = params['drv']
@@ -1120,9 +1120,9 @@ def test():
                       "%(levelname)s - %(message)s")
   # configure server & listen
   servod_obj = Servod(1)
-  # 4 == number of interfaces on a FT4232H device
-  for i in xrange(4):
-    if i == 1:
+  # 5 == number of interfaces on a FT4232H device
+  for i in xrange(1, 5):
+    if i == 2:
       # its an i2c interface ... see __init__ for details and TODO to make
       # this configureable
       servod_obj._interface_list[i].wr_rd(0x21, [0], 1)

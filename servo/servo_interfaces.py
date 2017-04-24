@@ -12,20 +12,33 @@ SERVO_ID_DEFAULTS = [(0x0403, 0x6011), (0x0403, 0x6014), (0x18d1, 0x5001),
                      (0x18d1, 0x5014), (0x18d1, 0x501a), (0x18d1, 0x501b)]
 
 # servo v1 w/o FT4232h EEPROM programmed
-INTERFACE_DEFAULTS[0x0403][0x6011] = ['ftdi_gpio', 'ftdi_i2c',
-                                      'ftdi_gpio', 'ftdi_gpio']
+INTERFACE_DEFAULTS[0x0403][0x6011] = \
+  ['dummy',
+   'ftdi_gpio',
+   'ftdi_i2c',
+   'ftdi_gpio',
+   'ftdi_gpio',
+  ]
+
 # servo v1
-INTERFACE_DEFAULTS[0x18d1][0x5001] = ['ftdi_gpio', 'ftdi_i2c',
-                                      'ftdi_gpio', 'ftdi_gpio']
+INTERFACE_DEFAULTS[0x18d1][0x5001] = \
+  ['dummy',
+   'ftdi_gpio',
+   'ftdi_i2c',
+   'ftdi_gpio',
+   'ftdi_gpio',
+  ]
+
 # servo V2
-# Dummy interface 0 == JTAG via openocd
-# Dummy interface 4,5 == SPI via flashrom
-# ec3po_uart interface 8,9 == usbpd console, ec console.  Applicable to servo v3
+# Dummy interface 1 == JTAG via openocd
+# Dummy interface 5,6 == SPI via flashrom
+# ec3po_uart interface 9,10 == usbpd console, ec console. Applicable to servo v3
 # as well.
 SERVO_V2_DEFAULTS = [(0x18d1, 0x5002)]
 for vid, pid in SERVO_V2_DEFAULTS:
   INTERFACE_DEFAULTS[vid][pid] = \
-    ['ftdi_dummy',
+    ['dummy',
+     'ftdi_dummy',
      'ftdi_i2c',
      'ftdi_uart',
      'ftdi_uart',
@@ -43,7 +56,8 @@ for vid, pid in SERVO_V2_DEFAULTS:
 SERVO_V3_DEFAULTS = [(0x18d1, 0x5004)]
 for vid, pid in SERVO_V3_DEFAULTS:
   INTERFACE_DEFAULTS[vid][pid] = \
-    ['bb_gpio',
+    ['dummy',
+     'bb_gpio',
      {'name': 'dev_i2c', 'bus_num': 1},
      {'name': 'bb_uart', 'uart_num': 5,
       'txd': ['lcd_data8', 0x4], 'rxd': ['lcd_data9', 0x4]},
@@ -64,7 +78,8 @@ INTERFACE_DEFAULTS[0x0403][0x6014] = INTERFACE_DEFAULTS[0x18d1][0x5004]
 RAIDEN_DEFAULTS = [(0x18d1, 0x500f)]
 for vid, pid in RAIDEN_DEFAULTS:
   INTERFACE_DEFAULTS[vid][pid] = \
-    [{'name': 'stm32_uart', 'interface': 0}, # 1: EC_PD
+    ['dummy',
+     {'name': 'stm32_uart', 'interface': 0}, # 1: EC_PD
      {'name': 'stm32_uart', 'interface': 1}, # 2: AP
      'dummy',                                # 3
      'dummy',                                # 4
@@ -81,7 +96,8 @@ for vid, pid in RAIDEN_DEFAULTS:
 CCD_DEFAULTS = [(0x18d1, 0x5014)]
 for vid, pid in CCD_DEFAULTS:
   INTERFACE_DEFAULTS[vid][pid] = \
-    [{'name': 'stm32_uart', 'interface': 2}, # 1: EC_PD
+    ['dummy',
+     {'name': 'stm32_uart', 'interface': 2}, # 1: EC_PD
      {'name': 'stm32_i2c', 'interface': 5},  # 2: i2c
      {'name': 'stm32_uart', 'interface': 1}, # 3: AP
      {'name': 'stm32_uart', 'interface': 0}, # 4: cr50 console
@@ -99,7 +115,8 @@ for vid, pid in CCD_DEFAULTS:
 SERVO_MICRO_DEFAULTS = [(0x18d1, 0x501a)]
 for vid, pid in SERVO_MICRO_DEFAULTS:
   INTERFACE_DEFAULTS[vid][pid] = \
-    ['dummy',                                # 1:
+    ['dummy',
+     'dummy',                                # 1:
      {'name': 'stm32_uart', 'interface': 0}, # 2: uart3/legacy
      {'name': 'stm32_uart', 'interface': 3}, # 3: servo console
      {'name': 'stm32_i2c', 'interface': 4},  # 4: i2c
@@ -117,8 +134,11 @@ for vid, pid in SERVO_MICRO_DEFAULTS:
 # Servo v4
 SERVO_V4_DEFAULTS = [(0x18d1, 0x501b)]
 for vid, pid in SERVO_V4_DEFAULTS:
+  # Interface #0 is reserved for no use.
+  INTERFACE_DEFAULTS[vid][pid] = ['dummy']
+
   # dummy slots for servo micro use (interface #1-10).
-  INTERFACE_DEFAULTS[vid][pid] = ['dummy'] * 10
+  INTERFACE_DEFAULTS[vid][pid] += ['dummy'] * 10
 
   # Buffer slots for servo micro (interface #11-20).
   INTERFACE_DEFAULTS[vid][pid] += ['dummy'] * 10
@@ -138,7 +158,8 @@ for vid, pid in SERVO_V4_DEFAULTS:
 MINISERVO_ID_DEFAULTS = [(0x403, 0x6001), (0x18d1, 0x5000)]
 for vid, pid in MINISERVO_ID_DEFAULTS:
   INTERFACE_DEFAULTS[vid][pid] = \
-    ['ftdi_gpiouart',
+    ['dummy',
+     'ftdi_gpiouart',
      {'name': 'ec3po_uart', 'raw_pty': 'raw_ec_uart_pty'},
     ]
 
@@ -148,7 +169,8 @@ SERVO_ID_DEFAULTS.extend(MINISERVO_ID_DEFAULTS)
 TOAD_ID_DEFAULTS = [(0x403, 0x6015)]
 for vid, pid in TOAD_ID_DEFAULTS:
   INTERFACE_DEFAULTS[vid][pid] = \
-    ['ftdi_gpiouart',
+    ['dummy',
+     'ftdi_gpiouart',
      {'name': 'ec3po_uart', 'raw_pty': 'raw_ec_uart_pty'},
     ]
 
@@ -158,7 +180,8 @@ SERVO_ID_DEFAULTS.extend(TOAD_ID_DEFAULTS)
 RESTON_ID_DEFAULTS = [(0x18d1, 0x5007)]
 for vid, pid in RESTON_ID_DEFAULTS:
   INTERFACE_DEFAULTS[vid][pid] = \
-    ['ftdi_gpiouart',
+    ['dummy',
+     'ftdi_gpiouart',
      {'name': 'ec3po_uart', 'raw_pty': 'raw_ec_uart_pty'},
     ]
 
@@ -168,7 +191,8 @@ SERVO_ID_DEFAULTS.extend(RESTON_ID_DEFAULTS)
 FRUITPIE_ID_DEFAULTS = [(0x18d1, 0x5009)]
 for vid, pid in FRUITPIE_ID_DEFAULTS:
   INTERFACE_DEFAULTS[vid][pid] = \
-    ['ftdi_gpiouart',
+    ['dummy',
+     'ftdi_gpiouart',
      {'name': 'ec3po_uart', 'raw_pty': 'raw_ec_uart_pty'},
     ]
 
@@ -178,7 +202,8 @@ SERVO_ID_DEFAULTS.extend(FRUITPIE_ID_DEFAULTS)
 PLANKTON_ID_DEFAULTS = [(0x18d1, 0x500c)]
 for vid, pid in PLANKTON_ID_DEFAULTS:
   INTERFACE_DEFAULTS[vid][pid] = \
-    ['ftdi_gpiouart',
+    ['dummy',
+     'ftdi_gpiouart',
      {'name': 'ec3po_uart', 'raw_pty': 'raw_ec_uart_pty'},
     ]
 
@@ -195,7 +220,7 @@ INTERFACE_BOARDS = collections.defaultdict(
 for board in ['elm', 'oak', 'samus']:
   INTERFACE_BOARDS[board][0x18d1][0x5002] = \
       list(INTERFACE_DEFAULTS[0x18d1][0x5002])
-  INTERFACE_BOARDS[board][0x18d1][0x5002][5] = 'ftdi_uart'
+  INTERFACE_BOARDS[board][0x18d1][0x5002][6] = 'ftdi_uart'
 
 # re-purposes JTAG to be UART for USBPD MCU or H1
 for board in ['asuka', 'caroline', 'cave', 'chell', 'eve', 'glados',
@@ -203,11 +228,11 @@ for board in ['asuka', 'caroline', 'cave', 'chell', 'eve', 'glados',
               'reef']:
   INTERFACE_BOARDS[board][0x18d1][0x5002] = \
       list(INTERFACE_DEFAULTS[0x18d1][0x5002])
-  INTERFACE_BOARDS[board][0x18d1][0x5002][0] = 'ftdi_uart'
+  INTERFACE_BOARDS[board][0x18d1][0x5002][1] = 'ftdi_uart'
 
 # TODO(crosbug.com/p/60939) re-purpose JTAG to H1 uart at some point but dummy
 # for now.
 for board in ['fizz']:
   INTERFACE_BOARDS[board][0x18d1][0x5002] = \
       list(INTERFACE_DEFAULTS[0x18d1][0x5002])
-  INTERFACE_BOARDS[board][0x18d1][0x5002][0] = 'dummy'
+  INTERFACE_BOARDS[board][0x18d1][0x5002][1] = 'dummy'
