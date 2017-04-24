@@ -38,6 +38,12 @@
     <params subtype="uart_timeout" interface="10" drv="uart"
     input_type="float"></params>
   </control>
+  <control>
+    <name>ec_board</name>
+    <doc>The board name of the EC image</doc>
+    <params cmd="get" subtype="board" interface="10" drv="ec"
+    input_type="str"></params>
+  </control>
 
   <control>
     <name>cpu_uart_capture</name>

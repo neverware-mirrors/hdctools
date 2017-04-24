@@ -76,6 +76,18 @@ class ec(pty_driver.ptyDriver):
 
     self._issue_cmd("chan restore")
 
+  def _Get_board(self):
+    """Getter of board.
+
+    Returns:
+        The board string.
+    """
+    result = self._issue_cmd_get_results(
+        "ver", ["RO:\s+(\S*)_v[\d.-]+"])[0]
+    if result is None:
+      raise ecError("Cannot retrieve the board result on EC console.")
+    return result[1]
+
   def _set_key_pressed(self, key_rc, pressed):
     """Press/release a key.
 
