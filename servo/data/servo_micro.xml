@@ -260,7 +260,7 @@
     <name>uart2_pty</name>
     <alias>cpu_uart_pty</alias>
     <doc>UART console. USART3: PB10/PB11 - Servo header UART2</doc>
-    <params cmd="get" subtype="pty" interface="5" drv="uart">
+    <params cmd="get" subtype="pty" interface="8" drv="uart">
     </params>
   </control>
   <control>
@@ -280,33 +280,33 @@
     <name>cpu_uart_cmd</name>
     <doc>Set to send command to CPU UART. Get to obtain the matched
     results with the regular expression of cpu_uart_regexp.</doc>
-    <params subtype="uart_cmd" interface="5" drv="uart"
+    <params subtype="uart_cmd" interface="8" drv="uart"
     input_type="str"></params>
   </control>
   <control>
     <name>cpu_uart_regexp</name>
     <doc>List of regular expressions which matches the response of
     cpu_uart_cmd.</doc>
-    <params subtype="uart_regexp" interface="5" drv="uart"
+    <params subtype="uart_regexp" interface="8" drv="uart"
     input_type="str"></params>
   </control>
   <control>
     <name>cpu_uart_timeout</name>
     <doc>Timeout value for waiting CPU UART response of issuing an
     EC command.</doc>
-    <params subtype="uart_timeout" interface="5" drv="uart"
+    <params subtype="uart_timeout" interface="8" drv="uart"
     input_type="float"></params>
   </control>
   <control>
     <name>cpu_uart_capture</name>
     <doc>cpu_uart_capture</doc>
-    <params subtype="uart_capture" interface="5" drv="uart"
+    <params subtype="uart_capture" interface="8" drv="uart"
             map="onoff"></params>
   </control>
   <control>
     <name>cpu_uart_stream</name>
     <doc>Cpu uart stream collected while cpu_uart_capture is set to 'on'</doc>
-    <params cmd="get" subtype="uart_stream" interface="5" drv="uart"></params>
+    <params cmd="get" subtype="uart_stream" interface="8" drv="uart"></params>
   </control>
 
 

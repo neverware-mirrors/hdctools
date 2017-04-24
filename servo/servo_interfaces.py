@@ -120,11 +120,11 @@ for vid, pid in SERVO_MICRO_DEFAULTS:
      {'name': 'stm32_uart', 'interface': 0}, # 2: uart3/legacy
      {'name': 'stm32_uart', 'interface': 3}, # 3: servo console
      {'name': 'stm32_i2c', 'interface': 4},  # 4: i2c
-     {'name': 'stm32_uart', 'interface': 5}, # 5: uart2 / dut ap
+     'dummy',                                # 5: dummy
      {'name': 'stm32_uart', 'interface': 6}, # 6: uart1 / dut ec
      {'name': 'ec3po_uart',                  # 7: servo console
       'raw_pty': 'raw_servo_console_pty'},
-     'dummy',                                # 8: dummy
+     {'name': 'stm32_uart', 'interface': 5}, # 8: uart2/AP console
      {'name': 'ec3po_uart',                  # 9: dut pd console
       'raw_pty': 'raw_usbpd_uart_pty'},
      {'name': 'ec3po_uart',                  #10: dut ec console
