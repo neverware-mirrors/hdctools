@@ -97,17 +97,17 @@ CCD_DEFAULTS = [(0x18d1, 0x5014)]
 for vid, pid in CCD_DEFAULTS:
   INTERFACE_DEFAULTS[vid][pid] = \
     ['dummy',
-     {'name': 'stm32_uart', 'interface': 2}, # 1: EC_PD
+     'dummy',                                # 1
      {'name': 'stm32_i2c', 'interface': 5},  # 2: i2c
-     {'name': 'stm32_uart', 'interface': 1}, # 3: AP
-     {'name': 'stm32_uart', 'interface': 0}, # 4: cr50 console
-     'dummy',                                # 5: HID: intf 1
-     'dummy',                                # 6: USB FW: intf 4
-     'dummy',                                # 7: SPI: intf 5
-     {'name': 'ec3po_uart',                  # 8: cr50 console
+     'dummy',                                # 3
+     {'name': 'stm32_uart', 'interface': 0}, # 4: Cr50 console
+     'dummy',                                # 5
+     'dummy',                                # 6
+     {'name': 'stm32_uart', 'interface': 2}, # 7: EC/PD
+     {'name': 'stm32_uart', 'interface': 1}, # 8: AP
+     {'name': 'ec3po_uart',                  # 9: EC3PO(Cr50)
       'raw_pty': 'raw_cr50_console_pty'},
-     'dummy',                                # 9: dummy
-     {'name': 'ec3po_uart',                  #10: dut ec console
+     {'name': 'ec3po_uart',                  #10: EC3PO(EC)
       'raw_pty': 'raw_ec_uart_pty'},
     ]
 

@@ -24,25 +24,25 @@
   <control>
     <name>raw_ec_uart_pty</name>
     <doc>CCD EC_PD console.</doc>
-    <params cmd="get" subtype="pty" interface="1" drv="uart">
+    <params cmd="get" subtype="pty" interface="7" drv="uart">
     </params>
   </control>
   <control>
     <name>cpu_uart_pty</name>
     <doc>CCD AP console.</doc>
-    <params cmd="get" subtype="pty" interface="3" drv="uart">
+    <params cmd="get" subtype="pty" interface="8" drv="uart">
     </params>
   </control>
   <control>
     <name>cpu_uart_capture</name>
     <doc>cpu_uart_capture</doc>
-    <params subtype="uart_capture" interface="3" drv="uart"
+    <params subtype="uart_capture" interface="8" drv="uart"
             map="onoff"></params>
   </control>
   <control>
     <name>cpu_uart_stream</name>
     <doc>Cpu uart stream collected while cpu_uart_capture is set to 'on'</doc>
-    <params cmd="get" subtype="uart_stream" interface="3" drv="uart"></params>
+    <params cmd="get" subtype="uart_stream" interface="8" drv="uart"></params>
   </control>
   <control>
     <name>ec3po_ec_console</name>
@@ -60,63 +60,63 @@
   <control>
     <name>cold_reset</name>
     <doc>cold_reset</doc>
-    <params subtype="cold_reset" interface="8" drv="cr50" map="onoff"
+    <params subtype="cold_reset" interface="9" drv="cr50" map="onoff"
     clobber_ok=""></params>
   </control>
   <control>
     <name>ccd_state</name>
     <doc>ccd_state</doc>
-    <params cmd="get" subtype="ccd_state" interface="8" drv="cr50" map="onoff"
+    <params cmd="get" subtype="ccd_state" interface="9" drv="cr50" map="onoff"
     clobber_ok=""></params>
   </control>
   <control>
     <name>warm_reset</name>
     <doc>warm_reset</doc>
-    <params subtype="warm_reset" interface="8" drv="cr50" map="onoff"
+    <params subtype="warm_reset" interface="9" drv="cr50" map="onoff"
     clobber_ok=""></params>
   </control>
   <control>
     <name>pwr_button</name>
     <doc>Power button GPIO</doc>
-    <params cmd="get" subtype="pwr_button" interface="8" drv="cr50" map="press"
+    <params cmd="get" subtype="pwr_button" interface="9" drv="cr50" map="press"
     clobber_ok=""></params>
   </control>
   <control>
     <name>ccd_ec_uart_en</name>
     <doc>Enable/disable EC UART on CCD</doc>
-    <params subtype="ccd_ec_uart_en" interface="8" drv="cr50" input_type="str"
+    <params subtype="ccd_ec_uart_en" interface="9" drv="cr50" input_type="str"
     clobber_ok="" init="on"></params>
   </control>
   <control>
     <name>fw_wp_state</name>
     <doc>Used to turn fw wp off and on</doc>
-    <params interface="8" drv="fw_wp_ccd" input_type="str"/>
+    <params interface="9" drv="fw_wp_ccd" input_type="str"/>
   </control>
   <!-- cr50 UART Buffers & VREF Controls -->
   <control>
     <name>uart4_on_flex_en</name>
     <alias>cr50_console_on_flex_en,usbpd_uart_on_flex_en</alias>
     <doc>Override control not needed for ccd.</doc>
-    <params interface="8" drv="cr50" subtype="ccd_noop" map="onoff"
+    <params interface="9" drv="cr50" subtype="ccd_noop" map="onoff"
     clobber_ok=""></params>
   </control>
   <control>
     <name>jtag_buf_en</name>
     <alias>cr50_console_en,usbpd_uart_en</alias>
     <doc>Override control not needed for ccd.</doc>
-    <params interface="8" drv="cr50" subtype="ccd_noop" map="onoff"
+    <params interface="9" drv="cr50" subtype="ccd_noop" map="onoff"
     clobber_ok=""></params>
   </control>
   <control>
     <name>jtag_vref_sel0</name>
     <doc>Override control not needed for ccd.</doc>
-    <params cmd="get" interface="8" drv="cr50" subtype="ccd_noop"
+    <params cmd="get" interface="9" drv="cr50" subtype="ccd_noop"
     map="dummy_vref" clobber_ok=""></params>
   </control>
   <control>
     <name>jtag_vref_sel1</name>
     <doc>Override control not needed for ccd.</doc>
-    <params cmd="get" interface="8" drv="cr50" subtype="ccd_noop"
+    <params cmd="get" interface="9" drv="cr50" subtype="ccd_noop"
     map="dummy_vref" clobber_ok=""></params>
   </control>
 </root>

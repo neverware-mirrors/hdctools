@@ -13,15 +13,14 @@
     <name>ec3po_cr50_console</name>
     <alias>ec3po_usbpd_uart_pty,cr50_console_pty,usbpd_uart_pty</alias>
     <doc>cr50 UART console provided via EC-3PO console interpreter.</doc>
-    <params cmd="get" subtype="pty" interface="9" servo_v4_interface="8"
-    drv="uart"></params>
+    <params cmd="get" subtype="pty" interface="9" drv="uart"></params>
   </control>
   <control>
     <name>cr50_ec3po_interp_connect</name>
     <alias>usbpd_ec3po_interp_connect</alias>
     <doc>State indicating if interpreter is listening to the EC UART.</doc>
-    <params interface="9" servo_v4_interface="8" drv="ec3po_driver" map="onoff"
-    init="on" subtype="interp_connect" clobber_ok=""></params>
+    <params interface="9" drv="ec3po_driver" map="onoff" init="on"
+    subtype="interp_connect" clobber_ok=""></params>
   </control>
   <control>
     <name>uart4_baudrate</name>
@@ -55,72 +54,72 @@
     <name>cr50_console_timeout</name>
     <doc>Timeout value for waiting cr50 console response of issuing an
     EC command.</doc>
-    <params subtype="uart_timeout" interface="9" servo_v4_interface="8"
-    drv="uart" input_type="float"></params>
+    <params subtype="uart_timeout" interface="9" drv="uart"
+    input_type="float"></params>
   </control>
   <!-- Cr50 Console Automation Controls -->
   <control>
     <name>cr50_console_cmd</name>
     <doc>Set to send command to the Cr50 console. Get to obtain the matched
     results with the regular expression of cr50_console_regexp.</doc>
-    <params subtype="uart_cmd" interface="9" servo_v4_interface="8" drv="uart"
-    input_type="str" clobber_ok=""></params>
+    <params subtype="uart_cmd" interface="9" drv="uart" input_type="str"
+    clobber_ok=""></params>
   </control>
   <control>
     <name>cr50_console_multicmd</name>
     <doc>Set to send multiple commands to the Cr50 console.</doc>
-    <params subtype="uart_multicmd" interface="9" servo_v4_interface="8"
-    drv="uart" input_type="str" cmd="set" clobber_ok=""></params>
+    <params subtype="uart_multicmd" interface="9" drv="uart"
+    input_type="str" cmd="set" clobber_ok=""></params>
   </control>
   <control>
     <name>cr50_console_regexp</name>
     <doc>List of regular expressions to match the response of
     cr50_console_cmd.</doc>
-    <params subtype="uart_regexp" interface="9" servo_v4_interface="8"
-    drv="uart" input_type="str" cmd="set" clobber_ok=""></params>
+    <params subtype="uart_regexp" interface="9" drv="uart"
+    input_type="str" cmd="set" clobber_ok=""></params>
   </control>
   <control>
     <name>cr50_console_capture</name>
     <doc>cr50_console_capture</doc>
-    <params subtype="uart_capture" interface="9" servo_v4_interface="8"
-    drv="uart" map="onoff" clobber_ok=""></params>
+    <params subtype="uart_capture" interface="9" drv="uart"
+    map="onoff" clobber_ok=""></params>
   </control>
   <control>
     <name>cr50_console_stream</name>
     <doc>Cr50 console stream collected while cr50_console_capture on</doc>
-    <params cmd="get" subtype="uart_stream" interface="9" servo_v4_interface="8"
-    drv="uart" clobber_ok=""></params>
+    <params cmd="get" subtype="uart_stream" interface="9" drv="uart"
+    clobber_ok=""></params>
   </control>
   <!-- cr50 controls -->
   <control>
     <name>cr50_reboot</name>
     <doc>reboot cr50</doc>
-    <params cmd="set" subtype="cr50_reboot" interface="9" servo_v4_interface="8"
-    drv="cr50" map="onoff" clobber_ok=""></params>
+    <params cmd="set" subtype="cr50_reboot" interface="9" drv="cr50"
+    map="onoff" clobber_ok=""></params>
   </control>
   <control>
     <name>ccd_lock</name>
     <doc>State of CCD restricted console lock</doc>
-    <params cmd="get" subtype="ccd_lock" interface="9" servo_v4_interface="8"
-    drv="cr50" map="onoff" clobber_ok=""></params>
+    <params cmd="get" subtype="ccd_lock" interface="9" drv="cr50"
+    map="onoff" clobber_ok=""></params>
   </control>
   <control>
     <name>cr50_reset_count</name>
     <doc>Cr50 reset count</doc>
-    <params cmd="get" subtype="reset_count" interface="9" servo_v4_interface="8"
-    drv="cr50" map="str" clobber_ok=""></params>
+    <params cmd="get" subtype="reset_count" interface="9" drv="cr50"
+    map="str" clobber_ok=""></params>
   </control>
   <control>
     <name>cr50_devid</name>
     <doc>current cr50 devid</doc>
-    <params cmd="get" subtype="devid" interface="9" servo_v4_interface="8"
-    drv="cr50" map="str" clobber_ok=""></params>
+    <params cmd="get" subtype="devid" interface="9" drv="cr50"
+    map="str" clobber_ok=""></params>
   </control>
   <control>
     <name>cr50_version</name>
     <doc>current cr50 version</doc>
-    <params cmd="get" subtype="ver" interface="9" servo_v4_interface="8"
-    drv="cr50" map="str" clobber_ok=""></params>
+    <params cmd="get" subtype="ver" interface="9" drv="cr50"
+    map="str" clobber_ok=""></params>
   </control>
   <!-- cr50 UART Buffers & VREF Controls -->
   <control>
