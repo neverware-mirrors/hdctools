@@ -172,7 +172,7 @@ class cr50(pty_driver.ptyDriver):
         The cr50 version string
     """
     result = self._issue_cmd_get_results(
-        "ver", ["RW_(A|B):\s+\*\s+(\S+)"])[0]
+        "ver", ["RW_(A|B):\s+\*\s+(\S+)\s"])[0]
     if result is None:
       raise cr50Error("Cannot retrieve the version result on cr50 console.")
     return result[2]
