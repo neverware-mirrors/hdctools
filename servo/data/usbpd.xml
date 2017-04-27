@@ -5,7 +5,7 @@
     <doc>Psuedo-terminal (pty) thats connnected to USB PD MCU's
     uart console</doc>
     <params cmd="get" subtype="pty" interface="6" drv="uart" clobber_ok=""
-    servo_v4_inteface="2" servo_micro_interface="2"></params>
+    servo_v4_interface="2" servo_micro_interface="2"></params>
   </control>
   <!-- EC-3PO console interpreter for USB PD -->
   <control>
