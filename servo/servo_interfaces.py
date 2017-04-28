@@ -159,7 +159,8 @@ MINISERVO_ID_DEFAULTS = [(0x403, 0x6001), (0x18d1, 0x5000)]
 for vid, pid in MINISERVO_ID_DEFAULTS:
   INTERFACE_DEFAULTS[vid][pid] = \
     ['dummy',
-     'ftdi_gpiouart',
+     'ftdi_gpiouart', # occupies 2 slots
+     'dummy',         # reserved for the above ftdi_gpiouart
      {'name': 'ec3po_uart', 'raw_pty': 'raw_ec_uart_pty'},
     ]
 
@@ -170,7 +171,8 @@ TOAD_ID_DEFAULTS = [(0x403, 0x6015)]
 for vid, pid in TOAD_ID_DEFAULTS:
   INTERFACE_DEFAULTS[vid][pid] = \
     ['dummy',
-     'ftdi_gpiouart',
+     'ftdi_gpiouart', # occupies 2 slots
+     'dummy',         # reserved for the above ftdi_gpiouart
      {'name': 'ec3po_uart', 'raw_pty': 'raw_ec_uart_pty'},
     ]
 
@@ -181,7 +183,8 @@ RESTON_ID_DEFAULTS = [(0x18d1, 0x5007)]
 for vid, pid in RESTON_ID_DEFAULTS:
   INTERFACE_DEFAULTS[vid][pid] = \
     ['dummy',
-     'ftdi_gpiouart',
+     'ftdi_gpiouart', # occupies 2 slots
+     'dummy',         # reserved for the above ftdi_gpiouart
      {'name': 'ec3po_uart', 'raw_pty': 'raw_ec_uart_pty'},
     ]
 
@@ -192,7 +195,8 @@ FRUITPIE_ID_DEFAULTS = [(0x18d1, 0x5009)]
 for vid, pid in FRUITPIE_ID_DEFAULTS:
   INTERFACE_DEFAULTS[vid][pid] = \
     ['dummy',
-     'ftdi_gpiouart',
+     'ftdi_gpiouart', # occupies 2 slots
+     'dummy',         # reserved for the above ftdi_gpiouart
      {'name': 'ec3po_uart', 'raw_pty': 'raw_ec_uart_pty'},
     ]
 
@@ -203,7 +207,8 @@ PLANKTON_ID_DEFAULTS = [(0x18d1, 0x500c)]
 for vid, pid in PLANKTON_ID_DEFAULTS:
   INTERFACE_DEFAULTS[vid][pid] = \
     ['dummy',
-     'ftdi_gpiouart',
+     'ftdi_gpiouart', # occupies 2 slots
+     'dummy',         # reserved for the above ftdi_gpiouart
      {'name': 'ec3po_uart', 'raw_pty': 'raw_ec_uart_pty'},
     ]
 

@@ -96,7 +96,6 @@ class Servod(object):
     if interfaces_len > interface_list_len:
       self._interface_list += [None] * (interfaces_len - interface_list_len)
 
-    shifted = 0
     for i, interface in enumerate(interfaces):
       is_ftdi_interface = False
       if type(interface) is dict:
@@ -134,14 +133,9 @@ class Servod(object):
 
       if isinstance(result, tuple):
         result_len = len(result)
-        # More than one interface return. Extend the list.
-        self._interface_list += [None] * (result_len - 1)
-        for result_index, r in enumerate(result):
-          self._interface_list[i + shifted + result_index] = r
-        # Shift the remaining interfaces.
-        shifted += result_len - 1
+        self._interface_list[i:(i + result_len)] = result
       else:
-        self._interface_list[i + shifted] = result
+        self._interface_list[i] = result
 
   def __init__(self, config, vendor, product, serialname=None,
                interfaces=None, board="", version=None, usbkm232=None):
