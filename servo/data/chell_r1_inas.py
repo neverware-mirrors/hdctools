@@ -3,7 +3,9 @@
 # found in the LICENSE file.
 
 # These devices are ina3221 (3-channels/i2c address) devices
-inas = [('ina3221', '0x41:0', 'pp3300_dsw',      3.3,   0.010, 'rem', True),
+inas = [('ina3221', '0x40:1', 'pp3300_dx_wlan',  3.3,   0.010, 'rem', True),
+        ('ina3221', '0x40:2', 'pp3300_dx_edp',   3.3,   0.010, 'rem', True),
+        ('ina3221', '0x41:0', 'pp3300_dsw',      3.3,   0.010, 'rem', True),
         ('ina3221', '0x41:1', 'pp5000_a',        5.0,   0.010, 'rem', True),
         ('ina3221', '0x41:2', 'pp3300_a',        3.3,   0.010, 'rem', True),
         ('ina3221', '0x42:0', 'pp1800_a',        1.8,   0.010, 'rem', True),
