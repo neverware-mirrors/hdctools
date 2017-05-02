@@ -15,6 +15,7 @@ import subprocess
 import tempfile
 import time
 import urllib
+import usb
 
 import drv as servo_drv
 import bbadc
@@ -84,7 +85,7 @@ class Servod(object):
       ServodError if unable to locate init method for particular interface.
     """
     # If it is a new device add it to the list
-    device = "%x:%x" % (vendor, product)
+    device = (vendor, product, serialname)
     if device not in self._devices:
         self._devices.append(device)
 
@@ -200,13 +201,24 @@ class Servod(object):
     max_tries = 10
     sleep_time = 0.5
     for i in range(max_tries):
-        try:
-            for device in self._devices:
-                # This will raise an error if the device is not found
-                subprocess.check_output(["lsusb", "-vd", device])
+        for vid, pid, serialname in self._devices:
+            for current in usb.core.find(idVendor=vid, idProduct=pid,
+                                         find_all=True):
+                current_serial = usb.util.get_string(current, 256,
+                                                     current.iSerialNumber)
+                if not serialname or serialname == current_serial:
+                    # This device still available
+                    break
+            else:
+                self._logger.warn('Servo USB device not found: %x:%x serial:%s',
+                                  vid, pid, serialname)
+                break
+        else:
+            # All the devices found. Reinitialize the interfaces...
             break
-        except:
-            time.sleep(sleep_time)
+        time.sleep(sleep_time)
+    else:
+        raise ServodError('Servo USB device not found during reinitialize')
 
     for i, interface in enumerate(self._interface_list):
         if hasattr(interface, "reinitialize"):
