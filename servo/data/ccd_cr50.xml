@@ -14,6 +14,13 @@
     <params pp3300="0" pp2500="0" pp1800="1" off="1"></params>
   </map>
   <!-- UART and CONSOLE settings -->
+  <!-- cr50 is also named 'usbpd' for compatibility with previous scripts -->
+  <control>
+    <name>uart4_pty</name>
+    <alias>raw_cr50_console_pty,raw_usbpd_uart_pty</alias>
+    <doc>Pseudo-terminal (pty) thats connnected to cr50 uart console</doc>
+    <params interface="4" servo_v4_interface="4" clobber_ok=""></params>
+  </control>
   <control>
     <name>raw_ec_uart_pty</name>
     <doc>CCD EC_PD console.</doc>
