@@ -9,6 +9,7 @@ import fnmatch
 import logging
 import os
 import random
+import re
 import shutil
 import SimpleXMLRPCServer
 import subprocess
@@ -255,7 +256,7 @@ class Servod(object):
         self.set('atmega_rst', 'off')
         self._usbkm232 = self.get('atmega_pty')
         # We don't need to set the atmega uart settings if we're a servo v4.
-        if self._version != 'servo_v4':
+        if 'servo_v4' not in self._version:
           self.set('atmega_baudrate', '9600')
           self.set('atmega_bits', 'eight')
           self.set('atmega_parity', 'none')
@@ -540,8 +541,30 @@ class Servod(object):
                          control_name)
       raise ServodError("'interface' key not found in params dict")
 
-    interface_id = params.get(
-            '%s_interface' % self._version, params['interface'])
+    # Find the candidate servos.  Using servo_v4 with a servo_micro connected as
+    # an example, the following shows the priority for selecting the interface.
+    #
+    # 1. The full name. (e.g. - 'servo_v4_with_servo_micro_interface')
+    # 2. servo_micro_interface
+    # 3. servo_v4_interface
+    # 4. Fallback to the default, interface.
+    candidates = [ self._version ]
+    candidates.extend(reversed(self._version.split('_with_')))
+
+    interface_id = 'unknown'
+    for c in candidates:
+      interface_name = '%s_interface' % c
+      if interface_name in params:
+        interface_id = params[interface_name]
+        self._logger.debug('Using %s parameter.' % interface_name)
+        break
+
+    # Use the default interface value if we couldn't find a more specific
+    # interface.
+    if interface_id == 'unknown':
+      interface_id = params['interface']
+      self._logger.debug('Using default interface parameter.')
+
     if interface_id == 'servo':
       interface = self
     else:

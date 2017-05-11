@@ -258,6 +258,7 @@ class ServoV4PostInit(BasePostInit):
         self.prepend_config(self.SERVO_MICRO_CFG)
         self.add_servo_serial(servo_micro, self.servod.MICRO_SERVO_SERIAL)
         self.init_servo_interfaces(servo_micro)
+        self.servod._version += "_with_servo_micro"
         return
 
     # Try to enable CCD iff no servo-micro is detected.
@@ -268,6 +269,7 @@ class ServoV4PostInit(BasePostInit):
         self.prepend_config(self.CCD_CFG)
         self.add_servo_serial(ccd, self.servod.CCD_SERIAL)
         self.init_servo_interfaces(ccd)
+        self.servod._version += "_with_ccd_cr50"
         return
 
     # If no CCD endpoint is detected, print a message to inform users.
