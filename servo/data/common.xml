@@ -60,4 +60,9 @@
     <doc>The current log level of the root logger.</doc>
     <params drv="loglevel" interface="servo" input_type="str" />
   </control>
+  <control>
+    <name>servo_type</name>
+    <doc>What type of servo is being used.</doc>
+    <params drv="servo_type" interface="servo" />
+  </control>
 </root>
