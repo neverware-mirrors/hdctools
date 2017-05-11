@@ -57,6 +57,13 @@ class cr50(pty_driver.ptyDriver):
     super(cr50, self).__init__(interface, params)
     self._logger.debug("")
     self._ec_uart_en = None
+    self._interface = interface
+    if not hasattr(self._interface, '_ec_uart_bitbang_props'):
+        self._interface._ec_uart_bitbang_props = {
+          "enabled" : False,
+          "parity" : None,
+          "baudrate" : None
+        }
 
   def _issue_cmd_get_results(self, cmds, regex_list,
                              timeout=pty_driver.DEFAULT_UART_TIMEOUT):
@@ -232,3 +239,72 @@ class cr50(pty_driver.ptyDriver):
     else:
       raise ValueError("Invalid ec_uart_en setting: '%s'. Try one of "
                        "'on', 'off', or 'restore'." % value)
+
+  def _Get_ec_uart_bitbang_en(self):
+      return self._interface._ec_uart_bitbang_props["enabled"]
+
+  def _Set_ec_uart_bitbang_en(self, value):
+    if value:
+      # We need parity and baudrate settings in order to enable bit banging.
+      if not self._interface._ec_uart_bitbang_props["parity"]:
+        raise ValueError(
+          "No parity set.  Try setting 'ec_uart_parity' first.")
+
+      if not self._interface._ec_uart_bitbang_props["baudrate"]:
+        raise ValueError(
+          "No baud rate set.  Try setting 'ec_uart_baudrate' first.")
+
+      # The EC UART index is 2.
+      cmd = "%s %s %s" % ("bitbang 2",
+                          self._interface._ec_uart_bitbang_props["baudrate"],
+                          self._interface._ec_uart_bitbang_props["parity"])
+      try:
+        result = self._issue_cmd_get_results(cmd, ["successfully enabled"])
+        if result is None:
+          raise cr50Error("Unable to enable bit bang mode!")
+      except pty_driver.ptyError:
+          raise cr50Error("Unable to enable bit bang mode!")
+
+      self._interface._ec_uart_bitbang_props["enabled"] = 1
+
+    else:
+      self._issue_cmd("bitbang 2 disable")
+      self._interface._ec_uart_bitbang_props["enabled"] = 0
+
+  def _Get_ccd_ec_uart_parity(self):
+    self._logger.debug("%r", self._interface._ec_uart_bitbang_props)
+    return self._interface._ec_uart_bitbang_props["parity"]
+
+  def _Set_ccd_ec_uart_parity(self, value):
+    if value.lower() not in ["odd", "even", "none"]:
+      raise ValueError("Bad parity (%s). Try 'odd', 'even', or 'none'." % value)
+
+    self._interface._ec_uart_bitbang_props["parity"] = value
+    self._logger.debug("%r", self._interface._ec_uart_bitbang_props)
+
+  def _Get_ccd_ec_uart_baudrate(self):
+    return self._interface._ec_uart_bitbang_props["baudrate"]
+
+  def _Set_ccd_ec_uart_baudrate(self, value):
+    if value is not None and value.lower()  not in ["none","1200", "2400",
+                                                    "4800", "9600", "19200",
+                                                    "38400", "57600", "115200"]:
+      raise ValueError("Bad baud rate(%s). Try '1200', '2400', '4800', '9600',"
+                       " '19200', '38400', '57600', or '115200'" % value)
+
+    if value.lower() == "none":
+      value = None
+    self._interface._ec_uart_bitbang_props["baudrate"] = value
+
+  def _Get_ec_boot_mode(self):
+    boot_mode = "off"
+    result = self._issue_cmd_get_results("gpioget EC_FLASH_SELECT",
+                                        ["\s+([01])\s+EC_FLASH_SELECT"])[0]
+    if result:
+      if result[0] == "1":
+        boot_mode = "on"
+
+    return boot_mode
+
+  def _Set_ec_boot_mode(self, value):
+    self._issue_cmd("gpioset EC_FLASH_SELECT %s" % value)
