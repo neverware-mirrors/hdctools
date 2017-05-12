@@ -44,7 +44,11 @@ class ptyDriver(hw_driver.HwDriver):
       self._cmd_iface = True
     except:
       self._pty_path = self._interface.get_pty()
-    self._dict = UART_PARAMS
+    # Store the uart state in an interface variable. Copy uart params, so the
+    # uart state dict is a different object for each interface. We don't want
+    # setting anything for the ec uart to affect the ap uart state.
+    if not hasattr(self._interface, '_uart_state'):
+        self._interface._uart_state = UART_PARAMS.copy()
 
   @contextlib.contextmanager
   def _open(self):
@@ -238,7 +242,7 @@ class ptyDriver(hw_driver.HwDriver):
     Args:
       timeout: Timeout value in second.
     """
-    self._dict['uart_timeout'] = timeout
+    self._interface._uart_state['uart_timeout'] = timeout
 
   def _Get_uart_timeout(self):
     """Get timeout value for waiting for the device response.
@@ -246,7 +250,7 @@ class ptyDriver(hw_driver.HwDriver):
     Returns:
       Timeout value in second.
     """
-    return self._dict['uart_timeout']
+    return self._interface._uart_state['uart_timeout']
 
   def _Set_uart_regexp(self, regexp):
     """Set the list of regular expressions which matches the command response.
@@ -256,7 +260,7 @@ class ptyDriver(hw_driver.HwDriver):
     """
     if not isinstance(regexp, str):
       raise ecError('The argument regexp should be a string.')
-    self._dict['uart_regexp'] = ast.literal_eval(regexp)
+    self._interface._uart_state['uart_regexp'] = ast.literal_eval(regexp)
 
   def _Get_uart_regexp(self):
     """Get the list of regular expressions which matches the command response.
@@ -264,7 +268,7 @@ class ptyDriver(hw_driver.HwDriver):
     Returns:
       A string which contains a list of regular expressions.
     """
-    return str(self._dict['uart_regexp'])
+    return str(self._interface._uart_state['uart_regexp'])
 
   def _Set_uart_cmd(self, cmd):
     """Set the UART command and send it to the device.
@@ -280,11 +284,13 @@ class ptyDriver(hw_driver.HwDriver):
     Args:
       cmd: A string of UART command.
     """
-    if self._dict['uart_regexp']:
-      self._dict['uart_cmd'] = self._issue_cmd_get_results(
-          cmd, self._dict['uart_regexp'], self._dict['uart_timeout'])
+    if self._interface._uart_state['uart_regexp']:
+      self._interface._uart_state['uart_cmd'] = self._issue_cmd_get_results(
+          cmd,
+          self._interface._uart_state['uart_regexp'],
+          self._interface._uart_state['uart_timeout'])
     else:
-      self._dict['uart_cmd'] = None
+      self._interface._uart_state['uart_cmd'] = None
       self._issue_cmd(cmd)
 
   def _Set_uart_multicmd(self, cmds):
@@ -305,7 +311,7 @@ class ptyDriver(hw_driver.HwDriver):
       entire matched string and all the subgroups of the match. 'None' if
       the ec_uart_regexp is 'None'.
     """
-    return str(self._dict['uart_cmd'])
+    return str(self._interface._uart_state['uart_cmd'])
 
   def _Set_uart_capture(self, cmd):
     """Set UART capture mode (on or off).

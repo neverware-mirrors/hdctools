@@ -55,7 +55,8 @@ class ec(pty_driver.ptyDriver):
     super(ec, self).__init__(interface, params)
     self._logger.debug('')
     # Add locals to the values dictionary.
-    self._dict['kbd'] = KEY_STATE
+    if 'kbd' not in self._interface._uart_state:
+        self._interface._uart_state['kbd'] = list(KEY_STATE)
 
   def _limit_channel(self):
     """Save the current console channel setting and limit the output to the
@@ -159,19 +160,19 @@ class ec(pty_driver.ptyDriver):
     Args:
       pressed: 0=release, 1=press.
     """
-    m1_a0, m1_a1, m2_a0, m2_a1 = self._dict['kbd'][1:5]
+    m1_a0, m1_a1, m2_a0, m2_a1 = self._interface._uart_state['kbd'][1:5]
     self._set_key_pressed(KEY_MATRIX[1][m2_a0][m2_a1], pressed)
     self._set_key_pressed(KEY_MATRIX[0][m1_a0][m1_a1], pressed)
 
   def _Set_kbd_en(self, value):
     """Enable/disable keypress simulation."""
     self._logger.debug('')
-    org_value = self._dict['kbd'][0]
+    org_value = self._interface._uart_state['kbd'][0]
     if org_value == 0 and value == 1:
       self._set_both_keys(pressed=1)
     elif org_value == 1 and value == 0:
       self._set_both_keys(pressed=0)
-    self._dict['kbd'][0] = value
+    self._interface._uart_state['kbd'][0] = value
 
   def _Get_kbd_en(self):
     """Retrieve keypress simulation enabled/disabled.
@@ -180,7 +181,7 @@ class ec(pty_driver.ptyDriver):
       0: Keyboard emulation is disabled.
       1: Keyboard emulation is enabled.
     """
-    return self._dict['kbd'][0]
+    return self._interface._uart_state['kbd'][0]
 
   def _Set_kbd_mx_ax(self, m, a, value):
     """Implementation of _Set_kbd_m*_a*
@@ -190,18 +191,18 @@ class ec(pty_driver.ptyDriver):
       a: Selection of a0 and a1.
       value: The new value to set.
     """
-    self._logger.debug('')
-    org_value = self._dict['kbd'][self._get_mx_ax_index(m, a)]
+    self._logger.debug("")
+    org_value = self._interface._uart_state['kbd'][self._get_mx_ax_index(m, a)]
     if self._Get_kbd_en() == 1 and org_value != value:
       org_value = [
-          self._dict['kbd'][self._get_mx_ax_index(m, 0)],
-          self._dict['kbd'][self._get_mx_ax_index(m, 1)]
+        self._interface._uart_state['kbd'][self._get_mx_ax_index(m, 0)],
+        self._interface._uart_state['kbd'][self._get_mx_ax_index(m, 1)]
       ]
       new_value = list(org_value)
       new_value[a] = value
       self._set_key_pressed(KEY_MATRIX[m][org_value[0]][org_value[1]], 0)
       self._set_key_pressed(KEY_MATRIX[m][new_value[0]][new_value[1]], 1)
-    self._dict['kbd'][self._get_mx_ax_index(m, a)] = value
+    self._interface._uart_state['kbd'][self._get_mx_ax_index(m, a)] = value
 
   def _Set_kbd_m1_a0(self, value):
     """Setter of kbd_m1_a0."""
@@ -209,7 +210,7 @@ class ec(pty_driver.ptyDriver):
 
   def _Get_kbd_m1_a0(self):
     """Getter of kbd_m1_a0."""
-    return self._dict['kbd'][self._get_mx_ax_index(0, 0)]
+    return self._interface._uart_state['kbd'][self._get_mx_ax_index(0, 0)]
 
   def _Set_kbd_m1_a1(self, value):
     """Setter of kbd_m1_a1."""
@@ -217,7 +218,7 @@ class ec(pty_driver.ptyDriver):
 
   def _Get_kbd_m1_a1(self):
     """Getter of kbd_m1_a1."""
-    return self._dict['kbd'][self._get_mx_ax_index(0, 1)]
+    return self._interface._uart_state['kbd'][self._get_mx_ax_index(0, 1)]
 
   def _Set_kbd_m2_a0(self, value):
     """Setter of kbd_m2_a0."""
@@ -225,7 +226,7 @@ class ec(pty_driver.ptyDriver):
 
   def _Get_kbd_m2_a0(self):
     """Getter of kbd_m2_a0."""
-    return self._dict['kbd'][self._get_mx_ax_index(1, 0)]
+    return self._interface._uart_state['kbd'][self._get_mx_ax_index(1, 0)]
 
   def _Set_kbd_m2_a1(self, value):
     """Setter of kbd_m2_a1."""
@@ -233,7 +234,7 @@ class ec(pty_driver.ptyDriver):
 
   def _Get_kbd_m2_a1(self):
     """Getter of kbd_m2_a1."""
-    return self._dict['kbd'][self._get_mx_ax_index(1, 1)]
+    return self._interface._uart_state['kbd'][self._get_mx_ax_index(1, 1)]
 
   def _Get_lid_open(self):
     """Getter of lid_open.
