@@ -352,6 +352,6 @@
     <name>usbpd_uart_routing</name>
     <doc>enable pd uart routing</doc>
     <params interface="6" drv="ec3po_servo_micro"
-    subtype="usbpd_console" map="usbpd_uart_map"></params>
+    subtype="usbpd_console" map="usbpd_uart_map" clobber_ok=""></params>
   </control>
 </root>

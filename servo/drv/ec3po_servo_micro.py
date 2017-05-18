@@ -90,3 +90,11 @@ class ec3poServoMicro(pty_driver.ptyDriver):
       value: An integer value, 0: none, 1:samus, 2:glados
     """
     self.batch_set(usbpd_uart_config, value)
+
+  def _Get_usbpd_console(self):
+    """Set or unset PD console routing
+
+    Args:
+      value: An integer value, 0: none, 1:samus, 2:glados
+    """
+    return 0

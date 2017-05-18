@@ -143,4 +143,9 @@
     <name>jtag_vref_sel1</name>
     <params clobber_ok="" init="pp1800"></params>
   </control>
+  <control>
+    <name>usbpd_uart_routing</name>
+    <doc>enable pd uart routing</doc>
+    <params clobber_ok="" init="glados"></params>
+  </control>
 </root>
