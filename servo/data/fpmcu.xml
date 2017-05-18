@@ -7,7 +7,7 @@
     <doc>Pseudo-terminal (pty) thats connnected to FP MCU's
     uart console</doc>
     <params cmd="get" subtype="pty" interface="1" drv="uart" clobber_ok=""
-    servo_v4_interface="2" servo_micro_interface="2"></params>
+    ></params>
   </control>
   <!-- EC-3PO console interpreter for FP MCU -->
   <control>

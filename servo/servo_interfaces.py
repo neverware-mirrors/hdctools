@@ -97,10 +97,10 @@ CCD_DEFAULTS = [(0x18d1, 0x5014)]
 for vid, pid in CCD_DEFAULTS:
   INTERFACE_DEFAULTS[vid][pid] = \
     ['dummy',
-     'dummy',                                # 1
+     {'name': 'stm32_uart', 'interface': 0}, # 1: Cr50 console
      {'name': 'stm32_i2c', 'interface': 5},  # 2: i2c
      'dummy',                                # 3
-     {'name': 'stm32_uart', 'interface': 0}, # 4: Cr50 console
+     'dummy',                                # 4
      'dummy',                                # 5
      'dummy',                                # 6
      {'name': 'stm32_uart', 'interface': 2}, # 7: EC/PD
@@ -116,8 +116,8 @@ SERVO_MICRO_DEFAULTS = [(0x18d1, 0x501a)]
 for vid, pid in SERVO_MICRO_DEFAULTS:
   INTERFACE_DEFAULTS[vid][pid] = \
     ['dummy',
-     'dummy',                                # 1:
-     {'name': 'stm32_uart', 'interface': 0}, # 2: uart3/legacy
+     {'name': 'stm32_uart', 'interface': 0}, # 1: PD/Cr50 console
+     'dummy',                                # 2:
      {'name': 'stm32_uart', 'interface': 3}, # 3: servo console
      {'name': 'stm32_i2c', 'interface': 4},  # 4: i2c
      'dummy',                                # 5: dummy
@@ -125,9 +125,9 @@ for vid, pid in SERVO_MICRO_DEFAULTS:
       'raw_pty': 'raw_servo_console_pty'},
      {'name': 'stm32_uart', 'interface': 6}, # 7: uart1/EC console
      {'name': 'stm32_uart', 'interface': 5}, # 8: uart2/AP console
-     {'name': 'ec3po_uart',                  # 9: dut pd console
+     {'name': 'ec3po_uart',                  # 9: EC3PO for PD/Cr50
       'raw_pty': 'raw_usbpd_uart_pty'},
-     {'name': 'ec3po_uart',                  #10: dut ec console
+     {'name': 'ec3po_uart',                  #10: EC3PO for EC
       'raw_pty': 'raw_ec_uart_pty'},
     ]
 

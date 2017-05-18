@@ -253,7 +253,7 @@
     <name>uart3_pty</name>
     <alias>raw_usbpd_uart_pty</alias>
     <doc>Legacy (v1) uart console. USART4: PA0/PA1 - Servo UART3</doc>
-    <params cmd="get" subtype="pty" interface="2" drv="uart">
+    <params cmd="get" subtype="pty" interface="1" drv="uart">
     </params>
   </control>
   <control>
