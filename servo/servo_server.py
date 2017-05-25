@@ -221,6 +221,25 @@ class Servod(object):
         else:
             self._logger.debug("interface %d has no reset functionality", i)
 
+  def get_servo_interfaces(self, position, size):
+    """Get the list of servo interfaces.
+
+    Args:
+      position: The index the first interface to get.
+      size: The number of the interfaces.
+    """
+    return self._interface_list[position:(position + size)]
+
+  def set_servo_interfaces(self, position, interfaces):
+    """Set the list of servo interfaces.
+
+    Args:
+      position: The index the first interface to set.
+      interfaces: The list of interfaces to set.
+    """
+    size = len(interfaces)
+    self._interface_list[position:(position + size)] = interfaces
+
   def _init_keyboard_handler(self, servo, board=''):
     """Initialize the correct keyboard handler for board.
 
@@ -498,6 +517,15 @@ class Servod(object):
       else:
         output = s
     return output
+
+  def clear_cached_drv(self):
+    """Clear the cached drivers.
+
+    The drivers are cached in the Dict _drv_dict when a control is got or set.
+    When the servo interfaces are relocated, the cached values may become wrong.
+    Should call this method to clear the cached values.
+    """
+    self._drv_dict = {}
 
   def _get_param_drv(self, control_name, is_get=True):
     """Get access to driver for a given control.

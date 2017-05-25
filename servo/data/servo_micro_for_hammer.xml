@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<root>
+  <include>
+    <name>servo_micro.xml</name>
+  </include>
+  <!-- STM32 EC boot0 control -->
+  <control>
+    <name>dev_mode</name>
+    <alias>ec_boot_mode</alias>
+    <params clobber_ok="" od="PP"></params>
+  </control>
+  <control>
+    <name>ec_chip</name>
+    <doc>EC chip name (read-only)</doc>
+    <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
+    drv="cros_chip" chip="stm32"/>
+  </control>
+</root>

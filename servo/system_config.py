@@ -117,7 +117,7 @@ class SystemConfig(object):
       return fullname
     return None
 
-  def add_cfg_file(self, filename):
+  def add_cfg_file(self, filename, name_prefix=None, interface_increment=0):
     """Add system config file to the system config object
 
     Each design may rely on multiple system files so need to have the facility
@@ -137,8 +137,16 @@ class SystemConfig(object):
 
     NOTE, method is recursive when parsing 'include' elements from XML.
 
+    The arguments name_prefix and interface_increment are used to support
+    multiple servo micros. The interfaces of the extra servo micros, like
+    the one for hammer, are relocated to higher slots. The controls of this
+    extra servo micros should be shifted their interface numbers. Adding
+    the name prefix avoid conflict with the main servo micro.
+
     Args:
       filename: string of path to system file ( xml )
+      name_prefix: string to prepend to all control names
+      interface_increment: number to add to all interfaces
 
     Raises:
       SystemConfigError: for schema violations, or file not found.
@@ -150,20 +158,26 @@ class SystemConfig(object):
       raise SystemConfigError(msg)
 
     filename = cfgname
-    if filename in self._loaded_xml_files:
-      self._logger.warn("Already sourced system file %s.", filename)
+    if (filename, name_prefix, interface_increment) in self._loaded_xml_files:
+      self._logger.warn(
+          "Already sourced system file (%s, %s, %d).",
+          filename, name_prefix, interface_increment)
       return
-    self._loaded_xml_files.append(filename)
+    self._loaded_xml_files.append((filename, name_prefix, interface_increment))
 
-    self._logger.info("Loading XML config %s", filename)
+    self._logger.info("Loading XML config (%s, %s, %d)", filename,
+                      name_prefix, interface_increment)
     root = xml.etree.ElementTree.parse(filename).getroot()
     for element in root.findall('include'):
-      self.add_cfg_file(element.find('name').text)
+      self.add_cfg_file(element.find('name').text, name_prefix,
+                        interface_increment)
     for tag in SYSCFG_TAG_LIST:
       for element in root.findall(tag):
         element_str = xml.etree.ElementTree.tostring(element)
         try:
           name = element.find('name').text
+          if tag == 'control' and name_prefix:
+            name = name_prefix + '_' + name
         except AttributeError:
           # TODO(tbroch) would rather have lineno but dumping element seems
           # better than nothing.  Utimately a DTD/XSD for the XML schema will
@@ -196,6 +210,14 @@ class SystemConfig(object):
         set_dict = None
         clobber_ok = False
         params_list = element.findall('params')
+
+        # Modify the interface attributes.
+        for params in params_list:
+          if 'interface' in params.attrib:
+            if params.attrib['interface'] != 'servo':
+              interface_id = int(params.attrib['interface'])
+              params.attrib['interface'] = interface_id + interface_increment
+
         if len(params_list) == 2:
           assert tag != 'map', "maps have only one params entry"
           for params in params_list:
@@ -224,7 +246,8 @@ class SystemConfig(object):
                                   % (tag, name, len(params_list), element_str))
 
         clobber_ok = ('clobber_ok' in set_dict or 'clobber_ok' in get_dict)
-        if name in self.syscfg_dict[tag] and not clobber_ok:
+        if (tag == 'control' and name in self.syscfg_dict[tag] and
+            not clobber_ok):
           raise SystemConfigError("Duplicate %s %s without 'clobber_ok' key\n%s"
                                   % (tag, name, element_str))
 
@@ -257,6 +280,8 @@ class SystemConfig(object):
                                          'set_params':set_dict}
         if alias:
           for aliasname in (elem.strip() for elem in alias.split(',')):
+            if name_prefix:
+              aliasname = name_prefix + '_' + aliasname
             self.syscfg_dict[tag][aliasname] = self.syscfg_dict[tag][name]
 
   def lookup_control_params(self, name, is_get=True):

@@ -195,7 +195,8 @@ class ServoV4PostInit(BasePostInit):
     """
     return self._get_all_usb_devices(servo_interfaces.CCD_DEFAULTS)
 
-  def prepend_config(self, new_cfg_file):
+  def prepend_config(self, new_cfg_file, remove_head=False, name_prefix=None,
+                     interface_increment=0):
     """Prepend the given new config file to the existing system config.
 
     The new config, like servo_micro, is properly overwritten by some board
@@ -206,15 +207,18 @@ class ServoV4PostInit(BasePostInit):
 
     Args:
       new_cfg_file: List of config files.
+      remove_head: True to remove the head of the existing loaded config files.
+      name_prefix: string to prepend to all control names
+      interface_increment: number to add to all interfaces
     """
-    cfg_files = [new_cfg_file]
-    cfg_files.extend(
-        [os.path.basename(f) for f in self.servod._syscfg._loaded_xml_files])
+    cfg_files = [(new_cfg_file, name_prefix, interface_increment)]
+    first_index = 1 if remove_head else 0
+    cfg_files.extend(self.servod._syscfg._loaded_xml_files[first_index:])
 
     self._logger.debug("Resetting system config files")
     new_syscfg = system_config.SystemConfig()
     for cfg_file in cfg_files:
-      new_syscfg.add_cfg_file(cfg_file)
+      new_syscfg.add_cfg_file(*cfg_file)
     self.servod._syscfg = new_syscfg
 
   def add_servo_serial(self, servo_usb, servo_serial_key):
@@ -243,6 +247,25 @@ class ServoV4PostInit(BasePostInit):
     self.servod.init_servo_interfaces(vendor, product, serial,
                                       servo_interface)
 
+  def probe_ec_board(self):
+    """Probe the ec board behind the servo, and check if it needs relocation.
+
+    Returns:
+      The board name if it needs relocation; otherwise, None.
+    """
+    try:
+      self.servod.set('ec_uart_en', 'on')
+      board = self.servod.get('ec_board')
+      self._logger.debug("Detected board: %s", board)
+    except:
+      self._logger.error("Failed to query EC board name")
+      return None
+
+    if board in servo_interfaces.SERVO_V4_SLOT_POSITIONS:
+      return board
+    else:
+      return None
+
   def kick_devices(self):
     """General method to do misc actions.
 
@@ -262,22 +285,57 @@ class ServoV4PostInit(BasePostInit):
     # Snapshot the USB hierarchy at this moment.
     usb_hierarchy = UsbHierarchy()
 
-    # We want to check if we have a servo micro connected to this servo v4
-    # and if so, initialize it and add it to the servod instance.
+    main_micro_found = False
+    # We want to check if we have one/multiple servo micros connected to
+    # this servo v4 and if so, initialize it and add it to the servod instance.
     servo_v4 = self.get_servo_v4_usb_device()
     servo_micro_candidates = self.get_servo_micro_devices()
     for servo_micro in servo_micro_candidates:
       # The micro-servo and the STM chip of servo v4 share the same internal hub
       # on servo v4 board. Check the USB hierarchy to find the micro-servo
-      # behind. Assume we have at most one servo micro behind the servo v4.
+      # behind.
       if usb_hierarchy.share_same_hub(servo_v4, servo_micro):
-        self.prepend_config(self.SERVO_MICRO_CFG)
-        self.add_servo_serial(servo_micro, self.servod.MICRO_SERVO_SERIAL)
-        self.init_servo_interfaces(servo_micro)
-        self.servod._version += "_with_servo_micro"
-        return
+        default_slot = servo_interfaces.SERVO_V4_SLOT_POSITIONS['default']
+        slot_size = servo_interfaces.SERVO_V4_SLOT_SIZE
+        backup_interfaces = self.servod.get_servo_interfaces(
+            default_slot, slot_size)
 
-    # Try to enable CCD iff no servo-micro is detected.
+        self.prepend_config(self.SERVO_MICRO_CFG)
+        self.init_servo_interfaces(servo_micro)
+        # Interfaces change; clear the cached.
+        self.servod.clear_cached_drv()
+        self.servod._version += "_with_servo_micro"
+
+        board = self.probe_ec_board()
+        if board:
+          new_slot = servo_interfaces.SERVO_V4_SLOT_POSITIONS[board]
+          self._logger.info('EC board requiring relocation: %s', board)
+          self._logger.info('Move the servo interfaces from %d to %d',
+                            default_slot, new_slot)
+          self.servod.set_servo_interfaces(new_slot,
+              self.servod.get_servo_interfaces(default_slot, slot_size))
+          # Restore the original interfaces.
+          self.servod.set_servo_interfaces(default_slot, backup_interfaces)
+          # Interfaces change; clear the cached.
+          self.servod.clear_cached_drv()
+
+          # Load the config with modified control names and interface ids.
+          self.prepend_config(
+              servo_interfaces.SERVO_V4_CONFIGS[board], True, board,
+              new_slot - 1)
+
+          # Add its serial for record.
+          self.add_servo_serial(
+              servo_micro, self.servod.MICRO_SERVO_SERIAL + '_for_' + board)
+        else:
+          # This is the main servo-micro.
+          self.add_servo_serial(servo_micro, self.servod.MICRO_SERVO_SERIAL)
+          main_micro_found = True
+
+    if main_micro_found:
+      return
+
+    # Try to enable CCD iff no main servo-micro is detected.
     ccd_candidates = self.get_ccd_devices()
     for ccd in ccd_candidates:
       # Pick the proper CCD endpoint behind the servo v4.
@@ -288,7 +346,6 @@ class ServoV4PostInit(BasePostInit):
         self.servod._version += "_with_ccd_cr50"
         return
 
-    # If no CCD endpoint is detected, print a message to inform users.
     self._logger.info("No micro-servo and CCD detected.")
 
 

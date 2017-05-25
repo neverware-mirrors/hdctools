@@ -133,15 +133,20 @@ for vid, pid in SERVO_MICRO_DEFAULTS:
 
 # Servo v4
 SERVO_V4_DEFAULTS = [(0x18d1, 0x501b)]
+SERVO_V4_SLOT_SIZE = 20
+SERVO_V4_SLOT_POSITIONS = {
+  'default': 1,
+  'hammer': 41,
+}
+SERVO_V4_CONFIGS = {
+  'hammer': 'servo_micro_for_hammer.xml',
+}
 for vid, pid in SERVO_V4_DEFAULTS:
   # Interface #0 is reserved for no use.
   INTERFACE_DEFAULTS[vid][pid] = ['dummy']
 
-  # dummy slots for servo micro use (interface #1-10).
-  INTERFACE_DEFAULTS[vid][pid] += ['dummy'] * 10
-
-  # Buffer slots for servo micro (interface #11-20).
-  INTERFACE_DEFAULTS[vid][pid] += ['dummy'] * 10
+  # Dummy slots for servo micro/CCD use (interface #1-20).
+  INTERFACE_DEFAULTS[vid][pid] += ['dummy'] * SERVO_V4_SLOT_SIZE
 
   # Servo v4 interfaces.
   INTERFACE_DEFAULTS[vid][pid] += \
@@ -153,6 +158,12 @@ for vid, pid in SERVO_V4_DEFAULTS:
      {'name': 'ec3po_uart',                  #26: servo v4 console
       'raw_pty': 'raw_servo_v4_console_pty'},
     ]
+
+  # Buffer slots for servo v4 (interface #27-40).
+  INTERFACE_DEFAULTS[vid][pid] += ['dummy'] * (40 - 27 + 1)
+
+  # Slots for relocating Hammer interfaces.
+  INTERFACE_DEFAULTS[vid][pid] += ['dummy'] * SERVO_V4_SLOT_SIZE
 
 # miniservo
 MINISERVO_ID_DEFAULTS = [(0x403, 0x6001), (0x18d1, 0x5000)]
