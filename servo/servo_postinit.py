@@ -90,21 +90,37 @@ class UsbHierarchy(object):
     return self._usb_hierarchy.get((str(usb_device.bus),
                                     str(usb_device.address)))
 
-  def share_same_parent(self, usb_device1, usb_device2):
-    """Check if the given two USB devices share the same parent.
+  def share_same_hub(self, usb_servo, usb_candidate):
+    """Check if the given USB device shares the same hub with servo v4.
 
     Args:
-      usb_device1: usb.core.Device object.
-      usb_device2: usb.core.Device object.
+      usb_servo: usb.core.Device object of servo v4.
+      usb_candidate: usb.core.Device object of USB device canditate.
 
     Returns:
-      True if they share the same parent; otherwise, False.
+      True if they share the same hub; otherwise, False.
     """
-    usb_parent1 = self._get_parent_path(usb_device1)
-    usb_parent2 = self._get_parent_path(usb_device2)
-    return (usb_parent1 and usb_parent2
-            and usb_parent1 == usb_parent2)
+    usb_servo_parent = self._get_parent_path(usb_servo)
+    usb_candidate_parent = self._get_parent_path(usb_candidate)
 
+    if usb_servo_parent is None or usb_candidate_parent is None:
+      return False
+
+    # Check the hierarchy:
+    #   internal hub <-- servo v4 mcu
+    #         \--------- USB candidate
+    if usb_servo_parent == usb_candidate_parent:
+      return True
+
+    # Check the hierarchy:
+    #   internal hub <-- servo v4 mcu
+    #         \--------- external hub
+    #                          \--------- USB candidate
+    # Check having '.' to make sure it is one of the ports of the internal hub.
+    if usb_candidate_parent.startswith(usb_servo_parent + '.'):
+      return True
+
+    return False
 
 class BasePostInit(object):
   """Base Class for Post Init classes."""
@@ -254,7 +270,7 @@ class ServoV4PostInit(BasePostInit):
       # The micro-servo and the STM chip of servo v4 share the same internal hub
       # on servo v4 board. Check the USB hierarchy to find the micro-servo
       # behind. Assume we have at most one servo micro behind the servo v4.
-      if usb_hierarchy.share_same_parent(servo_v4, servo_micro):
+      if usb_hierarchy.share_same_hub(servo_v4, servo_micro):
         self.prepend_config(self.SERVO_MICRO_CFG)
         self.add_servo_serial(servo_micro, self.servod.MICRO_SERVO_SERIAL)
         self.init_servo_interfaces(servo_micro)
@@ -265,7 +281,7 @@ class ServoV4PostInit(BasePostInit):
     ccd_candidates = self.get_ccd_devices()
     for ccd in ccd_candidates:
       # Pick the proper CCD endpoint behind the servo v4.
-      if usb_hierarchy.share_same_parent(servo_v4, ccd):
+      if usb_hierarchy.share_same_hub(servo_v4, ccd):
         self.prepend_config(self.CCD_CFG)
         self.add_servo_serial(ccd, self.servod.CCD_SERIAL)
         self.init_servo_interfaces(ccd)
