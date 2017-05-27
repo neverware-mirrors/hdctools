@@ -283,6 +283,13 @@
     offset="2" map="usbkey" init="servo_sees_usbkey"></params>
   </control>
 
+  <control>
+    <name>dut_usb3_en</name>
+    <doc>Enable Parade USB3 mux on DUT type-c</doc>
+    <params interface="23" drv="ps8742" slv="0x10" port="1"
+    subtype="usb3" map="onoff" init="off"></params>
+  </control>
+
   <!-- UART and CONSOLE settings -->
   <control>
     <name>raw_servo_v4_console_pty</name>
