@@ -191,13 +191,13 @@
     <name>pwr_button</name>
     <doc>Power button GPIO</doc>
     <params interface="4" drv="tca6416" slv="0x20" od="PU" port="0"
-    offset="7" map="press" init="release"></params>
+    offset="6" map="press" init="release"></params>
   </control>
   <control>
     <name>warm_reset</name>
     <doc>warm_reset</doc>
     <params interface="4" drv="tca6416" slv="0x20" od="PU" port="0"
-    offset="6" map="onoff_i" init="off"></params>
+    offset="7" map="onoff_i" init="off"></params>
   </control>
 
   <control>
