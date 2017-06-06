@@ -10,7 +10,8 @@
   <control>
     <name>lid_open</name>
     <doc>fake lid for products without one</doc>
-    <params subtype="lid_open" drv="na" init="not_applicable" map="na" clobber_ok=""></params>
+    <params subtype="not_applicable" interface="servo" drv="na" map="na"
+    clobber_ok=""></params>
   </control>
   <control>
     <name>power_state</name>

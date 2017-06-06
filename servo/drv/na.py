@@ -6,6 +6,10 @@
 Presently this is used for the following purposes:
   - chromebox:
     - lid_open control to always return 'not_applicable'
+  - set-only controls:
+    - pwr_button_hold
+    - uart_multicmd
+    - cr50_reboot
 """
 import hw_driver
 
@@ -17,9 +21,9 @@ class na(hw_driver.HwDriver):
     """Constructor."""
     super(na, self).__init__(interface, params)
 
-  def _Get_lid_open(self):
-    """."""
-    return 'not_applicable'
+  def _Get_not_applicable(self):
+    """Return not_applicate"""
+    return 0  # not_applicable
 
-  def _Set_lid_open(self, value):
-    """."""
+  def _Set_not_applicable(self, value):
+    """Do nothing"""

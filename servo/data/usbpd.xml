@@ -56,6 +56,8 @@
   <control>
     <name>usbpd_uart_multicmd</name>
     <doc>Set to send multiple commands to USB PD UART.</doc>
+    <params subtype="not_applicable" interface="9" drv="na"
+    map="na" cmd="get"></params>
     <params subtype="uart_multicmd" interface="9" drv="uart"
     input_type="str" cmd="set"></params>
   </control>

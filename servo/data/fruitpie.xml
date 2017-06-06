@@ -20,6 +20,8 @@
   <control>
     <name>ec_uart_multicmd</name>
     <doc>Set to send multiple commands to EC UART.</doc>
+    <params subtype="not_applicable" interface="3" drv="na"
+    map="na" cmd="get"></params>
     <params subtype="uart_multicmd" interface="3" drv="ec"
     input_type="str" cmd="set"></params>
   </control>

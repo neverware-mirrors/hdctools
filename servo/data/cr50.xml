@@ -68,6 +68,8 @@
   <control>
     <name>cr50_console_multicmd</name>
     <doc>Set to send multiple commands to the Cr50 console.</doc>
+    <params subtype="not_applicable" interface="9" drv="na"
+    map="na" cmd="get" clobber_ok=""></params>
     <params subtype="uart_multicmd" interface="9" drv="uart"
     input_type="str" cmd="set" clobber_ok=""></params>
   </control>
@@ -94,6 +96,8 @@
   <control>
     <name>cr50_reboot</name>
     <doc>reboot cr50</doc>
+    <params cmd="get" subtype="not_applicable" interface="9" drv="na"
+    map="na" clobber_ok=""></params>
     <params cmd="set" subtype="cr50_reboot" interface="9" drv="cr50"
     map="onoff" clobber_ok=""></params>
   </control>
