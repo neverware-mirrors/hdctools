@@ -9,6 +9,9 @@
   <include>
     <name>chromebox.xml</name>
   </include>
+  <include>
+    <name>cr50.xml</name>
+  </include>
   <!-- ******** Controls ******** -->
   <control>
     <name>power_state</name>
