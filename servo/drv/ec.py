@@ -241,6 +241,22 @@ class ec(pty_driver.ptyDriver):
     """
     self._issue_cmd("btnpress voldown %d" % int(value))
 
+  def _Set_volume_up_gpio(self, value):
+    """Setter of Vup for tablets/ detachables
+
+    Args:
+      value: number of ms to hold the volume button
+    """
+    self._issue_cmd("button vup %d" % int(value))
+
+  def _Set_volume_down_gpio(self, value):
+    """Setter of Vdown for tablets/ detachables
+
+    Args:
+      value: number of ms to hold the volume button
+    """
+    self._issue_cmd("button vdown %d" % int(value))
+
   def _Set_pwr_button_hold(self, value):
     """Setter of pwr_button_hold.
 

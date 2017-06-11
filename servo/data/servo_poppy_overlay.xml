@@ -27,4 +27,16 @@
     <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
     drv="cros_chip" chip="npcx_spi"/>
   </control>
+  <control>
+    <name>volume_up_hold</name>
+    <doc>Emulated volume up on ec</doc>
+    <params subtype="volume_up_gpio" interface="10" drv="ec" map="yesno"
+    clobber_ok=""></params>
+  </control>
+  <control>
+    <name>volume_down_hold</name>
+    <doc>Emulated volume down on ec</doc>
+    <params subtype="volume_down_gpio" interface="10" drv="ec" map="yesno"
+    clobber_ok=""></params>
+  </control>
 </root>
