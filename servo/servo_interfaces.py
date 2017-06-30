@@ -117,9 +117,9 @@ for vid, pid in SERVO_MICRO_DEFAULTS:
   INTERFACE_DEFAULTS[vid][pid] = \
     ['dummy',
      {'name': 'stm32_uart', 'interface': 0}, # 1: PD/Cr50 console
-     'dummy',                                # 2:
+     {'name': 'stm32_i2c', 'interface': 4},  # 2: i2c
      {'name': 'stm32_uart', 'interface': 3}, # 3: servo console
-     {'name': 'stm32_i2c', 'interface': 4},  # 4: i2c
+     'dummy',                                # 4: dummy
      'dummy',                                # 5: dummy
      {'name': 'ec3po_uart',                  # 6: servo console
       'raw_pty': 'raw_servo_console_pty'},
