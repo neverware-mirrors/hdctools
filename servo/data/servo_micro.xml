@@ -259,6 +259,14 @@
     </params>
   </control>
   <control>
+    <name>uart3_parity</name>
+    <alias>usbpd_uart_parity</alias>
+    <doc>Parity for uart console</doc>
+    <params drv="uart" subtype="props" line_prop="parity"
+    interface="1" map="uart_parity"></params>
+  </control>
+
+  <control>
     <name>uart2_pty</name>
     <alias>cpu_uart_pty</alias>
     <doc>UART console. USART3: PB10/PB11 - Servo header UART2</doc>
@@ -266,12 +274,28 @@
     </params>
   </control>
   <control>
+    <name>uart2_parity</name>
+    <alias>cpu_uart_parity</alias>
+    <doc>Parity for uart console</doc>
+    <params drv="uart" subtype="props" line_prop="parity"
+    interface="8" map="uart_parity"></params>
+  </control>
+
+  <control>
     <name>uart1_pty</name>
     <alias>raw_ec_uart_pty</alias>
     <doc>UART console. USART2: PA2/PA3 - Servo header UART1</doc>
     <params cmd="get" subtype="pty" interface="7" drv="uart">
     </params>
   </control>
+  <control>
+    <name>uart1_parity</name>
+    <alias>ec_uart_parity</alias>
+    <doc>Parity for uart console</doc>
+    <params drv="uart" subtype="props" line_prop="parity"
+    interface="7" map="uart_parity"></params>
+  </control>
+
   <control>
     <name>raw_servo_console_pty</name>
     <doc>Servo's stm32 console.</doc>

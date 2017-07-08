@@ -97,6 +97,7 @@ class Susb():
       dev.set_configuration()
     except usb.core.USBError:
       pass
+    self._dev = dev
 
     # Get an endpoint instance.
     cfg = dev.get_active_configuration()
@@ -119,6 +120,26 @@ class Susb():
     self._logger.debug("Writer endpoint: 0x%x" % write_ep.bEndpointAddress)
 
     self._logger.debug("Set up stm32 usb")
+
+  def control(self, request, value):
+    """Send control transfer.
+
+    Args:
+      request: the request type to send, bmRequestType
+      data: the data to send, wValue
+
+    Returns:
+      boolean success/fail
+    """
+    # usb_setup_packet: ec/include/usb_descriptor.h:231
+    reqtype = (usb.util.CTRL_OUT |
+               usb.util.CTRL_TYPE_VENDOR |
+               usb.util.CTRL_RECIPIENT_INTERFACE)
+    ret = self._dev.ctrl_transfer(bmRequestType = reqtype,
+                                  bRequest = request,
+                                  wIndex = self._interface,
+                                  wValue = value)
+    return True
 
   def __del__(self):
     """Sgpio destructor."""

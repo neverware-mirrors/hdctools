@@ -36,6 +36,8 @@ class SuartError(Exception):
 
 class Suart(uart.Uart):
   """Provide interface to stm32 serial usb endpoint."""
+  USB_USART_SET_PARITY = 1
+
   def __init__(self, vendor=0x18d1, product=0x501a, interface=0,
                serialname=None, ftdi_context=None):
     """Suart contstructor.
@@ -57,6 +59,7 @@ class Suart(uart.Uart):
     self._logger.debug('')
     self._logger.debug('Suart opening %04x:%04x, intf %d, sn: %s' % (
         vendor, product, interface, serialname))
+    self._props = {}
 
     self._susb = stm32usb.Susb(vendor=vendor, product=product,
         interface=interface, serialname=serialname, logger=self._logger)
@@ -174,10 +177,12 @@ class Suart(uart.Uart):
           2: 2 stop bits
     """
     self._logger.debug('')
-    return {'baudrate': 115200,
-            'bits': 8,
-            'parity': 0,
-            'sbits': 1}
+    if not self._props:
+      self._props = {'baudrate': 115200,
+                     'bits': 8,
+                     'parity': 0,
+                     'sbits': 1}
+    return self._props.copy()
 
 
   def set_uart_props(self, line_props):
@@ -198,14 +203,18 @@ class Suart(uart.Uart):
           2: 2 stop bits
 
     Raises:
-      SuartError: If requested line properties are not the default.
+      SuartError: If requested line properties are not possible.
     """
     self._logger.debug('')
     curr_props = self.get_uart_props()
     for prop in line_props:
       if line_props[prop] != curr_props[prop]:
-        raise SuartError("Line property %s cannot be set from %s to %s" % (
-            prop, curr_props[prop], line_props[prop]))
+        if prop == 'parity' and line_props[prop] in [0, 1, 2]:
+          self._susb.control(self.USB_USART_SET_PARITY, line_props[prop])
+        else:
+          raise SuartError("Line property %s cannot be set from %s to %s" % (
+              prop, curr_props[prop], line_props[prop]))
+    self._props = line_props.copy()
     return True
 
 
