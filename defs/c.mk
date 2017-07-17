@@ -100,7 +100,10 @@ ifneq ($(FTDIVERSION),)
 else
   LIBFTDI_NAME = ftdi
 endif
-LIBFTDI_CFLAGS	:= $(shell $(PKG_CONFIG) --cflags lib${LIBFTDI_NAME})
+LIBFTDI_CFLAGS	:= \
+	$(shell $(PKG_CONFIG) --cflags lib${LIBFTDI_NAME}) \
+	$(shell $(PKG_CONFIG) --atleast-version=1.2 lib${LIBFTDI_NAME} && \
+		echo "-DSUPPORT_TYPE_230X")
 LIBFTDI_LDLIBS	:= $(shell $(PKG_CONFIG) --libs   lib${LIBFTDI_NAME})
 
 SERIAL_IP	= gpio uart i2c

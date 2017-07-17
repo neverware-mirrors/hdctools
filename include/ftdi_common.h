@@ -59,7 +59,7 @@ extern "C" {
     }                                               \
   } while (0)
 
-#ifdef TYPE_230X
+#ifdef SUPPORT_TYPE_230X
 #define FTDI_HAS_CBUS(context) (((context)->type == TYPE_R) || \
                                 ((context)->type == TYPE_230X))
 #else
