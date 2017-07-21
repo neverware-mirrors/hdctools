@@ -1,5 +1,20 @@
 <root>
   <include>
-    <name>servo_gru_overlay.xml</name>
+    <name>servoflex_v2_r0_p50.xml</name>
   </include>
+  <include>
+    <name>arm_ec_common.xml</name>
+  </include>
+  <control>
+    <name>fw_up</name>
+    <alias>ec_boot_mode</alias>
+    <doc>STM32 EC boot0 control</doc>
+    <params clobber_ok= "" interface="2" drv="tca6416" slv="0x20" od="PU"
+    port="1" offset="7" map="onoff_i" init="off"/>
+  </control>
+  <control>
+    <name>power_state</name>
+    <doc>Used to turn the DUT off and on</doc>
+    <params clobber_ok="" reset_recovery="0.5"/>
+  </control>
 </root>
