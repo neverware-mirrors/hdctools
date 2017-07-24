@@ -5,7 +5,7 @@
     <doc>Psuedo-terminal (pty) thats connnected to USB PD MCU's
     uart console</doc>
     <params cmd="get" subtype="pty" interface="6" drv="uart" clobber_ok=""
-    servo_v4_interface="1"></params>
+    servo_v4_interface="1" servo_micro_interface="1"></params>
   </control>
   <!-- EC-3PO console interpreter for USB PD -->
   <control>
@@ -29,7 +29,7 @@
   <control>
     <name>usbpd_uart_parity</name>
     <doc>Parity for USB PD MCU's uart console</doc>
-    <params drv="uart" subtype="props" line_prop="parity"
+    <params drv="uart" subtype="props" line_prop="parity" clobber_ok=""
     interface="6" map="uart_parity"></params>
   </control>
   <control>
