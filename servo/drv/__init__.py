@@ -53,7 +53,7 @@ import pca95xx
 import plankton
 import ps8742
 import pty_driver
-import servo_type
+import servo_metadata
 import sleep
 import storm_power
 import stumpy_power

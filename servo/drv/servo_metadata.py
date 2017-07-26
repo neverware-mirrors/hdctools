@@ -7,7 +7,7 @@
 import hw_driver
 import logging
 
-class servoType(hw_driver.HwDriver):
+class servoMetadata(hw_driver.HwDriver):
   """Class to access loglevel controls."""
 
   def __init__(self, interface, params):
@@ -21,6 +21,21 @@ class servoType(hw_driver.HwDriver):
     self._interface = interface
     self._params = params
 
-  def get(self):
+  def _Get_type(self):
     """Gets the current servo type."""
     return self._interface._version
+
+  def _Get_serial(self):
+    """Gets the current servo serial."""
+    if self._interface._serialnames[self._interface.MAIN_SERIAL]:
+      return self._interface._serialnames[self._interface.MAIN_SERIAL]
+    return 'unknown'
+
+  def _Get_config_files(self):
+    """Gets the configuration files used for this servo server invocation"""
+    files = []
+    xml_files = self._interface._syscfg._loaded_xml_files
+    # See system_config.py for schema, but entry[0] is the file name
+    for entry in xml_files:
+      files.append(entry[0])
+    return ", ".join(files)
