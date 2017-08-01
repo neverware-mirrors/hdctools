@@ -291,8 +291,8 @@ class ServoV4PostInit(BasePostInit):
     servo_v4 = self.get_servo_v4_usb_device()
     servo_micro_candidates = self.get_servo_micro_devices()
     for servo_micro in servo_micro_candidates:
-      # The micro-servo and the STM chip of servo v4 share the same internal hub
-      # on servo v4 board. Check the USB hierarchy to find the micro-servo
+      # The servo_micro and the STM chip of servo v4 share the same internal hub
+      # on servo v4 board. Check the USB hierarchy to find the servo_micro
       # behind.
       if usb_hierarchy.share_same_hub(servo_v4, servo_micro):
         default_slot = servo_interfaces.SERVO_V4_SLOT_POSITIONS['default']
@@ -326,10 +326,10 @@ class ServoV4PostInit(BasePostInit):
 
           # Add its serial for record.
           self.add_servo_serial(
-              servo_micro, self.servod.MICRO_SERVO_SERIAL + '_for_' + board)
+              servo_micro, self.servod.SERVO_MICRO_SERIAL + '_for_' + board)
         else:
           # This is the main servo-micro.
-          self.add_servo_serial(servo_micro, self.servod.MICRO_SERVO_SERIAL)
+          self.add_servo_serial(servo_micro, self.servod.SERVO_MICRO_SERIAL)
           main_micro_found = True
 
     if main_micro_found:
@@ -346,7 +346,7 @@ class ServoV4PostInit(BasePostInit):
         self.servod._version += "_with_ccd_cr50"
         return
 
-    self._logger.info("No micro-servo and CCD detected.")
+    self._logger.info("No servo micro and CCD detected.")
 
 
 # Add in servo v4 post init method.
