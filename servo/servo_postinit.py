@@ -231,6 +231,7 @@ class ServoV4PostInit(BasePostInit):
     """
     serial = usb.util.get_string(servo_usb, 256, servo_usb.iSerialNumber)
     self.servod._serialnames[servo_serial_key] = serial
+    self._logger.debug("servod.serialnames = %r", self.servod._serialnames)
 
   def init_servo_interfaces(self, servo_usb):
     """Initialize the new servo interfaces.
@@ -330,6 +331,11 @@ class ServoV4PostInit(BasePostInit):
         else:
           # This is the main servo-micro.
           self.add_servo_serial(servo_micro, self.servod.SERVO_MICRO_SERIAL)
+          # Add an alias for the servo micro as well.  This is useful if there
+          # are multiple servo micros.
+          self.add_servo_serial(
+            servo_micro, self.servod.SERVO_MICRO_SERIAL + '_for_' +
+            self.servod._board)
           main_micro_found = True
 
     if main_micro_found:

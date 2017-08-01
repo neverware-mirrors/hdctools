@@ -929,6 +929,24 @@ class Servod(object):
         rv.append(self.get(cmd))
     return rv
 
+  def get_serial_number(self, name):
+    """Returns the desired serial number from the serialnames dict.
+
+    Args:
+      name: A string which is the key into the _serialnames dictionary.
+
+    Returns:
+       A string containing the serial number or "unknown".
+    """
+    if not name:
+      name = 'main'
+
+    try:
+      return self._serialnames[name]
+    except KeyError:
+      self._logger.debug("'%s_serialname' not found!", name)
+      return "unknown"
+
   def get(self, name):
     """Get control value.
 
@@ -943,10 +961,9 @@ class Servod(object):
       HwDriverError: Error occurred while using drv
     """
     self._logger.debug("name(%s)" % (name))
-    if name == 'serialname':
-      if self._serialnames[self.MAIN_SERIAL]:
-        return self._serialnames[self.MAIN_SERIAL]
-      return 'unknown'
+    if 'serialname' in name:
+      return self.get_serial_number(name.split('serialname')[0].strip('_'))
+
     (param, drv) = self._get_param_drv(name)
     try:
       val = drv.get()
