@@ -233,7 +233,7 @@ INTERFACE_BOARDS = collections.defaultdict(
     lambda: collections.defaultdict(dict))
 
 # re-purposes EC SPI to be UART for USBPD MCU
-for board in ['elm', 'oak', 'samus']:
+for board in ['elm', 'hana', 'oak', 'samus']:
   INTERFACE_BOARDS[board][0x18d1][0x5002] = \
       list(INTERFACE_DEFAULTS[0x18d1][0x5002])
   INTERFACE_BOARDS[board][0x18d1][0x5002][6] = 'ftdi_uart'
