@@ -7,6 +7,8 @@ Provides the following Cr50 controlled function:
   cold_reset
   warm_reset
   ccd_ec_uart_en
+  ccd_i2c_en
+  ccd_keepalive_en
 """
 
 import functools
@@ -219,10 +221,10 @@ class cr50(pty_driver.ptyDriver):
     """
     # Check the EC UART result as the AP's and Cr50's UART are always on.
     result = self._issue_cmd_get_results(
-        "ccd", ["EC UART:\s*(enabled|disabled)"])[0]
+        "ccd", ["EC UART:\s*(RX\+TX|RX)"])[0]
     if result is None:
       raise cr50Error("Cannot retrieve ccd uart result on cr50 console.")
-    return "on" if result[1] == "enabled" else "off"
+    return "on" if result[1] == "RX+TX" else "off"
 
   def _Set_ccd_ec_uart_en(self, value):
     """Setter of ccd_ec_uart_en.
@@ -239,6 +241,59 @@ class cr50(pty_driver.ptyDriver):
     else:
       raise ValueError("Invalid ec_uart_en setting: '%s'. Try one of "
                        "'on', 'off', or 'restore'." % value)
+
+  @restricted_command
+  def _Get_ccd_i2c_en(self):
+    """Getter of ccd_i2c_en.
+
+    Returns:
+      0: I2C disabled.
+      1: I2C enabled.
+    """
+    # Check the I2C result.
+    result = self._issue_cmd_get_results(
+        "ccd", ["I2C:\s*(enabled|disabled)"])[0]
+    if result is None:
+      raise cr50Error("Cannot retrieve i2c enable result on cr50 console.")
+    return "on" if result[1] == "enabled" else "off"
+
+  def _Set_ccd_i2c_en(self, value):
+    """Setter of ccd_i2c_en.
+
+    Args:
+      value: 0=off, 1=on.
+    """
+    if value == "off" or value == "on":
+      self._issue_cmd("ccd i2c %s" % value)
+    else:
+      raise ValueError("Invalid ec_i2c_en setting: '%s'. Try one of "
+                       "'on', 'off', or 'restore'." % value)
+
+  @restricted_command
+  def _Get_ccd_keepalive_en(self):
+    """Getter of ccd_keepalive_en.
+
+    Returns:
+      0: keepalive disabled.
+      1: keepalive enabled.
+    """
+    result = self._issue_cmd_get_results(
+        "ccd", ["CCD:\s*(forced enable|enabled|disabled)"])[0]
+    if result is None:
+      raise cr50Error("Cannot retrieve keepalive state on cr50 console.")
+    return "on" if result[1] == "forced enable" else "off"
+
+  def _Set_ccd_keepalive_en(self, value):
+    """Setter of ccd_keepalive_en.
+
+    Args:
+      value: 0=off, 1=on.
+    """
+    if value == "off" or value == "on":
+      self._issue_cmd("ccd keepalive %s" % value)
+    else:
+      raise ValueError("Invalid ec_keepalive_en setting: '%s'. Try one of "
+                       "'on', or 'off'." % value)
 
   def _Get_ec_uart_bitbang_en(self):
       return self._interface._ec_uart_bitbang_props["enabled"]

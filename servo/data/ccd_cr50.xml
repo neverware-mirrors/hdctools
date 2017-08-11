@@ -95,9 +95,21 @@
     clobber_ok="" init="on"></params>
   </control>
   <control>
+    <name>ccd_i2c_en</name>
+    <doc>Enable/disable i2c on CCD</doc>
+    <params subtype="ccd_i2c_en" interface="9" drv="cr50" input_type="str"
+    clobber_ok="" init="on"></params>
+  </control>
+  <control>
+    <name>ccd_keepalive_en</name>
+    <doc>Enable/disable keepalive on CCD</doc>
+    <params subtype="ccd_keepalive_en" interface="9" drv="cr50" input_type="str"
+    clobber_ok="" init="on"></params>
+  </control>
+  <control>
     <name>fw_wp_state</name>
     <doc>Used to turn fw wp off and on</doc>
-    <params interface="9" drv="fw_wp_ccd" input_type="str"/>
+    <params interface="9" drv="fw_wp_ccd" input_type="str" init="force_off"></params>
   </control>
   <!-- cr50 UART Buffers & VREF Controls -->
   <control>
