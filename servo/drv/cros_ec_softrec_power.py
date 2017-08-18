@@ -86,6 +86,35 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
       # Allow time to reach the recovery screen before yielding control.
       time.sleep(self._boot_to_rec_screen_delay)
 
+      # If we are using CCD, make sure the DUT's Type-C port is a DFP so that
+      # the ethernet and USB ports will be connected.  Since servo_v4 has the
+      # power role of source, its data role is a "downstream facing port" (DFP)
+      # and therefore making the DUT's role an "upstream facing port" (UFP).
+      # When the data roles are as such, the ethernet port and USB/microSD ports
+      # will not be connected to the DUT.  Therefore, we will need to trigger a
+      # data role swap by via the EC console.
+      #
+      # This is needed because the data role swaps normally don't happen in
+      # EC_RO (which is the image we MUST be in for entering recovery mode).
+      if 'servo_v4_with_ccd_cr50' in self._interface.get('servo_type'):
+        try:
+          # Check current data role.  Assuming port 0 is the CCD port.
+          cmd = 'pd 0 state'
+          self._interface.set('ec_uart_regexp', '["SNK-UFP"]')
+          self._interface.set('ec_uart_cmd', 'pd 0 state')
+          self._logger.debug('Initiating data role swap...')
+          # Clear the regexp.
+          self._interface.set('ec_uart_regexp', 'None')
+          cmd = 'pd 0 swap data'
+          self._interface.set('ec_uart_cmd', cmd)
+        except Exception as e:
+          # Assuming the DUT's data role is already a DFP.
+          self._logger.debug('DUT\'s port may already be a DFP.')
+          pass
+        finally:
+          # Clear the regexp.
+          self._interface.set('ec_uart_regexp', 'None')
+
   def _power_on(self, rec_mode):
     if rec_mode == self.REC_ON:
       rec_type = self._REC_TYPE_REC_ON
