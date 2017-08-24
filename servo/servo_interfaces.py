@@ -239,16 +239,9 @@ for board in ['elm', 'hana', 'oak', 'samus']:
   INTERFACE_BOARDS[board][0x18d1][0x5002][6] = 'ftdi_uart'
 
 # re-purposes JTAG to be UART for USBPD MCU or H1
-for board in ['asuka', 'caroline', 'cave', 'chell', 'eve', 'glados',
+for board in ['asuka', 'caroline', 'cave', 'chell', 'eve', 'fizz', 'glados',
               'kunimitsu', 'lars', 'pbody', 'poppy', 'reef', 'sentry', 'soraka',
               'strago', 'zoombini']:
   INTERFACE_BOARDS[board][0x18d1][0x5002] = \
       list(INTERFACE_DEFAULTS[0x18d1][0x5002])
   INTERFACE_BOARDS[board][0x18d1][0x5002][1] = 'ftdi_uart'
-
-# TODO(crosbug.com/p/60939) re-purpose JTAG to H1 uart at some point but dummy
-# for now.
-for board in ['fizz']:
-  INTERFACE_BOARDS[board][0x18d1][0x5002] = \
-      list(INTERFACE_DEFAULTS[0x18d1][0x5002])
-  INTERFACE_BOARDS[board][0x18d1][0x5002][1] = 'dummy'
