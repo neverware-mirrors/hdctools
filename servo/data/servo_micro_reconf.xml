@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<root>
+  <include>
+    <name>servo_micro.xml</name>
+  </include>
+
+  <control>
+    <name>warm_reset</name>
+    <doc>warm reset</doc>
+    <params interface="2" drv="tca6416" slv="0x20" od="PU" port="1"
+    offset="2" map="onoff_i" init="off"></params>
+  </control>
+</root>

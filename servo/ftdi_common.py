@@ -43,16 +43,36 @@ SERVO_CONFIG_DEFAULTS = \
     {'miniservo_v1': ['miniservo.xml'],
      'servo_v1': ['servo.xml'],
      'servo_v2_r0': ['servo_v2_r0.xml'],
-     'servo_v2': ['servo_v2_r1.xml'],
-     'servo_v3': ['servo_v3_r0.xml'],
+     'servo_v2': ['servo_v2_r1_orig.xml'],
+     'servo_v3': ['servo_v3_r0_orig.xml'],
      'servo_v4': ['servo_v4.xml'],
-     'servo_micro': ['servo_micro.xml'],
+     'servo_micro': ['servo_micro_orig.xml'],
      'ccd_cr50': ['ccd_cr50.xml'],
      'toad_v1': ['toad.xml'],
      'reston': ['reston.xml'],
      'fruitpie': ['fruitpie.xml'],
      'plankton': ['plankton.xml'],
      }
+
+# dnschneid has moved warm reset to pin 39, replacing hpd.
+SERVO_CONFIG_DEFAULTS_RECONF = \
+    {'miniservo_v1': ['miniservo.xml'],
+     'servo_v1': ['servo.xml'],
+     'servo_v2_r0': ['servo_v2_r0.xml'],
+     'servo_v2': ['servo_v2_r1_reconf.xml'],
+     'servo_v3': ['servo_v3_r0_reconf.xml'],
+     'servo_v4': ['servo_v4.xml'],
+     'servo_micro': ['servo_micro_reconf.xml'],
+     'ccd_cr50': ['ccd_cr50.xml'],
+     'toad_v1': ['toad.xml'],
+     'reston': ['reston.xml'],
+     'fruitpie': ['fruitpie.xml'],
+     'plankton': ['plankton.xml'],
+     }
+
+# These are the boards with reconfigured servo headers.
+SERVO_CONFIG_RECONF_BOARDS = \
+    ('scarlet', 'zoombini', 'nefario')
 
 class FtdiContext(ctypes.Structure):
   """Defines primary context structure for libftdi.
