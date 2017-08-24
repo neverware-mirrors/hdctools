@@ -39,6 +39,12 @@
     <params subtype="volume_down_gpio" interface="10" drv="ec" map="yesno"
     clobber_ok=""></params>
   </control>
+  <control>
+    <name>lid_open</name>
+    <doc>Emulated lid switch on ec</doc>
+    <params subtype="lid_open" interface="10" drv="ec" map="yesno"
+    clobber_ok=""></params>
+  </control>
   <!-- cr50 UART Buffers & VREF Controls -->
   <control>
     <name>jtag_vref_sel0</name>
