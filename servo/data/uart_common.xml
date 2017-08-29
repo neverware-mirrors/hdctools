@@ -41,6 +41,12 @@
     input_type="float"></params>
   </control>
   <control>
+    <name>ec_system_powerstate</name>
+    <doc>The current power state according to the EC.</doc>
+    <params cmd="get" subtype="system_powerstate" interface="10" drv="ec">
+    </params>
+  </control>
+  <control>
     <name>ec_board</name>
     <doc>The board name of the EC image</doc>
     <params cmd="get" subtype="board" interface="10" drv="ec"
