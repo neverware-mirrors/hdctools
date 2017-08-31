@@ -137,9 +137,11 @@ SERVO_V4_SLOT_SIZE = 20
 SERVO_V4_SLOT_POSITIONS = {
   'default': 1,
   'hammer': 41,
+  'staff': 41,
 }
 SERVO_V4_CONFIGS = {
   'hammer': 'servo_micro_for_hammer.xml',
+  'staff': 'servo_micro_for_hammer.xml',
 }
 for vid, pid in SERVO_V4_DEFAULTS:
   # Interface #0 is reserved for no use.
