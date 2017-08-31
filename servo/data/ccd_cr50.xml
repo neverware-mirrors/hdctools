@@ -63,6 +63,12 @@
     <params interface="10" drv="ec3po_driver" map="onoff" init="on"
     subtype="interp_connect"></params>
   </control>
+  <control>
+    <name>usbpd_uart_routing</name>
+    <doc>enable pd uart routing</doc>
+    <params clobber_ok="" interface="servo" subtype="not_applicable" drv="na" map="na"
+            init="not_applicable"></params>
+  </control>
   <!-- Controls overwritten by Cr50 -->
   <control>
     <name>cold_reset</name>
@@ -109,7 +115,7 @@
   <control>
     <name>fw_wp_state</name>
     <doc>Used to turn fw wp off and on</doc>
-    <params interface="9" drv="fw_wp_ccd" input_type="str" init="force_off"></params>
+    <params interface="9" drv="fw_wp_ccd" input_type="str" init="force_off" />
   </control>
   <!-- cr50 UART Buffers & VREF Controls -->
   <control>
@@ -125,6 +131,12 @@
     <doc>Override control not needed for ccd.</doc>
     <params interface="9" drv="cr50" subtype="ccd_noop" map="onoff"
     clobber_ok=""></params>
+  </control>
+  <control>
+    <name>jtag_vref_sel0</name>
+    <alias>jtag_vref_sel1</alias>
+    <params clobber_ok="" subtype="not_applicable" interface="9" drv="na"
+            map="dummy_vref" init="not_applicable" />
   </control>
   <control>
     <name>ccd_ec_boot_mode</name>
