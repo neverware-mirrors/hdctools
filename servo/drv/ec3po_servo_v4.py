@@ -173,3 +173,32 @@ class ec3poServoV4(pty_driver.ptyDriver):
       if pd_new["state"] != "ready" or pd["role"] == pd_new["role"]:
         raise ec3poServoV4Error("Power role swap failed")
 
+  def _Get_servo_v4_ccd_keepalive(self):
+    """Get keepalive status.
+
+    Returns:
+       1 if keepalive is enabled, 0 if it's not.
+    """
+    _, status = self._issue_cmd_get_results("keepalive",
+                                         ["ccd_keepalive: ([a-zA-Z]+)"])[0]
+    if status == "enabled":
+      return 1
+
+    return 0
+
+  def _Set_servo_v4_ccd_keepalive(self, enable):
+    """Set servo_v4_ccd_keepalive.
+
+    Note: When keepalive is enabled, it will remain enabled until explicitly
+    disabled.
+
+    Args:
+      enable: An integer indicating if keepalive should be enabled (non-zero),
+              otherwise disabled.
+    """
+    if enable:
+      val = "enable"
+    else:
+      val = "disable"
+
+    self._issue_cmd("keepalive %s" % val)

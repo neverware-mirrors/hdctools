@@ -346,4 +346,10 @@
     <params subtype="servo_v4_power_role" interface="26" drv="ec3po_servo_v4"
     input_type="str" clobber_ok="" init="src"></params>
   </control>
+  <control>
+    <name>servo_v4_ccd_keepalive</name>
+    <doc>CCD keepalive.  Prevents servo_v4 from sampling SBU lines.</doc>
+    <params subtype="servo_v4_ccd_keepalive" interface="26" drv="ec3po_servo_v4"
+            map="onoff" init="on"></params>
+  </control>
 </root>
