@@ -17,19 +17,6 @@ import servo
 # EC console mask for enabling only command channel
 COMMAND_CHANNEL_MASK = 0x1
 
-# Controls to set in batch operations.
-# [usbsnk, ccd, rpusb, rpchg, disconnect, usbchg]
-ccd_typec_config = {
-  "DUT_CHG_EN":         ("0", "0", "1", "1", "0", "1"),
-  "HOST_OR_CHG_CTL":    ("0", "0", "0", "1", "0", "1"),
-  "USB_DUT_CC1_RD":     ("0", "0", "IN", "IN", "IN", "IN"),
-  "USB_DUT_CC2_RD":     ("IN", "0", "IN", "IN", "IN", "IN"),
-  "USB_DUT_CC1_RPUSB":  ("IN", "IN", "1", "1", "IN", "IN"),
-  "USB_DUT_CC2_RP1A5":  ("IN", "IN", "1", "1", "IN", "IN"),
-  "USB_DUT_CC1_RP3A0":  ("IN", "IN", "IN", "IN", "IN", "1"),
-}
-
-
 
 class ec3poServoV4Error(Exception):
   """Exception class."""
@@ -82,14 +69,6 @@ class ec3poServoV4(pty_driver.ptyDriver):
 
     self._issue_cmd(cmds)
 
-
-  def _Set_ccvalues(self, value):
-    """Set or unset CC lines to indicate CCD
-
-    Args:
-      value: An integer value, see "servo_v4_cc_map"
-    """
-    self.batch_set(ccd_typec_config, value)
 
   def _Get_servo_v4_dts_mode(self):
     """Getter of servo_v4_dts_mode.

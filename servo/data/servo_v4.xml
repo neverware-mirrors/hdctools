@@ -325,14 +325,6 @@
     <params interface="26" drv="ec3po_driver" map="onoff" init="on"
     subtype="interp_connect"></params>
   </control>
-
-
-  <control>
-    <name>servo_v4_ccd_mode</name>
-    <doc>Set CCD/USB mode</doc>
-    <params interface="26" drv="ec3po_servo_v4"
-    subtype="ccvalues" map="servo_v4_cc_map"></params>
-  </control>
   <!-- DTS mode control -->
   <control>
     <name>servo_v4_dts_mode</name>
