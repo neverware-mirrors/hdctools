@@ -30,14 +30,18 @@
   <control>
     <name>volume_up_hold</name>
     <doc>Emulated volume up on ec</doc>
-    <params subtype="volume_up_gpio" interface="10" drv="ec" map="yesno"
-    clobber_ok=""></params>
+    <params cmd="get" subtype="not_applicable" interface="10" drv="na"
+    map="na"/>
+    <params cmd="set" subtype="volume_up_hold" interface="10" drv="ec"
+    input_type="int"/>
   </control>
   <control>
     <name>volume_down_hold</name>
     <doc>Emulated volume down on ec</doc>
-    <params subtype="volume_down_gpio" interface="10" drv="ec" map="yesno"
-    clobber_ok=""></params>
+    <params cmd="get" subtype="not_applicable" interface="10" drv="na"
+    map="na"/>
+    <params cmd="set" subtype="volume_down_hold" interface="10" drv="ec"
+    input_type="int"/>
   </control>
   <control>
     <name>lid_open</name>
