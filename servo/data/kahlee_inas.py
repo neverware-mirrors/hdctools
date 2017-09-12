@@ -21,20 +21,21 @@ inline = """
   </control>
 """
 
-inas = [('ina219', '0x40', 'vs_wlan',     0.10, 0.010, 'rem', True),
-        ('ina219', '0x41', 'vs',          0.04, 0.010, 'rem', True),
-        ('ina219', '0x42', 'v_vddq',      0.01, 0.010, 'rem', True),
-        ('ina219', '0x43', 'backlight',   0.04, 0.010, 'rem', True),
-        ('ina219', '0x44', '3vs_emmc',    0.04, 0.010, 'rem', True),
-        ('ina219', '0x45', '18vs_emmc',   1.80, 0.100, 'rem', True),
-        ('ina219', '0x46', 'vs_audio_spk',0.04, 0.010, 'rem', True),
-        ('ina219', '0x47', 'vs_camera',   0.10, 0.010, 'rem', True),
-        ('ina219', '0x48', 'vs_tp',       0.10, 0.010, 'rem', True),
-        ('ina219', '0x49', 'apu_core',    0.001,0.010, 'rem', True),
-        ('ina219', '0x4a', 'apu_core_nb', 0.001,0.010, 'rem', True),
-        ('ina219', '0x4b', 'alw_ec',      0.10, 0.010, 'rem', True),
-        ('ina219', '0x4c', 'vs_ssd',      0.04, 0.010, 'rem', True),
-        ('ina219', '0x4d', 'v_batt',      0.005,0.010, 'rem', True),
-        ('ina219', '0x4e', 'vs_edp',      0.01, 0.010, 'rem', True),
-        ('ina219', '0x4f', 'vs_fan',      0.1, 0.010, 'rem', True),
-        ]
+#         drvname,  slv,    name,          nom,   sense,  mux, is_calib
+inas = [('ina219', '0x40', 'vs_wlan',      3.300, 0.100, 'rem', True),
+        ('ina219', '0x41', 'vs',           0.975, 0.040, 'rem', True),
+        ('ina219', '0x42', 'v_vddq',       1.200, 0.010, 'rem', True),
+        ('ina219', '0x43', 'backlight',   12.300, 0.040, 'rem', True),
+        ('ina219', '0x44', '3vs_emmc',     3.000, 0.040, 'rem', True),
+        ('ina219', '0x45', '18vs_emmc',    1.800, 0.100, 'rem', True),
+        ('ina219', '0x46', 'vs_audio_spk', 5.000, 0.040, 'rem', True),
+        ('ina219', '0x47', 'vs_camera',    3.300, 0.100, 'rem', True),
+        ('ina219', '0x48', 'vs_tp',        3.300, 0.100, 'rem', True),
+        ('ina219', '0x49', 'apu_core',     0.850, 0.001, 'rem', True),
+        ('ina219', '0x4a', 'apu_core_nb',  0.875, 0.001, 'rem', True),
+        ('ina219', '0x4b', 'alw_ec',       3.300, 0.100, 'rem', True),
+        ('ina219', '0x4c', 'vs_ssd',       3.300, 0.040, 'rem', True),
+        ('ina219', '0x4d', 'v_batt',      12.300, 0.005, 'rem', True),
+        ('ina219', '0x4e', 'vs_edp',       3.300, 0.010, 'rem', True),
+        ('ina219', '0x4f', 'vs_fan',       5.000, 0.100, 'rem', True),
+]
