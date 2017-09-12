@@ -18,11 +18,14 @@ def dump_adcs(adcs, interface=2):
                "0x40"   : address 0x40 ... no channel
                "0x40:1" : address 0x40, channel 1
         name: string name of the power rail
-        sense: float of sense resitor size in ohms
         nom: float of nominal voltage of power rail.
+        sense: float of sense resitor size in ohms
         mux: string name of i2c mux leg these ADC's live on
         is_calib: boolean to determine if calibration is possible for this rail
     interface: interface index to handle low-level communication.
+
+  The adcs list above is in order, meaning this function looks for name at
+  adc[2], where adc is the tuple for a particular adc.
 
   Returns:
     string (large) of xml for the system config of these ADCs to eventually be
