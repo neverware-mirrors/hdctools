@@ -108,6 +108,12 @@
     map="str" clobber_ok=""></params>
   </control>
   <control>
+    <name>cr50_testlab</name>
+    <doc>Cr50 testlab state</doc>
+    <params subtype="ccd_testlab" interface="9" drv="cr50" input_type="str"
+    clobber_ok="" init="open"></params>
+  </control>
+  <control>
     <name>cr50_reset_count</name>
     <doc>Cr50 reset count</doc>
     <params cmd="get" subtype="reset_count" interface="9" drv="cr50"

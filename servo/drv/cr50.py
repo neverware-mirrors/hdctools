@@ -213,6 +213,31 @@ class cr50(pty_driver.ptyDriver):
     result = self._issue_cmd_get_results("ccdstate", ["%s:([^\n]*)\n" % cap])
     return result[0][1].strip()
 
+  def _Get_ccd_testlab(self):
+    """Getter of ccd_testlab.
+
+    Returns:
+      'enabled' or 'disabled' if ccd testlab mode is enabled or disabled.
+    """
+    result = self._issue_cmd_get_results("ccd testlab",
+        ["CCD test lab mode (ena|dis)"])[0][1]
+    return "enabled" if "ena" in result else "disabled"
+
+  def _Set_ccd_testlab(self, value):
+    """Setter of ccd_testlab.
+
+    We dont want to accidentally disable ccd testlab mode. Only accept the value
+    open. This will change the ccd privilege level without any physical
+    presence.
+
+    Args:
+      value: 'open'
+    """
+    if value == "open":
+      self._issue_cmd("ccd testlab open")
+    else:
+      raise ValueError("Invalid ccd testlab setting: '%s'. Try 'open'" % value)
+
   def _Get_ccd_keepalive_en(self):
     """Getter of ccd_keepalive_en.
 
