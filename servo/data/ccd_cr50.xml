@@ -35,21 +35,21 @@
     <name>ec_uart_bitbang_en</name>
     <doc>Enable bit banging for the EC UART.</doc>
     <params subtype="ec_uart_bitbang_en" interface="9" drv="cr50" map="onoff"
-            clobber_ok="" init="off"></params>
+    clobber_ok="" init="off"></params>
   </control>
   <control>
     <name>ccd_ec_uart_parity</name>
     <alias>ec_uart_parity</alias>
     <doc>Parity setting for the EC UART console forwarded over CCD.</doc>
     <params subtype="ccd_ec_uart_parity" interface="9" drv="cr50"
-            input_type="str" clobber_ok=""></params>
+    input_type="str" clobber_ok=""></params>
   </control>
   <control>
     <name>ccd_ec_uart_baudrate</name>
     <alias>ec_uart_baudrate</alias>
     <doc>Baud rate for the EC UART console forwarded over CCD.</doc>
     <params subtype="ccd_ec_uart_baudrate" interface="9" drv="cr50"
-            input_type="str" clobber_ok=""></params>
+    input_type="str" clobber_ok=""></params>
   </control>
   <control>
     <name>ec3po_ec_console</name>
@@ -66,8 +66,8 @@
   <control>
     <name>usbpd_uart_routing</name>
     <doc>enable pd uart routing</doc>
-    <params clobber_ok="" interface="servo" subtype="not_applicable" drv="na" map="na"
-            init="not_applicable"></params>
+    <params clobber_ok="" interface="servo" subtype="not_applicable" drv="na"
+    map="na" init="not_applicable"></params>
   </control>
   <!-- Controls overwritten by Cr50 -->
   <control>
@@ -136,20 +136,20 @@
     <name>jtag_vref_sel0</name>
     <alias>jtag_vref_sel1</alias>
     <params clobber_ok="" subtype="not_applicable" interface="9" drv="na"
-            map="dummy_vref" init="not_applicable" />
+    map="dummy_vref" init="not_applicable" />
   </control>
   <control>
     <name>ccd_ec_boot_mode</name>
     <alias>ec_boot_mode</alias>
     <doc>EC boot mode GPIO.</doc>
     <params subtype="ec_boot_mode" interface="9" drv="cr50" map="onoff"
-            init="off" />
+    init="off" />
   </control>
   <control>
     <name>ccd_ec_uart_en</name>
     <alias>ec_uart_en</alias>
     <doc>Enable/disable EC UART on CCD</doc>
     <params subtype="ccd_ec_uart_en" interface="9" drv="cr50" map="onoff"
-            clobber_ok="" init="on"></params>
+    clobber_ok="" init="on"></params>
   </control>
 </root>
