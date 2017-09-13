@@ -6,8 +6,6 @@
 Provides the following Cr50 controlled function:
   cold_reset
   warm_reset
-  ccd_ec_uart_en
-  ccd_i2c_en
   ccd_keepalive_en
 """
 
@@ -58,7 +56,6 @@ class cr50(pty_driver.ptyDriver):
     """
     super(cr50, self).__init__(interface, params)
     self._logger.debug("")
-    self._ec_uart_en = None
     self._interface = interface
     if not hasattr(self._interface, '_ec_uart_bitbang_props'):
         self._interface._ec_uart_bitbang_props = {
@@ -210,64 +207,6 @@ class cr50(pty_driver.ptyDriver):
   def _Get_ccd_noop(self):
     """Used to ignore servo controls"""
     return "ERR"
-
-  @restricted_command
-  def _Get_ccd_ec_uart_en(self):
-    """Getter of ccd_ec_uart_en.
-
-    Returns:
-      0: EC UART disabled.
-      1: EC UART enabled.
-    """
-    # Check the EC UART result as the AP's and Cr50's UART are always on.
-    result = self._issue_cmd_get_results(
-        "ccd", ["EC UART:\s*(RX\+TX|RX)"])[0]
-    if result is None:
-      raise cr50Error("Cannot retrieve ccd uart result on cr50 console.")
-    return "on" if result[1] == "RX+TX" else "off"
-
-  def _Set_ccd_ec_uart_en(self, value):
-    """Setter of ccd_ec_uart_en.
-
-    Args:
-      value: 0=off, 1=on.
-    """
-    if value == "off" or value == "on":
-      self._issue_cmd("ccd uart %s" % value)
-      self._ec_uart_en = value
-    elif value == "restore":
-      if self._ec_uart_en:
-        self._issue_cmd("ccd uart %s" % self._ec_uart_en)
-    else:
-      raise ValueError("Invalid ec_uart_en setting: '%s'. Try one of "
-                       "'on', 'off', or 'restore'." % value)
-
-  @restricted_command
-  def _Get_ccd_i2c_en(self):
-    """Getter of ccd_i2c_en.
-
-    Returns:
-      0: I2C disabled.
-      1: I2C enabled.
-    """
-    # Check the I2C result.
-    result = self._issue_cmd_get_results(
-        "ccd", ["I2C:\s*(enabled|disabled)"])[0]
-    if result is None:
-      raise cr50Error("Cannot retrieve i2c enable result on cr50 console.")
-    return "on" if result[1] == "enabled" else "off"
-
-  def _Set_ccd_i2c_en(self, value):
-    """Setter of ccd_i2c_en.
-
-    Args:
-      value: 0=off, 1=on.
-    """
-    if value == "off" or value == "on":
-      self._issue_cmd("ccd i2c %s" % value)
-    else:
-      raise ValueError("Invalid ec_i2c_en setting: '%s'. Try one of "
-                       "'on', 'off', or 'restore'." % value)
 
   @restricted_command
   def _Get_ccd_keepalive_en(self):

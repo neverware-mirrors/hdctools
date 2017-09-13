@@ -87,18 +87,6 @@
     clobber_ok=""></params>
   </control>
   <control>
-    <name>ccd_ec_uart_en</name>
-    <doc>Enable/disable EC UART on CCD</doc>
-    <params subtype="ccd_ec_uart_en" interface="9" drv="cr50" input_type="str"
-    clobber_ok="" init="on"></params>
-  </control>
-  <control>
-    <name>ccd_i2c_en</name>
-    <doc>Enable/disable i2c on CCD</doc>
-    <params subtype="ccd_i2c_en" interface="9" drv="cr50" input_type="str"
-    clobber_ok="" init="on"></params>
-  </control>
-  <control>
     <name>ccd_keepalive_en</name>
     <doc>Enable/disable keepalive on CCD</doc>
     <params subtype="ccd_keepalive_en" interface="9" drv="cr50" input_type="str"
@@ -136,12 +124,5 @@
     <doc>EC boot mode GPIO.</doc>
     <params subtype="ec_boot_mode" interface="9" drv="cr50" map="onoff"
     init="off" />
-  </control>
-  <control>
-    <name>ccd_ec_uart_en</name>
-    <alias>ec_uart_en</alias>
-    <doc>Enable/disable EC UART on CCD</doc>
-    <params subtype="ccd_ec_uart_en" interface="9" drv="cr50" map="onoff"
-    clobber_ok="" init="on"></params>
   </control>
 </root>

@@ -137,9 +137,6 @@ class PowerStateDriver(hw_driver.HwDriver):
     self._logger.info("Reinitialize all interfaces")
     self._interface.reinitialize()
 
-    # Restore the ccd settings from before the usb reset
-    self._interface.set('ccd_ec_uart_en', 'restore')
-
   def _reset_cr50(self):
     """Reboot cr50 and reset CCD.
 
