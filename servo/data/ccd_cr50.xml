@@ -10,14 +10,6 @@
     <name>uart_common.xml</name>
   </include>
 
-  <!-- ********** Maps ********** -->
-  <map>
-    <name>dummy_vref</name>
-    <doc>Determine VREF between pp3300, pp2500, pp1800 and off.
-    Default is off</doc>
-    <params pp3300="0" pp2500="0" pp1800="1" off="1"></params>
-  </map>
-
   <!-- UART and CONSOLE settings -->
   <control>
     <name>raw_ec_uart_pty</name>
@@ -135,8 +127,8 @@
   <control>
     <name>jtag_vref_sel0</name>
     <alias>jtag_vref_sel1</alias>
-    <params clobber_ok="" subtype="not_applicable" interface="9" drv="na"
-    map="dummy_vref" init="not_applicable" />
+    <params interface="servo" subtype="not_applicable" drv="na"  map="na"
+    init="not_applicable" clobber_ok=""></params>
   </control>
   <control>
     <name>ccd_ec_boot_mode</name>
