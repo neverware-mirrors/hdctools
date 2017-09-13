@@ -25,7 +25,7 @@ def restricted_command(func):
       return func(instance, *args, **kwargs)
     except pty_driver.ptyError, e:
       if str(e) == 'Timeout waiting for response.':
-        if instance._Get_ccd_lock():
+        if instance._Get_ccd_level() == 'Locked':
           raise cr50Error("CCD console is locked. Perform the unlock process!")
       # Raise the original exception
       raise
@@ -148,7 +148,7 @@ class cr50(pty_driver.ptyDriver):
     return 1 if result[1] == "released" else 0
 
   def _Get_reset_count(self):
-    """Getter of ccd_lock.
+    """Getter of reset count.
 
     Returns:
         The reset count
@@ -187,18 +187,18 @@ class cr50(pty_driver.ptyDriver):
     """Reboot cr50 ignoring the value."""
     self._issue_cmd("reboot")
 
-  def _Get_ccd_lock(self):
-    """Getter of ccd_lock.
+  def _Get_ccd_level(self):
+    """Getter of ccd_level.
 
     Returns:
       0: CCD restricted console lock disabled.
       1: CCD restricted console lock enabled.
     """
     result = self._issue_cmd_get_results(
-        "lock", ["The restricted console lock is (enabled|disabled)"])[0]
+        "ccd", ["State:\s+(Locked|Unlocked|Open)"])[0]
     if result is None:
-      raise cr50Error("Cannot retrieve ccd lock result on cr50 console.")
-    return 1 if result[1] == "enabled" else 0
+      raise cr50Error("Cannot retrieve ccd privilege level on cr50 console.")
+    return result[1]
 
   def _Set_ccd_noop(self, value):
     """Used to ignore servo controls"""

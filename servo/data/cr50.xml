@@ -102,10 +102,10 @@
     map="onoff" clobber_ok=""></params>
   </control>
   <control>
-    <name>ccd_lock</name>
-    <doc>State of CCD restricted console lock</doc>
-    <params cmd="get" subtype="ccd_lock" interface="9" drv="cr50"
-    map="onoff" clobber_ok=""></params>
+    <name>cr50_ccd_level</name>
+    <doc>State of CCD</doc>
+    <params cmd="get" subtype="ccd_level" interface="9" drv="cr50"
+    map="str" clobber_ok=""></params>
   </control>
   <control>
     <name>cr50_reset_count</name>
