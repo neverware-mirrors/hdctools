@@ -1,0 +1,21 @@
+# Copyright 2016 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# These devices are ina3221 (3-channels/i2c address) devices
+inas = [('ina3221', '0x40:0', 'pp3300_a',        3.30,   0.002, 'rem', True), #R422
+        ('ina3221', '0x40:1', 'pp5000_a',        5.00,   0.002, 'rem', True), #R421
+        ('ina3221', '0x40:2', 'pp1800_a',        1.80,   0.020, 'rem', True), #R416
+        #
+        ('ina3221', '0x41:0', 'pp1240_a',        1.24,   0.020, 'rem', True), #R417
+        ('ina3221', '0x41:1', 'pp1100_vddq',     1.10,   0.002, 'rem', True), #R425
+        ('ina3221', '0x41:2', 'pp1050_s',        1.05,   0.010, 'rem', True), #R412
+        #
+        ('ina3221', '0x42:0', 'PP1800_dram_u',   1.80,   0.020, 'rem', True), #R403
+        ('ina3221', '0x42:1', 'pp3300_ec',       3.30,   0.020, 'rem', True), #R415
+        ('ina3221', '0x42:2', 'pp3300_soc_a',    3.30,   0.020, 'rem', True), #R383
+        #
+        ('ina3221', '0x43:0', 'pp3300_wlan_dx',  3.30,   0.020, 'rem', True), #R389
+        ('ina3221', '0x43:1', 'pp3300_edp_dx',   3.30,   0.020, 'rem', True), #R367
+        ('ina3221', '0x43:2', 'pp3300_pd_a',     3.30,   0.100, 'rem', True), #R384
+        ]
