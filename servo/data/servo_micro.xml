@@ -343,4 +343,11 @@
     <params interface="9" drv="na" subtype="not_applicable" map="onoff"
     clobber_ok="" />
   </control>
+  <control>
+    <name>jtag_vref_sel0</name>
+    <alias>jtag_vref_sel1</alias>
+    <doc>Dummy control. No way to change it.</doc>
+    <params interface="9" drv="na" subtype="not_applicable" input_type="str"
+    clobber_ok="" />
+  </control>
 </root>
