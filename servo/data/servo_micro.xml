@@ -336,4 +336,11 @@
     <params interface="6" drv="ec3po_servo_micro"
     subtype="usbpd_console" map="usbpd_uart_map" clobber_ok=""></params>
   </control>
+
+  <control>
+    <name>jtag_buf_en</name>
+    <doc>Dummy control. Controlled by usbpd_uart_routing instead.</doc>
+    <params interface="9" drv="na" subtype="not_applicable" map="onoff"
+    clobber_ok="" />
+  </control>
 </root>
