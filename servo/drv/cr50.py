@@ -208,7 +208,11 @@ class cr50(pty_driver.ptyDriver):
     """Used to ignore servo controls"""
     return "ERR"
 
-  @restricted_command
+  def _get_ccd_cap_state(self, cap):
+    """Get the current state of the ccd capability"""
+    result = self._issue_cmd_get_results("ccdstate", ["%s:([^\n]*)\n" % cap])
+    return result[0][1].strip()
+
   def _Get_ccd_keepalive_en(self):
     """Getter of ccd_keepalive_en.
 
@@ -216,11 +220,8 @@ class cr50(pty_driver.ptyDriver):
       0: keepalive disabled.
       1: keepalive enabled.
     """
-    result = self._issue_cmd_get_results(
-        "ccd", ["CCD:\s*(forced enable|enabled|disabled)"])[0]
-    if result is None:
-      raise cr50Error("Cannot retrieve keepalive state on cr50 console.")
-    return "on" if result[1] == "forced enable" else "off"
+    rdd = self._get_ccd_cap_state("Rdd")
+    return "on" if "keepalive" in rdd else "off"
 
   def _Set_ccd_keepalive_en(self, value):
     """Setter of ccd_keepalive_en.
@@ -229,7 +230,7 @@ class cr50(pty_driver.ptyDriver):
       value: 0=off, 1=on.
     """
     if value == "off" or value == "on":
-      self._issue_cmd("ccd keepalive %s" % value)
+      self._issue_cmd("rddkeepalive %s" % value)
     else:
       raise ValueError("Invalid ec_keepalive_en setting: '%s'. Try one of "
                        "'on', or 'off'." % value)
