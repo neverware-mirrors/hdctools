@@ -174,6 +174,7 @@ class Servod(object):
     # Ex) _drv_dict[name]['get'] = (params, drv)
     self._drv_dict = {}
     self._board = board
+    self._base_board = ''
     self._version = version
     self._usbkm232 = usbkm232
     # Seed the random generator with the serial to differentiate from other
@@ -1070,6 +1071,15 @@ class Servod(object):
   def get_board(self):
     """Return the board specified at startup, if any."""
     return self._board
+
+  def get_base_board(self):
+    """Returns the board name of the base if present.
+
+    Returns:
+      A string of the board name, or '' if not present.
+    """
+    # The value is set in servo_postinit.
+    return self._base_board
 
   def get_version(self):
     """Get servo board version."""

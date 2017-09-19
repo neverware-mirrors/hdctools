@@ -16,6 +16,9 @@ import system_config
 
 POST_INIT = collections.defaultdict(dict)
 
+class ServoPostInitError(Exception):
+  """Exception class for ServoPostInit."""
+
 
 class UsbHierarchy(object):
   """A helper class to analyze the sysfs hierarchy of USB devices."""
@@ -257,7 +260,7 @@ class ServoV4PostInit(BasePostInit):
     try:
       self.servod.set('ec_uart_en', 'on')
       board = self.servod.get('ec_board')
-      self._logger.debug("Detected board: %s", board)
+      self._logger.info("Detected board: %s", board)
     except:
       self._logger.error("Failed to query EC board name")
       return None
@@ -309,6 +312,12 @@ class ServoV4PostInit(BasePostInit):
 
         board = self.probe_ec_board()
         if board:
+          # Assume only one base connected
+          if not self.servod._base_board:
+            self.servod._base_board = board
+          else:
+            raise ServoPostInitError('More than one base connected.')
+
           new_slot = servo_interfaces.SERVO_V4_SLOT_POSITIONS[board]
           self._logger.info('EC board requiring relocation: %s', board)
           self._logger.info('Move the servo interfaces from %d to %d',
