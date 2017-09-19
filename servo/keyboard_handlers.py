@@ -434,6 +434,13 @@ class ChromeECHandler(_BaseHandler):
                            the host running servod.
         """
         super(ChromeECHandler, self).__init__(servo)
+        base_board = self._servo.get_base_board()
+        if base_board:
+            self._ec_uart_regexp = base_board + '_ec_uart_regexp'
+            self._ec_uart_cmd = base_board + '_ec_uart_cmd'
+        else:
+            self._ec_uart_regexp = 'ec_uart_regexp'
+            self._ec_uart_cmd = 'ec_uart_cmd'
 
 
     def _send_command(self, command):
@@ -444,8 +451,8 @@ class ChromeECHandler(_BaseHandler):
 
         @param command: The command to send.
         """
-        self._servo.set('ec_uart_regexp', 'None')
-        self._servo.set('ec_uart_cmd', command)
+        self._servo.set(self._ec_uart_regexp, 'None')
+        self._servo.set(self._ec_uart_cmd, command)
 
 
     def _press_and_release_keys(self, keys, press_secs=''):
