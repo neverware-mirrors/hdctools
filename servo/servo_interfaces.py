@@ -242,8 +242,8 @@ for board in ['elm', 'hana', 'oak', 'samus']:
 
 # re-purposes JTAG to be UART for USBPD MCU or H1
 for board in ['asuka', 'caroline', 'cave', 'chell', 'eve', 'fizz', 'glados',
-              'kunimitsu', 'lars', 'pbody', 'poppy', 'reef', 'sentry', 'soraka',
-              'strago', 'zoombini']:
+              'kunimitsu', 'lars', 'pbody', 'poppy', 'reef', 'scarlet',
+              'sentry', 'soraka', 'strago', 'zoombini']:
   INTERFACE_BOARDS[board][0x18d1][0x5002] = \
       list(INTERFACE_DEFAULTS[0x18d1][0x5002])
   INTERFACE_BOARDS[board][0x18d1][0x5002][1] = 'ftdi_uart'
