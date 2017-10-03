@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 inas = [
-        ('ina231', 0x40, 'pp5000', 5.0, 0.01, 'rem', True),
         ('ina231', 0x41, 'ppvar_gpu', 0.9, 0.01, 'rem', True),
         ('ina231', 0x42, 'pp3300_wifi_bt', 3.3, 0.01, 'rem', True),
         ('ina231', 0x43, 'pp1500_ap_io', 1.5, 0.01, 'rem', True),
