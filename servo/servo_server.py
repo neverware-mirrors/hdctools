@@ -962,6 +962,13 @@ class Servod(object):
       HwDriverError: Error occurred while using drv
     """
     self._logger.debug("name(%s)" % (name))
+    # This route is to retrieve serialnames on servo v4, which
+    # connects to multiple servo-micros or CCD, like the controls,
+    # 'ccd_serialname', 'servo_micro_for_soraka_serialname', etc.
+    # TODO(aaboagye): Refactor it.
+    if 'serialname' in name:
+        return self.get_serial_number(name.split('serialname')[0].strip('_'))
+
     (param, drv) = self._get_param_drv(name)
     try:
       val = drv.get()
