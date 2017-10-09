@@ -83,27 +83,31 @@ class ptyDriver(hw_driver.HwDriver):
         self._logger.debug("pty read returned EAGAIN")
         break
 
-  def _send(self, cmds):
-    """Send command to EC.
+  def _send(self, cmds, rate=0.01, flush=True):
+    """Send command to EC or AP.
 
     This function always flushes serial device before sending, and is used as
     a wrapper function to make sure the channel is always flushed before
     sending commands.
 
     Args:
-      cmds: The commands to send to the device, either a list or a string.
+      cmds:   The commands to send to the device, either a list or a string.
+      rate:   The rate in seconds at which to send the cmds.
+              Real rate will be max(0.01, rate)
+      flush:  Flag to decide to flush console (send newline) before cmd.
 
     Raises:
       ptyError: Raised when writing to the device fails.
     """
-    self._flush()
+    if flush:
+      self._flush()
     if not isinstance(cmds, list):
       cmds = [cmds]
     for cmd in cmds:
       if self._child.sendline(cmd) != len(cmd) + 1:
         raise ptyError("Failed to send command.")
       # Multiple commands sent together choke the console queue.
-      time.sleep(.01)
+      time.sleep(max(rate, 0.01))
 
   def _issue_cmd(self, cmds):
     """Send command to the device and do not wait for response.
