@@ -68,13 +68,13 @@
   <control>
     <name>cold_reset</name>
     <doc>cold_reset</doc>
-    <params subtype="cold_reset" interface="9" drv="cr50" map="onoff"
+    <params subtype="cold_reset" interface="9" drv="cr50" map="onoff_i"
     clobber_ok=""></params>
   </control>
   <control>
     <name>warm_reset</name>
     <doc>warm_reset</doc>
-    <params subtype="warm_reset" interface="9" drv="cr50" map="onoff"
+    <params subtype="warm_reset" interface="9" drv="cr50" map="onoff_i"
     clobber_ok=""></params>
   </control>
   <control>

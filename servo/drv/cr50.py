@@ -71,28 +71,28 @@ class cr50(pty_driver.ptyDriver):
     return super(cr50, self)._issue_cmd_get_results(cmds, regex_list, timeout)
 
   def _Get_cold_reset(self):
-    """Getter of cold_reset.
+    """Getter of cold_reset (active low).
 
     Returns:
-      0: cold_reset off.
-      1: cold_reset on.
+      0: cold_reset on.
+      1: cold_reset off.
     """
     result = self._issue_cmd_get_results(
         "ecrst", ["EC_RST_L is (asserted|deasserted)"])[0]
     if result is None:
       raise cr50Error("Cannot retrieve ecrst result on cr50 console.")
-    return 1 if result[1] == "asserted" else 0
+    return 0 if result[1] == "asserted" else 1
 
   def _Set_cold_reset(self, value):
-    """Setter of cold_reset.
+    """Setter of cold_reset (active low).
 
     Args:
-      value: 0=off, 1=on.
+      value: 0=on, 1=off.
     """
     if value == 0:
-      self._issue_cmd("ecrst off")
-    else:
       self._issue_cmd("ecrst on")
+    else:
+      self._issue_cmd("ecrst off")
 
   def _Get_ccd_state(self):
     """Run a basic command that should take a short amount of time to check
@@ -110,28 +110,28 @@ class cr50(pty_driver.ptyDriver):
     return 1
 
   def _Get_warm_reset(self):
-    """Getter of warm_reset.
+    """Getter of warm_reset (active low).
 
     Returns:
-      0: warm_reset off.
-      1: warm_reset on.
+      0: warm_reset on.
+      1: warm_reset off.
     """
     result = self._issue_cmd_get_results(
         "sysrst", ["SYS_RST_L is (asserted|deasserted)"])[0]
     if result is None:
       raise cr50Error("Cannot retrieve sysrst result on cr50 console.")
-    return 1 if result[1] == "asserted" else 0
+    return 0 if result[1] == "asserted" else 1
 
   def _Set_warm_reset(self, value):
-    """Setter of warm_reset.
+    """Setter of warm_reset (active low).
 
     Args:
-      value: 0=off, 1=on.
+      value: 0=on, 1=off.
     """
     if value == 0:
-      self._issue_cmd("sysrst off")
-    else:
       self._issue_cmd("sysrst on")
+    else:
+      self._issue_cmd("sysrst off")
 
   @restricted_command
   def _Get_pwr_button(self):
