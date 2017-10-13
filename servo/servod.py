@@ -405,24 +405,20 @@ def get_lot_id(logger, servo):
       logger.warn("Servo device's iserial was unrecognized.")
   return lot_id
 
-def get_auto_configs(logger, board_version, reconf):
+def get_auto_configs(logger, board_version):
   """Get xml configs that should be loaded.
 
   Args:
     board_version: string, board & version
-    reconf: boolean, use SERVO_CONFIG_DEFAULTS_RECONF instead
 
   Returns:
     configs: list of XML config files that should be loaded
   """
-  config_defaults = ftdi_common.SERVO_CONFIG_DEFAULTS_RECONF \
-      if reconf else ftdi_common.SERVO_CONFIG_DEFAULTS
-
-  if board_version not in config_defaults:
+  if board_version not in ftdi_common.SERVO_CONFIG_DEFAULTS:
     logger.warning('Unable to determine configs to load for board version = %s',
                  board_version)
     return []
-  return config_defaults[board_version]
+  return ftdi_common.SERVO_CONFIG_DEFAULTS[board_version]
 
 def main_function():
   (options, args) = _parse_args()
@@ -455,13 +451,8 @@ def main_function():
   board_version = get_board_version(lot_id, servo_device.idProduct)
   logger.debug('board_version = %s', board_version)
   all_configs = []
-
-  # Is this in the list of boards with reconfigured servo headers?
-  # b/64724237
-  reconf = options.board in ftdi_common.SERVO_CONFIG_RECONF_BOARDS
-
   if not options.noautoconfig:
-    all_configs += get_auto_configs(logger, board_version, reconf)
+    all_configs += get_auto_configs(logger, board_version)
 
   if options.config:
     for config in options.config:
