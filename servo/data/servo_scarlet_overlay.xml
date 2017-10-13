@@ -11,6 +11,9 @@
   <include>
     <name>detachable.xml</name>
   </include>
+  <include>
+    <name>warm_reset_reconf.xml</name>
+  </include>
   <control>
     <name>fw_up</name>
     <alias>ec_boot_mode</alias>

@@ -274,6 +274,8 @@ class SystemConfig(object):
           # it's an existing control
           self.syscfg_dict[tag][name]['get_params'].update(get_dict)
           self.syscfg_dict[tag][name]['set_params'].update(set_dict)
+          if doc != 'undocumented':
+            self.syscfg_dict[tag][name]['doc'] = doc
         else:
           # it's a new control
           self.syscfg_dict[tag][name] = {'doc':doc, 'get_params':get_dict,
