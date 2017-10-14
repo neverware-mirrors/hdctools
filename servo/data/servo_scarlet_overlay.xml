@@ -8,6 +8,9 @@
   <include>
     <name>cr50.xml</name>
   </include>
+  <include>
+    <name>detachable.xml</name>
+  </include>
   <control>
     <name>fw_up</name>
     <alias>ec_boot_mode</alias>
@@ -19,5 +22,11 @@
     <name>power_state</name>
     <doc>Used to turn the DUT off and on</doc>
     <params clobber_ok="" reset_recovery="0.5"/>
+  </control>
+  <control>
+    <name>lid_open</name>
+    <doc>fake lid for products without one</doc>
+    <params subtype="not_applicable" interface="servo" drv="na" map="na"
+    clobber_ok=""></params>
   </control>
 </root>
