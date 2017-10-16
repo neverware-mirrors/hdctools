@@ -7,6 +7,9 @@
     <name>cr50.xml</name>
   </include>
   <include>
+    <name>keyboard.xml</name>
+  </include>
+  <include>
     <name>uart_common.xml</name>
   </include>
 
