@@ -105,6 +105,21 @@ class ec(pty_driver.ptyDriver):
       raise ecError("Cannot retrieve the power state on EC console.")
     return result[1]
 
+  def _Get_gpio(self):
+    """Getter of current gpio settings.
+
+    Returns:
+        ec gpios and their current state 1|0
+    """
+    self._limit_channel()
+    result = self._issue_cmd_get_results(
+        "gpioget", ["gpioget.*>"])[0]
+    self._restore_channel()
+    if result is None:
+      raise ecError("Cannot retrieve the ec gpios states on EC console.")
+    # [:-1] is to remove the trailing >
+    return "\n" + result.replace("gpioget", "").replace("\r", "")[:-1]
+
   def _set_key_pressed(self, key_rc, pressed):
     """Press/release a key.
 
