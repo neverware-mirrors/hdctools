@@ -268,6 +268,13 @@
     <params drv="uart" subtype="props" line_prop="parity"
     interface="1" map="uart_parity"></params>
   </control>
+  <control>
+    <name>uart3_baudrate</name>
+    <alias>usbpd_uart_baudrate</alias>
+    <doc>Baudrate for EC's uart console</doc>
+    <params drv="uart" subtype="props" line_prop="baudrate"
+    interface="1"></params>
+  </control>
 
   <control>
     <name>uart2_pty</name>
@@ -283,6 +290,13 @@
     <params drv="uart" subtype="props" line_prop="parity"
     interface="8" map="uart_parity"></params>
   </control>
+  <control>
+    <name>uart2_baudrate</name>
+    <alias>cpu_uart_baudrate</alias>
+    <doc>Baudrate for EC's uart console</doc>
+    <params drv="uart" subtype="props" line_prop="baudrate"
+    interface="8"></params>
+  </control>
 
   <control>
     <name>uart1_pty</name>
@@ -297,6 +311,13 @@
     <doc>Parity for uart console</doc>
     <params drv="uart" subtype="props" line_prop="parity"
     interface="7" map="uart_parity"></params>
+  </control>
+  <control>
+    <name>uart1_baudrate</name>
+    <alias>ec_uart_baudrate</alias>
+    <doc>Baudrate for EC's uart console</doc>
+    <params drv="uart" subtype="props" line_prop="baudrate"
+    interface="7"></params>
   </control>
 
   <control>
