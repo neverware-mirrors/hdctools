@@ -24,7 +24,7 @@
     <name>usbpd_uart_baudrate</name>
     <doc>Baudrate for USB PD MCU's uart console</doc>
     <params drv="uart" subtype="props" line_prop="baudrate"
-    interface="6"></params>
+    interface="6" clobber_ok=""></params>
   </control>
   <control>
     <name>usbpd_uart_parity</name>
