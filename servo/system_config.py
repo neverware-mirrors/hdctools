@@ -245,6 +245,11 @@ class SystemConfig(object):
           raise SystemConfigError("%s %s has illegal number of params %d\n%s"
                                   % (tag, name, len(params_list), element_str))
 
+        # Save the control name to the params dicts, such that the driver can
+        # refer to it.
+        get_dict['control_name'] = name
+        set_dict['control_name'] = name
+
         clobber_ok = ('clobber_ok' in set_dict or 'clobber_ok' in get_dict)
         if (tag == 'control' and name in self.syscfg_dict[tag] and
             not clobber_ok):
