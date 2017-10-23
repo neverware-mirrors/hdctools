@@ -247,8 +247,9 @@ class SystemConfig(object):
 
         # Save the control name to the params dicts, such that the driver can
         # refer to it.
-        get_dict['control_name'] = name
-        set_dict['control_name'] = name
+        if tag == 'control':
+          get_dict['control_name'] = name
+          set_dict['control_name'] = name
 
         clobber_ok = ('clobber_ok' in set_dict or 'clobber_ok' in get_dict)
         if (tag == 'control' and name in self.syscfg_dict[tag] and
