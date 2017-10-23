@@ -112,7 +112,7 @@
   <control>
     <name>jtag_vref_sel0</name>
     <alias>jtag_vref_sel1,fw_wp_vref</alias>
-    <params interface="servo" subtype="not_applicable" drv="na"  map="na"
+    <params interface="servo" subtype="not_applicable" drv="na" input_type="str"
     init="not_applicable" clobber_ok=""></params>
   </control>
   <control>
