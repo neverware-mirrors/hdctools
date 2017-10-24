@@ -152,8 +152,8 @@ class Servod(object):
           servo_v2_r0, servo_v3
       usbkm232: String. Optional. Path to USB-KM232 device which allow for
           sending keyboard commands to DUTs that do not have built in
-          keyboards. Used in FAFT tests.  Use 'atmega' for on board AVR MCU.
-          e.g. '/dev/ttyUSB0' or 'atmega'
+          keyboards. Used in FAFT tests. Use None for on board AVR MCU.
+          e.g. '/dev/ttyUSB0' or None.
 
     Raises:
       ServodError: if unable to locate init method for particular interface
@@ -249,7 +249,7 @@ class Servod(object):
       board: string, board name.
 
     Returns:
-      keyboard handler object.
+      keyboard handler object, or None if no keyboard supported.
     """
     if board == 'parrot':
       return keyboard_handlers.ParrotHandler(servo)
@@ -262,13 +262,17 @@ class Servod(object):
       if self._usbkm232 is None:
         logging.info("No device path specified for usbkm232 handler. Use "
                      "the servo atmega chip to handle.")
-        self._usbkm232 = 'atmega'
-      if self._usbkm232 == 'atmega':
+
         # Use servo onboard keyboard emulator.
+        if not self._syscfg.is_control('atmega_rst'):
+          logging.warn('No atmega in servo board. So no keyboard support.')
+          return None
+
         self.set('atmega_rst', 'on')
         self.set('at_hwb', 'off')
         self.set('atmega_rst', 'off')
         self._usbkm232 = self.get('atmega_pty')
+
         # We don't need to set the atmega uart settings if we're a servo v4.
         if 'servo_v4' not in self._version:
           self.set('atmega_baudrate', '9600')
@@ -279,6 +283,7 @@ class Servod(object):
           self.set('usb_mux_oe4', 'on')
           # Allow atmega bootup time.
           time.sleep(1.0)
+
       self._logger.info('USBKM232: %s', self._usbkm232)
       return keyboard_handlers.USBkm232Handler(servo, self._usbkm232)
     else:
