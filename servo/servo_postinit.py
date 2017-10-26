@@ -308,7 +308,6 @@ class ServoV4PostInit(BasePostInit):
         self.init_servo_interfaces(servo_micro)
         # Interfaces change; clear the cached.
         self.servod.clear_cached_drv()
-        self.servod._version += "_with_servo_micro"
 
         board = self.probe_ec_board()
         if board:
@@ -338,6 +337,9 @@ class ServoV4PostInit(BasePostInit):
           self.add_servo_serial(
               servo_micro, self.servod.SERVO_MICRO_SERIAL + '_for_' + board)
         else:
+          # Append "_with_servo_micro" to the version string. Don't do it on a
+          # base, as the base is optional.
+          self.servod._version += "_with_servo_micro"
           # This is the main servo-micro.
           self.add_servo_serial(servo_micro, self.servod.SERVO_MICRO_SERIAL)
           # Add an alias for the servo micro as well.  This is useful if there
