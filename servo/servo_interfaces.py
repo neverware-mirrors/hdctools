@@ -152,7 +152,7 @@ for vid, pid in SERVO_V4_DEFAULTS:
 
   # Servo v4 interfaces.
   INTERFACE_DEFAULTS[vid][pid] += \
-    [{'name': 'stm32_gpio', 'interface': 1}, #21: 32x GPIO block.
+    ['dummy',                                #21: just nothing.
      {'name': 'stm32_uart', 'interface': 0}, #22: servo console.
      {'name': 'stm32_i2c', 'interface': 2},  #23: i2c
      {'name': 'stm32_uart', 'interface': 3}, #24: dut sbu uart

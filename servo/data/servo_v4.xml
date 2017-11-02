@@ -42,171 +42,176 @@
   <map>
     <name>servo_v4_cc_map</name>
     <doc>Enable CC and power config for various CCD modes</doc>
-    <params usbsnk="0" ccd="1" rpusb="2" rpchg="3" disconnect="4" usbchg="5"></params>
+    <params usbsnk="0" ccd="1" rpusb="2" rpchg="3" disconnect="4"
+     usbchg="5"></params>
   </map>
 
   <!-- GPIO on chip settings -->
   <control>
     <name>dut_charge_enable</name>
     <doc>GPIO_DUT_CHG_EN</doc>
-    <params interface="21" drv="gpio" offset="0" map="onoff"></params>
+    <params interface="26" drv="ec3po_gpio" subtype="single" name="DUT_CHG_EN"
+     map="onoff"></params>
   </control>
   <control>
     <name>dut_charge_source</name>
     <doc>GPIO_HOST_OR_CHG_CTL</doc>
-    <params interface="21" drv="gpio" offset="1"
-    map="onoff_pwrsrc_sel"></params>
+    <params interface="26" drv="ec3po_gpio" subtype="single"
+     name="HOST_OR_CHG_CTL" map="onoff_pwrsrc_sel"></params>
   </control>
   <control>
     <name>dp_hpd</name>
     <doc>DP_HPD: Displayport hotplug detect</doc>
-    <params interface="21" drv="gpio" offset="2" map="onoff"
-    init="off"></params>
+    <params interface="26" drv="ec3po_gpio" subtype="single"
+     name="DP_HPD" map="onoff" init="off"></params>
   </control>
   <control>
     <name>host_hub_reset</name>
     <doc>HOST_USB_HUB_RESET_L</doc>
-    <params interface="21" drv="gpio" offset="4" map="onoff_i"
-    init="off"></params>
+    <params interface="26" drv="ec3po_gpio" subtype="single"
+     name="HOST_USB_HUB_RESET_L" map="onoff_i" init="off"></params>
   </control>
   <control>
     <name>fastboot_duthub_mux_sel</name>
     <alias>dut_is_host_or_device</alias>
     <doc>FASTBOOT_DUTHUB_MUX_SEL: Select DUT USB routed as device
     to host, or as host to duthub</doc>
-    <params interface="21" drv="gpio" offset="5"
-    map="onoff_fastboot_duthub_sel" init="host"></params>
+    <params interface="26" drv="ec3po_gpio" subtype="single"
+     name="FASTBOOT_DUTHUB_MUX_SEL" map="onoff_fastboot_duthub_sel"
+     init="host"></params>
   </control>
   <control>
     <name>sbu_mux_enable</name>
     <doc>SBU_MUX_EN: enable DUT's SBU routing</doc>
-    <params interface="21" drv="gpio" offset="6" map="onoff"></params>
+    <params interface="26" drv="ec3po_gpio" subtype="single"
+     name="SBU_MUX_EN" map="onoff"></params>
   </control>
   <control>
     <name>dut_usb_mux_enable</name>
     <doc>FASTBOOT_DUTHUB_MUX_EN_L: enable DUT's USB interface</doc>
-    <params interface="21" drv="gpio" offset="7" map="onoff_i"
-    init="on"></params>
+    <params interface="26" drv="ec3po_gpio" subtype="single"
+     name="FASTBOOT_DUTHUB_MUX_EN_L" map="onoff_i" init="on"></params>
   </control>
   <control>
     <name>dut_hub_usb_reset</name>
     <doc>DUT_HUB_USB_RESET_L: reset dut's usb hub</doc>
-    <params interface="21" drv="gpio" offset="8" map="onoff_i"
-    init="off"></params>
+    <params interface="26" drv="ec3po_gpio" subtype="single"
+     name="DUT_HUB_USB_RESET_L" map="onoff_i" init="off"></params>
   </control>
   <control>
     <name>at_hwb</name>
     <doc>ATMEL_HWB_L: enable DFU programming of atmega</doc>
-    <params interface="21" drv="gpio" offset="9" map="onoff_i"
-    init="off"></params>
+    <params interface="26" drv="ec3po_gpio" subtype="single"
+     name="ATMEL_HWB_L" map="onoff_i" init="off"></params>
   </control>
   <control>
     <name>cmux_en</name>
     <doc>CMUX_EN: enable DUT USB3/Displayport mux.</doc>
-    <params interface="21" drv="gpio" offset="10" map="onoff"
-    init="on"></params>
+    <params interface="26" drv="ec3po_gpio" subtype="single"
+     name="CMUX_EN" map="onoff" init="on"></params>
   </control>
   <control>
     <name>sd_en</name>
     <doc>EMMC_MUX_EN_L: enable sd mux connection</doc>
-    <params interface="21" drv="gpio" offset="11" map="onoff_i"
-    init="off"></params>
+    <params interface="26" drv="ec3po_gpio" subtype="single"
+     name="EMMC_MUX_EN_L" map="onoff_i" init="off"></params>
   </control>
   <control>
     <name>sd_pwr_en</name>
     <doc>EMMC_PWR_EN</doc>
-    <params interface="21" drv="gpio" offset="12" map="onoff"
-    init="off"></params>
+    <params interface="26" drv="ec3po_gpio" subtype="single"
+     name="EMMC_PWR_EN" map="onoff" init="off"></params>
   </control>
   <control>
     <name>uservo_pwr_fault</name>
     <doc>USERVO_FAULT_L</doc>
-    <params interface="21" drv="gpio" offset="13" map="onoff_i">
-    </params>
+    <params interface="26" drv="ec3po_gpio" subtype="single"
+     name="USERVO_FAULT_L" map="onoff_i"></params>
   </control>
   <control>
     <name>usb3_pwr_fault</name>
     <doc>USB_FAULT_L</doc>
-    <params interface="21" drv="gpio" offset="14" map="onoff_i">
-    </params>
+    <params interface="26" drv="ec3po_gpio" subtype="single"
+     name="USB_FAULT_L" map="onoff_i"></params>
   </control>
   <control>
     <name>dongle_detect</name>
     <doc>DONGLE_DET</doc>
-    <params interface="21" drv="gpio" offset="15" map="onoff">
-    </params>
+    <params interface="26" drv="ec3po_gpio" subtype="single"
+     name="DONGLE_DET" map="onoff"></params>
   </control>
   <control>
     <name>USB_DET_PP_DUT</name>
     <doc>USB_DET_PP_DUT</doc>
-    <params interface="21" drv="gpio" offset="16" map="onoff">
-    </params>
+    <params interface="26" drv="ec3po_gpio" subtype="single"
+     name="USB_DET_PP_DUT" map="onoff"></params>
   </control>
   <control>
     <name>USB_DET_PP_CHG</name>
     <doc>USB_DET_PP_CHG</doc>
-    <params interface="21" drv="gpio" offset="17" map="onoff">
-    </params>
+    <params interface="26" drv="ec3po_gpio" subtype="single"
+     name="USB_DET_PP_CHG" map="onoff"></params>
   </control>
   <control>
     <name>DUT_CC2_RPUSB</name>
     <doc>DUT_CC2_RPUSB</doc>
-    <params interface="21" drv="gpio" offset="18" map="onoff">
-    </params>
+    <params interface="26" drv="ec3po_gpio" subtype="single"
+     name="DUT_CC2_RPUSB" map="onoff"></params>
   </control>
   <control>
     <name>DUT_CC2_RD</name>
     <doc>DUT_CC2_RD</doc>
-    <params interface="21" drv="gpio" offset="19" map="onoff">
-    </params>
+    <params interface="26" drv="ec3po_gpio" subtype="single"
+     name="DUT_CC2_RD" map="onoff"></params>
   </control>
   <control>
     <name>DUT_CC2_RA</name>
     <doc>DUT_CC2_RA</doc>
-    <params interface="21" drv="gpio" offset="20" map="onoff">
-    </params>
+    <params interface="26" drv="ec3po_gpio" subtype="single"
+     name="DUT_CC2_RA" map="onoff"></params>
   </control>
   <control>
     <name>DUT_CC1_PR3A0</name>
     <doc>DUT_CC1_PR3A0</doc>
-    <params interface="21" drv="gpio" offset="21" map="onoff">
-    </params>
+    <params interface="26" drv="ec3po_gpio" subtype="single"
+     name="DUT_CC1_PR3A0" map="onoff"></params>
   </control>
   <control>
     <name>DUT_CC1_RP1A5</name>
     <doc>DUT_CC1_RP1A5</doc>
-    <params interface="21" drv="gpio" offset="22" map="onoff">
-    </params>
+    <params interface="26" drv="ec3po_gpio" subtype="single"
+     name="DUT_CC1_RP1A5" map="onoff"></params>
   </control>
   <control>
     <name>DUT_CC1_RPUSB</name>
     <doc>DUT_CC1_RPUSB</doc>
-    <params interface="21" drv="gpio" offset="23" map="onoff">
-    </params>
+    <params interface="26" drv="ec3po_gpio" subtype="single"
+     name="DUT_CC1_RPUSB" map="onoff"></params>
   </control>
   <control>
     <name>DUT_CC1_RD</name>
     <doc>DUT_CC1_RD</doc>
-    <params interface="21" drv="gpio" offset="24" map="onoff">
-    </params>
+    <params interface="26" drv="ec3po_gpio" subtype="single"
+     name="DUT_CC1_RD" map="onoff"></params>
   </control>
   <control>
     <name>DUT_CC1_RA</name>
     <doc>DUT_CC1_RA</doc>
-    <params interface="21" drv="gpio" offset="25" map="onoff">
-    </params>
+    <params interface="26" drv="ec3po_gpio" subtype="single"
+     name="DUT_CC1_RA" map="onoff"></params>
   </control>
   <control>
     <name>DUT_CC2_PR3A0</name>
     <doc>DUT_CC2_PR3A0</doc>
-    <params interface="21" drv="gpio" offset="26" map="onoff">
+    <params interface="26" drv="ec3po_gpio" subtype="single"
+     name="DUT_CC2_PR3A0" map="onoff">
     </params>
   </control>
   <control>
     <name>DUT_CC2_RP1A5</name>
     <doc>DUT_CC2_RP1A5</doc>
-    <params interface="21" drv="gpio" offset="27" map="onoff">
-    </params>
+    <params interface="26" drv="ec3po_gpio" subtype="single"
+     name="DUT_CC2_RP1A5" map="onoff"></params>
   </control>
 
 
