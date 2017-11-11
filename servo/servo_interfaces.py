@@ -7,18 +7,9 @@ import collections
 
 INTERFACE_DEFAULTS = collections.defaultdict(dict)
 
-SERVO_ID_DEFAULTS = [(0x0403, 0x6011), (0x0403, 0x6014), (0x18d1, 0x5001),
+SERVO_ID_DEFAULTS = [(0x0403, 0x6014), (0x18d1, 0x5001),
                      (0x18d1, 0x5002), (0x18d1, 0x5004), (0x18d1, 0x500f),
                      (0x18d1, 0x5014), (0x18d1, 0x501a), (0x18d1, 0x501b)]
-
-# servo v1 w/o FT4232h EEPROM programmed
-INTERFACE_DEFAULTS[0x0403][0x6011] = \
-  ['dummy',
-   'ftdi_gpio',
-   'ftdi_i2c',
-   'ftdi_gpio',
-   'ftdi_gpio',
-  ]
 
 # servo v1
 INTERFACE_DEFAULTS[0x18d1][0x5001] = \
