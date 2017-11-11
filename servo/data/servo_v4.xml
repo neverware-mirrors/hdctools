@@ -48,30 +48,6 @@
 
   <!-- GPIO on chip settings -->
   <control>
-    <name>dut_charge_enable</name>
-    <doc>GPIO_DUT_CHG_EN</doc>
-    <params interface="26" drv="ec3po_gpio" subtype="single" name="DUT_CHG_EN"
-     map="onoff"></params>
-  </control>
-  <control>
-    <name>dut_charge_source</name>
-    <doc>GPIO_HOST_OR_CHG_CTL</doc>
-    <params interface="26" drv="ec3po_gpio" subtype="single"
-     name="HOST_OR_CHG_CTL" map="onoff_pwrsrc_sel"></params>
-  </control>
-  <control>
-    <name>dp_hpd</name>
-    <doc>DP_HPD: Displayport hotplug detect</doc>
-    <params interface="26" drv="ec3po_gpio" subtype="single"
-     name="DP_HPD" map="onoff" init="off"></params>
-  </control>
-  <control>
-    <name>host_hub_reset</name>
-    <doc>HOST_USB_HUB_RESET_L</doc>
-    <params interface="26" drv="ec3po_gpio" subtype="single"
-     name="HOST_USB_HUB_RESET_L" map="onoff_i" init="off"></params>
-  </control>
-  <control>
     <name>fastboot_duthub_mux_sel</name>
     <alias>dut_is_host_or_device</alias>
     <doc>FASTBOOT_DUTHUB_MUX_SEL: Select DUT USB routed as device
@@ -105,12 +81,6 @@
      name="ATMEL_HWB_L" map="onoff_i" init="off"></params>
   </control>
   <control>
-    <name>cmux_en</name>
-    <doc>CMUX_EN: enable DUT USB3/Displayport mux.</doc>
-    <params interface="26" drv="ec3po_gpio" subtype="single"
-     name="CMUX_EN" map="onoff" init="on"></params>
-  </control>
-  <control>
     <name>sd_en</name>
     <doc>EMMC_MUX_EN_L: enable sd mux connection</doc>
     <params interface="26" drv="ec3po_gpio" subtype="single"
@@ -140,80 +110,6 @@
     <params interface="26" drv="ec3po_gpio" subtype="single"
      name="DONGLE_DET" map="onoff"></params>
   </control>
-  <control>
-    <name>USB_DET_PP_DUT</name>
-    <doc>USB_DET_PP_DUT</doc>
-    <params interface="26" drv="ec3po_gpio" subtype="single"
-     name="USB_DET_PP_DUT" map="onoff"></params>
-  </control>
-  <control>
-    <name>USB_DET_PP_CHG</name>
-    <doc>USB_DET_PP_CHG</doc>
-    <params interface="26" drv="ec3po_gpio" subtype="single"
-     name="USB_DET_PP_CHG" map="onoff"></params>
-  </control>
-  <control>
-    <name>DUT_CC2_RPUSB</name>
-    <doc>DUT_CC2_RPUSB</doc>
-    <params interface="26" drv="ec3po_gpio" subtype="single"
-     name="DUT_CC2_RPUSB" map="onoff"></params>
-  </control>
-  <control>
-    <name>DUT_CC2_RD</name>
-    <doc>DUT_CC2_RD</doc>
-    <params interface="26" drv="ec3po_gpio" subtype="single"
-     name="DUT_CC2_RD" map="onoff"></params>
-  </control>
-  <control>
-    <name>DUT_CC2_RA</name>
-    <doc>DUT_CC2_RA</doc>
-    <params interface="26" drv="ec3po_gpio" subtype="single"
-     name="DUT_CC2_RA" map="onoff"></params>
-  </control>
-  <control>
-    <name>DUT_CC1_PR3A0</name>
-    <doc>DUT_CC1_PR3A0</doc>
-    <params interface="26" drv="ec3po_gpio" subtype="single"
-     name="DUT_CC1_PR3A0" map="onoff"></params>
-  </control>
-  <control>
-    <name>DUT_CC1_RP1A5</name>
-    <doc>DUT_CC1_RP1A5</doc>
-    <params interface="26" drv="ec3po_gpio" subtype="single"
-     name="DUT_CC1_RP1A5" map="onoff"></params>
-  </control>
-  <control>
-    <name>DUT_CC1_RPUSB</name>
-    <doc>DUT_CC1_RPUSB</doc>
-    <params interface="26" drv="ec3po_gpio" subtype="single"
-     name="DUT_CC1_RPUSB" map="onoff"></params>
-  </control>
-  <control>
-    <name>DUT_CC1_RD</name>
-    <doc>DUT_CC1_RD</doc>
-    <params interface="26" drv="ec3po_gpio" subtype="single"
-     name="DUT_CC1_RD" map="onoff"></params>
-  </control>
-  <control>
-    <name>DUT_CC1_RA</name>
-    <doc>DUT_CC1_RA</doc>
-    <params interface="26" drv="ec3po_gpio" subtype="single"
-     name="DUT_CC1_RA" map="onoff"></params>
-  </control>
-  <control>
-    <name>DUT_CC2_PR3A0</name>
-    <doc>DUT_CC2_PR3A0</doc>
-    <params interface="26" drv="ec3po_gpio" subtype="single"
-     name="DUT_CC2_PR3A0" map="onoff">
-    </params>
-  </control>
-  <control>
-    <name>DUT_CC2_RP1A5</name>
-    <doc>DUT_CC2_RP1A5</doc>
-    <params interface="26" drv="ec3po_gpio" subtype="single"
-     name="DUT_CC2_RP1A5" map="onoff"></params>
-  </control>
-
 
   <!-- GPIO on expander settings -->
   <control>
