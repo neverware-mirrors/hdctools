@@ -279,7 +279,7 @@ class cr50(pty_driver.ptyDriver):
                           self._interface._ec_uart_bitbang_props["baudrate"],
                           self._interface._ec_uart_bitbang_props["parity"])
       try:
-        result = self._issue_cmd_get_results(cmd, ["successfully enabled"])
+        result = self._issue_cmd_get_results(cmd, ["Bit bang enabled"])
         if result is None:
           raise cr50Error("Unable to enable bit bang mode!")
       except pty_driver.ptyError:
