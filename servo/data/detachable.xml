@@ -17,6 +17,14 @@
     input_type="int"/>
   </control>
   <control>
+    <name>volume_up_down_hold</name>
+    <doc>Emulated both volume up and down buttons pressed on ec</doc>
+    <params cmd="get" subtype="not_applicable" interface="10" drv="na"
+    map="na"/>
+    <params cmd="set" subtype="volume_up_down_hold" interface="10" drv="ec"
+    input_type="int"/>
+  </control>
+  <control>
     <name>lid_open</name>
     <doc>Emulated lid switch on ec</doc>
     <params subtype="lid_open" interface="10" drv="ec" map="yesno"

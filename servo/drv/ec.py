@@ -291,6 +291,14 @@ class ec(pty_driver.ptyDriver):
     """
     self._issue_cmd("button vdown %d" % value)
 
+  def _Set_volume_up_down_hold(self, value):
+    """Setter of Vup and vdown for tablets/ detachables
+
+    Args:
+      value: number of ms to hold the volume buttons
+    """
+    self._issue_cmd("button vup vdown %d" % value)
+
   def _Set_pwr_button_hold(self, value):
     """Setter of pwr_button_hold.
 
