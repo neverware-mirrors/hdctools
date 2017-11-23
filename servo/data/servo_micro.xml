@@ -328,6 +328,20 @@
   </control>
 
 
+  <control>
+    <name>servo_micro_version</name>
+    <doc>current fw version</doc>
+    <params cmd="get" subtype="ver" interface="6" drv="ec3po_servo_micro"
+    map="str" clobber_ok=""></params>
+  </control>
+  <control>
+    <name>servo_micro_version_compatible</name>
+    <doc>Is current version compatible</doc>
+    <params cmd="get" subtype="ver_valid" interface="6" drv="ec3po_servo_micro"
+    map="yesno" clobber_ok=""></params>
+  </control>
+
+
   <!-- EC-3PO console interpreter linkup -->
   <control>
     <name>ec3po_servo_console</name>

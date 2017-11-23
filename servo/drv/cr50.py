@@ -10,7 +10,12 @@ Provides the following Cr50 controlled function:
 """
 
 import functools
+import logging
 import pty_driver
+
+
+# cr50 firmware versions verified compatible with servod
+VALID_VERSIONS = ["0.0.24/cr50_v1.1.6314-0ddc5fa"]
 
 
 class cr50Error(Exception):
@@ -182,6 +187,19 @@ class cr50(pty_driver.ptyDriver):
     if result is None:
       raise cr50Error("Cannot retrieve the version result on cr50 console.")
     return result[2]
+
+  def _Get_ver_valid(self):
+    """Getter of ver_valid.
+
+    Returns:
+        Boolean: Is the cr50 version string one of the validated versions?
+    """
+    ver = self._Get_ver()
+    valid = ver in VALID_VERSIONS
+    if not valid:
+      logging.warn("Detected cr50 version: %s", ver)
+      logging.warn("Not in valid versions: %s", VALID_VERSIONS)
+    return valid
 
   def _Set_cr50_reboot(self, value):
     """Reboot cr50 ignoring the value."""

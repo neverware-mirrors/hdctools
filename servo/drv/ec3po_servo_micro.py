@@ -12,6 +12,8 @@ import logging
 import pty_driver
 import servo
 
+# servo micro firmware versions verified compatible with servod
+VALID_VERSIONS = ["servo_micro_v1.1.5731-220a519"]
 
 # EC console mask for enabling only command channel
 COMMAND_CHANNEL_MASK = 0x1
@@ -67,6 +69,31 @@ class ec3poServoMicro(pty_driver.ptyDriver):
 
     self._logger.debug("")
 
+  def _Get_ver(self):
+    """Getter of ver.
+
+    Returns:
+        The version string
+    """
+    result = self._issue_cmd_get_results(
+        "ver", ["Build:\s+(\S+)\s"])[0]
+    if result is None:
+      raise ec3poServoMicroError(
+          "Cannot retrieve the version.")
+    return result[1]
+
+  def _Get_ver_valid(self):
+    """Getter of ver_valid.
+
+    Returns:
+        Boolean: Is the version string one of the validated versions?
+    """
+    ver = self._Get_ver()
+    valid = ver in VALID_VERSIONS
+    if not valid:
+      logging.warn("Detected servo micro version: %s", ver)
+      logging.warn("Not in valid versions: %s", VALID_VERSIONS)
+    return valid
 
   def batch_set(self, batch, index):
     """Set a batch of values on servo micro.
