@@ -33,8 +33,17 @@ class Uart(object):
     self._capture_buffer = []
     self._capture_thread = None
     self._capture_lock = threading.Lock()
+    self._capture_paused = False
     # Remember parent thread to be able to find out if it is still running.
     self._parent_thread = threading.current_thread()
+
+  def pause_capture(self):
+    """Wait to capture data until it is resumed."""
+    self._capture_paused = True
+
+  def resume_capture(self):
+    """Reenable capturing data from the uart."""
+    self._capture_paused = False
 
   def _capture_function(self):
     """Captures uart output and store it in the buffer.
@@ -65,6 +74,13 @@ class Uart(object):
     buffer_overflow = False
 
     while self._capture_active and self._parent_thread.is_alive():
+      # The pty_driver may pause capture, so it may be searching the console
+      # output and wants to prevent capture from consuming that. Wait to read
+      # from the pty until capture is resumed.
+      if self._capture_paused:
+        self._logger.debug('capture paused')
+        time.sleep(.1)
+        continue
       try:
         data = os.read(uart_fd, 100)
       except OSError, e:
@@ -196,6 +212,7 @@ class Uart(object):
       self._capture_thread = threading.Thread(target=self._capture_function)
       self._capture_active = activate
       self._capture_thread.start()
+      self._capture_paused = False
       return
 
     if not activate and self._capture_active:

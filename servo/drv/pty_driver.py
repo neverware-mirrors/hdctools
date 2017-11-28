@@ -147,6 +147,9 @@ class ptyDriver(hw_driver.HwDriver):
     """
     result_list = []
     with self._open():
+      # Make sure uart capture does not interfere with matching the expected
+      # response
+      self._interface.pause_capture()
       try:
         self._send(cmds)
         self._logger.debug("Sent cmds: %s" % cmds)
@@ -164,6 +167,9 @@ class ptyDriver(hw_driver.HwDriver):
         self._logger.debug("Before: ^%s^" % self._child.before)
         self._logger.debug("After: ^%s^" % self._child.after)
         raise ptyError("Timeout waiting for response.")
+      finally:
+        # Reenable capturing the console output
+        self._interface.resume_capture()
     return result_list
 
   def _issue_cmd_get_multi_results(self, cmd, regex):
