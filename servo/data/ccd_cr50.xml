@@ -97,14 +97,14 @@
   <!-- cr50 UART Buffers & VREF Controls -->
   <control>
     <name>uart4_on_flex_en</name>
-    <alias>cr50_console_on_flex_en,usbpd_uart_on_flex_en</alias>
+    <alias>cr50_uart_on_flex_en,usbpd_uart_on_flex_en</alias>
     <doc>Override control not needed for ccd.</doc>
     <params interface="9" drv="cr50" subtype="ccd_noop" map="onoff"
     clobber_ok=""></params>
   </control>
   <control>
     <name>jtag_buf_en</name>
-    <alias>cr50_console_en,usbpd_uart_en</alias>
+    <alias>cr50_uart_en,usbpd_uart_en</alias>
     <doc>Override control not needed for ccd.</doc>
     <params interface="9" drv="cr50" subtype="ccd_noop" map="onoff"
     clobber_ok=""></params>

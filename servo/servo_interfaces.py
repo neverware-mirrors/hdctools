@@ -97,7 +97,7 @@ for vid, pid in CCD_DEFAULTS:
      {'name': 'stm32_uart', 'interface': 2}, # 7: EC/PD
      {'name': 'stm32_uart', 'interface': 1}, # 8: AP
      {'name': 'ec3po_uart',                  # 9: EC3PO(Cr50)
-      'raw_pty': 'raw_cr50_console_pty'},
+      'raw_pty': 'raw_cr50_uart_pty'},
      {'name': 'ec3po_uart',                  #10: EC3PO(EC)
       'raw_pty': 'raw_ec_uart_pty'},
     ]
