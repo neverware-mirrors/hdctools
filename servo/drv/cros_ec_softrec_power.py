@@ -54,10 +54,10 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
   def _power_on_bytype(self, rec_mode, rec_type=_REC_TYPE_REC_ON):
     self._interface.set('ec_uart_cmd', '\r')
     if rec_mode == self.REC_ON:
+      # Hold warm reset so the AP doesn't boot when EC reboots.
+      # Note that this only seems to work reliably for ARM devices.
+      self._interface.set('warm_reset', 'on')
       try:
-        # Hold warm reset so the AP doesn't boot when EC reboots.
-        # Note that this only seems to work reliably for ARM devices.
-        self._interface.set('warm_reset', 'on')
         # Before proceeding, we should really check that the EC has reset from
         # our command.  Pexpect is minimally greedy so we won't be able to match
         # the exact reset cause string.  But, this should be good enough.
@@ -68,8 +68,15 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
         # upcoming recovery mode request.
         self._cold_reset()
       except:
-        # If the EC doesn't support wait-ext, then resend reboot with only the
-        # ap-off argument. This will still prevent a race condition between the
+        # If the EC doesn't support wait-ext, fallback to the old route.
+        # Reset the EC to force it back into RO code; this clears
+        # the EC_IN_RW signal, so the system CPU will trust the
+        # upcoming recovery mode request.
+        # For devices whose warm_reset can't hold AP, AP may boot faster that
+        # the original recovery reason is overwritten.
+        self._cold_reset()
+        # Send reboot command to EC with only the ap-off argument.
+        # This will still prevent a race condition between the
         # EC and AP when rebooting. However, the reboot will be triggered
         # internally by the EC watchdog, and there is no external reset signal.
         self._interface.set('ec_uart_regexp', '["Rebooting!"]')
