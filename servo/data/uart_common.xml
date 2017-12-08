@@ -77,6 +77,12 @@
     <params cmd="get" subtype="board" interface="10" drv="ec"
     input_type="str"></params>
   </control>
+  <control>
+    <name>ec_active_copy</name>
+    <doc>The active copy of the EC image</doc>
+    <params cmd="get" subtype="active_copy" interface="10" drv="ec"
+    input_type="str"></params>
+  </control>
 
   <control>
     <name>cpu_uart_capture</name>
