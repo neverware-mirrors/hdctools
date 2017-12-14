@@ -209,14 +209,13 @@ class cr50(pty_driver.ptyDriver):
     """Getter of ccd_level.
 
     Returns:
-      0: CCD restricted console lock disabled.
-      1: CCD restricted console lock enabled.
+      lock, unlock, or open based on the current ccd privilege level.
     """
     result = self._issue_cmd_get_results(
-        "ccd", ["State:\s+(Locked|Unlocked|Open)"])[0]
+        "ccd", ["State:\s+(Lock|Unlock|Open)"])[0]
     if result is None:
       raise cr50Error("Cannot retrieve ccd privilege level on cr50 console.")
-    return result[1]
+    return result[1].lower()
 
   def _Set_ccd_noop(self, value):
     """Used to ignore servo controls"""
@@ -235,11 +234,11 @@ class cr50(pty_driver.ptyDriver):
     """Getter of ccd_testlab.
 
     Returns:
-      'enabled' or 'disabled' if ccd testlab mode is enabled or disabled.
+      'on' or 'off' if ccd testlab mode is enabled or disabled.
     """
     result = self._issue_cmd_get_results("ccd testlab",
-        ["CCD test lab mode (ena|dis)"])[0][1]
-    return "enabled" if "ena" in result else "disabled"
+        ["CCD test lab mode (ena|dis)"])[0][1].lower()
+    return "on" if "ena" == result else "off"
 
   def _Set_ccd_testlab(self, value):
     """Setter of ccd_testlab.
