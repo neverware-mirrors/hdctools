@@ -4,6 +4,6 @@
     <name>lid_open</name>
     <doc>fake lid for products without one</doc>
     <params subtype="not_applicable" interface="servo" drv="na" map="na"
-    clobber_ok=""></params>
+    clobber_ok="" init="not_applicable"></params>
   </control>
 </root>
