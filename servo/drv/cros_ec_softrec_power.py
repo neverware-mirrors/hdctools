@@ -46,6 +46,9 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
     super(crosEcSoftrecPower, self).__init__(interface, params)
     self._boot_to_rec_screen_delay = float(
       self._params.get('boot_to_rec_screen_delay', 5.0))
+    self._warm_reset_can_hold_ap = ('yes' ==
+      self._params.get('warm_reset_can_hold_ap', 'yes'))
+
 
   def _power_on_ap(self):
     """Power on the AP after initializing recovery state."""
@@ -54,9 +57,10 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
   def _power_on_bytype(self, rec_mode, rec_type=_REC_TYPE_REC_ON):
     self._interface.set('ec_uart_cmd', '\r')
     if rec_mode == self.REC_ON:
-      # Hold warm reset so the AP doesn't boot when EC reboots.
-      # Note that this only seems to work reliably for ARM devices.
-      self._interface.set('warm_reset', 'on')
+      if self._warm_reset_can_hold_ap:
+        # Hold warm reset so the AP doesn't boot when EC reboots.
+        # Note that this only seems to work reliably for ARM devices.
+        self._interface.set('warm_reset', 'on')
       try:
         # Before proceeding, we should really check that the EC has reset from
         # our command.  Pexpect is minimally greedy so we won't be able to match
@@ -84,8 +88,9 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
       finally:
         self._interface.set('ec_uart_regexp', 'None')
       time.sleep(self._reset_recovery_time)
-      # Release warm reset
-      self._interface.set('warm_reset', 'off')
+      if self._warm_reset_can_hold_ap:
+        # Release warm reset
+        self._interface.set('warm_reset', 'off')
     else:
       # Need to clear the flag in secondary (B) copy of the host events if
       # we're in non-recovery mode.

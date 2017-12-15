@@ -17,7 +17,8 @@
     <name>power_state</name>
     <doc>Used to turn the DUT off and on</doc>
     <params drv="cros_ec_softrec_power" clobber_ok=""
-    shutdown_delay="11.0" boot_to_rec_screen_delay="10.0"/>
+    shutdown_delay="11.0" boot_to_rec_screen_delay="10.0"
+    warm_reset_can_hold_ap="no"/>
   </control>
   <control>
     <name>fw_wp_state</name>
