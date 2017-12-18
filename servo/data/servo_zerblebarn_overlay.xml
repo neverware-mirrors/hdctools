@@ -1,0 +1,148 @@
+<?xml version="1.0"?>
+<root>
+<!--
+  Zoombini Fingerprint daughter-board
+
+  It has a single UART going to the FP MCU,
+  it's connected to servo 'uart2' (on interface 8) but it should behave
+  as a FPMCU/USBPD EC3PO UART (on interface 9).
+
+  SPI1 is the MCU SPI slave interface.
+  DUT JTAG is the STM32H7 JTAG interface.
+  -->
+
+  <control>
+    <name>spi1_vref</name>
+    <doc>BEWARE ... might actually power the whole board.</doc>
+    <params clobber_ok="" init="pp3300"></params>
+  </control>
+  <control>
+    <name>jtag_vref_sel0</name>
+    <params clobber_ok="" init="pp3300"></params>
+  </control>
+  <control>
+    <name>jtag_vref_sel1</name>
+    <params clobber_ok="" init="pp3300"></params>
+  </control>
+  <!-- FP MCU is also named 'usbpd' for compatibility with previous scripts -->
+  <!-- FP MCU UART Controls -->
+  <control>
+    <name>uart2_pty</name>
+    <alias>raw_fpmcu_uart_pty,raw_usbpd_uart_pty</alias>
+    <doc>Pseudo-terminal (pty) thats connnected to FP MCU's
+    uart console</doc>
+    <params cmd="get" subtype="pty" interface="8" drv="uart" clobber_ok=""
+    ></params>
+  </control>
+  <!-- EC-3PO console interpreter for FP MCU -->
+  <control>
+    <name>ec3po_fpmcu_uart_pty</name>
+    <alias>ec3po_usbpd_uart_pty,fpmcu_uart_pty,usbpd_uart_pty</alias>
+    <doc>FP MCU UART console provided via EC-3PO console interpreter.</doc>
+    <params cmd="get" subtype="pty" interface="9" drv="uart"></params>
+  </control>
+  <control>
+    <name>fpmcu_ec3po_interp_connect</name>
+    <alias>usbpd_ec3po_interp_connect</alias>
+    <doc>State indicating if interpreter is listening to the EC UART.</doc>
+    <params interface="9" drv="ec3po_driver" map="onoff" init="on"
+    subtype="interp_connect" clobber_ok=""></params>
+  </control>
+  <control>
+    <name>uart2_baudrate</name>
+    <alias>fpmcu_uart_baudrate,usbpd_uart_baudrate</alias>
+    <doc>Baudrate for FP MCU's uart console</doc>
+    <params drv="uart" subtype="props" line_prop="baudrate" clobber_ok=""
+    interface="8"></params>
+  </control>
+  <control>
+    <name>uart2_parity</name>
+    <alias>fpmcu_uart_parity,usbpd_uart_parity</alias>
+    <doc>Parity for FP MCU's uart console</doc>
+    <params drv="uart" subtype="props" line_prop="parity" clobber_ok=""
+    interface="8" map="uart_parity"></params>
+  </control>
+  <control>
+    <name>uart2_sbits</name>
+    <alias>fpmcu_uart_sbits,usbpd_uart_sbits</alias>
+    <doc>Number of stop bits for FP MCU's uart console</doc>
+    <params drv="uart" subtype="props" line_prop="sbits" clobber_ok=""
+    interface="8" map="uart_sbits"></params>
+  </control>
+  <control>
+    <name>uart2_bits</name>
+    <alias>fpmcu_uart_bits,usbpd_uart_bits</alias>
+    <doc>Number of data bits for FP MCU's uart console</doc>
+    <params drv="uart" subtype="props" line_prop="bits" clobber_ok=""
+    interface="8" map="uart_bits"></params>
+  </control>
+  <!-- FP MCU UART Automation Controls -->
+  <control>
+    <name>fpmcu_uart_cmd</name>
+    <alias>usbpd_uart_cmd</alias>
+    <doc>Set to send command to FP MCU UART. Get to obtain the
+    matched results with the regular expression of
+    fpmcu_uart_regexp.</doc>
+    <params subtype="uart_cmd" interface="9" drv="uart"
+    input_type="str"></params>
+  </control>
+  <control>
+    <name>fpmcu_uart_multicmd</name>
+    <alias>usbpd_uart_multicmd</alias>
+    <doc>Set to send multiple commands to FP MCU UART.</doc>
+    <params subtype="not_applicable" interface="9" drv="na"
+    map="na" cmd="get"></params>
+    <params subtype="uart_multicmd" interface="9" drv="uart"
+    input_type="str" cmd="set"></params>
+  </control>
+  <control>
+    <name>fpmcu_uart_regexp</name>
+    <alias>usbpd_uart_regexp</alias>
+    <doc>List of regular expressions to match the response of
+    fpmcu_uart_cmd.</doc>
+    <params subtype="uart_regexp" interface="9" drv="uart"
+    input_type="str"></params>
+  </control>
+  <control>
+    <name>fpmcu_uart_timeout</name>
+    <alias>usbpd_uart_timeout</alias>
+    <doc>Timeout value for a response after issuing a command on
+    fpmcu_uart_cmd.</doc>
+    <params subtype="uart_timeout" interface="9" drv="uart"
+    input_type="float"></params>
+  </control>
+  <control>
+    <name>fpmcu_uart_capture</name>
+    <alias>usbpd_uart_capture</alias>
+    <doc>Enables capture of FP MCU console via
+    fpmcu_uart_stream</doc>
+    <params subtype="uart_capture" interface="9" drv="uart"
+    map="onoff"></params>
+  </control>
+  <control>
+    <name>fpmcu_uart_stream</name>
+    <alias>usbpd_uart_stream</alias>
+    <doc>FP MCU console stream captured while fpmcu_uart_capture is
+    set to 'on'</doc>
+    <params cmd="get" subtype="uart_stream" interface="9"
+    drv="uart"></params>
+  </control>
+  <!-- FP MCU UART Buffers & VREF Controls -->
+  <control>
+    <name>uart2_en</name>
+    <alias>fpmcu_uart_en,usbpd_uart_en</alias>
+    <doc>Enable communication with FP MCU's uart console.</doc>
+    <params clobber_ok="" init="on"></params>
+  </control>
+  <!-- Override from definition in servo_v2_r0.xml -->
+  <control>
+    <name>dev_mode</name>
+    <alias>fpmcu_boot_mode,usbpd_boot_mode</alias>
+    <params clobber_ok="" od="PP" map="onoff"></params>
+  </control>
+  <control>
+    <name>cold_reset</name>
+    <alias>fpmcu_reset,usbpd_reset</alias>
+    <params clobber_ok=""></params>
+  </control>
+</root>
