@@ -52,6 +52,7 @@ import pca9537
 import pca9546
 import pca95xx
 import plankton
+import power_tools
 import ps8742
 import pty_driver
 import servo_metadata

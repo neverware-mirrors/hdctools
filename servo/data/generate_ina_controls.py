@@ -312,6 +312,7 @@ class ServoINAConfigGenerator(INAConfigGenerator):
       servo_drv_dir = os.path.join(servo_data_dir, '..', 'drv')
     self._servo_drv_dir = servo_drv_dir
     ina2xx_drv_cfg = os.path.join(servo_data_dir, 'ina2xx.xml')
+    powertools_drv_cfg = os.path.join(servo_data_dir, 'power_tools.xml')
     if hasattr(ina_pkg, 'interface'):
       interface = ina_pkg.interface
       if type(interface) != int:
@@ -324,6 +325,8 @@ class ServoINAConfigGenerator(INAConfigGenerator):
     includes = []
     body = ''
 
+    if os.path.isfile(powertools_drv_cfg):
+      includes.append(os.path.basename(powertools_drv_cfg))
     if os.path.isfile(ina2xx_drv_cfg):
       includes.append(os.path.basename(ina2xx_drv_cfg))
     if hasattr(ina_pkg, 'inline'):
