@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+revs = [1, 2]
+
 inas = [
         ('ina3221', '0x40:0', 'pp3300_dsw_ec',    3.3, 0.010, 'rem', True),
         ('ina3221', '0x40:1', 'pp3300_dx_wlan',   3.3, 0.010, 'rem', True),

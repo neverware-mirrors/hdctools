@@ -6,10 +6,39 @@
 # Based on suggestions in http://guide.python-distribute.org/creation.html
 # ...with a mix of bits from pymox.
 
+import imp
 import os
 from setuptools import setup
+from setuptools.command import build_py
+import sys
+
+class servo_build_py(build_py.build_py):
+  """ Custom build_py class for servod to do setup """
+
+  # The only reason we include the servo.data package is to build INA
+  # XML configuration files from simplified .py files. So we pop it
+  # out to avoid building the python files.
+  # See generate_ina_controls.py & servo/data/README.md for more
+  # information.
+  def run(self):
+    """ Generate .xml servod configuration files from the servo/data/*.py
+        files before removing the servo.data package.
+    """
+    data_dir = self.get_package_dir(self.packages.pop(1))
+    sys.path.append(data_dir)
+    module_name = 'generate_ina_controls'
+    ina_generator = imp.load_module(module_name, *imp.find_module(module_name,
+                                                                  [data_dir]))
+    ina_generator.GenerateINAControls(data_dir)
+    build_py.build_py.run(self)
 
 execfile('version.py')
+
+#overwrite setup tools here to do the following:
+
+# get package_data files
+# run generate_ina_controls.py over all the files,
+# giving the file an output directory?
 
 setup(
   name = "servo",
@@ -17,7 +46,10 @@ setup(
   package_dir = {'' : 'build'},
   py_modules=['servo.servod', 'servo.dut_control'],
   packages=['servo', 'servo.data', 'servo.drv'],
-  package_data={'servo.data': ['*.xml']},
+  package_data={'servo': ['data/*.xml',
+                          'data/*.scenario',
+                          'data/*.board']},
+  cmdclass={'build_py': servo_build_py},
   url = "http://www.chromium.org",
   maintainer='chromium os',
   maintainer_email='chromium-os-dev@chromium.org',
