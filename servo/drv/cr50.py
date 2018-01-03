@@ -15,7 +15,7 @@ import pty_driver
 
 
 # cr50 firmware versions verified compatible with servod
-VALID_VERSIONS = ["0.0.24/cr50_v1.1.6314-0ddc5fa"]
+VALID_VERSIONS = ["0.1.0/cr50_v1.9308_B.293-ad55183"]
 
 
 class cr50Error(Exception):
