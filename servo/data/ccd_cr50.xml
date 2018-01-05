@@ -117,7 +117,7 @@
   </control>
   <control>
     <name>ccd_ec_boot_mode</name>
-    <alias>ec_boot_mode</alias>
+    <alias>ec_boot_mode,fw_up</alias>
     <doc>EC boot mode GPIO.</doc>
     <params subtype="ec_boot_mode" interface="9" drv="cr50" map="onoff"
     init="off" />
