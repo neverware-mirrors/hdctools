@@ -84,6 +84,12 @@
     clobber_ok=""></params>
   </control>
   <control>
+    <name>lid_open</name>
+    <doc>Emulated lid switch on ec</doc>
+    <params subtype="lid_open" interface="10" drv="ec" map="yesno"
+    clobber_ok=""></params>
+  </control>
+  <control>
     <name>ccd_keepalive_en</name>
     <doc>Enable/disable keepalive on CCD</doc>
     <params subtype="ccd_keepalive_en" interface="9" drv="cr50" input_type="str"
