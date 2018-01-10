@@ -11,6 +11,10 @@
   DUT JTAG is the STM32H7 JTAG interface.
   -->
 
+  <include>
+    <name>servoflex_v2_r0_p50.xml</name>
+  </include>
+
   <control>
     <name>spi1_vref</name>
     <doc>BEWARE ... might actually power the whole board.</doc>
