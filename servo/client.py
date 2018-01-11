@@ -154,6 +154,10 @@ class ServoClient(object):
       raise ServoClientError("Problem setting '%s' to '%s'" %
                               (name, value), e)
 
+  def ftdii2c(self, args):
+    """Calling a method of Fi2c."""
+    self._server.ftdii2c(args)
+
   def hwinit(self):
     """Initialize the controls."""
     self._server.hwinit()

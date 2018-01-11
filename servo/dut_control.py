@@ -87,6 +87,8 @@ def _parse_args():
                     "print_time", action="store_true", default=False)
   parser.add_option("--hwinit", help="Initialize controls to their POR/safe "
                     "state", action="store_true", default=False)
+  parser.add_option("--ftdii2c", help="Call a method of Fi2c object"
+                    "state", action="store_true", default=False)
 
   parser.add_option("-d", "--debug", help="enable debug messages",
                     action="store_true", default=False)
@@ -350,6 +352,15 @@ def real_main():
     # all done, don't read all controls
     if not len(args):
       return
+
+  if options.ftdii2c:
+    if not len(args):
+      print "Usage: dut-control --ftdii2c [method of Fi2c]"
+      return
+
+    sclient.ftdii2c(args)
+    # all done, don't read all controls
+    return
 
   if not len(args) and options.info:
     # print all the doc info for the controls

@@ -57,8 +57,6 @@ class Fi2c(object):
       interface: interface number of FTDI device to use
       serialname: string of device serialname/number as defined in FTDI eeprom.
 
-    Raises:
-      Fi2cError: If either ftdi or fi2c inits fail
     """
     self._logger = logging.getLogger("Fi2c")
     self._logger.debug("")
@@ -73,13 +71,7 @@ class Fi2c(object):
     self._fic = Fi2cContext()
     self._gpio = ftdi_common.Gpio()
     self._is_closed = True
-    err = self._flib.ftdi_init(ctypes.byref(self._fc))
-    if err:
-      raise Fi2cError("ftdi_init", err)
-
-    err = self._lib.fi2c_init(ctypes.byref(self._fic), ctypes.byref(self._fc))
-    if err:
-      raise Fi2cError("fi2c_init", err)
+    self.init()
 
     self._i2c_mask = ~self._fic.gpio.mask
 
@@ -113,6 +105,20 @@ class Fi2c(object):
     if err:
       raise Fi2cError("fi2c_close", err)
     self._is_closed = True
+
+  def init(self):
+    """Initialize i2c interface.
+
+    Raises:
+      Fi2cError: If init fails
+    """
+    err = self._flib.ftdi_init(ctypes.byref(self._fc))
+    if err:
+      raise Fi2cError("ftdi_init", err)
+
+    err = self._lib.fi2c_init(ctypes.byref(self._fic), ctypes.byref(self._fc))
+    if err:
+      raise Fi2cError("fi2c_init", err)
 
   def setclock(self, speed=100000):
     """Sets i2c clock speed.
