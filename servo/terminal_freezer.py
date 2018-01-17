@@ -36,10 +36,11 @@ class TerminalFreezer(object):
     CheckForPIDNamespace()
 
   def __enter__(self):
+    ret = ''
     try:
       ret = subprocess.check_output(['lsof', '-FR', self._tty],
                                     stderr=subprocess.STDOUT)
-    except subprocess.check_output:
+    except subprocess.CalledProcessError:
       # Ignore non-zero return codes.
       pass
 

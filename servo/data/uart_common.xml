@@ -44,19 +44,19 @@
     <name>login</name>
     <doc>Query if AP UART session is logged in. Ask to login/logout of a session
     by calling login:yes and login:no</doc>
-    <params map="yesno" subtype="login" interface="8" drv="login">
+    <params map="yesno" subtype="login" interface="8" drv="ap">
     </params>
   </control>
   <control>
     <name>login_username</name>
     <doc>Username used to log into a session.</doc>
-    <params input_type="str" subtype="username" interface="8" drv="login">
+    <params input_type="str" subtype="username" interface="8" drv="ap">
     </params>
   </control>
   <control>
     <name>login_password</name>
     <doc>Password used to log into a session.</doc>
-    <params input_type="str" subtype="password" interface="8" drv="login">
+    <params input_type="str" subtype="password" interface="8" drv="ap">
     </params>
   </control>
   <control>

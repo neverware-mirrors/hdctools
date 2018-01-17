@@ -3,20 +3,23 @@
 # found in the LICENSE file.
 
 """
-    Login driver to handle the login hurdle on the CPU uart console.
+    AP console communications driver. Automations that need to interact
+    with the AP console should inherit from this driver, or build a composition
+    containing this driver.
     This driver exposes methods to login, logout, set password, and
     username to login, and check if a session is logged in.
 """
 import logging
+import pexpect
 import time
 
 import pty_driver
 
 
-class loginError(Exception):
-  """Exception class for login errors."""
+class apError(Exception):
+  """Exception class for AP errors."""
 
-class login(pty_driver.ptyDriver):
+class ap(pty_driver.ptyDriver):
   """ Wrapper class around ptyDriver to handle communication
       with the AP console.
   """
@@ -28,20 +31,21 @@ class login(pty_driver.ptyDriver):
 
   # TODO(coconutruben): right now the defaults are hard coded
   # into the driver. Evaluate if it makes more sense for the
-  # defaults to be set by the xml commands.
+  # defaults to be set by the xml commands, or to allow servo
+  # invocation to overwrite them.
   _login_info = {
       'username'  : 'root',
       'password'  : 'test0000'
   }
 
   def __init__(self, interface, params):
-    """Initializes the login driver.
+    """Initializes the AP driver.
 
     Args:
       interface: A driver interface object. This is the AP uart interface.
       params: A dictionary of parameters, but is ignored.
     """
-    super(login, self).__init__(interface, params)
+    super(ap, self).__init__(interface, params)
     self._logger.debug("")
 
   def _Get_password(self):
@@ -70,13 +74,11 @@ class login(pty_driver.ptyDriver):
         Returns:
           True 1 a session is logged in, 0 otherwise.
     """
-    # TODO(coconutruben): currently, this assumes localhost as the
-    # host name, and a specific pattern for PS1. Make this more
-    # robust to OS changes by generating the regex based on the
-    # PS1 variable.
     try:
-      self._issue_cmd_get_results([''], ['localhost.*\s+[#$]'])
-      return 1
+      match = self._issue_cmd_get_results([''], [r"localhost\x1b\[01;34m\s"
+                                                 r"[^\s/]+\s[#$]|"
+                                                 r"localhost login:"])
+      return 0 if 'localhost login:' in match[0] else 1
     except pty_driver.ptyError:
       return 0
 
@@ -89,17 +91,32 @@ class login(pty_driver.ptyDriver):
     # TODO(coconutruben): the login/logout logic fails silently and user has
     # to call login command again to verify. Consider if raising an error on
     # failure here is appropiate.
-    # TODO(coconutruben): the login sequence relies on timing currently.
-    # Consider if it would be more robust to use fdexpect code directly
-    # to see when to send the username, and the password.
     if value == 1:
       # 1 means login desired.
       if not self._Get_login():
         with self._open():
-          self._send([self._login_info['username'],
-                      self._login_info['password']],
-                     0.1, False)
-      time.sleep(0.1)
+          # Make sure uart capture does not interfere with matching the expected
+          # response
+          self._interface.pause_capture()
+          try:
+            self._send("")
+            self._child.expect('localhost login:', 3)
+            match = self._child.match
+            if not match:
+              raise apError("Username prompt did not show up on login attempt")
+            self._send(self._login_info['username'], flush=False)
+            self._child.expect('Password:', 2)
+            match = self._child.match
+            if not match:
+              raise apError("Password prompt did not show up on login attempt")
+            self._send(self._login_info['password'], flush=False)
+          except pexpect.TIMEOUT:
+            raise apError("Timeout waiting for response when attempting to "
+                          "log into AP console.")
+          finally:
+            # Reenable capturing the console output
+            self._interface.resume_capture()
+        time.sleep(0.1)
     if value == 0:
       # 0 means logout desired.
       if self._Get_login():
