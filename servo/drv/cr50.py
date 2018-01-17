@@ -234,11 +234,14 @@ class cr50(pty_driver.ptyDriver):
     """Getter of ccd_testlab.
 
     Returns:
-      'on' or 'off' if ccd testlab mode is enabled or disabled.
+      'on' or 'off' if ccd testlab mode is enabled or disabled. 'unsupported'
+      if cr50 doesn't have testlab support.
     """
     result = self._issue_cmd_get_results("ccd testlab",
-        ["CCD test lab mode (ena|dis)"])[0][1].lower()
-    return "on" if "ena" == result else "off"
+        ["(CCD test lab mode (ena|dis)|Access Denied)"])[0][1]
+    if result == "Access Denied":
+        return "unsupported"
+    return "on" if "ena" in result else "off"
 
   def _Set_ccd_testlab(self, value):
     """Setter of ccd_testlab.
