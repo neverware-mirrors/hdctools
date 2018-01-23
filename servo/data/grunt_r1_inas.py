@@ -19,5 +19,6 @@ inas = [
 
     ('ina3221', '0x43:0', 'pp3300_wlan',    3.300, 0.020, 'rem', True),
     ('ina3221', '0x43:1', 'pp3300_edp',     3.300, 0.020, 'rem', True),
-    ('ina3221', '0x43:2', 'pp950_vddp_s0',  0.950, 0.000, 'rem', True),
+    # TODO(b/72395741): 0 Ohm resistor causes a ZeroDivisionError; fixed in EVT.
+    # ('ina3221', '0x43:2', 'pp950_vddp_s0',  0.950, 0.000, 'rem', True),
 ]
