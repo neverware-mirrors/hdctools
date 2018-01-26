@@ -32,6 +32,26 @@
     clobber_ok=""></params>
   </control>
   <control>
+    <name>avg_ppvar_vbat_ma</name>
+    <doc>milliamps being consumed (discharging/positive) or
+    supplied (charging/negative) to the battery. 1 minute running average</doc>
+    <params cmd="get" subtype="avg_milliamps" interface="10" drv="ec">
+    </params>
+  </control>
+  <control>
+    <name>avg_ppvar_vbat_mv</name>
+    <doc>millivolts of the battery. 1 minute running average</doc>
+    <params cmd="get" subtype="avg_millivolts" interface="10" drv="ec">
+    </params>
+  </control>
+  <control>
+    <name>avg_ppvar_vbat_mw</name>
+    <doc>milliwatts being consumed (discharging) or supplied
+    (charging) to the battery. 1 minute running average</doc>
+    <params cmd="get" subtype="avg_milliwatts" interface="10" drv="ec">
+    </params>
+  </control>
+  <control>
     <name>ppvar_vbat_ma</name>
     <doc>milliamps being consumed (discharging/positive) or
     supplied (charging/negative) to the battery</doc>

@@ -40,6 +40,7 @@ class ec(pty_driver.ptyDriver):
   call _Get_kbd_en.
   """
 
+
   def __init__(self, interface, params):
     """Constructor.
 
@@ -337,8 +338,8 @@ class ec(pty_driver.ptyDriver):
       raise ecError("Cannot retrieve CPU temperature.")
     return result[1]
 
-  def _get_battery_values(self):
-    """Retrieve various battery related values.
+  def _get_pwr(self):
+    """Retrieves various battery related values.
 
     Battery command in the EC currently exposes the following information:
        Temp:      0x0be1 = 304.1 K (31.0 C)
@@ -363,32 +364,77 @@ class ec(pty_driver.ptyDriver):
     This method currently returns a subset of above.
 
     Returns:
-      Tuple (millivolts, milliamps) where:
-        millivolts: battery voltage in millivolts
-        milliamps: battery amps in milliamps
+      Dictionary where:
+        mv: battery voltage in millivolts
+        ma: battery amps in milliamps
+        mw: battery power in milliwatts
     """
     self._limit_channel()
     results = self._issue_cmd_get_results('battery',
-                                         ['V:[\s0-9a-fx]*= (-*\d+) mV',
-                                          'I:[\s0-9a-fx]*= (-*\d+) mA'])
+                                          [r'V:[\s0-9a-fx]*= (-*\d+) mV',
+                                           r'I:[\s0-9a-fx]*= (-*\d+) mA'])
     self._restore_channel()
-    return (int(results[0][1], 0), int(results[1][1], 0) * -1)
+    result = {'mv': int(results[0][1], 0),
+              'ma': int(results[1][1], 0) * -1}
+    result['mw'] = result['ma'] * result['mv'] / 1000.0
+    return result
 
   def _Get_milliamps(self):
-    """Retrieve current measuremnents for the battery."""
-    (_, milliamps) = self._get_battery_values()
-    return milliamps
+    """Retrieves current measuremnents for the battery."""
+    return self._get_pwr()['ma']
 
   def _Get_millivolts(self):
-    """Retrieve voltage measuremnents for the battery."""
-    (millivolts, _) = self._get_battery_values()
-    return millivolts
+    """Retrieves voltage measuremnents for the battery."""
+    return self._get_pwr()['mv']
 
   def _Get_milliwatts(self):
-    """Retrieve power measuremnents for the battery.
+    """Retrieves power measuremnents for the battery."""
+    return self._get_pwr()['mw']
+
+  def _get_pwr_avg(self):
+    """Uses ec pwr_avg command to retrieve battery power average.
+
+    pwr_avg function provides a one minute power average based on battery data.
+
+    > pwr_avg
+    mv = xxxx
+    ma = xxxx
+    mw = xxxx
+
+    Returns:
+      Dictionary where:
+        mv: battery voltage in millivolts
+        ma: battery amps in milliamps
+        mw: battery power in milliwatts
     """
-    (millivolts, milliamps) = self._get_battery_values()
-    return milliamps * millivolts * 1e-3
+    self._limit_channel()
+    cmd = 'pwr_avg'
+    cmd_not_found_regex = "Command '%s' not found" % cmd
+    results = self._issue_cmd_get_results(cmd,
+                                          [r'mv = (-?\d+)[\r\n]+'
+                                           'ma = (-?\d+)[\r\n]+'
+                                           'mw = (-?\d+)[\r\n]+|%s' %
+                                           cmd_not_found_regex])
+    self._restore_channel()
+    resultline = results[0]
+    if cmd_not_found_regex in resultline:
+      raise ecError('cmd |%s| is not available on the ec.' % cmd)
+    result = {'mv': int(results[0][1], 0),
+              'ma': int(results[0][2], 0) * -1,
+              'mw': int(results[0][3], 0) * -1}
+    return result
+
+  def _Get_avg_milliamps(self):
+    """Retrieves one minute running avg current from the battery."""
+    return self._get_pwr_avg()['ma']
+
+  def _Get_avg_millivolts(self):
+    """Retrieves one minute running avg voltage from the battery."""
+    return self._get_pwr_avg()['mv']
+
+  def _Get_avg_milliwatts(self):
+    """Retrieves one minute running avg power from the battery."""
+    return self._get_pwr_avg()['mw']
 
   def _get_fan_values(self):
     """Retrieve fan related values.
