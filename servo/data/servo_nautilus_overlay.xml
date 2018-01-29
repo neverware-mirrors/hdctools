@@ -1,5 +1,45 @@
 <root>
+  <!-- ******** Includes ******** -->
   <include>
-    <name>servo_poppy_overlay.xml</name>
+    <name>servoflex_v2_r0_p50.xml</name>
   </include>
+  <include>
+    <name>x86_ec_common.xml</name>
+  </include>
+  <include>
+    <name>cr50.xml</name>
+  </include>
+  <!-- ******** Controls ******** -->
+  <control>
+    <name>power_state</name>
+    <doc>Used to turn the DUT off and on</doc>
+    <params drv="cros_ec_softrec_power" clobber_ok="" reset_recovery="0.6"
+    shutdown_delay="11.0" warm_reset_can_hold_ap="no"/>
+  </control>
+  <control>
+    <name>fw_wp_state</name>
+    <doc>Used to turn fw wp off and on</doc>
+    <params clobber_ok="" fw_wp_vref="pp3300"/>
+  </control>
+  <control>
+    <name>ec_chip</name>
+    <doc>EC chip name (read-only)</doc>
+    <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
+    drv="cros_chip" chip="npcx_spi"/>
+  </control>
+  <control>
+    <name>usbpd_uart_routing</name>
+    <doc>override enable pd uart routing</doc>
+    <params subtype="not_applicable" interface="servo" drv="na" map="na"
+    init="not_applicable" clobber_ok=""></params>
+  </control>
+   <!-- cr50 UART Buffers & VREF Controls -->
+  <control>
+    <name>jtag_vref_sel0</name>
+    <params clobber_ok="" init="pp3300"></params>
+  </control>
+  <control>
+    <name>jtag_vref_sel1</name>
+    <params clobber_ok="" init="pp3300"></params>
+  </control>
 </root>
