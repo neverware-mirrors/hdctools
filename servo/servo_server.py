@@ -674,7 +674,7 @@ class Servod(object):
     return set(["/dev/" + dev for dev in usb_set])
 
   @contextlib.contextmanager
-  def _block_other_servod(self, timeout=None):
+  def _block_other_servod(self, timeout):
     """Block other servod processes by locking a file.
 
     To enable multiple servods processes to safely probe_host_usb_dev, we use
@@ -694,7 +694,7 @@ class Servod(object):
     doesn't, then we pretend the block was successful.
 
     Args:
-      timeout: Max waiting time for the block to succeed.
+      timeout: Max waiting time for the block to succeed; 0 to wait forever.
     """
     if not os.path.exists(self._USB_LOCK_FILE):
       # No lock file so we'll pretend the block was a success.
@@ -702,7 +702,7 @@ class Servod(object):
     else:
       start_time = datetime.datetime.now()
       while True:
-        with open(self._USB_LOCK_FILE) as lock_file:
+        with open(self._USB_LOCK_FILE, 'w') as lock_file:
           try:
             fcntl.flock(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
             yield True
@@ -715,7 +715,9 @@ class Servod(object):
               yield False
               break
         # Sleep random amount.
-        sleep_time = time.sleep(random.random())
+        sleep_time = random.random()
+        logging.debug('sleep %.04fs and try obtaining a lock...', sleep_time)
+        time.sleep(sleep_time)
 
   def safe_switch_usbkey_power(self, power_state, timeout=0):
     """Toggle the usb power safely.
@@ -729,8 +731,14 @@ class Servod(object):
 
     Returns:
       An empty string to appease the xmlrpc gods.
+
+    Raises:
+      ServodError if failed to obtain a lock.
     """
-    with self._block_other_servod(timeout=timeout):
+    with self._block_other_servod(timeout=timeout) as block_success:
+      if not block_success:
+        raise ServodError('Timed out obtaining a lock to block other servod')
+
       if power_state != self.get(self._USB_J3_PWR):
         self.set(self._USB_J3_PWR, power_state)
     return ''
@@ -741,15 +749,22 @@ class Servod(object):
     We'll make sure we're the only servod process toggling the usbkey direction.
 
     Args:
-      power_state: The setting to set for the usbkey power.
+      mux_direction: "servo_sees_usbkey" or "dut_sees_usbkey".
       timeout: Timeout to wait for blocking other servod processes, default is
           no timeout.
 
     Returns:
       An empty string to appease the xmlrpc gods.
+
+    Raises:
+      ServodError if failed to obtain a lock.
     """
-    with self._block_other_servod(timeout=timeout):
+    with self._block_other_servod(timeout=timeout) as block_success:
+      if not block_success:
+        raise ServodError('Timed out obtaining a lock to block other servod')
+
       self._switch_usbkey(mux_direction)
+
     return ''
 
   def probe_host_usb_dev(self, timeout=_MAX_USB_LOCK_WAIT):
@@ -768,10 +783,13 @@ class Servod(object):
     Returns:
       USB disk path if one and only one USB disk path is found, otherwise an
       empty string.
+
+    Raises:
+      ServodError if failed to obtain a lock.
     """
     with self._block_other_servod(timeout=timeout) as block_success:
       if not block_success:
-        return ''
+        raise ServodError('Timed out obtaining a lock to block other servod')
 
       original_value = self.get(self._USB_J3)
       original_usb_power = self.get(self._USB_J3_PWR)
@@ -780,10 +798,12 @@ class Servod(object):
           original_value != self._USB_J3_TO_DUT):
         self._switch_usbkey(self._USB_J3_TO_DUT)
       no_usb_set = self._get_usb_port_set()
+      logging.debug('Device set when USB disk unplugged: %r', no_usb_set)
 
       # Make the host able to see the USB disk.
       self._switch_usbkey(self._USB_J3_TO_SERVO)
       has_usb_set = self._get_usb_port_set()
+      logging.debug('Device set when USB disk plugged: %r', has_usb_set)
 
       # Back to its original value.
       if original_value != self._USB_J3_TO_SERVO:
@@ -797,6 +817,7 @@ class Servod(object):
       if len(diff_set) == 1:
         return diff_set.pop()
       else:
+        logging.warn("Can't find the USB device. Diff: %r", diff_set)
         return ''
 
   def download_image_to_usb(self, image_path, probe_timeout=_MAX_USB_LOCK_WAIT):
