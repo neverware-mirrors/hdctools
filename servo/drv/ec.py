@@ -338,7 +338,7 @@ class ec(pty_driver.ptyDriver):
       raise ecError("Cannot retrieve CPU temperature.")
     return result[1]
 
-  def _get_pwr(self):
+  def _get_battery_values(self):
     """Retrieves various battery related values.
 
     Battery command in the EC currently exposes the following information:
@@ -365,31 +365,39 @@ class ec(pty_driver.ptyDriver):
 
     Returns:
       Dictionary where:
+        tempc: battery temperature in degC
         mv: battery voltage in millivolts
         ma: battery amps in milliamps
         mw: battery power in milliwatts
     """
     self._limit_channel()
-    results = self._issue_cmd_get_results('battery',
-                                          [r'V:[\s0-9a-fx]*= (-*\d+) mV',
-                                           r'I:[\s0-9a-fx]*= (-*\d+) mA'])
+    results = self._issue_cmd_get_results(
+        'battery',
+        [r'Temp:[\s0-9a-fx]*= \d+\.\d+ K \((-*\d+\.\d+)',
+         r'V:[\s0-9a-fx]*= (-*\d+) mV',
+         r'I:[\s0-9a-fx]*= (-*\d+) mA'])
     self._restore_channel()
-    result = {'mv': int(results[0][1], 0),
-              'ma': int(results[1][1], 0) * -1}
+    result = {'tempc': float(results[0][1]),
+              'mv': int(results[1][1], 0),
+              'ma': int(results[2][1], 0) * -1}
     result['mw'] = result['ma'] * result['mv'] / 1000.0
     return result
 
+  def _Get_battery_tempc(self):
+    """Retrieves temperature measurements for the battery."""
+    return self._get_battery_values()['tempc']
+
   def _Get_milliamps(self):
-    """Retrieves current measuremnents for the battery."""
-    return self._get_pwr()['ma']
+    """Retrieves current measurements for the battery."""
+    return self._get_battery_values()['ma']
 
   def _Get_millivolts(self):
-    """Retrieves voltage measuremnents for the battery."""
-    return self._get_pwr()['mv']
+    """Retrieves voltage measurements for the battery."""
+    return self._get_battery_values()['mv']
 
   def _Get_milliwatts(self):
-    """Retrieves power measuremnents for the battery."""
-    return self._get_pwr()['mw']
+    """Retrieves power measurements for the battery."""
+    return self._get_battery_values()['mw']
 
   def _get_pwr_avg(self):
     """Uses ec pwr_avg command to retrieve battery power average.

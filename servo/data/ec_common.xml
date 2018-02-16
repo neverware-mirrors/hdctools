@@ -72,6 +72,12 @@
     </params>
   </control>
   <control>
+    <name>battery_tempc</name>
+    <doc>battery temperature in degrees Celsius</doc>
+    <params cmd="get" subtype="battery_tempc" interface="10" drv="ec">
+    </params>
+  </control>
+  <control>
     <name>pwr_button_hold</name>
     <doc>milliseconds to hold the power button</doc>
     <params cmd="get" subtype="not_applicable" interface="10" drv="na"
