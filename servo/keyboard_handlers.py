@@ -675,9 +675,9 @@ class USBkm232Handler(_BaseHandler):
             raise Exception("No device specified when "
                             "initializing usbkm232 keyboard handler")
         self.serial = serial.Serial(serial_device, 9600, timeout=0.1)
-        self.serial.setInterCharTimeout(0.5)
-        self.serial.setTimeout(0.5)
-        self.serial.setWriteTimeout(0.5)
+        self.serial.interCharTimeout = 0.5
+        self.serial.timeout = 0.5
+        self.serial.writeTimeout = 0.5
         if serial_device == servo.get('atmega_pty'):
           self._test_atmega()
 
