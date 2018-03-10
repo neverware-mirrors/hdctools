@@ -78,6 +78,30 @@
     </params>
   </control>
   <control>
+    <name>battery_charge_percent</name>
+    <doc>battery charge in percent</doc>
+    <params cmd="get" subtype="battery_charge_percent" interface="10" drv="ec">
+    </params>
+  </control>
+  <control>
+    <name>battery_charge_mah</name>
+    <doc>battery charge in mAh</doc>
+    <params cmd="get" subtype="battery_charge_mah" interface="10" drv="ec">
+    </params>
+  </control>
+  <control>
+    <name>battery_full_charge_mah</name>
+    <doc>battery last full charge in mAh</doc>
+    <params cmd="get" subtype="battery_full_charge_mah" interface="10" drv="ec">
+    </params>
+  </control>
+  <control>
+    <name>battery_full_design_mah</name>
+    <doc>battery design full capacity in mAh</doc>
+    <params cmd="get" subtype="battery_full_design_mah" interface="10" drv="ec">
+    </params>
+  </control>
+  <control>
     <name>pwr_button_hold</name>
     <doc>milliseconds to hold the power button</doc>
     <params cmd="get" subtype="not_applicable" interface="10" drv="na"

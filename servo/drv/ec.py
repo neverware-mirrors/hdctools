@@ -369,17 +369,29 @@ class ec(pty_driver.ptyDriver):
         mv: battery voltage in millivolts
         ma: battery amps in milliamps
         mw: battery power in milliwatts
+        charge_percent: battery charge in percent
+        charge_mah: battery charge in mAh
+        full_mah: battery last full charge in mAh
+        design_mah: battery design full capacity in mAh
     """
     self._limit_channel()
     results = self._issue_cmd_get_results(
         'battery',
         [r'Temp:[\s0-9a-fx]*= \d+\.\d+ K \((-*\d+\.\d+)',
          r'V:[\s0-9a-fx]*= (-*\d+) mV',
-         r'I:[\s0-9a-fx]*= (-*\d+) mA'])
+         r'I:[\s0-9a-fx]*= (-*\d+) mA',
+         r'Charge:\s*(\d+) %',
+         r'Remaining:\s*(\d+) mAh',
+         r'Cap-full:\s*(\d+) mAh',
+         r'Design:\s*(\d+) mAh'])
     self._restore_channel()
     result = {'tempc': float(results[0][1]),
               'mv': int(results[1][1], 0),
-              'ma': int(results[2][1], 0) * -1}
+              'ma': int(results[2][1], 0) * -1,
+              'charge_percent' : int(results[3][1], 0),
+              'charge_mah' : int(results[4][1], 0),
+              'full_mah' : int(results[5][1], 0),
+              'design_mah' : int(results[6][1], 0)}
     result['mw'] = result['ma'] * result['mv'] / 1000.0
     return result
 
@@ -398,6 +410,22 @@ class ec(pty_driver.ptyDriver):
   def _Get_milliwatts(self):
     """Retrieves power measurements for the battery."""
     return self._get_battery_values()['mw']
+
+  def _Get_battery_charge_percent(self):
+    """Retrieves battery charge in percent for the battery."""
+    return self._get_battery_values()['charge_percent']
+
+  def _Get_battery_charge_mah(self):
+    """Retrieves battery charge in mAh for the battery."""
+    return self._get_battery_values()['charge_mah']
+
+  def _Get_battery_full_charge_mah(self):
+    """Retrieves battery last full charge in mAh for the battery."""
+    return self._get_battery_values()['full_mah']
+
+  def _Get_battery_full_design_mah(self):
+    """Retrieves battery design full capacity in mAh for the battery."""
+    return self._get_battery_values()['design_mah']
 
   def _get_pwr_avg(self):
     """Uses ec pwr_avg command to retrieve battery power average.
