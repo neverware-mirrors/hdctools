@@ -505,9 +505,10 @@ class Servod(object):
       interface for the USB PD UART.
     """
     raw_uart_name = interface['raw_pty']
+    raw_uart_source = interface['source']
     if self._syscfg.is_control(raw_uart_name):
       raw_ec_uart = self.get(raw_uart_name)
-      return ec3po_interface.EC3PO(raw_ec_uart)
+      return ec3po_interface.EC3PO(raw_ec_uart, raw_uart_source)
     else:
       # The overlay doesn't have the raw PTY defined, therefore we can skip
       # initializing this interface since no control relies on it.

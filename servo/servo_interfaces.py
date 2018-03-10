@@ -38,9 +38,9 @@ for vid, pid in SERVO_V2_DEFAULTS:
      'ftdi_uart',                       # 7: EC
      'ftdi_uart',                       # 8: AP
      {'name': 'ec3po_uart',             # 9: EC3PO(USBPD)
-      'raw_pty': 'raw_usbpd_uart_pty'},
+      'raw_pty': 'raw_usbpd_uart_pty', 'source': 'PD/Cr50'},
      {'name': 'ec3po_uart',             #10: EC3PO(EC)
-      'raw_pty': 'raw_ec_uart_pty'},
+      'raw_pty': 'raw_ec_uart_pty', 'source': 'EC'},
     ]
 
 # servo v3
@@ -60,7 +60,7 @@ for vid, pid in SERVO_V3_DEFAULTS:
      {'name': 'bb_uart', 'uart_num': 2}, # 8: AP
      'dummy',                            # 9
      {'name': 'ec3po_uart',              #10: EC3PO(EC)
-      'raw_pty': 'raw_ec_uart_pty'},
+      'raw_pty': 'raw_ec_uart_pty', 'source': 'EC'},
     ]
 
 INTERFACE_DEFAULTS[0x0403][0x6014] = INTERFACE_DEFAULTS[0x18d1][0x5004]
@@ -80,7 +80,7 @@ for vid, pid in RAIDEN_DEFAULTS:
      'dummy',                                # 8
      'dummy',                                # 9
      {'name': 'ec3po_uart',                  #10: dut ec console
-      'raw_pty': 'raw_ec_uart_pty'},
+      'raw_pty': 'raw_ec_uart_pty', 'source': 'EC'},
     ]
 
 # cr50 CCD
@@ -97,9 +97,9 @@ for vid, pid in CCD_DEFAULTS:
      {'name': 'stm32_uart', 'interface': 2}, # 7: EC/PD
      {'name': 'stm32_uart', 'interface': 1}, # 8: AP
      {'name': 'ec3po_uart',                  # 9: EC3PO(Cr50)
-      'raw_pty': 'raw_cr50_uart_pty'},
+      'raw_pty': 'raw_cr50_uart_pty', 'source': 'Cr50'},
      {'name': 'ec3po_uart',                  #10: EC3PO(EC)
-      'raw_pty': 'raw_ec_uart_pty'},
+      'raw_pty': 'raw_ec_uart_pty', 'source': 'EC'},
     ]
 
 # Servo micro
@@ -113,13 +113,13 @@ for vid, pid in SERVO_MICRO_DEFAULTS:
      'dummy',                                # 4: dummy
      'dummy',                                # 5: dummy
      {'name': 'ec3po_uart',                  # 6: servo console
-      'raw_pty': 'raw_servo_console_pty'},
+      'raw_pty': 'raw_servo_console_pty', 'source': 'servo_micro'},
      {'name': 'stm32_uart', 'interface': 6}, # 7: uart1/EC console
      {'name': 'stm32_uart', 'interface': 5}, # 8: uart2/AP console
      {'name': 'ec3po_uart',                  # 9: EC3PO for PD/Cr50
-      'raw_pty': 'raw_usbpd_uart_pty'},
+      'raw_pty': 'raw_usbpd_uart_pty', 'source': 'PD/Cr50'},
      {'name': 'ec3po_uart',                  #10: EC3PO for EC
-      'raw_pty': 'raw_ec_uart_pty'},
+      'raw_pty': 'raw_ec_uart_pty', 'source': 'EC'},
     ]
 
 # Servo v4
@@ -149,7 +149,7 @@ for vid, pid in SERVO_V4_DEFAULTS:
      {'name': 'stm32_uart', 'interface': 3}, #24: dut sbu uart
      {'name': 'stm32_uart', 'interface': 4}, #25: atmega uart
      {'name': 'ec3po_uart',                  #26: servo v4 console
-      'raw_pty': 'raw_servo_v4_console_pty'},
+      'raw_pty': 'raw_servo_v4_console_pty', 'source': 'servo_v4'},
     ]
 
   # Buffer slots for servo v4 (interface #27-40).
@@ -165,7 +165,7 @@ for vid, pid in MINISERVO_ID_DEFAULTS:
     ['dummy',
      'ftdi_gpiouart', # occupies 2 slots
      'dummy',         # reserved for the above ftdi_gpiouart
-     {'name': 'ec3po_uart', 'raw_pty': 'raw_ec_uart_pty'},
+     {'name': 'ec3po_uart', 'raw_pty': 'raw_ec_uart_pty', 'source': 'EC'},
     ]
 
 SERVO_ID_DEFAULTS.extend(MINISERVO_ID_DEFAULTS)
@@ -177,7 +177,7 @@ for vid, pid in TOAD_ID_DEFAULTS:
     ['dummy',
      'ftdi_gpiouart', # occupies 2 slots
      'dummy',         # reserved for the above ftdi_gpiouart
-     {'name': 'ec3po_uart', 'raw_pty': 'raw_ec_uart_pty'},
+     {'name': 'ec3po_uart', 'raw_pty': 'raw_ec_uart_pty', 'source': 'EC'},
     ]
 
 SERVO_ID_DEFAULTS.extend(TOAD_ID_DEFAULTS)
@@ -189,7 +189,7 @@ for vid, pid in RESTON_ID_DEFAULTS:
     ['dummy',
      'ftdi_gpiouart', # occupies 2 slots
      'dummy',         # reserved for the above ftdi_gpiouart
-     {'name': 'ec3po_uart', 'raw_pty': 'raw_ec_uart_pty'},
+     {'name': 'ec3po_uart', 'raw_pty': 'raw_ec_uart_pty', 'source': 'EC'},
     ]
 
 SERVO_ID_DEFAULTS.extend(RESTON_ID_DEFAULTS)
@@ -201,7 +201,7 @@ for vid, pid in FRUITPIE_ID_DEFAULTS:
     ['dummy',
      'ftdi_gpiouart', # occupies 2 slots
      'dummy',         # reserved for the above ftdi_gpiouart
-     {'name': 'ec3po_uart', 'raw_pty': 'raw_ec_uart_pty'},
+     {'name': 'ec3po_uart', 'raw_pty': 'raw_ec_uart_pty', 'source': 'EC'},
     ]
 
 SERVO_ID_DEFAULTS.extend(FRUITPIE_ID_DEFAULTS)
@@ -213,7 +213,7 @@ for vid, pid in PLANKTON_ID_DEFAULTS:
     ['dummy',
      'ftdi_gpiouart', # occupies 2 slots
      'dummy',         # reserved for the above ftdi_gpiouart
-     {'name': 'ec3po_uart', 'raw_pty': 'raw_ec_uart_pty'},
+     {'name': 'ec3po_uart', 'raw_pty': 'raw_ec_uart_pty', 'source': 'EC'},
     ]
 
 SERVO_ID_DEFAULTS.extend(PLANKTON_ID_DEFAULTS)

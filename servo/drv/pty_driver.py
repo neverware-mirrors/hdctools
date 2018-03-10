@@ -33,9 +33,14 @@ class ptyDriver(hw_driver.HwDriver):
     super(ptyDriver, self).__init__(interface, params)
     self._child = None
     self._fd = None
-    self._pty_path = self._interface.get_pty()
+    self._cmd_iface = False
+    try:
+      # We'll probe for a control PTY if this is an ec3po interface.
+      self._pty_path = self._interface.get_control_pty()
+      self._cmd_iface = True
+    except:
+      self._pty_path = self._interface.get_pty()
     self._dict = UART_PARAMS
-    self._interface = interface
 
   @contextlib.contextmanager
   def _open(self):
@@ -45,21 +50,38 @@ class ptyDriver(hw_driver.HwDriver):
     freezing and thawing any other terminals that are using this PTY as well as
     closing the connection when finished.
     """
-    # Freeze any terminals that are using this PTY, otherwise when we check
-    # for the regex matches, it will fail with a 'resource temporarily
-    # unavailable' error.
-    with servo.terminal_freezer.TerminalFreezer(self._pty_path):
-      self._logger.debug('opening %s', self._pty_path)
-      self._fd = os.open(self._pty_path, os.O_RDWR | os.O_NONBLOCK)
+    if self._cmd_iface:
       try:
-        self._child = fdpexpect.fdspawn(self._fd)
-        # pexpect dafaults to a 100ms delay before sending characters, to
-        # work around race conditions in ssh. We don't need this feature
-        # so we'll change delaybeforesend from 0.1 to 0.001 to speed things up.
-        self._child.delaybeforesend = 0.001
-        yield
+        self._interface.get_command_lock()
+        self._fd = os.open(self._pty_path, os.O_RDWR | os.O_NONBLOCK)
+        try:
+          self._child = fdpexpect.fdspawn(self._fd)
+          # pexpect dafaults to a 100ms delay before sending characters, to
+          # work around race conditions in ssh. We don't need this feature
+          # so we'll change delaybeforesend from 0.1 to 0.001
+          # to speed things up.
+          self._child.delaybeforesend = 0.001
+          yield
+        finally:
+          self._close()
       finally:
-        self._close()
+        self._interface.release_command_lock()
+    else:
+      # Freeze any terminals that are using this PTY, otherwise when we check
+      # for the regex matches, it will fail with a 'resource temporarily
+      # unavailable' error.
+      with servo.terminal_freezer.TerminalFreezer(self._pty_path):
+        self._fd = os.open(self._pty_path, os.O_RDWR | os.O_NONBLOCK)
+        try:
+          self._child = fdpexpect.fdspawn(self._fd)
+          # pexpect dafaults to a 100ms delay before sending characters, to
+          # work around race conditions in ssh. We don't need this feature
+          # so we'll change delaybeforesend from 0.1 to 0.001
+          # to speed things up.
+          self._child.delaybeforesend = 0.001
+          yield
+        finally:
+          self._close()
 
   def _close(self):
     """Close serial device connection."""
@@ -146,6 +168,7 @@ class ptyDriver(hw_driver.HwDriver):
       ptyError: If timed out waiting for a response
     """
     result_list = []
+
     with self._open():
       # Make sure uart capture does not interfere with matching the expected
       # response
