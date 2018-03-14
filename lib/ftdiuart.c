@@ -236,11 +236,23 @@ int fuart_open(struct fuart_context *fuartc,
 static int cmd_do_break(struct fuart_context *fuartc) {
   struct ftdi_context *fc = fuartc->fc;
   int err;
+  int bits_per_frame;
+  int frame_usec;
 
   err = ftdi_set_line_property2(fc, fuartc->cfg.bits, fuartc->cfg.sbits,
                                 fuartc->cfg.parity, BREAK_ON);
   if (err)
     return err;
+
+  // One frame is: 1 start bit, data bits, parity bit, stop bits.  We
+  // don't need exact timing, so for simplicity we'll calculate with
+  // max settings (1 start, 8 data, 1 parity, 2 stop) = 12 bits per frame
+  bits_per_frame = 12;
+  frame_usec = (bits_per_frame * 1000000) / fuartc->cfg.baudrate;
+
+  // Break needs a delay of more than one frame time; we'll go 10% over.
+  // ...presumably the calls into FTDI will add some extra delay too
+  usleep(frame_usec + frame_usec / 10);
 
   err = ftdi_set_line_property2(fc, fuartc->cfg.bits, fuartc->cfg.sbits,
                                 fuartc->cfg.parity, BREAK_OFF);
