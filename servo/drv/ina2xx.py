@@ -428,6 +428,11 @@ class ina2xx(hw_driver.HwDriver):
       raise Ina2xxError("no register defined in parameters")
     reg = self._params['reg']
 
+    if reg == 'cfg':
+      if self._has_reg('cal'):
+         self._write_reg('cal', self.MAX_CALIB)
+         self._calib_reg = self.MAX_CALIB
+
     self._write_reg(reg, value)
     if reg is 'cal':
       self._calib_reg = value
@@ -485,7 +490,6 @@ class ina2xx(hw_driver.HwDriver):
     lsb = self.PWR_LSB_COEFFICIENT * self._milliamps_per_lsb()
     self._logger.debug("lsb = %f" % lsb)
     return lsb
-
 
 def testit(testname, adc):
   """Test major features of one ADC.

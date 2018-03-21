@@ -445,6 +445,8 @@ class ServoINAConfigGenerator(INAConfigGenerator):
                                       'subtype'  : 'writereg'})
           if reg == 'cal':
             reg_ctrl_params_set['map'] = 'calibrate'
+          if reg == 'cfg':
+            reg_ctrl_params_set['map'] = '%s_cfg' % drvname
         controls_for_rail.append(ServoControlGenerator(reg_ctrl_name,
                                                        reg_ctrl_docstring,
                                                        reg_ctrl_params_get,
