@@ -61,8 +61,8 @@
   <control>
     <name>usbpd_uart_routing</name>
     <doc>enable pd uart routing</doc>
-    <params clobber_ok="" interface="servo" subtype="not_applicable" drv="na"
-    map="na" init="not_applicable"></params>
+    <params interface="servo" subtype="not_applicable" drv="na"
+    map="na"></params>
   </control>
   <!-- Controls overwritten by Cr50 -->
   <control>
