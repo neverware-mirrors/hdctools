@@ -21,7 +21,7 @@ class ina231(ina2xx.ina2xx):
   """
   MAX_CALIB = 0xffff
   MIN_CALIB = 0x1
-  MAX_REG_INDEX = 0x7 # REG_ALRT
+  MAX_REG_INDEX = 0x7  # REG_ALRT
 
   MSKEN_CNVR = 0x8
   MSKEN_OVF = 0x4

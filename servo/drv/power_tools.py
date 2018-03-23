@@ -7,6 +7,7 @@ import hw_driver
 import logging
 import re
 
+
 class PowerTools(hw_driver.HwDriver):
   """Implement commands that pertain to power measurement.
 
@@ -30,8 +31,8 @@ class PowerTools(hw_driver.HwDriver):
     """Helper function to parse out INA power measurement rails."""
     all_ctrls = self._interface.doc_all()
     shuntmv_ctrls = re.findall(r"'control_name': '(\w*_shuntmv)'", all_ctrls)
-    shuntmv_rails = set([ctrl.replace('_shuntmv', '')
-                         for ctrl in shuntmv_ctrls])
+    shuntmv_rails = set(
+        [ctrl.replace('_shuntmv', '') for ctrl in shuntmv_ctrls])
     mw_ctrls = re.findall(r"'control_name': '(\w*_mw)'", all_ctrls)
     mw_rails = set([ctrl.replace('_mw', '') for ctrl in mw_ctrls])
     # Take the union of mw rails and shuntmv rails to remove _mw ec controls,

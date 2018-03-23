@@ -1,7 +1,6 @@
 # Copyright 2016 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Allow creation of uart/console interface via stm32 usb endpoint."""
 import errno
 import exceptions
@@ -22,6 +21,7 @@ import uart
 
 class SuartError(Exception):
   """Class for exceptions of Suart."""
+
   def __init__(self, msg, value=0):
     """SuartError constructor.
 
@@ -57,14 +57,15 @@ class Suart(uart.Uart):
     super(Suart, self).__init__()
     self._logger = logging.getLogger('Suart')
     self._logger.debug('')
-    self._logger.debug('Suart opening %04x:%04x, intf %d, sn: %s' % (
-        vendor, product, interface, serialname))
+    self._logger.debug('Suart opening %04x:%04x, intf %d, sn: %s' %
+                       (vendor, product, interface, serialname))
     self._props = {}
 
     self._susb = stm32usb.Susb(vendor=vendor, product=product,
-        interface=interface, serialname=serialname, logger=self._logger)
+                               interface=interface, serialname=serialname,
+                               logger=self._logger)
 
-    self._logger.debug("Set up stm32 uart")
+    self._logger.debug('Set up stm32 uart')
 
   def __del__(self):
     """Suart destructor."""
@@ -92,12 +93,12 @@ class Suart(uart.Uart):
           # If we miss some characters on pty disconnect, that's fine.
           # ep.read() also throws USBError on timeout, which we discard.
           if type(e) not in [exceptions.OSError, usb.core.USBError]:
-            self._logger.debug("rx %s: %s" % (self.get_pty(), e))
+            self._logger.debug('rx %s: %s' % (self.get_pty(), e))
       else:
         time.sleep(.1)
 
   def run_tx_thread(self):
-    self._logger.debug("tx thread started on %s" % self.get_pty())
+    self._logger.debug('tx thread started on %s' % self.get_pty())
 
     ep = select.epoll()
     ep.register(self._ptym, select.EPOLLHUP)
@@ -111,10 +112,9 @@ class Suart(uart.Uart):
             self._susb._write_ep.write(r, self._susb.TIMEOUT_MS)
 
         except Exception as e:
-          self._logger.debug("tx %s: %s" % (self.get_pty(), e))
+          self._logger.debug('tx %s: %s' % (self.get_pty(), e))
       else:
         time.sleep(.1)
-
 
   def run(self):
     """Creates pthreads to poll stm32 & PTY for data.
@@ -123,7 +123,7 @@ class Suart(uart.Uart):
 
     m, s = os.openpty()
     self._ptyname = os.ttyname(s)
-    self._logger.debug("PTY name: %s" % self._ptyname)
+    self._logger.debug('PTY name: %s' % self._ptyname)
 
     self._ptym = m
     self._ptys = s
@@ -159,7 +159,6 @@ class Suart(uart.Uart):
 
     self._logger.debug('stm32 rx and tx threads started.')
 
-
   def get_uart_props(self):
     """Get the uart's properties.
 
@@ -178,12 +177,8 @@ class Suart(uart.Uart):
     """
     self._logger.debug('')
     if not self._props:
-      self._props = {'baudrate': 115200,
-                     'bits': 8,
-                     'parity': 0,
-                     'sbits': 1}
+      self._props = {'baudrate': 115200, 'bits': 8, 'parity': 0, 'sbits': 1}
     return self._props.copy()
-
 
   def set_uart_props(self, line_props):
     """Set the uart's properties. Note that Suart cannot set properties
@@ -212,11 +207,10 @@ class Suart(uart.Uart):
         if prop == 'parity' and line_props[prop] in [0, 1, 2]:
           self._susb.control(self.USB_USART_SET_PARITY, line_props[prop])
         else:
-          raise SuartError("Line property %s cannot be set from %s to %s" % (
-              prop, curr_props[prop], line_props[prop]))
+          raise SuartError('Line property %s cannot be set from %s to %s' %
+                           (prop, curr_props[prop], line_props[prop]))
     self._props = line_props.copy()
     return True
-
 
   def get_pty(self):
     """Gets path to pty for communication to/from uart.
@@ -229,7 +223,7 @@ class Suart(uart.Uart):
 
 
 def test():
-  format='%(asctime)s - %(name)s - %(levelname)s'
+  format = '%(asctime)s - %(name)s - %(levelname)s'
   loglevel = logging.INFO
   if True:
     loglevel = logging.DEBUG
@@ -241,12 +235,13 @@ def test():
 
   sobj = Suart()
   sobj.run()
-  logging.info('%s' % sobj.get_pty())
+  logging.info('%s', sobj.get_pty())
 
   # run() is a thread so just busy wait to mimic server
   while True:
     # ours sleeps to eleven!
     time.sleep(11)
+
 
 if __name__ == '__main__':
   try:

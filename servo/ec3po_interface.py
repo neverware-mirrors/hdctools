@@ -1,7 +1,6 @@
 # Copyright 2015 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Servo interface for the EC-3PO console interpreter."""
 
 from __future__ import print_function
@@ -25,6 +24,7 @@ class EC3PO(uart.Uart):
 
   This includes both the interpreter and the console objects for one UART.
   """
+
   def __init__(self, raw_ec_uart, source_name):
     """Provides the interface to the EC-3PO console interpreter.
 
@@ -60,7 +60,7 @@ class EC3PO(uart.Uart):
     itpr_process.start()
     self.itpr_process = itpr_process
     # The interpreter starts up in the connected state.
-    self._interp_connected = "on"
+    self._interp_connected = 'on'
 
     # Open a new pseudo-terminal pair.
     (master_pty, user_pty) = pty.openpty()
@@ -70,10 +70,12 @@ class EC3PO(uart.Uart):
     tty.setraw(interface_pty, termios.TCSADRAIN)
 
     # Set the permissions to 660.
-    os.chmod(os.ttyname(user_pty), (stat.S_IRGRP | stat.S_IWGRP |
-                                    stat.S_IRUSR | stat.S_IWUSR))
-    os.chmod(os.ttyname(control_pty), (stat.S_IRGRP | stat.S_IWGRP |
-                                    stat.S_IRUSR | stat.S_IWUSR))
+    os.chmod(
+        os.ttyname(user_pty),
+        (stat.S_IRGRP | stat.S_IWGRP | stat.S_IRUSR | stat.S_IWUSR))
+    os.chmod(
+        os.ttyname(control_pty),
+        (stat.S_IRGRP | stat.S_IWGRP | stat.S_IRUSR | stat.S_IWUSR))
 
     # Change the owner and group of the PTY to the user who started servod.
     try:
@@ -90,8 +92,7 @@ class EC3PO(uart.Uart):
 
     # Create a console.
     c = ec3po.console.Console(master_pty, os.ttyname(user_pty), interface_pty,
-                              cmd_pipe_interactive,
-                              dbg_pipe_interactive)
+                              cmd_pipe_interactive, dbg_pipe_interactive)
     self._console = c
     c._logger = logging.getLogger('Console')
     # Spawn a console process.
@@ -111,8 +112,8 @@ class EC3PO(uart.Uart):
     self._control_pty = os.ttyname(control_pty)
     self._cmd_pipe_int = cmd_pipe_interactive
 
-    self._logger.info('-------------------- %s console on: %s',
-        self._source, os.ttyname(user_pty))
+    self._logger.info('-------------------- %s console on: %s', self._source,
+                      os.ttyname(user_pty))
 
   def get_pty(self):
     """Gets the path of the served PTY."""
@@ -126,13 +127,13 @@ class EC3PO(uart.Uart):
 
   def get_command_lock(self):
     self._command_active.value = True
-    self._logger.debug('acquire lock for %s: %s',
-        self._control_pty, self._command_active.value)
+    self._logger.debug('acquire lock for %s: %s', self._control_pty,
+                       self._command_active.value)
 
   def release_command_lock(self):
     self._command_active.value = False
-    self._logger.debug('release lock for %s: %s',
-        self._control_pty, self._command_active.value)
+    self._logger.debug('release lock for %s: %s', self._control_pty,
+                       self._command_active.value)
 
   def set_interp_connect(self, state):
     """Set the interpreter's connection state to the UART.
@@ -143,11 +144,11 @@ class EC3PO(uart.Uart):
     """
     self._logger.debug('EC3PO Interpreter connection request: \'%r\'', state)
     if state == 1:
-      self._cmd_pipe_int.send("reconnect")
-      self._interp_connected = "on"
+      self._cmd_pipe_int.send('reconnect')
+      self._interp_connected = 'on'
     else:
-      self._cmd_pipe_int.send("disconnect")
-      self._interp_connected = "off"
+      self._cmd_pipe_int.send('disconnect')
+      self._interp_connected = 'off'
     return
 
   def get_interp_connect(self):

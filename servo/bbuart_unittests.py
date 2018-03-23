@@ -10,9 +10,9 @@ import unittest
 
 import bbuart
 
-
-SET_PROP_EXPECTED_ARGS = ['stty', '-F', '/dev/ttyO1', '115200', 'cs8',
-                          '-cstopb','-parenb']
+SET_PROP_EXPECTED_ARGS = [
+    'stty', '-F', '/dev/ttyO1', '115200', 'cs8', '-cstopb', '-parenb'
+]
 SET_PROP_EXPECTED_ARGS.extend(bbuart.STTY_EXTRA_ARGS)
 TXD_MUXFILE = 'lcd_data8'
 RXD_MUXFILE = 'lcd_data9'
@@ -32,21 +32,17 @@ STTY_GET_ATTRIBUTES_OUTPUT = (
     '-opost -olcuc -ocrnl onlcr -onocr -onlret -ofill -ofdel nl0 cr0 tab0 bs0'
     ' vt0 ff0\n'
     '-isig -icanon -iexten -echo -echoe -echok -echonl -noflsh -xcase -tostop'
-    ' -echoprt -echoctl -echoke\n'
-    )
-GET_UART_PROPS_EXPECTED_RESULTS = {'parity': 0,
-                                   'baudrate': 115200,
-                                   'bits': 8,
-                                   'sbits': 0}
-BAD_UART_SETTINGS = {'baudrate': 115200,
-                     'bits': 12,
-                     'parity': 0,
-                     'sbits': 0}
-
+    ' -echoprt -echoctl -echoke\n')
+GET_UART_PROPS_EXPECTED_RESULTS = {
+    'parity': 0,
+    'baudrate': 115200,
+    'bits': 8,
+    'sbits': 0
+}
+BAD_UART_SETTINGS = {'baudrate': 115200, 'bits': 12, 'parity': 0, 'sbits': 0}
 
 
 class TestBBuart(mox.MoxTestBase):
-
 
   def setUp(self):
     super(TestBBuart, self).setUp()
@@ -73,14 +69,14 @@ class TestBBuart(mox.MoxTestBase):
 
     I.E. the muxfile is not specified.
     """
-    self._interface = {'name': 'bb_uart',
-                       'uart_num': 1,
-                       'txd': [TXD_MUXFILE, MUX_SELVAL],
-                       'rxd': [RXD_MUXFILE, MUX_SELVAL]}
-    self._bbmux_controller.set_muxfile(TXD_MUXFILE, bbuart.TXD_MODE,
-                                       MUX_SELVAL)
-    self._bbmux_controller.set_muxfile(RXD_MUXFILE, bbuart.RXD_MODE,
-                                       MUX_SELVAL)
+    self._interface = {
+        'name': 'bb_uart',
+        'uart_num': 1,
+        'txd': [TXD_MUXFILE, MUX_SELVAL],
+        'rxd': [RXD_MUXFILE, MUX_SELVAL]
+    }
+    self._bbmux_controller.set_muxfile(TXD_MUXFILE, bbuart.TXD_MODE, MUX_SELVAL)
+    self._bbmux_controller.set_muxfile(RXD_MUXFILE, bbuart.RXD_MODE, MUX_SELVAL)
     bbuart.subprocess.check_output(SET_PROP_EXPECTED_ARGS)
 
   def testInitDefault(self):
@@ -166,5 +162,6 @@ class TestBBuart(mox.MoxTestBase):
     # Test even parity.
     self.assertEquals(1, uart._get_parity('speed 115200 baud; -parodd'))
 
+
 if __name__ == '__main__':
-    unittest.main()
+  unittest.main()

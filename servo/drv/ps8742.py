@@ -1,7 +1,6 @@
 # Copyright 2017 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Driver for Parade PS8742 USB mux.."""
 
 import hw_driver
@@ -39,10 +38,9 @@ class ps8742(hw_driver.HwDriver):
     """
     super(ps8742, self).__init__(interface, params)
     slave = self._get_slave()
-    self._i2c_obj = i2c_reg.I2cReg.get_device(self._interface, slave,
-                                              addr_len=1, reg_len=1,
-                                              msb_first=True, no_read=False,
-                                              use_reg_cache=False)
+    self._i2c_obj = i2c_reg.I2cReg.get_device(
+        self._interface, slave, addr_len=1, reg_len=1, msb_first=True,
+        no_read=False, use_reg_cache=False)
 
   def _Get_usb3(self):
     """Getter for usb3 enable.
@@ -76,6 +74,6 @@ class ps8742(hw_driver.HwDriver):
       slave: 7-bit i2c address
     """
     if 'slv' not in self._params:
-      raise Ps8742Error("getting slave address")
+      raise Ps8742Error('getting slave address')
     slave = int(self._params['slv'], 0)
     return slave

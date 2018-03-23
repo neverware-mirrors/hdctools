@@ -10,6 +10,7 @@ import os
 import pty_driver
 import time
 
+
 class parrotEcError(Exception):
   """Exception class for parrot ec."""
 
@@ -37,7 +38,7 @@ class parrotEc(pty_driver.ptyDriver):
         request.
     """
     super(parrotEc, self).__init__(interface, params)
-    self._logger.debug("")
+    self._logger.debug('')
     os.linesep = '\r'
 
   def _Set_rec_mode(self, value):
@@ -51,11 +52,11 @@ class parrotEc(pty_driver.ptyDriver):
       value: 0: rec_mode off; 1: rec_mode on.
     """
     if value == 1:
-      self._issue_cmd("fbf5=5a")
-      self._issue_cmd("fbf6=a5")
+      self._issue_cmd('fbf5=5a')
+      self._issue_cmd('fbf6=a5')
     else:
-      self._issue_cmd("fbf5=00")
-      self._issue_cmd("fbf6=00")
+      self._issue_cmd('fbf5=00')
+      self._issue_cmd('fbf6=00')
 
     # Giving Parrot a little bit of time to process the commands
     time.sleep(0.1)
@@ -71,8 +72,8 @@ class parrotEc(pty_driver.ptyDriver):
       0: rec_mode off;
       1: rec_mode on.
     """
-    result1 = self._issue_cmd_get_results("fbf5", ["=(..),"])[0]
-    result2 = self._issue_cmd_get_results("fbf6", ["=(..),"])[0]
+    result1 = self._issue_cmd_get_results('fbf5', ['=(..),'])[0]
+    result2 = self._issue_cmd_get_results('fbf6', ['=(..),'])[0]
     if result1[1].lower() == '5a' and result2[1].lower() == 'a5':
       return 1
     else:

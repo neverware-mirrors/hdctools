@@ -1,7 +1,6 @@
 # Copyright 2016 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Allows creation of an interface via stm32 usb."""
 
 import usb
@@ -9,6 +8,7 @@ import usb
 
 class SusbError(Exception):
   """Class for exceptions of Susb."""
+
   def __init__(self, msg, value=0):
     """SusbError constructor.
 
@@ -34,8 +34,8 @@ class Susb():
   WRITE_ENDPOINT = 0x1
   TIMEOUT_MS = 100
 
-  def __init__(self, vendor=0x18d1,
-               product=0x500f, interface=1, serialname=None, logger=None):
+  def __init__(self, vendor=0x18d1, product=0x500f, interface=1,
+               serialname=None, logger=None):
     """Susb constructor.
 
     Disconvers and connects to stm32 USB endpoints.
@@ -53,7 +53,7 @@ class Susb():
     # Find the stm32.
     dev = usb.core.find(idVendor=vendor, idProduct=product)
     if dev is None:
-      raise SusbError("USB device not found")
+      raise SusbError('USB device not found')
 
     serial = '(%s)' % serialname if serialname else ''
     # If we can't set configuration, it's already been set.
@@ -68,11 +68,11 @@ class Susb():
     self._intf = intf
 
     if not intf:
-      raise SusbError("Interface not found")
+      raise SusbError('Interface not found')
 
     # Detatch raiden.ko if it is loaded.
     if dev.is_kernel_driver_active(intf.bInterfaceNumber) is True:
-            dev.detach_kernel_driver(intf.bInterfaceNumber)
+      dev.detach_kernel_driver(intf.bInterfaceNumber)
     #self._logger.debug("InterfaceNumber: %s" % intf.bInterfaceNumber)
 
     read_ep_number = intf.bInterfaceNumber + self.READ_ENDPOINT

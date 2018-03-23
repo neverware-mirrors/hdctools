@@ -1,7 +1,6 @@
 # Copyright 2016 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Allows creation of an interface via stm32 usb."""
 
 import logging
@@ -10,6 +9,7 @@ import usb
 
 class SusbError(Exception):
   """Class for exceptions of Susb."""
+
   def __init__(self, msg, value=0):
     """SusbError constructor.
 
@@ -35,8 +35,8 @@ class Susb():
   WRITE_ENDPOINT = 0x1
   TIMEOUT_MS = 100
 
-  def __init__(self, vendor=0x18d1,
-               product=0x500f, interface=1, serialname=None, logger=None):
+  def __init__(self, vendor=0x18d1, product=0x500f, interface=1,
+               serialname=None, logger=None):
     """Susb constructor.
 
     Disconvers and connects to stm32 USB endpoints.
@@ -51,9 +51,9 @@ class Susb():
       SusbError: An error accessing Susb object
     """
     if not logger:
-      raise SusbError("No logger defined")
+      raise SusbError('No logger defined')
     self._logger = logger
-    self._logger.debug("")
+    self._logger.debug('')
 
     self._vendor = vendor
     self._product = product
@@ -66,8 +66,8 @@ class Susb():
     try:
       self._find_device()
     except:
-        self._logger.info("device not found: %04x:%04x %s" %
-                          (self._vendor, self._product, self._serialname))
+      self._logger.info('device not found: %04x:%04x %s' %
+                        (self._vendor, self._product, self._serialname))
 
   def _find_device(self):
     """Set up the usb endpoint"""
@@ -75,7 +75,7 @@ class Susb():
     dev_list = usb.core.find(idVendor=self._vendor, idProduct=self._product,
                              find_all=True)
     if dev_list is None or len(dev_list) is 0:
-      raise SusbError("USB device not found")
+      raise SusbError('USB device not found')
 
     # Check if we have multiple stm32s and we've specified the serial.
     dev = None
@@ -85,12 +85,12 @@ class Susb():
           dev = d
           break
       if dev is None:
-        raise SusbError("USB device(%s) not found" % self._serialname)
+        raise SusbError('USB device(%s) not found' % self._serialname)
     else:
       dev = dev_list[0]
 
     serial = '(%s)' % self._serialname if self._serialname else ''
-    self._logger.debug("Found stm32%s: %04x:%04x" % (serial, self._vendor,
+    self._logger.debug('Found stm32%s: %04x:%04x' % (serial, self._vendor,
                                                      self._product))
     # If we can't set configuration, it's already been set.
     try:
@@ -106,20 +106,20 @@ class Susb():
 
     # Detatch raiden.ko if it is loaded.
     if dev.is_kernel_driver_active(intf.bInterfaceNumber) is True:
-            dev.detach_kernel_driver(intf.bInterfaceNumber)
-    self._logger.debug("InterfaceNumber: %s" % intf.bInterfaceNumber)
+      dev.detach_kernel_driver(intf.bInterfaceNumber)
+    self._logger.debug('InterfaceNumber: %s' % intf.bInterfaceNumber)
 
     read_ep_number = intf.bInterfaceNumber + self.READ_ENDPOINT
     read_ep = usb.util.find_descriptor(intf, bEndpointAddress=read_ep_number)
     self._read_ep = read_ep
-    self._logger.debug("Reader endpoint: 0x%x" % read_ep.bEndpointAddress)
+    self._logger.debug('Reader endpoint: 0x%x' % read_ep.bEndpointAddress)
 
     write_ep_number = intf.bInterfaceNumber + self.WRITE_ENDPOINT
     write_ep = usb.util.find_descriptor(intf, bEndpointAddress=write_ep_number)
     self._write_ep = write_ep
-    self._logger.debug("Writer endpoint: 0x%x" % write_ep.bEndpointAddress)
+    self._logger.debug('Writer endpoint: 0x%x' % write_ep.bEndpointAddress)
 
-    self._logger.debug("Set up stm32 usb")
+    self._logger.debug('Set up stm32 usb')
 
   def control(self, request, value):
     """Send control transfer.
@@ -132,15 +132,13 @@ class Susb():
       boolean success/fail
     """
     # usb_setup_packet: ec/include/usb_descriptor.h:231
-    reqtype = (usb.util.CTRL_OUT |
-               usb.util.CTRL_TYPE_VENDOR |
-               usb.util.CTRL_RECIPIENT_INTERFACE)
-    ret = self._dev.ctrl_transfer(bmRequestType = reqtype,
-                                  bRequest = request,
-                                  wIndex = self._interface,
-                                  wValue = value)
+    reqtype = (
+        usb.util.CTRL_OUT | usb.util.CTRL_TYPE_VENDOR
+        | usb.util.CTRL_RECIPIENT_INTERFACE)
+    ret = self._dev.ctrl_transfer(bmRequestType=reqtype, bRequest=request,
+                                  wIndex=self._interface, wValue=value)
     return True
 
   def __del__(self):
     """Sgpio destructor."""
-    self._logger.debug("Close")
+    self._logger.debug('Close')

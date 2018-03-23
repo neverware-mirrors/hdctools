@@ -1,7 +1,6 @@
 # Copyright 2015 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """EC-3PO Servo Driver."""
 
 import logging
@@ -10,6 +9,7 @@ import hw_driver
 
 
 class ec3poDriver(hw_driver.HwDriver):
+
   def __init__(self, interface, params):
     """Creates the driver for EC-3PO console interpreter.
 

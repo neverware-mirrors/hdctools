@@ -14,20 +14,24 @@ import time
 import hw_driver
 import servo.terminal_freezer
 
-
 DEFAULT_UART_TIMEOUT = 3  # 3 seconds is plenty even for slow platforms
+
 
 class ptyError(Exception):
   """Exception class for pty errors."""
 
-UART_PARAMS = {'uart_cmd': None,
-               'uart_multicmd': None,
-               'uart_regexp': None,
-               'uart_timeout': DEFAULT_UART_TIMEOUT
-               }
+
+UART_PARAMS = {
+    'uart_cmd': None,
+    'uart_multicmd': None,
+    'uart_regexp': None,
+    'uart_timeout': DEFAULT_UART_TIMEOUT
+}
+
 
 class ptyDriver(hw_driver.HwDriver):
   """."""
+
   def __init__(self, interface, params):
     """."""
     super(ptyDriver, self).__init__(interface, params)
@@ -91,18 +95,18 @@ class ptyDriver(hw_driver.HwDriver):
 
   def _flush(self):
     """Flush device output to prevent previous messages interfering."""
-    if self._child.sendline("") != 1:
-      raise ptyError("Failed to send newline.")
+    if self._child.sendline('') != 1:
+      raise ptyError('Failed to send newline.')
     while True:
       try:
-        self._child.expect(".", timeout=0.01)
+        self._child.expect('.', timeout=0.01)
       except (pexpect.TIMEOUT, pexpect.EOF):
         break
       except OSError, e:
         # EAGAIN indicates no data available, maybe we didn't wait long enough
         if e.errno != errno.EAGAIN:
           raise
-        self._logger.debug("pty read returned EAGAIN")
+        self._logger.debug('pty read returned EAGAIN')
         break
 
   def _send(self, cmds, rate=0.01, flush=True):
@@ -127,7 +131,7 @@ class ptyDriver(hw_driver.HwDriver):
       cmds = [cmds]
     for cmd in cmds:
       if self._child.sendline(cmd) != len(cmd) + 1:
-        raise ptyError("Failed to send command.")
+        raise ptyError('Failed to send command.')
       # Multiple commands sent together choke the console queue.
       time.sleep(max(rate, 0.01))
 
@@ -139,8 +143,8 @@ class ptyDriver(hw_driver.HwDriver):
     """
     self._issue_cmd_get_results(cmds, [])
 
-  def _issue_cmd_get_results(self, cmds,
-                             regex_list, timeout=DEFAULT_UART_TIMEOUT):
+  def _issue_cmd_get_results(self, cmds, regex_list,
+                             timeout=DEFAULT_UART_TIMEOUT):
     """Send command to the device and wait for response.
 
     This function waits for response message matching a regular
@@ -175,7 +179,7 @@ class ptyDriver(hw_driver.HwDriver):
       self._interface.pause_capture()
       try:
         self._send(cmds)
-        self._logger.debug("Sent cmds: %s" % cmds)
+        self._logger.debug('Sent cmds: %s' % cmds)
         if regex_list:
           for regex in regex_list:
             self._child.expect(regex, timeout)
@@ -185,11 +189,11 @@ class ptyDriver(hw_driver.HwDriver):
             # the subgroups of the match.
             result = match.group(*range(lastindex + 1)) if match else None
             result_list.append(result)
-            self._logger.debug("Result: %s" % str(result))
+            self._logger.debug('Result: %s' % str(result))
       except pexpect.TIMEOUT:
-        self._logger.debug("Before: ^%s^" % self._child.before)
-        self._logger.debug("After: ^%s^" % self._child.after)
-        raise ptyError("Timeout waiting for response.")
+        self._logger.debug('Before: ^%s^' % self._child.before)
+        self._logger.debug('After: ^%s^' % self._child.after)
+        raise ptyError('Timeout waiting for response.')
       finally:
         # Reenable capturing the console output
         self._interface.resume_capture()
@@ -212,7 +216,7 @@ class ptyDriver(hw_driver.HwDriver):
     result_list = []
     with self._open():
       self._send(cmd)
-      self._logger.debug("Sending cmd: %s" % cmd)
+      self._logger.debug('Sending cmd: %s' % cmd)
       if regex:
         while True:
           try:
@@ -223,7 +227,7 @@ class ptyDriver(hw_driver.HwDriver):
             # the subgroups of the match.
             result = match.group(*range(lastindex + 1)) if match else None
             result_list.append(result)
-            self._logger.debug("Got result: %s" % str(result))
+            self._logger.debug('Got result: %s' % str(result))
           except pexpect.TIMEOUT:
             break
     return result_list
@@ -278,9 +282,7 @@ class ptyDriver(hw_driver.HwDriver):
     """
     if self._dict['uart_regexp']:
       self._dict['uart_cmd'] = self._issue_cmd_get_results(
-          cmd,
-          self._dict['uart_regexp'],
-          self._dict['uart_timeout'])
+          cmd, self._dict['uart_regexp'], self._dict['uart_timeout'])
     else:
       self._dict['uart_cmd'] = None
       self._issue_cmd(cmd)

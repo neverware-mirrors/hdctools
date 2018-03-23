@@ -13,8 +13,8 @@ import usb
 import servo_interfaces
 import system_config
 
-
 POST_INIT = collections.defaultdict(dict)
+
 
 class ServoPostInitError(Exception):
   """Exception class for ServoPostInit."""
@@ -63,9 +63,8 @@ class UsbHierarchy(object):
     for usb_dir in os.listdir(self.USB_SYSFS_PATH):
       bus_file = os.path.join(self.USB_SYSFS_PATH, usb_dir, self.BUS_FILE)
       dev_file = os.path.join(self.USB_SYSFS_PATH, usb_dir, self.DEV_FILE)
-      if (self.CHILD_RE.match(usb_dir)
-          and os.path.exists(bus_file)
-          and os.path.exists(dev_file)):
+      if (self.CHILD_RE.match(usb_dir) and os.path.exists(bus_file) and
+          os.path.exists(dev_file)):
         parent_arr = usb_dir.split('.')[:-1]
         parent = '.'.join(parent_arr)
 
@@ -90,8 +89,8 @@ class UsbHierarchy(object):
     Returns:
       SysFS path string of parent of the supplied usb device.
     """
-    return self._usb_hierarchy.get((str(usb_device.bus),
-                                    str(usb_device.address)))
+    return self._usb_hierarchy.get((str(usb_device.bus), str(
+        usb_device.address)))
 
   def share_same_hub(self, usb_servo, usb_candidate):
     """Check if the given USB device shares the same hub with servo v4.
@@ -124,6 +123,7 @@ class UsbHierarchy(object):
       return True
 
     return False
+
 
 class BasePostInit(object):
   """Base Class for Post Init classes."""
@@ -218,7 +218,7 @@ class ServoV4PostInit(BasePostInit):
     first_index = 1 if remove_head else 0
     cfg_files.extend(self.servod._syscfg._loaded_xml_files[first_index:])
 
-    self._logger.debug("Resetting system config files")
+    self._logger.debug('Resetting system config files')
     new_syscfg = system_config.SystemConfig()
     for cfg_file in cfg_files:
       new_syscfg.add_cfg_file(*cfg_file)
@@ -234,7 +234,7 @@ class ServoV4PostInit(BasePostInit):
     """
     serial = usb.util.get_string(servo_usb, 256, servo_usb.iSerialNumber)
     self.servod._serialnames[servo_serial_key] = serial
-    self._logger.debug("servod.serialnames = %r", self.servod._serialnames)
+    self._logger.debug('servod.serialnames = %r', self.servod._serialnames)
 
   def init_servo_interfaces(self, servo_usb):
     """Initialize the new servo interfaces.
@@ -248,8 +248,7 @@ class ServoV4PostInit(BasePostInit):
     serial = usb.util.get_string(servo_usb, 256, servo_usb.iSerialNumber)
     servo_interface = servo_interfaces.INTERFACE_DEFAULTS[vendor][product]
 
-    self.servod.init_servo_interfaces(vendor, product, serial,
-                                      servo_interface)
+    self.servod.init_servo_interfaces(vendor, product, serial, servo_interface)
 
   def probe_ec_board(self):
     """Probe the ec board behind the servo, and check if it needs relocation.
@@ -260,9 +259,9 @@ class ServoV4PostInit(BasePostInit):
     try:
       self.servod.set('ec_uart_en', 'on')
       board = self.servod.get('ec_board')
-      self._logger.info("Detected board: %s", board)
+      self._logger.info('Detected board: %s', board)
     except:
-      self._logger.error("Failed to query EC board name")
+      self._logger.error('Failed to query EC board name')
       return None
 
     if board in servo_interfaces.SERVO_V4_SLOT_POSITIONS:
@@ -281,7 +280,7 @@ class ServoV4PostInit(BasePostInit):
     subprocess.call(['lsusb'])
 
   def post_init(self):
-    self._logger.debug("")
+    self._logger.debug('')
 
     # Do misc actions so we can detect devices we might want to initialize.
     self.kick_devices()
@@ -322,16 +321,16 @@ class ServoV4PostInit(BasePostInit):
           self._logger.info('Move the servo interfaces from %d to %d',
                             default_slot, new_slot)
           self.servod.set_servo_interfaces(new_slot,
-              self.servod.get_servo_interfaces(default_slot, slot_size))
+                                           self.servod.get_servo_interfaces(
+                                               default_slot, slot_size))
           # Restore the original interfaces.
           self.servod.set_servo_interfaces(default_slot, backup_interfaces)
           # Interfaces change; clear the cached.
           self.servod.clear_cached_drv()
 
           # Load the config with modified control names and interface ids.
-          self.prepend_config(
-              servo_interfaces.SERVO_V4_CONFIGS[board], True, board,
-              new_slot - 1)
+          self.prepend_config(servo_interfaces.SERVO_V4_CONFIGS[board], True,
+                              board, new_slot - 1)
 
           # Add its serial for record.
           self.add_servo_serial(
@@ -339,14 +338,14 @@ class ServoV4PostInit(BasePostInit):
         else:
           # Append "_with_servo_micro" to the version string. Don't do it on a
           # base, as the base is optional.
-          self.servod._version += "_with_servo_micro"
+          self.servod._version += '_with_servo_micro'
           # This is the main servo-micro.
           self.add_servo_serial(servo_micro, self.servod.SERVO_MICRO_SERIAL)
           # Add an alias for the servo micro as well.  This is useful if there
           # are multiple servo micros.
           self.add_servo_serial(
-            servo_micro, self.servod.SERVO_MICRO_SERIAL + '_for_' +
-            self.servod._board)
+              servo_micro,
+              self.servod.SERVO_MICRO_SERIAL + '_for_' + self.servod._board)
           main_micro_found = True
 
     if main_micro_found:
@@ -360,15 +359,16 @@ class ServoV4PostInit(BasePostInit):
         self.prepend_config(self.CCD_CFG)
         self.add_servo_serial(ccd, self.servod.CCD_SERIAL)
         self.init_servo_interfaces(ccd)
-        self.servod._version += "_with_ccd_cr50"
+        self.servod._version += '_with_ccd_cr50'
         return
 
-    self._logger.info("No servo micro and CCD detected.")
+    self._logger.info('No servo micro and CCD detected.')
 
 
 # Add in servo v4 post init method.
 for vid, pid in servo_interfaces.SERVO_V4_DEFAULTS:
   POST_INIT[vid][pid] = ServoV4PostInit
+
 
 def post_init(servod):
   """Entry point to call post init for a given vid/pid and servod.

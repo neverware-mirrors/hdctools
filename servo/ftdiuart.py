@@ -16,14 +16,15 @@ import ftdi_utils
 import ftdi_common
 import uart
 
-
 # TODO(tbroch) need some way to xref these to values in ftdiuart.h
 FUART_NAME_SIZE = 128
 FUART_BUF_SIZE = 128
 FUART_USECS_SLEEP = 5000
 
+
 class FuartError(Exception):
   """Class for exceptions of Fuart."""
+
   def __init__(self, msg, value=0):
     """FuartError constructor.
 
@@ -45,10 +46,8 @@ class UartCfg(ctypes.Structure):
 
   Declared in ftdi_common.h and named uart_cfg.
   """
-  _fields_ = [('baudrate', ctypes.c_uint),
-              ('bits', ctypes.c_uint),
-              ('parity', ctypes.c_uint),
-              ('sbits', ctypes.c_uint)]
+  _fields_ = [('baudrate', ctypes.c_uint), ('bits', ctypes.c_uint),
+              ('parity', ctypes.c_uint), ('sbits', ctypes.c_uint)]
 
 
 class FuartContext(ctypes.Structure):
@@ -56,23 +55,19 @@ class FuartContext(ctypes.Structure):
 
   Declared in ftdiuart.h and named fuart_context
   """
-  _fields_ = [('fc', ctypes.POINTER(ftdi_common.FtdiContext)),
-              ('gpio', ftdi_common.Gpio),
-              ('name', ctypes.c_char * FUART_NAME_SIZE),
-              ('cfg', UartCfg),
-              ('is_open', ctypes.c_int),
-              ('usecs_to_sleep', ctypes.c_int),
-              ('fd', ctypes.c_int),
-              ('buf',  ctypes.c_ubyte * FUART_BUF_SIZE),
-              ('error', ctypes.c_int),
-              ('lock', ctypes.POINTER(ctypes.c_int))]
+  _fields_ = [('fc', ctypes.POINTER(
+      ftdi_common.FtdiContext)), ('gpio', ftdi_common.Gpio),
+              ('name', ctypes.c_char * FUART_NAME_SIZE), ('cfg', UartCfg),
+              ('is_open', ctypes.c_int), ('usecs_to_sleep', ctypes.c_int),
+              ('fd', ctypes.c_int), ('buf', ctypes.c_ubyte * FUART_BUF_SIZE),
+              ('error', ctypes.c_int), ('lock', ctypes.POINTER(ctypes.c_int))]
 
 
 class Fuart(uart.Uart):
   """Provide interface to libftdiuart c-library via python ctypes module."""
+
   def __init__(self, vendor=ftdi_common.DEFAULT_VID,
-               product=ftdi_common.DEFAULT_PID, interface=3,
-               serialname=None,
+               product=ftdi_common.DEFAULT_PID, interface=3, serialname=None,
                ftdi_context=None):
     """Fuart contstructor.
 
@@ -96,15 +91,16 @@ class Fuart(uart.Uart):
     self._logger = logging.getLogger('Fuart')
     self._logger.debug('')
     (self._flib, self._lib) = ftdi_utils.load_libs('ftdi', 'ftdiuart')
-    self._fargs = ftdi_common.FtdiCommonArgs(vendor_id=vendor,
-                                             product_id=product,
-                                             interface=interface,
-                                             serialname=serialname,
-                                             speed=115200,
-                                             bits=8, # BITS_8 in ftdi.h
-                                             partity=0, # NONE in ftdi.h
-                                             sbits=0 # STOP_BIT_1 in ftdi.h
-                                             )
+    self._fargs = ftdi_common.FtdiCommonArgs(
+        vendor_id=vendor,
+        product_id=product,
+        interface=interface,
+        serialname=serialname,
+        speed=115200,
+        bits=8,  # BITS_8 in ftdi.h
+        partity=0,  # NONE in ftdi.h
+        sbits=0  # STOP_BIT_1 in ftdi.h
+    )
     self._is_closed = True
     self._fuartc = FuartContext()
 
@@ -116,8 +112,8 @@ class Fuart(uart.Uart):
       if err:
         raise FuartError('doing ftdi_init', err)
 
-    err = self._lib.fuart_init(ctypes.byref(self._fuartc),
-                               ctypes.byref(self._fc))
+    err = self._lib.fuart_init(
+        ctypes.byref(self._fuartc), ctypes.byref(self._fc))
     if err:
       raise FuartError('doing fuart_init', err)
 
@@ -134,8 +130,8 @@ class Fuart(uart.Uart):
       FuartError: If open fails
     """
     self._logger.debug('')
-    err = self._lib.fuart_open(ctypes.byref(self._fuartc),
-                               ctypes.byref(self._fargs))
+    err = self._lib.fuart_open(
+        ctypes.byref(self._fuartc), ctypes.byref(self._fargs))
     if err:
       raise FuartError('doing fuart_open', err)
     self._is_closed = False
@@ -183,10 +179,12 @@ class Fuart(uart.Uart):
           2: 2 stop bits
     """
     self._logger.debug('')
-    return {'baudrate': self._fuartc.cfg.baudrate,
-            'bits': self._fuartc.cfg.bits,
-            'parity': self._fuartc.cfg.parity,
-            'sbits': self._fuartc.cfg.sbits}
+    return {
+        'baudrate': self._fuartc.cfg.baudrate,
+        'bits': self._fuartc.cfg.bits,
+        'parity': self._fuartc.cfg.parity,
+        'sbits': self._fuartc.cfg.sbits
+    }
 
   def set_uart_props(self, line_props):
     """Set the uart's properties.
@@ -232,7 +230,7 @@ class Fuart(uart.Uart):
 def test():
   (options, args) = ftdi_utils.parse_common_args(interface=3)
 
-  format='%(asctime)s - %(name)s - %(levelname)s'
+  format = '%(asctime)s - %(name)s - %(levelname)s'
   loglevel = logging.INFO
   if options.debug:
     loglevel = logging.DEBUG
@@ -244,12 +242,13 @@ def test():
 
   fobj = Fuart(options.vendor, options.product, options.interface)
   fobj.run()
-  logging.info('%s' % fobj.get_pty())
+  logging.info('%s', fobj.get_pty())
 
   # run() is a thread so just busy wait to mimic server
   while True:
     # ours sleeps to eleven!
     time.sleep(11)
+
 
 if __name__ == '__main__':
   try:

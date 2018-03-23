@@ -62,9 +62,9 @@ class FwWpStateDriver(hw_driver.HwDriver):
       self._reset()
     else:
       raise ValueError("Invalid fw_wp_state setting: '%s'. Try one of "
-                       "'%s', '%s', or '%s'." % (statename,
-                           self._STATE_FORCE_ON, self._STATE_FORCE_OFF,
-                           self._STATE_RESET))
+                       "'%s', '%s', or '%s'." %
+                       (statename, self._STATE_FORCE_ON, self._STATE_FORCE_OFF,
+                        self._STATE_RESET))
 
   def get(self):
     """Get firmware write-protection state."""

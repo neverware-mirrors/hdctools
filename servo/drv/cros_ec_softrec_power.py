@@ -7,7 +7,6 @@ import cros_ec_power
 
 
 class crosEcSoftrecPower(cros_ec_power.CrosECPower):
-
   """Driver for power_state that uses the EC to trigger recovery.
 
   A number of boards (generally, the ARM based boards and some x86
@@ -26,10 +25,10 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
   _HOSTEVENT_CMD_FASTBOOT = 'hostevent set 0x1000000'
 
   _REC_TYPE_HOSTEVENT_CMD_DICT = {
-    _REC_TYPE_REC_ON : _HOSTEVENT_CMD_REC_ON,
-    _REC_TYPE_REC_OFF : _HOSTEVENT_CMD_REC_OFF,
-    _REC_TYPE_REC_OFF_CLEARB : _HOSTEVENT_CMD_REC_OFF_CLEARB,
-    _REC_TYPE_FASTBOOT : _HOSTEVENT_CMD_FASTBOOT
+      _REC_TYPE_REC_ON: _HOSTEVENT_CMD_REC_ON,
+      _REC_TYPE_REC_OFF: _HOSTEVENT_CMD_REC_OFF,
+      _REC_TYPE_REC_OFF_CLEARB: _HOSTEVENT_CMD_REC_OFF_CLEARB,
+      _REC_TYPE_FASTBOOT: _HOSTEVENT_CMD_FASTBOOT
   }
 
   # Time in seconds to allow the EC to pick up the recovery
@@ -45,10 +44,9 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
     """
     super(crosEcSoftrecPower, self).__init__(interface, params)
     self._boot_to_rec_screen_delay = float(
-      self._params.get('boot_to_rec_screen_delay', 5.0))
-    self._warm_reset_can_hold_ap = ('yes' ==
-      self._params.get('warm_reset_can_hold_ap', 'yes'))
-
+        self._params.get('boot_to_rec_screen_delay', 5.0))
+    self._warm_reset_can_hold_ap = ('yes' == self._params.get(
+        'warm_reset_can_hold_ap', 'yes'))
 
   def _power_on_ap(self):
     """Power on the AP after initializing recovery state."""

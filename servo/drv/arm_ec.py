@@ -38,10 +38,10 @@ class armEc(ec.ec):
       value: 0: rec_mode off; 1: rec_mode on.
     """
     if value:
-        self._issue_cmd("hostevent set 0x%x" % self.REC_MODE)
+      self._issue_cmd('hostevent set 0x%x' % self.REC_MODE)
     else:
-        self._issue_cmd("hostevent clear 0x%x" % self.REC_MODE)
-        self._issue_cmd("hostevent clearb 0x%x" % self.REC_MODE)
+      self._issue_cmd('hostevent clear 0x%x' % self.REC_MODE)
+      self._issue_cmd('hostevent clearb 0x%x' % self.REC_MODE)
 
   def _Get_rec_mode(self):
     """Getter of rec_mode.
@@ -62,9 +62,10 @@ class armEc(ec.ec):
     #Events-B:  0x00002000
     #>
     try:
-        result = self._issue_cmd_get_results(
-            "hostevent", ['Events:\s+(0x\w+)', ])[0][1]
-        value = int(result, 16)
+      result = self._issue_cmd_get_results('hostevent', [
+          'Events:\s+(0x\w+)',
+      ])[0][1]
+      value = int(result, 16)
     except (IndexError, ValueError):
-        raise ec.ecError("Unexpected 'hostevent' output")
+      raise ec.ecError("Unexpected 'hostevent' output")
     return 1 if (value & self.REC_MODE) else 0

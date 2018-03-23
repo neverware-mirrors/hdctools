@@ -12,6 +12,7 @@ import ftdi_utils
 
 class Fi2cError(Exception):
   """Class for exceptions of Fi2c."""
+
   def __init__(self, msg, value=0):
     """Fi2cError constructor.
 
@@ -29,14 +30,16 @@ class Fi2cContext(ctypes.Structure):
 
   Declared in ftdii2c.h and named fi2c_context.
   """
-  _fields_ = [("fc", ctypes.POINTER(ftdi_common.FtdiContext)),
-              ("gpio", ftdi_common.Gpio),
-              ("clk", ctypes.c_uint),
-              ("error", ctypes.c_int),
-              ("slv", ctypes.c_ubyte),
-              ("buf", ctypes.POINTER(ctypes.c_ubyte)),
-              ("bufcnt", ctypes.c_int),
-              ("bufsize", ctypes.c_int)]
+  _fields_ = [
+      ('fc', ctypes.POINTER(ftdi_common.FtdiContext)),
+      ('gpio', ftdi_common.Gpio),
+      ('clk', ctypes.c_uint),
+      ('error', ctypes.c_int),
+      ('slv', ctypes.c_ubyte),
+      ('buf', ctypes.POINTER(ctypes.c_ubyte)),
+      ('bufcnt', ctypes.c_int),
+      ('bufsize', ctypes.c_int),
+  ]
 
 
 class Fi2c(object):
@@ -58,15 +61,14 @@ class Fi2c(object):
       serialname: string of device serialname/number as defined in FTDI eeprom.
 
     """
-    self._logger = logging.getLogger("Fi2c")
-    self._logger.debug("")
+    self._logger = logging.getLogger('Fi2c')
+    self._logger.debug('')
 
     (self._flib, self._lib, self._gpiolib) = \
-        ftdi_utils.load_libs("ftdi", "ftdii2c",  "ftdigpio")
-    self._fargs = ftdi_common.FtdiCommonArgs(vendor_id=vendor,
-                                             product_id=product,
-                                             interface=interface,
-                                             serialname=serialname)
+        ftdi_utils.load_libs('ftdi', 'ftdii2c',  'ftdigpio')
+    self._fargs = ftdi_common.FtdiCommonArgs(
+        vendor_id=vendor, product_id=product, interface=interface,
+        serialname=serialname)
     self._fc = ftdi_common.FtdiContext()
     self._fic = Fi2cContext()
     self._gpio = ftdi_common.Gpio()
@@ -89,10 +91,10 @@ class Fi2c(object):
     Raises:
       Fi2cError: If open fails
     """
-    err = self._lib.fi2c_open(ctypes.byref(self._fic),
-                                ctypes.byref(self._fargs))
+    err = self._lib.fi2c_open(
+        ctypes.byref(self._fic), ctypes.byref(self._fargs))
     if err:
-      raise Fi2cError("fi2c_open", err)
+      raise Fi2cError('fi2c_open', err)
     self._is_closed = False
 
   def close(self):
@@ -103,7 +105,7 @@ class Fi2c(object):
     """
     err = self._lib.fi2c_close(ctypes.byref(self._fic))
     if err:
-      raise Fi2cError("fi2c_close", err)
+      raise Fi2cError('fi2c_close', err)
     self._is_closed = True
 
   def init(self):
@@ -114,11 +116,11 @@ class Fi2c(object):
     """
     err = self._flib.ftdi_init(ctypes.byref(self._fc))
     if err:
-      raise Fi2cError("ftdi_init", err)
+      raise Fi2cError('ftdi_init', err)
 
     err = self._lib.fi2c_init(ctypes.byref(self._fic), ctypes.byref(self._fc))
     if err:
-      raise Fi2cError("fi2c_init", err)
+      raise Fi2cError('fi2c_init', err)
 
   def setclock(self, speed=100000):
     """Sets i2c clock speed.
@@ -127,7 +129,7 @@ class Fi2c(object):
       speed: clock speed in hertz.  Default is 100kHz
     """
     if self._lib.fi2c_setclock(ctypes.byref(self._fic), speed):
-      raise Fi2cError("fi2c_setclock")
+      raise Fi2cError('fi2c_setclock')
 
   def wr_rd(self, slv, wlist, rcnt):
     """Write and/or read a slave i2c device.
@@ -141,7 +143,7 @@ class Fi2c(object):
     Returns:
       list of c_ubyte's read from i2c device.
     """
-    self._logger.debug("")
+    self._logger.debug('')
     self._fic.slv = slv
     wcnt = len(wlist)
     wbuf_type = ctypes.c_ubyte * wcnt
@@ -152,16 +154,17 @@ class Fi2c(object):
     rbuf_type = ctypes.c_ubyte * rcnt
     rbuf = rbuf_type()
     for i, wval in enumerate(wbuf):
-      self._logger.debug("wbuf[%i] = 0x%02x" % (i, wval))
+      self._logger.debug('wbuf[%i] = 0x%02x' % (i, wval))
 
-    err = self._lib.fi2c_wr_rd(ctypes.byref(self._fic), ctypes.byref(wbuf),
-                               wcnt, ctypes.byref(rbuf), rcnt)
+    err = self._lib.fi2c_wr_rd(
+        ctypes.byref(self._fic), ctypes.byref(wbuf), wcnt, ctypes.byref(rbuf),
+        rcnt)
     if err:
-      err_str = "slave:0x%02x wr:%s rcnt:%d err:%s" % (slv, wlist, rcnt, err)
-      raise Fi2cError("fi2c_wr_rd", err_str)
+      err_str = 'slave:0x%02x wr:%s rcnt:%d err:%s' % (slv, wlist, rcnt, err)
+      raise Fi2cError('fi2c_wr_rd', err_str)
 
     for i, rval in enumerate(rbuf):
-      self._logger.debug("rbuf[%i] = 0x%02x" % (i, rval))
+      self._logger.debug('rbuf[%i] = 0x%02x' % (i, rval))
     return list(rbuf)
 
   def gpio_wr_rd(self, offset, width, dir_val=None, wr_val=None):
@@ -193,20 +196,20 @@ class Fi2c(object):
     rd_val = ctypes.c_ubyte()
     self._gpio.mask = (pow(2, width) - 1) << offset
     if self._gpio.mask & self._i2c_mask:
-      raise Fi2cError("gpio mask violates i2c mask")
+      raise Fi2cError('gpio mask violates i2c mask')
     if wr_val is not None and dir_val is not None:
       self._gpio.direction = self._gpio.mask
       self._gpio.value = wr_val << offset
-      self._gpiolib.fgpio_wr_rd(ctypes.byref(self._fic),
-                                ctypes.byref(self._gpio),
-                                ctypes.byref(rd_val),
-                                ftdi_common.INTERFACE_TYPE_I2C)
+      self._gpiolib.fgpio_wr_rd(
+          ctypes.byref(self._fic), ctypes.byref(self._gpio),
+          ctypes.byref(rd_val), ftdi_common.INTERFACE_TYPE_I2C)
     else:
-      self._gpiolib.fgpio_wr_rd(ctypes.byref(self._fic), 0,
-                                ctypes.byref(rd_val),
-                                ftdi_common.INTERFACE_TYPE_I2C)
-    self._logger.debug("mask:0x%x val:%s returned %d" %
-                       (self._gpio.mask, str(wr_val), rd_val.value))
+      self._gpiolib.fgpio_wr_rd(
+          ctypes.byref(self._fic), 0, ctypes.byref(rd_val),
+          ftdi_common.INTERFACE_TYPE_I2C)
+    self._logger.debug('mask:0x%x val:%s returned %d' % (self._gpio.mask,
+                                                         str(wr_val),
+                                                         rd_val.value))
     return (rd_val.value & self._gpio.mask) >> offset
 
 
@@ -217,12 +220,12 @@ def test():
   """
   (options, args) = ftdi_utils.parse_common_args(interface=2)
 
-  loglevel=logging.INFO
+  loglevel = logging.INFO
   if options.debug:
     loglevel = logging.DEBUG
-  logging.basicConfig(level=loglevel,
-                      format="%(asctime)s - %(name)s - " +
-                      "%(levelname)s - %(message)s")
+  logging.basicConfig(
+      level=loglevel,
+      format='%(asctime)s - %(name)s - ' + '%(levelname)s - %(message)s')
   fobj = Fi2c(options.vendor, options.product, options.interface)
   fobj.open()
   fobj.setclock(100000)
@@ -230,19 +233,20 @@ def test():
   wbuf = [0]
   slv = 0x21
   rbuf = fobj.wr_rd(slv, wbuf, 1)
-  logging.info("first: i2c read of slv=0x%02x reg=0x%02x == 0x%02x" %
-               (slv, wbuf[0], rbuf[0]))
+  logging.info('first: i2c read of slv=0x%02x reg=0x%02x == 0x%02x', slv,
+               wbuf[0], rbuf[0])
   errcnt = 0
   for cnt in xrange(1000):
     try:
       rbuf = fobj.wr_rd(slv, [], 1)
     except:
       errcnt += 1
-      logging.error("errs = %d cnt = %d" % (errcnt, cnt))
+      logging.error('errs = %d cnt = %d', errcnt, cnt)
 
-  logging.info("last: i2c read of slv=0x%02x reg=0x%02x == 0x%02x" %
-               (slv, wbuf[0], rbuf[0]))
+  logging.info('last: i2c read of slv=0x%02x reg=0x%02x == 0x%02x', slv,
+               wbuf[0], rbuf[0])
   fobj.close()
 
-if __name__ == "__main__":
+
+if __name__ == '__main__':
   test()

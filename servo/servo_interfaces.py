@@ -7,9 +7,9 @@ import collections
 
 INTERFACE_DEFAULTS = collections.defaultdict(dict)
 
-SERVO_ID_DEFAULTS = [(0x0403, 0x6014), (0x18d1, 0x5001),
-                     (0x18d1, 0x5002), (0x18d1, 0x5004), (0x18d1, 0x500f),
-                     (0x18d1, 0x5014), (0x18d1, 0x501a), (0x18d1, 0x501b)]
+SERVO_ID_DEFAULTS = [(0x0403, 0x6014), (0x18d1, 0x5001), (0x18d1, 0x5002),
+                     (0x18d1, 0x5004), (0x18d1, 0x500f), (0x18d1, 0x5014),
+                     (0x18d1, 0x501a), (0x18d1, 0x501b)]
 
 # servo v1
 INTERFACE_DEFAULTS[0x18d1][0x5001] = \
@@ -18,7 +18,7 @@ INTERFACE_DEFAULTS[0x18d1][0x5001] = \
    'ftdi_i2c',
    'ftdi_gpio',
    'ftdi_gpio',
-  ]
+    ]
 
 # servo V2
 # Dummy interface 1 == JTAG via openocd
@@ -126,13 +126,13 @@ for vid, pid in SERVO_MICRO_DEFAULTS:
 SERVO_V4_DEFAULTS = [(0x18d1, 0x501b)]
 SERVO_V4_SLOT_SIZE = 20
 SERVO_V4_SLOT_POSITIONS = {
-  'default': 1,
-  'hammer': 41,
-  'staff': 41,
+    'default': 1,
+    'hammer': 41,
+    'staff': 41,
 }
 SERVO_V4_CONFIGS = {
-  'hammer': 'servo_micro_for_hammer.xml',
-  'staff': 'servo_micro_for_hammer.xml',
+    'hammer': 'servo_micro_for_hammer.xml',
+    'staff': 'servo_micro_for_hammer.xml',
 }
 for vid, pid in SERVO_V4_DEFAULTS:
   # Interface #0 is reserved for no use.
@@ -232,10 +232,11 @@ for board in ['elm', 'hana', 'oak', 'samus']:
   INTERFACE_BOARDS[board][0x18d1][0x5002][6] = 'ftdi_uart'
 
 # re-purposes JTAG to be UART for USBPD MCU or H1
-for board in ['asuka', 'caroline', 'cave', 'chell', 'eve', 'fizz', 'glados',
-              'grunt', 'kunimitsu', 'lars', 'meowth', 'nami', 'nautilus',
-              'pbody', 'poppy', 'reef', 'scarlet', 'sentry', 'soraka', 'strago',
-              'zoombini']:
+for board in [
+    'asuka', 'caroline', 'cave', 'chell', 'eve', 'fizz', 'glados', 'grunt',
+    'kunimitsu', 'lars', 'meowth', 'nami', 'nautilus', 'pbody', 'poppy', 'reef',
+    'scarlet', 'sentry', 'soraka', 'strago', 'zoombini'
+]:
   INTERFACE_BOARDS[board][0x18d1][0x5002] = \
       list(INTERFACE_DEFAULTS[0x18d1][0x5002])
   INTERFACE_BOARDS[board][0x18d1][0x5002][1] = 'ftdi_uart'

@@ -13,6 +13,7 @@ DEFAULT_PORT = 9999
 
 class ServoClientError(Exception):
   """Error class for ServoRequest"""
+
   def __init__(self, text, xmlexc):
     """Constructor for ServoClientError Class
 
@@ -42,7 +43,7 @@ class ServoClientError(Exception):
         all_controls = xml_error.splitlines()[1]
         candidates = [x for x in all_controls.split(',') if name in x]
         if candidates:
-          error_msg += "Consider %s" % ' '.join(candidates)
+          error_msg += 'Consider %s' % ' '.join(candidates)
       else:
         error_msg = xml_error
       self.message = '%s :: %s' % (text, error_msg)
@@ -56,6 +57,7 @@ class ServoClient(object):
   Beyond method initialize, the remaining methods (doc_all, doc, get, get_all,
   set) have a corresponding method implmented in servod's server.
   """
+
   def __init__(self, host=DEFAULT_HOST, port=DEFAULT_PORT, verbose=False):
     """Constructor for ServoClient Class
 
@@ -91,7 +93,7 @@ class ServoClient(object):
     """
     try:
       return self._server.doc(name)
-    except  xmlrpclib.Fault as e:
+    except xmlrpclib.Fault as e:
       raise ServoClientError("Problem docstring '%s'" % name, e)
 
   def get(self, name):
@@ -133,7 +135,7 @@ class ServoClient(object):
     except xmlrpclib.Fault as e:
       # TODO(tbroch) : more detail of failure.  Note xmlrpclib only
       #                passes one exception above
-      raise ServoClientError("Problem with %s" % (controls), e)
+      raise ServoClientError('Problem with %s' % (controls), e)
     return rv
 
   def set(self, name, value):
@@ -151,8 +153,7 @@ class ServoClient(object):
     except xmlrpclib.Fault as e:
       # TODO(tbroch) : more detail of failure.  Note xmlrpclib only
       #                passes one exception above
-      raise ServoClientError("Problem setting '%s' to '%s'" %
-                              (name, value), e)
+      raise ServoClientError("Problem setting '%s' to '%s'" % (name, value), e)
 
   def ftdii2c(self, args):
     """Calling a method of Fi2c."""

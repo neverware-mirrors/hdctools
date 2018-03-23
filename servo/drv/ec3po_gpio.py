@@ -12,18 +12,11 @@ import logging
 import pty_driver
 import servo
 
-
 # EC console mask for enabling only command channel
 COMMAND_CHANNEL_MASK = 0x1
 
 # servod numeric translation for GPIO state.
-GPIO_STATE = {
-  0: '0',
-  1: '1',
-  2: 'IN',
-  3: 'A',
-  4: 'ALT'
-}
+GPIO_STATE = {0: '0', 1: '1', 2: 'IN', 3: 'A', 4: 'ALT'}
 
 
 class ec3poGpioError(Exception):
@@ -55,23 +48,23 @@ class ec3poGpio(pty_driver.ptyDriver):
     """
     super(ec3poGpio, self).__init__(interface, params)
 
-    if "name" in params:
-      self._gpio_name = params["name"]
-    elif "names" in params:
+    if 'name' in params:
+      self._gpio_name = params['name']
+    elif 'names' in params:
       self._gpio_names = []
-      for name in params["names"].split(','):
+      for name in params['names'].split(','):
         self._gpio_names.insert(0, name.strip())
     else:
-      raise ec3poGpioError("No GPIO name specified")
+      raise ec3poGpioError('No GPIO name specified')
 
-    if "console" in params:
-      if params["console"] == "enhanced" and \
+    if 'console' in params:
+      if params['console'] == 'enhanced' and \
           type(interface) is servo.ec3po_interface.EC3PO:
         interface._console.oobm_queue.put('interrogate never enhanced')
       else:
-        raise ec3poGpioError("Enhanced console must be ec3po!")
+        raise ec3poGpioError('Enhanced console must be ec3po!')
 
-    self._logger.debug("")
+    self._logger.debug('')
 
   def set_gpio(self, name, value):
     """Set the named GPIO to the specified value.
@@ -82,7 +75,7 @@ class ec3poGpio(pty_driver.ptyDriver):
       name: name of the GPIO to modify
       value: the state to set into the GPIO
     """
-    cmd = "gpioset %s %s\r" % (name, GPIO_STATE[value])
+    cmd = 'gpioset %s %s\r' % (name, GPIO_STATE[value])
     self._issue_cmd(cmd)
 
   def get_gpio(self, name):
@@ -93,8 +86,8 @@ class ec3poGpio(pty_driver.ptyDriver):
     Returns:
       0 or 1
     """
-    cmd = "gpioget %s\r" % name
-    regex = "  ([01])[ *] .*%s" % name
+    cmd = 'gpioget %s\r' % name
+    regex = '  ([01])[ *] .*%s' % name
 
     results = self._issue_cmd_get_results(cmd, [regex])[0]
     res_value = int(results[1])
@@ -127,8 +120,8 @@ class ec3poGpio(pty_driver.ptyDriver):
       value: An integer value, where each bit will be assigned to a GPIO.
     """
     if value >> len(self._gpio_names):
-      raise ec3poGpioError("Extra bits left over in v:%d on %s" % (
-          value, self._gpio_names))
+      raise ec3poGpioError('Extra bits left over in v:%d on %s' %
+                           (value, self._gpio_names))
     offset = len(self._gpio_names) - 1
     for gpio in self._gpio_names:
       bit = (value >> offset) & 0x1

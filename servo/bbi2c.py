@@ -10,6 +10,7 @@ import bbmux_controller
 
 class BBi2cError(Exception):
   """Class for exceptions of BBi2c."""
+
   def __init__(self, msg, value=0):
     """BBi2cError constructor.
 
@@ -21,11 +22,12 @@ class BBi2cError(Exception):
     self.msg = msg
     self.value = value
 
+
 class BBi2c(object):
   """Provide interface to i2c through beaglebone"""
 
   def __init__(self, interface):
-    self._logger = logging.getLogger("BBi2c")
+    self._logger = logging.getLogger('BBi2c')
     self._interface = interface
     self._bus_num = interface['bus_num']
     # Older kernels utilizing the omap mux starts counting from 1
@@ -70,8 +72,7 @@ class BBi2c(object):
     """
     # i2cset can write up to 3 bytes to an i2c device in the format of:
     # [1-byte address][0-2 bytes of data]
-    args = ['i2cset', '-y', str(self._bus_num), '0x%02x' % slv,
-            address]
+    args = ['i2cset', '-y', str(self._bus_num), '0x%02x' % slv, address]
     if len(wlist) > 2:
       raise BBi2cError('Can only write up to 3 bytes (1-byte register address '
                        'and 2-byte word) per i2cset command. '
@@ -87,8 +88,8 @@ class BBi2c(object):
       logging.debug(' '.join(args))
       subprocess.check_call(args)
     except subprocess.CalledProcessError:
-      raise BBi2cError('Failed i2c write to slave address: %s data: %s' % (slv,
-                       wlist))
+      raise BBi2cError('Failed i2c write to slave address: %s data: %s' %
+                       (slv, wlist))
 
   def _read(self, slv, address, rcnt):
     """Read from a slave i2c device.
@@ -133,8 +134,7 @@ class BBi2c(object):
       logging.debug(' '.join(args))
       read_value = subprocess.check_output(args)
     except subprocess.CalledProcessError:
-      raise BBi2cError('Failed i2c read of 1 byte from slave address: %s' %
-                       slv)
+      raise BBi2cError('Failed i2c read of 1 byte from slave address: %s' % slv)
     read_value_int = int(read_value, 0)
     read_bytes.append(read_value_int)
     return read_bytes
@@ -191,27 +191,28 @@ class BBi2c(object):
 
 def test():
   """Test code. (forked from ftdii2c.py)"""
-  loglevel=logging.INFO
-  logging.basicConfig(level=loglevel,
-                      format='%(asctime)s - %(name)s - ' +
-                      '%(levelname)s - %(message)s')
+  loglevel = logging.INFO
+  logging.basicConfig(
+      level=loglevel,
+      format='%(asctime)s - %(name)s - ' + '%(levelname)s - %(message)s')
   i2c = BBi2c(3)
 
   wbuf = [0]
   slv = 0x21
   rbuf = i2c.wr_rd(slv, wbuf, 1)
-  logging.info('first: i2c read of slv=0x%02x reg=0x%02x == 0x%02x' %
-               (slv, wbuf[0], rbuf[0]))
+  logging.info('first: i2c read of slv=0x%02x reg=0x%02x == 0x%02x', slv,
+               wbuf[0], rbuf[0])
   errcnt = 0
   for cnt in xrange(1000):
     try:
       rbuf = i2c.wr_rd(slv, [], 1)
     except:
       errcnt += 1
-      logging.error('errs = %d cnt = %d' % (errcnt, cnt))
+      logging.error('errs = %d cnt = %d', errcnt, cnt)
 
-  logging.info('last: i2c read of slv=0x%02x reg=0x%02x == 0x%02x' %
-               (slv, wbuf[0], rbuf[0]))
+  logging.info('last: i2c read of slv=0x%02x reg=0x%02x == 0x%02x', slv,
+               wbuf[0], rbuf[0])
+
 
 if __name__ == '__main__':
   test()

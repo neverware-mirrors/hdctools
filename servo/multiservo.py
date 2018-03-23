@@ -18,14 +18,13 @@ def add_multiservo_parser_options(parser):
   multiservo operation. This function configures the command line parser
   object to accept those options.
   """
-  parser.add_option("--rcfile", type=str,
-                    default=DEFAULT_RC_FILE,
-                    help="servo description file for multi-servo operation,"
-                    " %s is used by default." % DEFAULT_RC_FILE)
-  parser.add_option("-n", "--name", type=str,
-                    help="symbolic name of the servo board, "
-                    "used as a config shortcut, could also be supplied "
-                    "through environment variable SERVOD_NAME")
+  parser.add_option('--rcfile', type=str, default=DEFAULT_RC_FILE,
+                    help='servo description file for multi-servo operation,'
+                    ' %s is used by default.' % DEFAULT_RC_FILE)
+  parser.add_option('-n', '--name', type=str,
+                    help='symbolic name of the servo board, '
+                    'used as a config shortcut, could also be supplied '
+                    'through environment variable SERVOD_NAME')
 
 
 def parse_rc(logger, rc_file):
@@ -56,17 +55,13 @@ def parse_rc(logger, rc_file):
       if not name or len(elts) < 2 or [x for x in elts if ' ' in x]:
         logger.info('ignoring rc line "%s"', rc_line.rstrip())
         continue
-      rcd[name] = {
-        'sn': elts[1],
-        'port': None,
-        'board': None
-        }
+      rcd[name] = {'sn': elts[1], 'port': None, 'board': None}
       if (len(elts) > 2):
         rcd[name]['port'] = int(elts[2])
         if len(elts) > 3:
           rcd[name]['board'] = elts[3]
           if len(elts) > 4:
-            logger.info("discarding %s for for %s", ' '.join(elts[4:]), name)
+            logger.info('discarding %s for for %s', ' '.join(elts[4:]), name)
   return rcd
 
 

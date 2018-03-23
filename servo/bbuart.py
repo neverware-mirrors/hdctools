@@ -10,38 +10,32 @@ import subprocess
 import bbmux_controller
 import uart
 
-
 BITS_RE = 'cs(?P<value>[5-8])'
 PARITY_RE = '\-?parodd'
 SBITS_RE = '(?P<value>\-?cstopb)'
 SPEED_RE = 'speed (?P<value>[0-9]*) baud'
-PARITY_MAP = {0 : '-parenb',
-              1 : 'parodd',
-              2 : '-parodd'}
-SBITS_MAP = {0 : '-cstopb',
-             1 : '-cstopb',
-             2 : 'cstopb'}
+PARITY_MAP = {0: '-parenb', 1: 'parodd', 2: '-parodd'}
+SBITS_MAP = {0: '-cstopb', 1: '-cstopb', 2: 'cstopb'}
 
 # Map of interfaces to tty.
-TTY_MAP = {1 : '/dev/ttyO1', # Uart1/ec_uart
-           2 : '/dev/ttyO2', # Uart2/cpu_uart
-           4 : '/dev/ttyO4', # Uart4/atmega_uart
-           5 : '/dev/ttyO5'} # Uart3/legacy_uart- Uart3 is connected to
-                             # Beaglebone Uart5.
+TTY_MAP = {
+    1: '/dev/ttyO1',  # Uart1/ec_uart
+    2: '/dev/ttyO2',  # Uart2/cpu_uart
+    4: '/dev/ttyO4',  # Uart4/atmega_uart
+    5: '/dev/ttyO5'
+}  # Uart3/legacy_uart- Uart3 is connected to
+# Beaglebone Uart5.
 
-DEFAULT_UART_SETTINGS = {'baudrate' : 115200,
-                         'bits' : 8,
-                         'parity' : 0,
-                         'sbits' : 0}
+DEFAULT_UART_SETTINGS = {'baudrate': 115200, 'bits': 8, 'parity': 0, 'sbits': 0}
 
-STTY_EXTRA_ARGS = ['-ignbrk', '-brkint', '-ignpar', '-parmrk', '-inpck',
-                   '-istrip', '-inlcr', '-igncr', '-icrnl', '-ixon', '-ixoff',
-                   '-iuclc', '-ixany', '-imaxbel', '-iutf8', '-opost',
-                   '-olcuc', '-ocrnl', 'onlcr', '-onocr', '-onlret', '-ofill',
-                   '-ofdel', 'nl0', 'cr0', 'tab0', 'bs0', 'vt0', 'ff0',
-                   '-isig', '-icanon', '-iexten', '-echo', '-echoe', '-echok',
-                   '-echonl', '-noflsh', '-xcase', '-tostop', '-echoprt',
-                   '-echoctl', '-echoke']
+STTY_EXTRA_ARGS = [
+    '-ignbrk', '-brkint', '-ignpar', '-parmrk', '-inpck', '-istrip', '-inlcr',
+    '-igncr', '-icrnl', '-ixon', '-ixoff', '-iuclc', '-ixany', '-imaxbel',
+    '-iutf8', '-opost', '-olcuc', '-ocrnl', 'onlcr', '-onocr', '-onlret',
+    '-ofill', '-ofdel', 'nl0', 'cr0', 'tab0', 'bs0', 'vt0', 'ff0', '-isig',
+    '-icanon', '-iexten', '-echo', '-echoe', '-echok', '-echonl', '-noflsh',
+    '-xcase', '-tostop', '-echoprt', '-echoctl', '-echoke'
+]
 
 # Uart Signal Names
 TXD_PATTERN = 'uart%d_txd'
@@ -52,6 +46,7 @@ RXD_MODE = 0X2
 
 class BBuartError(Exception):
   """Class for exceptions of Buart."""
+
   def __init__(self, msg, value=0):
     """BBuartError constructor.
 
@@ -62,6 +57,7 @@ class BBuartError(Exception):
     super(BBuartError, self).__init__(msg, value)
     self.msg = msg
     self.value = value
+
 
 class BBuart(uart.Uart):
   """Provides interface to a beaglebone's UART interfaces.
@@ -108,8 +104,7 @@ class BBuart(uart.Uart):
     else:
       # Have the bbmux controller determine the correct mux file and select
       # value.
-      self._bbmux_controller.set_pin_mode(pattern % self._uart_num,
-                                          mode)
+      self._bbmux_controller.set_pin_mode(pattern % self._uart_num, mode)
 
   def open(self):
     """Opens access to beaglebone uart interface.
@@ -259,15 +254,16 @@ class BBuart(uart.Uart):
     sbits = SBITS_MAP[line_props['sbits']]
     parity = PARITY_MAP[line_props['parity']]
 
-    stty_args = ['stty', '-F', self._pty, '%d' % line_props['baudrate'], bits,
-                 sbits, parity]
+    stty_args = [
+        'stty', '-F', self._pty,
+        '%d' % line_props['baudrate'], bits, sbits, parity
+    ]
     stty_args.extend(STTY_EXTRA_ARGS)
     try:
       subprocess.check_output(stty_args)
     except subprocess.CalledProcessError as e:
       raise BBuartError('Failed to set uart properites for %s with output: %s.'
-                        ' Error: %s.'
-                        % (self._pty, e.output, e))
+                        ' Error: %s.' % (self._pty, e.output, e))
 
   def get_pty(self):
     """Gets path to pty for communication to/from uart.

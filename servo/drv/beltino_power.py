@@ -7,7 +7,6 @@ import power_state
 
 
 class beltinoPower(power_state.PowerStateDriver):
-
   """Driver for power_state for Beltino-class boards."""
 
   # Time in seconds to allow the BIOS and EC to detect the

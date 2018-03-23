@@ -1,17 +1,17 @@
 # Copyright 2015 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Driver for power_state for veyron_mickey board.
 """
 import power_state
 import time
 
-class veyronMickeyPower(power_state.PowerStateDriver):
 
-  """
-  Mickey has no EC and thus uses a physical recovery button. It's similar
-  to Chromeboxes but with some different hold time requirements.
+class veyronMickeyPower(power_state.PowerStateDriver):
+  """Mickey has no EC and thus uses a physical recovery button.
+
+  It's similar to Chromeboxes but with some different hold time
+  requirements.
   """
 
   # Time in seconds to allow the firmware to detect the

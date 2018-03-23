@@ -28,13 +28,12 @@ EEPROM:
 """
 import logging
 
-
 import hw_driver
-
 
 REG_CTRL_LEN = 1
 EEPROM_BYTES = 256
 PAGE_BYTES = 4
+
 
 class pca9500Error(Exception):
   """Error class for pca9500 class."""
@@ -67,7 +66,7 @@ class pca9500(hw_driver.HwDriver):
     """
     super(pca9500, self).__init__(interface, params)
     if 'slv' not in self._params:
-      raise pca9500Error("getting slave address")
+      raise pca9500Error('getting slave address')
     self._slave = int(self._params['slv'], 0)
 
   def _Set_gpio(self, value):
@@ -80,14 +79,14 @@ class pca9500(hw_driver.HwDriver):
     Args:
       value: integer value to write to gpio
     """
-    self._logger.debug("value = %d", value)
+    self._logger.debug('value = %d', value)
     (_, mask) = self._get_offset_mask()
     cur_value = self._read_control_reg()
     if value:
       hw_value = cur_value | mask
     else:
       hw_value = cur_value & ~mask
-    self._logger.debug("new(0x%02x) cur(0x%02x) mask(0x%02x)", hw_value,
+    self._logger.debug('new(0x%02x) cur(0x%02x) mask(0x%02x)', hw_value,
                        cur_value, mask)
     self._interface.wr_rd(self._slave, [hw_value], 0)
 
@@ -97,7 +96,7 @@ class pca9500(hw_driver.HwDriver):
     Returns:
       integer value from gpio
     """
-    self._logger.debug("")
+    self._logger.debug('')
     return self._create_logical_value(self._read_control_reg())
 
   def _read_control_reg(self):
@@ -170,17 +169,18 @@ class pca9500(hw_driver.HwDriver):
     if (len(byte_list) + pca9500._byte_addr) > EEPROM_BYTES:
       raise pca9500Error, 'Writing %d Bytes from addr %d will be > %d' % \
           (len(byte_list), pca9500._byte_addr, EEPROM_BYTES)
-    page_list = [byte_list[i:(i + PAGE_BYTES)]
-                 for i in xrange(0, len(byte_list), PAGE_BYTES)]
+    page_list = [
+        byte_list[i:(i + PAGE_BYTES)]
+        for i in xrange(0, len(byte_list), PAGE_BYTES)
+    ]
     # insert idx for writing
     for i, page in enumerate(page_list):
       page.insert(0, pca9500._byte_addr + (i * PAGE_BYTES))
       try:
         self._interface.wr_rd(self._slave, page, 0)
       except Fi2cError:
-        self._logger.error("page write of %i:%s", i, page)
+        self._logger.error('page write of %i:%s', i, page)
         raise pca9500Error, 'Setting PCA9500 EEPROM'
-
 
   def _Get_eeprom(self):
     """Read the EEPROM.
@@ -209,12 +209,12 @@ class pca9500(hw_driver.HwDriver):
     try:
       byte_list = self._interface.wr_rd(self._slave, [], EEPROM_BYTES)
     except Fi2cError:
-      self._logger.error("eeprom read")
+      self._logger.error('eeprom read')
       raise pca9500Error, 'Getting PCA9500 EEPROM'
 
     lines = []
     for i in xrange(0, len(byte_list), 16):
-      line = ' '.join('0x%02x' % byte for byte in byte_list[i:i+16])
+      line = ' '.join('0x%02x' % byte for byte in byte_list[i:i + 16])
       lines.append(line)
 
     return '\n%s' % '\n'.join(lines)

@@ -15,14 +15,12 @@ class pca9537(tca6416.tca6416):
   indexes (REG_x below).
   """
 
-
   # base indexes of the input, output, polarity and direction registers
   # respectively.
   REG_INP = 0
   REG_OUT = 1
   REG_POL = 2
   REG_DIR = 3
-
 
   def __init__(self, interface, params):
     """Constructor.
@@ -41,4 +39,4 @@ class pca9537(tca6416.tca6416):
     local_params = params.copy()
     local_params['port'] = '0'
     super(pca9537, self).__init__(interface, local_params)
-    self._logger.debug("")
+    self._logger.debug('')

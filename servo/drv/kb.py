@@ -6,6 +6,7 @@
 
 import hw_driver
 
+
 class kbError(Exception):
   """Error class for kb class."""
 
@@ -36,19 +37,19 @@ class kb(hw_driver.HwDriver):
     """
     if key == 0:
       self._servo.d_key(.1)
-    elif  key == 1:
+    elif key == 1:
       self._servo.ctrl_d(.1)
-    elif  key == 2:
+    elif key == 2:
       self._servo.ctrl_u(.1)
-    elif  key == 3:
+    elif key == 3:
       self._servo.ctrl_enter(.1)
-    elif  key == 4:
+    elif key == 4:
       self._servo.enter_key(.1)
-    elif  key == 5:
+    elif key == 5:
       self._servo.refresh_key(.1)
-    elif  key == 6:
+    elif key == 6:
       self._servo.ctrl_refresh_key(.1)
-    elif  key == 7:
+    elif key == 7:
       self._servo.sysrq_x(.1)
     else:
-      raise kbError("Unknown key enum: %s", key)
+      raise kbError('Unknown key enum: %s', key)

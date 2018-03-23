@@ -7,13 +7,12 @@ import unittest
 
 import bbi2c
 
-
 DEFAULT_BUS_NUM = 3
 SLAVE_ADDRESS = 0x20
 DATA_ADDRESS = 0x0
 
-class TestBBi2c(mox.MoxTestBase):
 
+class TestBBi2c(mox.MoxTestBase):
 
   def setUp(self):
     super(TestBBi2c, self).setUp()
@@ -24,7 +23,7 @@ class TestBBi2c(mox.MoxTestBase):
   def readTestHelper(self, data, send_address=True):
     if send_address:
       self.singleWriteTestHelper([DATA_ADDRESS])
-    args = ['i2cget','-y', '3', '0x20']
+    args = ['i2cget', '-y', '3', '0x20']
     if len(data) == 2:
       args.append('0x%02x' % DATA_ADDRESS)
       args.append('w')
@@ -96,4 +95,4 @@ class TestBBi2c(mox.MoxTestBase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+  unittest.main()

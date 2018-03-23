@@ -8,6 +8,7 @@ import power_state
 
 class CrosECPower(power_state.PowerStateDriver):
   """Driver for power_state for boards support EC command."""
+
   def __init__(self, interface, params):
     """Constructor.
 

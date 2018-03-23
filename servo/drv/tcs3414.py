@@ -19,7 +19,6 @@ import time
 # servo libs
 import hw_driver
 
-
 # I/O registers
 REG_COMMAND_BIT = 0x80
 REG_WORD_BIT = 0x20
@@ -46,9 +45,9 @@ TIMING_400MS = 400
 
 # bits 0-3 of timing register (Integration Time)
 TIMING_TIME_BITS = {
-  TIMING_12MS: 0x00,  # default value
-  TIMING_100MS: 0x01,
-  TIMING_400MS: 0x02
+    TIMING_12MS: 0x00,  # default value
+    TIMING_100MS: 0x01,
+    TIMING_400MS: 0x02
 }
 
 # bits 0-2 of gain register (Prescaler)
@@ -62,10 +61,10 @@ GAIN_64X = 64
 
 # bits 4-5 of gain register (Analog Gain Control)
 GAIN_ANALOG_BITS = {
-  GAIN_1X: 0x00,
-  GAIN_4X: 0x10,
-  GAIN_16X: 0x20,
-  GAIN_64X: 0x30
+    GAIN_1X: 0x00,
+    GAIN_4X: 0x10,
+    GAIN_16X: 0x20,
+    GAIN_64X: 0x30
 }
 
 # millisecond
@@ -73,7 +72,6 @@ MSEC = 1e-3
 
 # Linux kernel is not real-time, sleep some more time.
 SLEEP_MORE_TIME = 5 * MSEC
-
 
 # Devices shared among driver objects:
 #   (interface instance, slv) => Tcs3414Device instance
@@ -90,6 +88,7 @@ class Tcs3414Device(object):
 
   Note: public members are directly accessible by tcs3414 class.
   """
+
   def __init__(self):
     self.integ_time = TIMING_12MS
     self.analog_gain = GAIN_1X
@@ -148,6 +147,7 @@ class tcs3414(hw_driver.HwDriver):
     Returns:
       [H, S, V]: the coordinates are all between 0 and 1.
     """
+
     def w2f(b):
       return float(b) / 65535.0
 
@@ -157,7 +157,7 @@ class tcs3414(hw_driver.HwDriver):
 
   def _check_8bit(self, v):
     if v & 0xFF != v:
-      raise Tcs3414Error("0x%x is not 8-bit" % v)
+      raise Tcs3414Error('0x%x is not 8-bit' % v)
 
   def _get_slave(self):
     """Checks and return needed params to call driver.
@@ -246,14 +246,14 @@ class tcs3414(hw_driver.HwDriver):
     time.sleep(self._device.integ_time * MSEC + SLEEP_MORE_TIME)
 
     color_r = self._read_word(REG_COMMAND_BIT | REG_WORD_BIT | REG_RED_CHANNEL)
-    color_g = self._read_word(REG_COMMAND_BIT | REG_WORD_BIT |
-                              REG_GREEN_CHANNEL)
+    color_g = self._read_word(REG_COMMAND_BIT | REG_WORD_BIT
+                              | REG_GREEN_CHANNEL)
     color_b = self._read_word(REG_COMMAND_BIT | REG_WORD_BIT | REG_BLUE_CHANNEL)
-    intensity = self._read_word(REG_COMMAND_BIT | REG_WORD_BIT |
-                                REG_CLEAR_CHANNEL)
+    intensity = self._read_word(REG_COMMAND_BIT | REG_WORD_BIT
+                                | REG_CLEAR_CHANNEL)
 
     self._power_off()  # Save power
 
-    self._logger.debug('Read RGBI values (%d, %d, %d, %d)',
-                       color_r, color_g, color_b, intensity)
+    self._logger.debug('Read RGBI values (%d, %d, %d, %d)', color_r, color_g,
+                       color_b, intensity)
     return self._convert_HSV(color_r, color_g, color_b, intensity)

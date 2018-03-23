@@ -19,11 +19,12 @@ import pty_driver
 KEY_STATE = [0, 1, 1, 1, 1]
 
 # Key matrix row and column mapped from kbd_m*_a*
-KEY_MATRIX = [[[(0,4), (11,4)], [(2,4), None]],
-              [[(0,2), (11,2)], [(2,2), None]]]
+KEY_MATRIX = [[[(0, 4), (11, 4)], [(2, 4), None]], [[(0, 2), (11, 2)], [(2, 2),
+                                                                        None]]]
 
 # EC console mask for enabling only command channel
 COMMAND_CHANNEL_MASK = 0x1
+
 
 class ecError(Exception):
   """Exception class for ec."""
@@ -40,7 +41,6 @@ class ec(pty_driver.ptyDriver):
   call _Get_kbd_en.
   """
 
-
   def __init__(self, interface, params):
     """Constructor.
 
@@ -53,29 +53,28 @@ class ec(pty_driver.ptyDriver):
         request.
     """
     super(ec, self).__init__(interface, params)
-    self._logger.debug("")
+    self._logger.debug('')
     # Add locals to the values dictionary.
-    self._dict["kbd"] = KEY_STATE
+    self._dict['kbd'] = KEY_STATE
 
   def _limit_channel(self):
-    """
-    Save the current console channel setting and limit the output to
-    the command channel (only print output from commands issued on console).
+    """Save the current console channel setting and limit the output to the
+    command channel (only print output from commands issued on console).
 
     Raises:
       ecError: when failing to retrieve channel settings
     """
-    self._issue_cmd("chan save")
-    self._issue_cmd("chan %d" % COMMAND_CHANNEL_MASK)
+    self._issue_cmd('chan save')
+    self._issue_cmd('chan %d' % COMMAND_CHANNEL_MASK)
 
   def _restore_channel(self):
     """Load saved channel setting"""
     # To improve backward compatibility on EC images that do not have save/
     # restore, set channel mask to power-on default before running restore.
     # TODO(shawnn): Remove this line once all test units have new EC image.
-    self._issue_cmd("chan 0xffffffff")
+    self._issue_cmd('chan 0xffffffff')
 
-    self._issue_cmd("chan restore")
+    self._issue_cmd('chan restore')
 
   def _Get_board(self):
     """Getter of board.
@@ -84,11 +83,10 @@ class ec(pty_driver.ptyDriver):
         The board string.
     """
     self._limit_channel()
-    result = self._issue_cmd_get_results(
-        "ver", ["RO:\s+(\S*)_v?[\d.-]+"])[0]
+    result = self._issue_cmd_get_results('ver', ['RO:\s+(\S*)_v?[\d.-]+'])[0]
     self._restore_channel()
     if result is None:
-      raise ecError("Cannot retrieve the board result on EC console.")
+      raise ecError('Cannot retrieve the board result on EC console.')
     return result[1]
 
   def _Get_active_copy(self):
@@ -98,11 +96,10 @@ class ec(pty_driver.ptyDriver):
         The string of the active EC copy, e.g. "RO", "RW", "RW_B".
     """
     self._limit_channel()
-    result = self._issue_cmd_get_results(
-        "sysinfo", ["Copy:\s+(\S+)"])[0]
+    result = self._issue_cmd_get_results('sysinfo', ['Copy:\s+(\S+)'])[0]
     self._restore_channel()
     if result is None:
-      raise ecError("Cannot retrieve the active copy result on EC console.")
+      raise ecError('Cannot retrieve the active copy result on EC console.')
     return result[1]
 
   def _Get_system_powerstate(self):
@@ -113,13 +110,13 @@ class ec(pty_driver.ptyDriver):
       The powerinfo string.
     """
     self._limit_channel()
-    result = self._issue_cmd_get_results(
-        'powerinfo', ['power state \d+ = (.*), in'])[0]
+    result = self._issue_cmd_get_results('powerinfo',
+                                         ['power state \d+ = (.*), in'])[0]
     self._restore_channel()
     if result is None:
       # TODO(coconutruben): in here, we might be able to detect if we're
       # in G3, by seeking the right exception
-      raise ecError("Cannot retrieve the power state on EC console.")
+      raise ecError('Cannot retrieve the power state on EC console.')
     return result[1]
 
   def _Get_gpio(self):
@@ -129,13 +126,12 @@ class ec(pty_driver.ptyDriver):
         ec gpios and their current state 1|0
     """
     self._limit_channel()
-    result = self._issue_cmd_get_results(
-        "gpioget", ["gpioget.*>"])[0]
+    result = self._issue_cmd_get_results('gpioget', ['gpioget.*>'])[0]
     self._restore_channel()
     if result is None:
-      raise ecError("Cannot retrieve the ec gpios states on EC console.")
+      raise ecError('Cannot retrieve the ec gpios states on EC console.')
     # [:-1] is to remove the trailing >
-    return "\n" + result.replace("gpioget", "").replace("\r", "")[:-1]
+    return '\n' + result.replace('gpioget', '').replace('\r', '')[:-1]
 
   def _set_key_pressed(self, key_rc, pressed):
     """Press/release a key.
@@ -146,7 +142,7 @@ class ec(pty_driver.ptyDriver):
     """
     if key_rc is None:
       return
-    self._issue_cmd("kbpress %d %d %d" % (key_rc + (pressed,)))
+    self._issue_cmd('kbpress %d %d %d' % (key_rc + (pressed,)))
 
   def _get_mx_ax_index(self, m, a):
     """Get the index of a kbd_mx_ax control.
@@ -163,19 +159,19 @@ class ec(pty_driver.ptyDriver):
     Args:
       pressed: 0=release, 1=press.
     """
-    m1_a0, m1_a1, m2_a0, m2_a1 = self._dict["kbd"][1:5]
+    m1_a0, m1_a1, m2_a0, m2_a1 = self._dict['kbd'][1:5]
     self._set_key_pressed(KEY_MATRIX[1][m2_a0][m2_a1], pressed)
     self._set_key_pressed(KEY_MATRIX[0][m1_a0][m1_a1], pressed)
 
   def _Set_kbd_en(self, value):
     """Enable/disable keypress simulation."""
-    self._logger.debug("")
-    org_value = self._dict["kbd"][0]
+    self._logger.debug('')
+    org_value = self._dict['kbd'][0]
     if org_value == 0 and value == 1:
       self._set_both_keys(pressed=1)
     elif org_value == 1 and value == 0:
       self._set_both_keys(pressed=0)
-    self._dict["kbd"][0] = value
+    self._dict['kbd'][0] = value
 
   def _Get_kbd_en(self):
     """Retrieve keypress simulation enabled/disabled.
@@ -184,7 +180,7 @@ class ec(pty_driver.ptyDriver):
       0: Keyboard emulation is disabled.
       1: Keyboard emulation is enabled.
     """
-    return self._dict["kbd"][0]
+    return self._dict['kbd'][0]
 
   def _Set_kbd_mx_ax(self, m, a, value):
     """Implementation of _Set_kbd_m*_a*
@@ -194,16 +190,18 @@ class ec(pty_driver.ptyDriver):
       a: Selection of a0 and a1.
       value: The new value to set.
     """
-    self._logger.debug("")
-    org_value = self._dict["kbd"][self._get_mx_ax_index(m, a)]
+    self._logger.debug('')
+    org_value = self._dict['kbd'][self._get_mx_ax_index(m, a)]
     if self._Get_kbd_en() == 1 and org_value != value:
-      org_value = [self._dict["kbd"][self._get_mx_ax_index(m, 0)],
-                   self._dict["kbd"][self._get_mx_ax_index(m, 1)]]
+      org_value = [
+          self._dict['kbd'][self._get_mx_ax_index(m, 0)],
+          self._dict['kbd'][self._get_mx_ax_index(m, 1)]
+      ]
       new_value = list(org_value)
       new_value[a] = value
       self._set_key_pressed(KEY_MATRIX[m][org_value[0]][org_value[1]], 0)
       self._set_key_pressed(KEY_MATRIX[m][new_value[0]][new_value[1]], 1)
-    self._dict["kbd"][self._get_mx_ax_index(m, a)] = value
+    self._dict['kbd'][self._get_mx_ax_index(m, a)] = value
 
   def _Set_kbd_m1_a0(self, value):
     """Setter of kbd_m1_a0."""
@@ -211,7 +209,7 @@ class ec(pty_driver.ptyDriver):
 
   def _Get_kbd_m1_a0(self):
     """Getter of kbd_m1_a0."""
-    return self._dict["kbd"][self._get_mx_ax_index(0, 0)]
+    return self._dict['kbd'][self._get_mx_ax_index(0, 0)]
 
   def _Set_kbd_m1_a1(self, value):
     """Setter of kbd_m1_a1."""
@@ -219,7 +217,7 @@ class ec(pty_driver.ptyDriver):
 
   def _Get_kbd_m1_a1(self):
     """Getter of kbd_m1_a1."""
-    return self._dict["kbd"][self._get_mx_ax_index(0, 1)]
+    return self._dict['kbd'][self._get_mx_ax_index(0, 1)]
 
   def _Set_kbd_m2_a0(self, value):
     """Setter of kbd_m2_a0."""
@@ -227,7 +225,7 @@ class ec(pty_driver.ptyDriver):
 
   def _Get_kbd_m2_a0(self):
     """Getter of kbd_m2_a0."""
-    return self._dict["kbd"][self._get_mx_ax_index(1, 0)]
+    return self._dict['kbd'][self._get_mx_ax_index(1, 0)]
 
   def _Set_kbd_m2_a1(self, value):
     """Setter of kbd_m2_a1."""
@@ -235,7 +233,7 @@ class ec(pty_driver.ptyDriver):
 
   def _Get_kbd_m2_a1(self):
     """Getter of kbd_m2_a1."""
-    return self._dict["kbd"][self._get_mx_ax_index(1, 1)]
+    return self._dict['kbd'][self._get_mx_ax_index(1, 1)]
 
   def _Get_lid_open(self):
     """Getter of lid_open.
@@ -245,11 +243,11 @@ class ec(pty_driver.ptyDriver):
       1: Lid opened.
     """
     self._limit_channel()
-    result = self._issue_cmd_get_results("lidstate",
-        ["lid state: (open|closed)"])[0]
+    result = self._issue_cmd_get_results('lidstate',
+                                         ['lid state: (open|closed)'])[0]
     self._restore_channel()
 
-    return 1 if result[1] == "open" else 0
+    return 1 if result[1] == 'open' else 0
 
   def _Set_lid_open(self, value):
     """Setter of lid_open.
@@ -258,14 +256,14 @@ class ec(pty_driver.ptyDriver):
       value: 0=lid closed, 1=lid opened.
     """
     if value == 0:
-      self._issue_cmd("lidclose")
+      self._issue_cmd('lidclose')
     else:
-      self._issue_cmd("lidopen")
+      self._issue_cmd('lidopen')
 
   def _Get_volume_up(self):
     """Getter of Volup for Ryu"""
-    result = self._issue_cmd_get_results("btnpress volup",
-                                         ["Button volup pressed = (\d+)"])[0]
+    result = self._issue_cmd_get_results('btnpress volup',
+                                         ['Button volup pressed = (\d+)'])[0]
     return int(result[1])
 
   def _Set_volume_up(self, value):
@@ -274,12 +272,12 @@ class ec(pty_driver.ptyDriver):
     Args:
       value: 1=button pressed, 0=button released
     """
-    self._issue_cmd("btnpress volup %d" % int(value))
+    self._issue_cmd('btnpress volup %d' % int(value))
 
   def _Get_volume_down(self):
     """Getter of Voldown for Ryu"""
-    result = self._issue_cmd_get_results("btnpress voldown",
-                                         ["Button voldown pressed = (\d+)"])[0]
+    result = self._issue_cmd_get_results('btnpress voldown',
+                                         ['Button voldown pressed = (\d+)'])[0]
     return int(result[1])
 
   def _Set_volume_down(self, value):
@@ -288,7 +286,7 @@ class ec(pty_driver.ptyDriver):
     Args:
       value: 1=button pressed, 0=button released
     """
-    self._issue_cmd("btnpress voldown %d" % int(value))
+    self._issue_cmd('btnpress voldown %d' % int(value))
 
   def _Set_volume_up_hold(self, value):
     """Setter of Vup for tablets/ detachables
@@ -296,7 +294,7 @@ class ec(pty_driver.ptyDriver):
     Args:
       value: number of ms to hold the volume button
     """
-    self._issue_cmd("button vup %d" % value)
+    self._issue_cmd('button vup %d' % value)
 
   def _Set_volume_down_hold(self, value):
     """Setter of Vdown for tablets/ detachables
@@ -304,7 +302,7 @@ class ec(pty_driver.ptyDriver):
     Args:
       value: number of ms to hold the volume button
     """
-    self._issue_cmd("button vdown %d" % value)
+    self._issue_cmd('button vdown %d' % value)
 
   def _Set_volume_up_down_hold(self, value):
     """Setter of Vup and vdown for tablets/ detachables
@@ -312,7 +310,7 @@ class ec(pty_driver.ptyDriver):
     Args:
       value: number of ms to hold the volume buttons
     """
-    self._issue_cmd("button vup vdown %d" % value)
+    self._issue_cmd('button vup vdown %d' % value)
 
   def _Set_pwr_button_hold(self, value):
     """Setter of pwr_button_hold.
@@ -320,7 +318,7 @@ class ec(pty_driver.ptyDriver):
     Args:
       value: hold interval, unit: msec.
     """
-    self._issue_cmd("powerbtn %d" % value)
+    self._issue_cmd('powerbtn %d' % value)
 
   def _Get_cpu_temp(self):
     """Getter of cpu_temp.
@@ -331,11 +329,11 @@ class ec(pty_driver.ptyDriver):
       CPU temperature in degree C.
     """
     self._limit_channel()
-    result = self._issue_cmd_get_results("temps",
-        ["PECI[ \t]*:[ \t]*[0-9]* K[ \t]*=[ \t]*([0-9]*)[ \t]*C"])[0]
+    result = self._issue_cmd_get_results(
+        'temps', ['PECI[ \t]*:[ \t]*[0-9]* K[ \t]*=[ \t]*([0-9]*)[ \t]*C'])[0]
     self._restore_channel()
     if result is None:
-      raise ecError("Cannot retrieve CPU temperature.")
+      raise ecError('Cannot retrieve CPU temperature.')
     return result[1]
 
   def _get_battery_values(self):
@@ -375,23 +373,25 @@ class ec(pty_driver.ptyDriver):
         design_mah: battery design full capacity in mAh
     """
     self._limit_channel()
-    results = self._issue_cmd_get_results(
-        'battery',
-        [r'Temp:[\s0-9a-fx]*= \d+\.\d+ K \((-*\d+\.\d+)',
-         r'V:[\s0-9a-fx]*= (-*\d+) mV',
-         r'I:[\s0-9a-fx]*= (-*\d+) mA',
-         r'Charge:\s*(\d+) %',
-         r'Remaining:\s*(\d+) mAh',
-         r'Cap-full:\s*(\d+) mAh',
-         r'Design:\s*(\d+) mAh'])
+    results = self._issue_cmd_get_results('battery', [
+        r'Temp:[\s0-9a-fx]*= \d+\.\d+ K \((-*\d+\.\d+)',
+        r'V:[\s0-9a-fx]*= (-*\d+) mV',
+        r'I:[\s0-9a-fx]*= (-*\d+) mA',
+        r'Charge:\s*(\d+) %',
+        r'Remaining:\s*(\d+) mAh',
+        r'Cap-full:\s*(\d+) mAh',
+        r'Design:\s*(\d+) mAh',
+    ])
     self._restore_channel()
-    result = {'tempc': float(results[0][1]),
-              'mv': int(results[1][1], 0),
-              'ma': int(results[2][1], 0) * -1,
-              'charge_percent' : int(results[3][1], 0),
-              'charge_mah' : int(results[4][1], 0),
-              'full_mah' : int(results[5][1], 0),
-              'design_mah' : int(results[6][1], 0)}
+    result = {
+        'tempc': float(results[0][1]),
+        'mv': int(results[1][1], 0),
+        'ma': int(results[2][1], 0) * -1,
+        'charge_percent': int(results[3][1], 0),
+        'charge_mah': int(results[4][1], 0),
+        'full_mah': int(results[5][1], 0),
+        'design_mah': int(results[6][1], 0)
+    }
     result['mw'] = result['ma'] * result['mv'] / 1000.0
     return result
 
@@ -446,18 +446,20 @@ class ec(pty_driver.ptyDriver):
     self._limit_channel()
     cmd = 'pwr_avg'
     cmd_not_found_regex = "Command '%s' not found" % cmd
-    results = self._issue_cmd_get_results(cmd,
-                                          [r'mv = (-?\d+)[\r\n]+'
-                                           'ma = (-?\d+)[\r\n]+'
-                                           'mw = (-?\d+)[\r\n]+|%s' %
-                                           cmd_not_found_regex])
+    results = self._issue_cmd_get_results(cmd, [
+        r'mv = (-?\d+)[\r\n]+'
+        'ma = (-?\d+)[\r\n]+'
+        'mw = (-?\d+)[\r\n]+|%s' % cmd_not_found_regex
+    ])
     self._restore_channel()
     resultline = results[0]
     if cmd_not_found_regex in resultline:
       raise ecError('cmd |%s| is not available on the ec.' % cmd)
-    result = {'mv': int(results[0][1], 0),
-              'ma': int(results[0][2], 0) * -1,
-              'mw': int(results[0][3], 0) * -1}
+    result = {
+        'mv': int(results[0][1], 0),
+        'ma': int(results[0][2], 0) * -1,
+        'mw': int(results[0][3], 0) * -1
+    }
     return result
 
   def _Get_avg_milliamps(self):
@@ -492,14 +494,11 @@ class ec(pty_driver.ptyDriver):
         fan_duty: Current fan duty cycle.
     """
     self._limit_channel()
-    results = self._issue_cmd_get_results('faninfo',
-                                         ['Actual:[ \t]*(\d+) rpm',
-                                          'Target:[ \t]*(\d+) rpm',
-                                          'Duty:[ \t]*(\d+)%'])
+    results = self._issue_cmd_get_results('faninfo', [
+        'Actual:[ \t]*(\d+) rpm', 'Target:[ \t]*(\d+) rpm', 'Duty:[ \t]*(\d+)%'
+    ])
     self._restore_channel()
-    return [int(results[0][1], 0),
-            int(results[1][1], 0),
-            int(results[2][1], 0)]
+    return [int(results[0][1], 0), int(results[1][1], 0), int(results[2][1], 0)]
 
   def _Get_fan_actual_rpm(self):
     """Retrieve actual fan RPM."""
@@ -523,7 +522,7 @@ class ec(pty_driver.ptyDriver):
         fan speed. -2 is treated as auto fan speed control.
     """
     if value == -2:
-      self._issue_cmd("autofan")
+      self._issue_cmd('autofan')
     else:
       # "-1" is treated as max fan RPM in EC, so we don't need to handle that
-      self._issue_cmd("fanset %d" % value)
+      self._issue_cmd('fanset %d' % value)

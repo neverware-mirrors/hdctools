@@ -9,21 +9,20 @@ import os
 import bbmux_controller
 import gpio_interface
 
-
 GPIO_ROOT = '/sys/class/gpio'
-EXPORT_FILE =  os.path.join(GPIO_ROOT, 'export')
+EXPORT_FILE = os.path.join(GPIO_ROOT, 'export')
 UNEXPORT_FILE = os.path.join(GPIO_ROOT, 'unexport')
 GPIO_PIN_PATTERN = os.path.join(GPIO_ROOT, 'gpio%d')
 GPIO_MODE_VALUE = 0x3
 GPIO_SELECT_VALUE = 7
 DIR_IN = 0
 DIR_OUT = 1
-DIR_VAL_MAP = {DIR_IN  : 'in',
-               DIR_OUT : 'out'}
+DIR_VAL_MAP = {DIR_IN: 'in', DIR_OUT: 'out'}
 
 
 class BBgpioError(Exception):
   """Class for exceptions of Bgpio."""
+
   def __init__(self, msg, value=0):
     """BBgpioError constructor.
 
@@ -34,6 +33,7 @@ class BBgpioError(Exception):
     super(BBgpioError, self).__init__(msg, value)
     self.msg = msg
     self.value = value
+
 
 class BBgpio(gpio_interface.GpioInterface):
   """Provides interface to a beaglebone's GPIO.

@@ -10,21 +10,22 @@ import i2c_reg
 class Sx1506Error(Exception):
   """Error occurred accessing Sx1506."""
 
+
 # We need a shared register cache between all the bits,
 # as there is no readable state register.
 # Indexing is: reg_cache[((interface, i2c addr), reg addr)] = value
 reg_cache = {}
 
+
 class sx1506(hw_driver.HwDriver):
   """Object to access drv=sx1506 controls."""
 
-
   # base indexes of the data, direction, pullup and pulldown registers
   # respectively.
-  REG_DATA= 0
-  REG_DIR= 2
-  REG_PU= 4
-  REG_PD= 6
+  REG_DATA = 0
+  REG_DIR = 2
+  REG_PU = 4
+  REG_PD = 6
 
   # Power on defaults
   INIT_DATA = 0xFFFF
@@ -37,7 +38,8 @@ class sx1506(hw_driver.HwDriver):
       interface: i2c interface object to handle low-level communication to
           control
       params: dictionary of params needed to perform operations on an sx1506
-          io expander.  All items are strings initially but should be cast to types
+          io expander.  All items are strings initially but should be cast to
+            types
           detailed below.
 
 
@@ -48,10 +50,9 @@ class sx1506(hw_driver.HwDriver):
     """
     super(sx1506, self).__init__(interface, params)
     slave = self._get_slave()
-    self._i2c_obj = i2c_reg.I2cReg.get_device(self._interface, slave,
-                                              addr_len=1, reg_len=1,
-                                              msb_first=True, no_read=False,
-                                              use_reg_cache=False)
+    self._i2c_obj = i2c_reg.I2cReg.get_device(
+        self._interface, slave, addr_len=1, reg_len=1, msb_first=True,
+        no_read=False, use_reg_cache=False)
     # Remember what GPIOs we have set.
     global reg_cache
     self._reg_cache = reg_cache
@@ -62,7 +63,8 @@ class sx1506(hw_driver.HwDriver):
     self.write16(self.REG_DIR, dir)
 
     # Cache REG_DATA
-    outputs = self._reg_cache.get((self._cacheindex, self.REG_DATA), self.INIT_DATA)
+    outputs = self._reg_cache.get((self._cacheindex, self.REG_DATA),
+                                  self.INIT_DATA)
     self._reg_cache[(self._cacheindex, self.REG_DATA)] = outputs
     self.write16(self.REG_DATA, outputs)
 
@@ -94,7 +96,7 @@ class sx1506(hw_driver.HwDriver):
     Returns:
       integer in formatted representation
     """
-    self._logger.debug("")
+    self._logger.debug('')
     value = self.read16(self.REG_DATA)
     return self._create_logical_value(value)
 
@@ -116,14 +118,14 @@ class sx1506(hw_driver.HwDriver):
       Sx1506Error: If width of open drain driver is != 1 or open drain type is
         not recognized.
     """
-    self._logger.debug("sx1506 set %s" % fmt_value)
+    self._logger.debug('sx1506 set %s' % fmt_value)
     (_, mask) = self._get_offset_mask()
     if mask is None:
-        raise Sx1506Error("Unable to determine mask.  Is offset declared?")
+      raise Sx1506Error('Unable to determine mask.  Is offset declared?')
 
     change_to_input = False
-    if self._io_type == "PU" and fmt_value == 1:
-      self._logger.debug("Set to input because its io type is PU")
+    if self._io_type == 'PU' and fmt_value == 1:
+      self._logger.debug('Set to input because its io type is PU')
       change_to_input = True
 
     # output register handling
@@ -140,7 +142,7 @@ class sx1506(hw_driver.HwDriver):
     current_dir_reg = self._reg_cache[(self._cacheindex, self.REG_DIR)]
     actual_dir_reg = self.read16(self.REG_DIR)
     if (current_dir_reg != actual_dir_reg):
-      self._logger.error("sx1506 REG_DIR should be 0x%x, actually is 0x%x!" \
+      self._logger.error('sx1506 REG_DIR should be 0x%x, actually is 0x%x!' \
           % (current_dir_reg, actual_dir_reg))
       current_dir_reg = actual_dir_reg
     if change_to_input:
@@ -159,6 +161,6 @@ class sx1506(hw_driver.HwDriver):
       slave: 7-bit i2c address
     """
     if 'slv' not in self._params:
-      raise Sx1506Error("getting slave address")
+      raise Sx1506Error('getting slave address')
     slave = int(self._params['slv'], 0)
     return slave

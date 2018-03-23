@@ -27,7 +27,7 @@ def _get_io_type(params):
   if 'od' in params:
     width = params.get('width', 1)
     if width > 1:
-      raise HwDriverError("Open drain not implemented for widths != 1")
+      raise HwDriverError('Open drain not implemented for widths != 1')
     io_type = params['od'].upper()
     if io_type not in VALID_IO_TYPES:
       raise HwDriverError("Unrecognized io type (param 'od') %s" % io_type)
@@ -63,8 +63,8 @@ class HwDriver(object):
       _params: parameter dictionary.  May be accessed via sub-class
       _io_type: String of io type or False if not explicitly assigned.
     """
-    self._logger = logging.getLogger("Driver")
-    self._logger.debug("")
+    self._logger = logging.getLogger('Driver')
+    self._logger.debug('')
     self._interface = interface
     self._params = params
     self._io_type = _get_io_type(params)
@@ -90,15 +90,15 @@ class HwDriver(object):
       NotImplementedError: There's no subtype param and set method
         wasn't implemented in the subclass.
     """
-    self._logger.debug("logical_value = %s" % str(logical_value))
+    self._logger.debug('logical_value = %s' % str(logical_value))
     if 'subtype' in self._params:
       fn_name = '_Set_%s' % self._params['subtype']
       if hasattr(self, fn_name):
         return getattr(self, fn_name)(logical_value)
       else:
-        raise HwDriverError("Finding set function %s" % fn_name)
+        raise HwDriverError('Finding set function %s' % fn_name)
     else:
-      raise NotImplementedError("Set should be implemented in subclass.")
+      raise NotImplementedError('Set should be implemented in subclass.')
 
   def get(self):
     """Get control value and return it
@@ -116,15 +116,15 @@ class HwDriver(object):
       NotImplementedError: There's no subtype param and get method
         wasn't implemented in the subclass.
     """
-    self._logger.debug("")
+    self._logger.debug('')
     if 'subtype' in self._params:
       fn_name = '_Get_%s' % self._params['subtype']
       if hasattr(self, fn_name):
         return getattr(self, fn_name)()
       else:
-        raise HwDriverError("Finding get function %s" % fn_name)
+        raise HwDriverError('Finding get function %s' % fn_name)
     else:
-      raise NotImplementedError("Get method should be implemented in subclass.")
+      raise NotImplementedError('Get method should be implemented in subclass.')
 
   def _create_logical_value(self, hw_value):
     """Create logical value using mask & offset.
@@ -168,7 +168,7 @@ class HwDriver(object):
     if offset is not None:
       hw_value = (logical_value << offset)
       if hw_value != (hw_value & mask):
-        raise HwDriverError("format value asserts bits outside mask")
+        raise HwDriverError('format value asserts bits outside mask')
     else:
       hw_value = logical_value
     return hw_value
@@ -195,4 +195,3 @@ class HwDriver(object):
       offset = None
       mask = None
     return (offset, mask)
-

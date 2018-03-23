@@ -1,11 +1,11 @@
 # Copyright 2017 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Driver for determining which type of servo is being used."""
 
 import hw_driver
 import logging
+
 
 class servoMetadata(hw_driver.HwDriver):
   """Class to access loglevel controls."""
@@ -38,4 +38,4 @@ class servoMetadata(hw_driver.HwDriver):
     # See system_config.py for schema, but entry[0] is the file name
     for entry in xml_files:
       files.append(entry[0])
-    return ", ".join(files)
+    return ', '.join(files)

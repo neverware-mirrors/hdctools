@@ -7,10 +7,10 @@ import logging
 import os
 import xml.etree.ElementTree
 
-
 # valid tags in system config xml.  Any others will be ignored
-SYSCFG_TAG_LIST = ["map", "control"]
-ALLOWABLE_INPUT_TYPES = {"float": float, "int": int, "str": str}
+SYSCFG_TAG_LIST = ['map', 'control']
+ALLOWABLE_INPUT_TYPES = {'float': float, 'int': int, 'str': str}
+
 
 class SystemConfigError(Exception):
   """Error class for SystemConfig."""
@@ -89,8 +89,8 @@ class SystemConfig(object):
 
   def __init__(self):
     """SystemConfig constructor."""
-    self._logger = logging.getLogger("SystemConfig")
-    self._logger.debug("")
+    self._logger = logging.getLogger('SystemConfig')
+    self._logger.debug('')
     self.syscfg_dict = collections.defaultdict(dict)
     self.hwinit = []
     self._loaded_xml_files = []
@@ -111,7 +111,7 @@ class SystemConfig(object):
     """
     if os.path.isfile(filename):
       return filename
-    default_path = os.path.join(os.path.dirname(__file__), "data")
+    default_path = os.path.join(os.path.dirname(__file__), 'data')
     fullname = os.path.join(default_path, filename)
     if os.path.isfile(fullname):
       return fullname
@@ -153,24 +153,23 @@ class SystemConfig(object):
     """
     cfgname = self.find_cfg_file(filename)
     if not cfgname:
-      msg = "Unable to find system file %s" % filename
+      msg = 'Unable to find system file %s' % filename
       self._logger.error(msg)
       raise SystemConfigError(msg)
 
     filename = cfgname
     if (filename, name_prefix, interface_increment) in self._loaded_xml_files:
-      self._logger.warn(
-          "Already sourced system file (%s, %s, %d).",
-          filename, name_prefix, interface_increment)
+      self._logger.warn('Already sourced system file (%s, %s, %d).', filename,
+                        name_prefix, interface_increment)
       return
     self._loaded_xml_files.append((filename, name_prefix, interface_increment))
 
-    self._logger.info("Loading XML config (%s, %s, %d)", filename,
-                      name_prefix, interface_increment)
+    self._logger.info('Loading XML config (%s, %s, %d)', filename, name_prefix,
+                      interface_increment)
     root = xml.etree.ElementTree.parse(filename).getroot()
     for element in root.findall('include'):
-      self.add_cfg_file(element.find('name').text, name_prefix,
-                        interface_increment)
+      self.add_cfg_file(
+          element.find('name').text, name_prefix, interface_increment)
     for tag in SYSCFG_TAG_LIST:
       for element in root.findall(tag):
         element_str = xml.etree.ElementTree.tostring(element)
@@ -182,10 +181,10 @@ class SystemConfig(object):
           # TODO(tbroch) would rather have lineno but dumping element seems
           # better than nothing.  Utimately a DTD/XSD for the XML schema will
           # catch these anyways.
-          raise SystemConfigError("%s: no name ... see XML\n%s" %
-                                  (tag, element_str))
+          raise SystemConfigError('%s: no name ... see XML\n%s' % (tag,
+                                                                   element_str))
         try:
-          doc = " ".join(element.find('doc').text.split())
+          doc = ' '.join(element.find('doc').text.split())
         except AttributeError:
           doc = 'undocumented'
         try:
@@ -219,31 +218,33 @@ class SystemConfig(object):
               params.attrib['interface'] = interface_id + interface_increment
 
         if len(params_list) == 2:
-          assert tag != 'map', "maps have only one params entry"
+          assert tag != 'map', 'maps have only one params entry'
           for params in params_list:
             if 'cmd' not in params.attrib:
-              raise SystemConfigError("%s %s multiple params but no cmd\n%s"
-                                      % (tag, name, element_str))
+              raise SystemConfigError('%s %s multiple params but no cmd\n%s' %
+                                      (tag, name, element_str))
             cmd = params.attrib['cmd']
             if cmd == 'get':
               if get_dict:
-                raise SystemConfigError("%s %s multiple get params defined\n%s"
-                                        % (tag, name, element_str))
+                raise SystemConfigError(
+                    '%s %s multiple get params defined\n%s' % (tag, name,
+                                                               element_str))
               get_dict = params.attrib
             elif cmd == 'set':
               if set_dict:
-                raise SystemConfigError("%s %s multiple set params defined\n%s"
-                                        % (tag, name, element_str))
+                raise SystemConfigError(
+                    '%s %s multiple set params defined\n%s' % (tag, name,
+                                                               element_str))
               set_dict = params.attrib
             else:
-              raise SystemConfigError("%s %s cmd of 'get'|'set' not found\n%s"
-                                      % (tag, name, element_str))
+              raise SystemConfigError("%s %s cmd of 'get'|'set' not found\n%s" %
+                                      (tag, name, element_str))
         elif len(params_list) == 1:
           get_dict = params_list[0].attrib
           set_dict = get_dict
         else:
-          raise SystemConfigError("%s %s has illegal number of params %d\n%s"
-                                  % (tag, name, len(params_list), element_str))
+          raise SystemConfigError('%s %s has illegal number of params %d\n%s' %
+                                  (tag, name, len(params_list), element_str))
 
         # Save the control name to the params dicts, such that the driver can
         # refer to it.
@@ -254,13 +255,14 @@ class SystemConfig(object):
         clobber_ok = ('clobber_ok' in set_dict or 'clobber_ok' in get_dict)
         if (tag == 'control' and name in self.syscfg_dict[tag] and
             not clobber_ok):
-          raise SystemConfigError("Duplicate %s %s without 'clobber_ok' key\n%s"
-                                  % (tag, name, element_str))
+          raise SystemConfigError(
+              "Duplicate %s %s without 'clobber_ok' key\n%s" % (tag, name,
+                                                                element_str))
 
         if tag == 'map':
-          self.syscfg_dict[tag][name] = {'doc':doc, 'map_params':get_dict}
+          self.syscfg_dict[tag][name] = {'doc': doc, 'map_params': get_dict}
           if alias:
-            raise SystemConfigError("No aliases for maps allowed")
+            raise SystemConfigError('No aliases for maps allowed')
           continue
 
         if 'init' in set_dict:
@@ -284,8 +286,11 @@ class SystemConfig(object):
             self.syscfg_dict[tag][name]['doc'] = doc
         else:
           # it's a new control
-          self.syscfg_dict[tag][name] = {'doc':doc, 'get_params':get_dict,
-                                         'set_params':set_dict}
+          self.syscfg_dict[tag][name] = {
+              'doc': doc,
+              'get_params': get_dict,
+              'set_params': set_dict
+          }
         if alias:
           for aliasname in (elem.strip() for elem in alias.split(',')):
             if name_prefix:
@@ -311,8 +316,9 @@ class SystemConfig(object):
       SystemConfigError: if error encountered identifying parameters
     """
     if name not in self.syscfg_dict['control']:
-      raise NameError("No control named %s. All controls:\n%s" % (
-        name, ','.join(sorted(self.syscfg_dict['control'].keys()))))
+      raise NameError('No control named %s. All controls:\n%s' %
+                      (name,
+                       ','.join(sorted(self.syscfg_dict['control'].keys()))))
     if is_get:
       return self.syscfg_dict['control'][name]['get_params']
     else:
@@ -339,7 +345,6 @@ class SystemConfig(object):
     """
     return self.syscfg_dict['control'][name]['doc']
 
-
   def _lookup(self, tag, name_str):
     """Lookup the tag name_str and return dictionary or None if not found.
 
@@ -350,7 +355,7 @@ class SystemConfig(object):
     Returns:
       dictionary from syscfg_dict[tag][name_str] or None
     """
-    self._logger.debug("lookup of %s %s" % (tag, name_str))
+    self._logger.debug('lookup of %s %s' % (tag, name_str))
     return self.syscfg_dict[tag].get(name_str)
 
   def resolve_val(self, params, map_vstr):
@@ -393,17 +398,16 @@ class SystemConfig(object):
 
     # its a map
     if 'map' not in params:
-      raise SystemConfigError("No map for control but value is a string")
-    map_dict = self._lookup("map", params['map'])
+      raise SystemConfigError('No map for control but value is a string')
+    map_dict = self._lookup('map', params['map'])
     if map_dict is None:
       raise SystemConfigError("Map %s isn't defined" % params['map'])
     try:
       map_value = map_dict['map_params'][map_vstr]
     except KeyError:
-      raise SystemConfigError(("Map %s doesn't contain key %s\n" +
-                               "Try one of -> '%s'") %
-                              (params['map'], map_vstr,
-                               "', '".join(map_dict['map_params'].keys())))
+      raise SystemConfigError(
+          ("Map %s doesn't contain key %s\n" + "Try one of -> '%s'") %
+          (params['map'], map_vstr, "', '".join(map_dict['map_params'].keys())))
     # TODO(tbroch) likely that maps are only integers but what if ...
     return int(map_value, 0)
 
@@ -438,7 +442,7 @@ class SystemConfig(object):
     """
     reformat_value = str(value)
     if 'map' in params:
-      map_dict = self._lookup("map", params['map'])
+      map_dict = self._lookup('map', params['map'])
       if map_dict:
         for keyname, val in map_dict['map_params'].iteritems():
           if val == reformat_value:
@@ -447,13 +451,13 @@ class SystemConfig(object):
     elif 'fmt' in params:
       fmt = params['fmt']
       try:
-        func = getattr(self, "_Fmt_%s" % fmt)
+        func = getattr(self, '_Fmt_%s' % fmt)
       except AttributeError:
-        raise SystemConfigError("Unrecognized format %s" % fmt)
+        raise SystemConfigError('Unrecognized format %s' % fmt)
       try:
         reformat_value = func(value)
       except Exception:
-        raise SystemConfigError("Problem executing format %s" % fmt)
+        raise SystemConfigError('Problem executing format %s' % fmt)
     return reformat_value
 
   def display_config(self, tag=None):
@@ -472,35 +476,36 @@ class SystemConfig(object):
       tag_list = [tag]
     for tag in sorted(tag_list):
 
-      rsp.append("*************")
-      rsp.append("* " + tag.upper())
-      rsp.append("*************")
+      rsp.append('*************')
+      rsp.append('* ' + tag.upper())
+      rsp.append('*************')
       max_len = 0
       max_len = max(len(name) for name in self.syscfg_dict[tag].iterkeys())
       dashes = '-' * max_len
       for name in sorted(self.syscfg_dict[tag].iterkeys()):
         item_dict = self.syscfg_dict[tag][name]
-        padded_name = "%-*s" % (max_len, name)
-        rsp.append("%s DOC: %s" % (padded_name, item_dict['doc']))
+        padded_name = '%-*s' % (max_len, name)
+        rsp.append('%s DOC: %s' % (padded_name, item_dict['doc']))
         if tag == 'map':
-          rsp.append("%s MAP: %s" %(dashes, str(item_dict['map_params'])))
+          rsp.append('%s MAP: %s' % (dashes, str(item_dict['map_params'])))
         else:
-          rsp.append("%s GET: %s" %(dashes, str(item_dict['get_params'])))
-          rsp.append("%s SET: %s" %(dashes, str(item_dict['set_params'])))
+          rsp.append('%s GET: %s' % (dashes, str(item_dict['get_params'])))
+          rsp.append('%s SET: %s' % (dashes, str(item_dict['set_params'])))
 
-    return "\n".join(rsp)
+    return '\n'.join(rsp)
+
 
 def test():
   """Integration test.
 
   TODO(tbroch) Enhance integration test and add unittest (see mox)
   """
-  logging.basicConfig(level=logging.DEBUG,
-                      format="%(asctime)s - %(name)s - " +
-                      "%(levelname)s - %(message)s")
+  logging.basicConfig(
+      level=logging.DEBUG,
+      format='%(asctime)s - %(name)s - ' + '%(levelname)s - %(message)s')
   scfg = SystemConfig()
   # TODO(tbroch) make this a comprenhensive test xml file
-  scfg.add_cfg_file(os.path.join("data", "servo.xml"))
+  scfg.add_cfg_file(os.path.join('data', 'servo.xml'))
   scfg.display_config()
 
   control_dict = scfg._lookup('control', 'goog_rec_mode')
@@ -511,20 +516,20 @@ def test():
     map_name = control_params['map']
     map_dict = scfg._lookup('map', map_name)
     if not map_dict:
-      raise Exception("Unable to find map %s", map_name)
+      raise Exception('Unable to find map %s', map_name)
 
-    logging.info("")
+    logging.info('')
     for keyname, val in map_dict['map_params'].iteritems():
       resolved_val = str(scfg.resolve_val(control_params, keyname))
       if resolved_val != val:
-        logging.error("resolve failed for %s -> %s != %s", keyname, val,
+        logging.error('resolve failed for %s -> %s != %s', keyname, val,
                       resolved_val)
 
       # try re-mapping
       reformat_val = scfg.reformat_val(control_params, int(val))
       reformat_val = scfg.reformat_val(control_params, val)
       if reformat_val != keyname:
-        logging.error("reformat failed for %s -> %s != %s", val, keyname,
+        logging.error('reformat failed for %s -> %s != %s', val, keyname,
                       reformat_val)
 
 

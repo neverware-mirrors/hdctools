@@ -8,10 +8,11 @@ Provides the following EC controlled function:
 """
 import pty_driver
 
-GPIOC_CRH_ADDR  = 0x40011004
-GPIOC_BRR_ADDR  = 0x40011014
+GPIOC_CRH_ADDR = 0x40011004
+GPIOC_BRR_ADDR = 0x40011014
 GPIOC_BSRR_ADDR = 0x40011010
 GPIOC_PC13_MASK = 0x2000
+
 
 class daisyEcError(Exception):
   """Exception class for daisy ec."""
@@ -40,7 +41,7 @@ class daisyEc(pty_driver.ptyDriver):
         request.
     """
     super(daisyEc, self).__init__(interface, params)
-    self._logger.debug("")
+    self._logger.debug('')
     self._lid_setup = False
 
   def _setup_lid_control(self):
@@ -92,6 +93,6 @@ class daisyEc(pty_driver.ptyDriver):
     """
     self._setup_lid_control()
 
-    re_match = self._issue_cmd_get_results("gpioget LID_OPEN\r",
-                                           ["\s+([01]).*"])[0]
+    re_match = self._issue_cmd_get_results('gpioget LID_OPEN\r',
+                                           ['\s+([01]).*'])[0]
     return int(re_match[1])

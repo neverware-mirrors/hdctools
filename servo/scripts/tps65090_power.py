@@ -57,52 +57,44 @@ AD_CTRL_POR = 0x20
 # Start a conversion measurement.  ~1mA of additional load to TPS65090 Vin
 AD_CTRL_START = 0x40
 # Latest conversion is completed
-AD_CTRL_EOC   = 0x20
+AD_CTRL_EOC = 0x20
 # ADC conversion vref is enabled.  ~.5mA of additional load to TPS65090 Vin
-AD_CTRL_EN    = 0x10
+AD_CTRL_EN = 0x10
 
 AD_OUT_RANGE = 2**10 - 1
-AD_OUT_LSB = [17./AD_OUT_RANGE,
-              17./AD_OUT_RANGE,
-              3./AD_OUT_RANGE,
-              4./AD_OUT_RANGE,
-              5./AD_OUT_RANGE,
-              5./AD_OUT_RANGE,
-              5./AD_OUT_RANGE,
-              1.1/AD_OUT_RANGE,
-              0.22/AD_OUT_RANGE,
-              3.3/AD_OUT_RANGE,
-              1.1/AD_OUT_RANGE,
-              1.1/AD_OUT_RANGE,
-              1.1/AD_OUT_RANGE,
-              1.1/AD_OUT_RANGE]
+AD_OUT_LSB = [
+    17. / AD_OUT_RANGE, 17. / AD_OUT_RANGE, 3. / AD_OUT_RANGE,
+    4. / AD_OUT_RANGE, 5. / AD_OUT_RANGE, 5. / AD_OUT_RANGE, 5. / AD_OUT_RANGE,
+    1.1 / AD_OUT_RANGE, 0.22 / AD_OUT_RANGE, 3.3 / AD_OUT_RANGE,
+    1.1 / AD_OUT_RANGE, 1.1 / AD_OUT_RANGE, 1.1 / AD_OUT_RANGE,
+    1.1 / AD_OUT_RANGE
+]
 
-AD_OUT_DEFAULT_NAMES = ['vac', 'vbat', 'ac', 'bat', 'dcdc1', 'dcdc2',
-                        'dcdc3', 'fet1', 'fet2', 'fet3', 'fet4', 'fet5',
-                        'fet6', 'fet7']
+AD_OUT_DEFAULT_NAMES = [
+    'vac', 'vbat', 'ac', 'bat', 'dcdc1', 'dcdc2', 'dcdc3', 'fet1', 'fet2',
+    'fet3', 'fet4', 'fet5', 'fet6', 'fet7'
+]
 
 
 class TPS65090Error(Exception):
-    """Exception class for TPS65090."""
+  """Exception class for TPS65090."""
 
 
 class TPS65090I2c(object):
-    """Class for TPS65090 I2c communication."""
-    # -f to force, -y to respond 'yes' to interactive queries
-    _GET_CMD = 'i2cget -f -y'
-    _SET_CMD = 'i2cset -f -y'
-    # TODO(tbroch) deprecate retry once there are no reports of errors on i2c
-    _RETRY_MAX = 1
+  """Class for TPS65090 I2c communication."""
+  # -f to force, -y to respond 'yes' to interactive queries
+  _GET_CMD = 'i2cget -f -y'
+  _SET_CMD = 'i2cset -f -y'
+  # TODO(tbroch) deprecate retry once there are no reports of errors on i2c
+  _RETRY_MAX = 1
 
+  def __init__(self, bus, slv=I2C_SLV_DEFAULT):
+    """Constructor."""
+    self._bus = bus
+    self._slv = slv
 
-    def __init__(self, bus, slv=I2C_SLV_DEFAULT):
-        """Constructor."""
-        self._bus = bus
-        self._slv = slv
-
-
-    def _do_cmd(self, cmd):
-        """Run command and return results.
+  def _do_cmd(self, cmd):
+    """Run command and return results.
 
         Args:
           cmd: string, i2c command to run
@@ -115,57 +107,52 @@ class TPS65090I2c(object):
             exhausted
 
         """
-        retry = self._RETRY_MAX
-        status = 1
-        while status and retry:
-            (status, output) = commands.getstatusoutput(cmd)
-            logging.debug('cmd: %s :: status: %d :: output %s',
-                          cmd, status, output)
-            retry -= 1
-        if status:
-            raise TPS65090Error('Non-zero status from i2c get returned '
-                                'status:%d' % status)
-        return output
+    retry = self._RETRY_MAX
+    status = 1
+    while status and retry:
+      (status, output) = commands.getstatusoutput(cmd)
+      logging.debug('cmd: %s :: status: %d :: output %s', cmd, status, output)
+      retry -= 1
+    if status:
+      raise TPS65090Error('Non-zero status from i2c get returned '
+                          'status:%d' % status)
+    return output
 
-
-    def get(self, index):
-        """Get I2c value.
+  def get(self, index):
+    """Get I2c value.
 
         Args:
           index: integer, register index to write byte to
 
         """
-        cmd = '%s %d 0x%x 0x%x b' % (self._GET_CMD, self._bus, self._slv, index)
-        output = self._do_cmd(cmd)
-        return int(output, 0)
+    cmd = '%s %d 0x%x 0x%x b' % (self._GET_CMD, self._bus, self._slv, index)
+    output = self._do_cmd(cmd)
+    return int(output, 0)
 
-
-    def set(self, index, val):
-        """Set I2c value.
+  def set(self, index, val):
+    """Set I2c value.
 
         Args:
           index: integer, register index to write byte to
           val: integer, byte value to writ to index
         """
-        cmd = '%s %d 0x%x 0x%x 0x%x' % \
-            (self._SET_CMD, self._bus, self._slv, index, val)
-        self._do_cmd(cmd)
+    cmd = '%s %d 0x%x 0x%x 0x%x' % \
+        (self._SET_CMD, self._bus, self._slv, index, val)
+    self._do_cmd(cmd)
 
 
 class TPS65090ADC(object):
-    """Class for TPS65090 ADC."""
-    # Number of times to retry read of AD_CTRL for EOC
-    _RETRY_MAX = 10
+  """Class for TPS65090 ADC."""
+  # Number of times to retry read of AD_CTRL for EOC
+  _RETRY_MAX = 10
 
+  def __init__(self, i2c, sensor_id):
+    """."""
+    self._i2c = i2c
+    self._sensor_id = sensor_id
 
-    def __init__(self, i2c, sensor_id):
-        """."""
-        self._i2c = i2c
-        self._sensor_id = sensor_id
-
-
-    def read_adc(self):
-        """Read value for ADC.
+  def read_adc(self):
+    """Read value for ADC.
 
         Steps required:
           1. Write ADC value into AD_CTRL[3:0]
@@ -179,32 +166,31 @@ class TPS65090ADC(object):
         Raises:
           TPS65090Error: if ADC conversion fails to complete
         """
-        wr_val = AD_CTRL_EN | self._sensor_id
-        self._i2c.set(REG_IDX_AD_CTRL, wr_val)
-        wr_val |= AD_CTRL_START
-        self._i2c.set(REG_IDX_AD_CTRL, wr_val)
-        time.sleep(.01)
+    wr_val = AD_CTRL_EN | self._sensor_id
+    self._i2c.set(REG_IDX_AD_CTRL, wr_val)
+    wr_val |= AD_CTRL_START
+    self._i2c.set(REG_IDX_AD_CTRL, wr_val)
+    time.sleep(.01)
 
-        rd_val = self._i2c.get(REG_IDX_AD_CTRL)
-        retry = self._RETRY_MAX
-        while retry and not (rd_val & AD_CTRL_EOC):
-            time.sleep(.01)
-            rd_val = self._i2c.get(REG_IDX_AD_CTRL)
-            retry -= 1
+    rd_val = self._i2c.get(REG_IDX_AD_CTRL)
+    retry = self._RETRY_MAX
+    while retry and not (rd_val & AD_CTRL_EOC):
+      time.sleep(.01)
+      rd_val = self._i2c.get(REG_IDX_AD_CTRL)
+      retry -= 1
 
-        if not retry:
-            raise TPS65090Error('Failed to see ADC conversion complete')
+    if not retry:
+      raise TPS65090Error('Failed to see ADC conversion complete')
 
-        rd_val1 = self._i2c.get(REG_IDX_AD_OUT1)
-        rd_val2 = self._i2c.get(REG_IDX_AD_OUT2)
-        adc_val = ((rd_val2 << 8) | rd_val1) * AD_OUT_LSB[self._sensor_id]
-        logging.debug('adc%02d = %f', self._sensor_id, adc_val)
-        return adc_val
-
+    rd_val1 = self._i2c.get(REG_IDX_AD_OUT1)
+    rd_val2 = self._i2c.get(REG_IDX_AD_OUT2)
+    adc_val = ((rd_val2 << 8) | rd_val1) * AD_OUT_LSB[self._sensor_id]
+    logging.debug('adc%02d = %f', self._sensor_id, adc_val)
+    return adc_val
 
 
 class TPS65090Power(object):
-    """Class for TPS65090 PMIC Power.
+  """Class for TPS65090 PMIC Power.
 
     Attributes:
       _i2c: object, TPS65090I2c instance to communicate to PMIC over I2c
@@ -212,28 +198,27 @@ class TPS65090Power(object):
         AC & battery)
       _current: list of currents.  All are TPS65090ADC instances
     """
-    def __init__(self, i2c):
-        """Constructor.
+
+  def __init__(self, i2c):
+    """Constructor.
 
         Args:
           i2c: object, TPS65090I2c instance to communicate to PMIC over I2c
         """
-        self._i2c = i2c
-        self._voltage = {}
-        self._current = {}
+    self._i2c = i2c
+    self._voltage = {}
+    self._current = {}
 
-        val = self._i2c.get(REG_IDX_AD_CTRL)
-        if val != AD_CTRL_POR:
-            raise TPS65090Error('Unable to read POR value for AD_CTRL')
-        self._i2c.set(REG_IDX_AD_CTRL, AD_CTRL_EN)
+    val = self._i2c.get(REG_IDX_AD_CTRL)
+    if val != AD_CTRL_POR:
+      raise TPS65090Error('Unable to read POR value for AD_CTRL')
+    self._i2c.set(REG_IDX_AD_CTRL, AD_CTRL_EN)
 
+  def __del__(self):
+    self._i2c.set(REG_IDX_AD_CTRL, AD_CTRL_POR)
 
-    def __del__(self):
-        self._i2c.set(REG_IDX_AD_CTRL, AD_CTRL_POR)
-
-
-    def register(self, default_current_name, new_name=None, voltage=None):
-        """Register a power measurement.
+  def register(self, default_current_name, new_name=None, voltage=None):
+    """Register a power measurement.
 
         The TPS65090 provides two built-in power measurements by way
         of voltage and current measurements for the AC input and the
@@ -249,28 +234,26 @@ class TPS65090Power(object):
         Raises:
           TPS65090Error: if voltage isn't provided for DCDC or FET sensors
         """
-        sensor_id = AD_OUT_DEFAULT_NAMES.index(default_current_name)
-        if not new_name:
-            new_name = default_current_name
+    sensor_id = AD_OUT_DEFAULT_NAMES.index(default_current_name)
+    if not new_name:
+      new_name = default_current_name
 
-        if voltage is None:
-            if sensor_id not in [2, 3]:
-                raise TPS65090Error('Must provide nominal voltage')
-            if sensor_id == 2:
-                self._voltage[new_name] = TPS65090ADC(self._i2c, 0)
-            else:
-                self._voltage[new_name] = TPS65090ADC(self._i2c, 1)
-        else:
-            self._voltage[new_name] = float(voltage)
+    if voltage is None:
+      if sensor_id not in [2, 3]:
+        raise TPS65090Error('Must provide nominal voltage')
+      if sensor_id == 2:
+        self._voltage[new_name] = TPS65090ADC(self._i2c, 0)
+      else:
+        self._voltage[new_name] = TPS65090ADC(self._i2c, 1)
+    else:
+      self._voltage[new_name] = float(voltage)
 
-        self._current[new_name] = TPS65090ADC(self._i2c, sensor_id)
-        logging.info('registered %s ( %s ) @ sensor %d', new_name,
-                     default_current_name, sensor_id)
+    self._current[new_name] = TPS65090ADC(self._i2c, sensor_id)
+    logging.info('registered %s ( %s ) @ sensor %d', new_name,
+                 default_current_name, sensor_id)
 
-
-
-    def read_mw(self, name):
-        """Read power in milliwatts.
+  def read_mw(self, name):
+    """Read power in milliwatts.
 
         Returns:
           float, power in milliwatts
@@ -278,64 +261,65 @@ class TPS65090Power(object):
         Raises:
           TPS65090Error: if current ADC is unable to be found
         """
-        if name not in self._current:
-            raise TPS65090Error('Unable to measure current.  Did you '
-                                'register the power?')
+    if name not in self._current:
+      raise TPS65090Error('Unable to measure current.  Did you '
+                          'register the power?')
 
-        if type(self._voltage[name]) is float:
-            voltage = self._voltage[name]
-        else:
-            voltage = self._voltage[name].read_adc()
-        current = self._current[name].read_adc()
-        return current * voltage * 1000
+    if type(self._voltage[name]) is float:
+      voltage = self._voltage[name]
+    else:
+      voltage = self._voltage[name].read_adc()
+    current = self._current[name].read_adc()
+    return current * voltage * 1000
 
 
 def main():
-    """main loop to read power."""
-    logging.basicConfig(level=logging.INFO)
-    logging.info('start')
+  """main loop to read power."""
+  logging.basicConfig(level=logging.INFO)
+  logging.info('start')
 
-    i2c = TPS65090I2c(4)
-    pwr = TPS65090Power(i2c)
+  i2c = TPS65090I2c(4)
+  pwr = TPS65090Power(i2c)
 
-    pwr_names = []
-    pwr.register('ac', new_name='ac_mw')
-    pwr_names.append('ac_mw')
-    pwr.register('bat', new_name='bat_mw')
-    pwr_names.append('bat_mw')
+  pwr_names = []
+  pwr.register('ac', new_name='ac_mw')
+  pwr_names.append('ac_mw')
+  pwr.register('bat', new_name='bat_mw')
+  pwr_names.append('bat_mw')
 
-    voltages = [5, 3.3, 1.35, 12, 5, 3.3, 3.3, 3.3, 3.3, 5]
-    names = ['pp5000_aux', 'pp3300_aux', 'pp1350_ddr', 'bl', 'pp5000_video',
-              'pp3300_wwan', 'pp3300_sdcard', 'pp3300_cam', 'pp3300_lcd',
-              'pp5000_ts']
+  voltages = [5, 3.3, 1.35, 12, 5, 3.3, 3.3, 3.3, 3.3, 5]
+  names = [
+      'pp5000_aux', 'pp3300_aux', 'pp1350_ddr', 'bl', 'pp5000_video',
+      'pp3300_wwan', 'pp3300_sdcard', 'pp3300_cam', 'pp3300_lcd', 'pp5000_ts'
+  ]
 
-    for i, name in enumerate(AD_OUT_DEFAULT_NAMES[4:]):
-        new_name = '%s_mw' % names[i]
-        pwr.register(name, new_name=new_name, voltage=voltages[i])
-        pwr_names.append(new_name)
+  for i, name in enumerate(AD_OUT_DEFAULT_NAMES[4:]):
+    new_name = '%s_mw' % names[i]
+    pwr.register(name, new_name=new_name, voltage=voltages[i])
+    pwr_names.append(new_name)
 
-    rails = pwr_names
-    if len(sys.argv) > 1:
-        rails = sys.argv[1:]
+  rails = pwr_names
+  if len(sys.argv) > 1:
+    rails = sys.argv[1:]
 
-    stats = {}
+  stats = {}
+  for name in rails:
+    stats[name] = numpy.array([])
+
+  while True:
     for name in rails:
-        stats[name] = numpy.array([])
-
-    while True:
-        for name in rails:
-            mw_val = pwr.read_mw(name)
-            if len(stats[name]) == MAX_STATS:
-                stats[name] = numpy.delete(stats[name], 0)
-            stats[name] = numpy.append(stats[name], mw_val)
-            print '%s:%.f' % (name, stats[name].mean())
-        # delay in order to not raise power via the script
-        # TODO(tbroch) sleep should be configureable
-        time.sleep(2)
+      mw_val = pwr.read_mw(name)
+      if len(stats[name]) == MAX_STATS:
+        stats[name] = numpy.delete(stats[name], 0)
+      stats[name] = numpy.append(stats[name], mw_val)
+      print '%s:%.f' % (name, stats[name].mean())
+    # delay in order to not raise power via the script
+    # TODO(tbroch) sleep should be configureable
+    time.sleep(2)
 
 
 if __name__ == '__main__':
-    try:
-        main()
-    except KeyboardInterrupt:
-        sys.exit(0)
+  try:
+    main()
+  except KeyboardInterrupt:
+    sys.exit(0)

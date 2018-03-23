@@ -31,12 +31,12 @@ def ftdi_locate_lib(lib_name):
   if 'LD_LIBRARY_PATH' in os.environ:
     paths.extend(os.environ['LD_LIBRARY_PATH'].split(os.pathsep))
 
-  lib_ext = ".so"
-  if os.name == "posix" and sys.platform == "darwin":
-    lib_ext = ".dylib"
+  lib_ext = '.so'
+  if os.name == 'posix' and sys.platform == 'darwin':
+    lib_ext = '.dylib'
 
   for path in paths:
-    lib_path = os.path.join(path,'lib' + lib_name + lib_ext)
+    lib_path = os.path.join(path, 'lib' + lib_name + lib_ext)
     if os.path.exists(lib_path):
       return os.path.realpath(lib_path)
   # Try the default OS library path
@@ -60,14 +60,15 @@ def load_libs(*args):
       lib_name = libftdi_for_servo.LIB_NAME
 
     lib_path = ftdi_locate_lib(lib_name)
-    logging.debug("lib_path for %s is %s\n", lib_name, lib_path)
+    logging.debug('lib_path for %s is %s\n', lib_name, lib_path)
 
     try:
       dll_list.append(ctypes.cdll.LoadLibrary(lib_path))
-    except OSError,e:
-      print "-E- Unable to find library %s : %s" % (lib_name, e)
+    except OSError, e:
+      print '-E- Unable to find library %s : %s' % (lib_name, e)
       sys.exit(1)
   return dll_list
+
 
 def parse_common_args(vendor=ftdi_common.DEFAULT_VID,
                       product=ftdi_common.DEFAULT_PID, interface=1,
@@ -85,14 +86,14 @@ def parse_common_args(vendor=ftdi_common.DEFAULT_VID,
     the list of arguments left over after parsing options.
   """
   parser = optparse.OptionParser()
-  parser.add_option("-d", "--debug", help="enable debug messages",
-                    action="store_true", default=False)
-  parser.add_option("-v", "--vendor", help="vendor id of ftdi device",
+  parser.add_option('-d', '--debug', help='enable debug messages',
+                    action='store_true', default=False)
+  parser.add_option('-v', '--vendor', help='vendor id of ftdi device',
                     default=vendor, type=int)
-  parser.add_option("-p", "--product", help="product id of ftdi device",
+  parser.add_option('-p', '--product', help='product id of ftdi device',
                     default=product, type=int)
-  parser.add_option("-i", "--interface", help="ftdi interface to use",
-                    type=int, default=interface)
-  parser.add_option("-s", "--serialname", default=None, type=str,
-                    help="device serialname stored in eeprom")
+  parser.add_option('-i', '--interface', help='ftdi interface to use', type=int,
+                    default=interface)
+  parser.add_option('-s', '--serialname', default=None, type=str,
+                    help='device serialname stored in eeprom')
   return parser.parse_args()

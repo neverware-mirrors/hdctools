@@ -7,7 +7,6 @@ import cros_ec_power
 
 
 class crosEcHardrecPower(cros_ec_power.CrosECPower):
-
   """Driver for power_state that uses the rec_mode signal.
 
   A number of boards (generally x86-based systems) support triggering

@@ -1,7 +1,6 @@
 # Copyright 2016 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Driver for servod's loglevel."""
 
 import logging
@@ -13,11 +12,11 @@ DEFAULT_FMT_STRING = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 DEBUG_FMT_STRING = ('%(asctime)s - %(name)s - %(levelname)s - '
                     '%(filename)s:%(lineno)d:%(funcName)s - %(message)s')
 LOGLEVEL_MAP = {
-  'critical' : (logging.CRITICAL, DEFAULT_FMT_STRING),
-  'error' : (logging.ERROR, DEFAULT_FMT_STRING),
-  'warning' : (logging.WARNING, DEFAULT_FMT_STRING),
-  'info' : (logging.INFO, DEFAULT_FMT_STRING),
-  'debug' : (logging.DEBUG, DEBUG_FMT_STRING)
+    'critical': (logging.CRITICAL, DEFAULT_FMT_STRING),
+    'error': (logging.ERROR, DEFAULT_FMT_STRING),
+    'warning': (logging.WARNING, DEFAULT_FMT_STRING),
+    'info': (logging.INFO, DEFAULT_FMT_STRING),
+    'debug': (logging.DEBUG, DEBUG_FMT_STRING)
 }
 DEFAULT_LOGLEVEL = 'info'
 
@@ -68,7 +67,7 @@ class loglevel(hw_driver.HwDriver):
 
   def get(self):
     """Gets the current loglevel of the root logger."""
-    cur_level =  logging.getLogger().level
+    cur_level = logging.getLogger().level
 
     if cur_level == logging.CRITICAL:
       return 'critical'

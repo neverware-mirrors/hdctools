@@ -16,14 +16,12 @@ class Tca6416Error(Exception):
 class tca6416(hw_driver.HwDriver):
   """Object to access drv=tca6416 controls."""
 
-
   # base indexes of the input, output, polarity and direction registers
   # respectively.  Base is for port 0, +1 for port 1
   REG_INP = 0
   REG_OUT = 2
   REG_POL = 4
   REG_DIR = 6
-
 
   def __init__(self, interface, params):
     """Constructor.
@@ -62,12 +60,10 @@ class tca6416(hw_driver.HwDriver):
     """
     super(tca6416, self).__init__(interface, params)
     slave = self._get_slave()
-    self._i2c_obj = i2c_reg.I2cReg.get_device(self._interface, slave,
-                                              addr_len=1, reg_len=1,
-                                              msb_first=True, no_read=False,
-                                              use_reg_cache=False)
+    self._i2c_obj = i2c_reg.I2cReg.get_device(
+        self._interface, slave, addr_len=1, reg_len=1, msb_first=True,
+        no_read=False, use_reg_cache=False)
     self._port = self._get_port()
-
 
   def get(self):
     """Get gpio value.
@@ -78,7 +74,7 @@ class tca6416(hw_driver.HwDriver):
     Returns:
       integer in formatted representation
     """
-    self._logger.debug("")
+    self._logger.debug('')
     value = self._i2c_obj._read_reg(self.REG_INP + self._port)
     return self._create_logical_value(value)
 
@@ -100,14 +96,14 @@ class tca6416(hw_driver.HwDriver):
     Tca6416Error: If width of open drain driver is != 1 or open drain type is
       not recognized.
     """
-    self._logger.debug("")
+    self._logger.debug('')
     (_, mask) = self._get_offset_mask()
     if mask is None:
-        raise Tca6416Error("Unable to determine mask.  Is offset declared?")
+      raise Tca6416Error('Unable to determine mask.  Is offset declared?')
 
     change_to_input = False
-    if self._io_type == "PU" and fmt_value == 1:
-      self._logger.debug("Set to input because its io type is PU")
+    if self._io_type == 'PU' and fmt_value == 1:
+      self._logger.debug('Set to input because its io type is PU')
       change_to_input = True
 
     # output register handling
@@ -138,7 +134,7 @@ class tca6416(hw_driver.HwDriver):
       slave: 7-bit i2c address
     """
     if 'slv' not in self._params:
-      raise Tca6416Error("getting slave address")
+      raise Tca6416Error('getting slave address')
     slave = int(self._params['slv'], 0)
     return slave
 
@@ -149,8 +145,8 @@ class tca6416(hw_driver.HwDriver):
       port: port ( 0 | 1 ) on the tca6416 (used to calc register index)
     """
     if 'port' not in self._params:
-      raise Tca6416Error("getting port")
+      raise Tca6416Error('getting port')
     port = int(self._params['port'], 0)
     if port & 0x1 != port:
-      raise Tca6416Error("port value should be 0 | 1")
+      raise Tca6416Error('port value should be 0 | 1')
     return port

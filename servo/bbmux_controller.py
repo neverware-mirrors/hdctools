@@ -29,6 +29,7 @@ def use_omapmux():
 
   return False
 
+
 class BBmuxController(object):
   """Provides omap mux controls to interfaces that require them.
 
@@ -36,7 +37,6 @@ class BBmuxController(object):
       _pin_name_map : Map of signal name to pin name.
       _pin_mode_map : Map of signal name to the correct mode to select it.
   """
-
 
   # These values are the same regardless of instance so once we have generated
   # them once, share it amongst the different instances.

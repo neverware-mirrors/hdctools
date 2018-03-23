@@ -17,11 +17,13 @@ import sys
 import pca9500
 import pca9537
 
+
 @contextlib.contextmanager
 def stderr_redirected(to=os.devnull):
   """Quiet stderr."""
 
   fd = sys.stderr.fileno()
+
   def _redirect_stdout(to):
     sys.stderr.close()
     os.dup2(to.fileno(), fd)

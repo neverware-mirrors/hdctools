@@ -1,7 +1,6 @@
 # Copyright (c) 2014 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """EEPROM driver for ST M24C02.
 
 The driver provides functions to read data from or write data to
@@ -10,7 +9,6 @@ one of 8 ST M24C02 EEPROMs, which slave addresses are 0x50 - 0x57.
 
 # servo libs
 import hw_driver
-
 
 # Devices shared among driver objects:
 #   (interface instance, slv) => M24C02Device instance
@@ -24,6 +22,7 @@ class EepromError(Exception):
 
 class M24C02Device(object):
   """Defines a M24C02 device shared among many M24C02 drivers."""
+
   def __init__(self, offset, read_count):
     self._offset = offset
     self._read_count = read_count
@@ -39,9 +38,9 @@ class M24C02Device(object):
       ValueError: If offset or count doesn't make sense.
     """
     if (offset < 0) or (offset > (m24c02._EEPROM_SIZE - 1)):
-      raise ValueError("Offset(%d) error." % offset)
+      raise ValueError('Offset(%d) error.' % offset)
     if (offset + read_count) > m24c02._EEPROM_SIZE:
-      raise ValueError("Boundary(%d) error." % (offset + read_count))
+      raise ValueError('Boundary(%d) error.' % (offset + read_count))
 
     self._offset = offset
     self._read_count = read_count
@@ -106,7 +105,7 @@ class m24c02(hw_driver.HwDriver):
 
     slave = self._get_slave()
     if slave not in m24c02.SUPPORTED_ADDRESS:
-      raise ValueError("Slave address(%d) error." % slave)
+      raise ValueError('Slave address(%d) error.' % slave)
 
     offset = 0
     read_count = m24c02._EEPROM_SIZE
@@ -161,7 +160,7 @@ class m24c02(hw_driver.HwDriver):
       ValueError: If text exceeds EEPROM size.
     """
     if (offset + len(text)) > m24c02._EEPROM_SIZE:
-      raise ValueError("Boundary(%d) error." % (offset + len(text)))
+      raise ValueError('Boundary(%d) error.' % (offset + len(text)))
 
     for c in text:
       self._write_byte(offset, ord(c))

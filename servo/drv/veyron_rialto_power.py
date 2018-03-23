@@ -5,6 +5,7 @@
 import power_state
 import time
 
+
 class veyronRialtoPower(power_state.PowerStateDriver):
   """Driver for power_state for the veyron_rialto board.
 

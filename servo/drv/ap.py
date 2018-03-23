@@ -1,7 +1,6 @@
 # Copyright 2017 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """
     AP console communications driver. Automations that need to interact
     with the AP console should inherit from this driver, or build a composition
@@ -19,6 +18,7 @@ import pty_driver
 class apError(Exception):
   """Exception class for AP errors."""
 
+
 class ap(pty_driver.ptyDriver):
   """ Wrapper class around ptyDriver to handle communication
       with the AP console.
@@ -33,10 +33,7 @@ class ap(pty_driver.ptyDriver):
   # into the driver. Evaluate if it makes more sense for the
   # defaults to be set by the xml commands, or to allow servo
   # invocation to overwrite them.
-  _login_info = {
-      'username'  : 'root',
-      'password'  : 'test0000'
-  }
+  _login_info = {'username': 'root', 'password': 'test0000'}
 
   def __init__(self, interface, params):
     """Initializes the AP driver.
@@ -46,7 +43,7 @@ class ap(pty_driver.ptyDriver):
       params: A dictionary of parameters, but is ignored.
     """
     super(ap, self).__init__(interface, params)
-    self._logger.debug("")
+    self._logger.debug('')
 
   def _Get_password(self):
     """ Returns password currently used for login attempts. """
@@ -75,9 +72,11 @@ class ap(pty_driver.ptyDriver):
           True 1 a session is logged in, 0 otherwise.
     """
     try:
-      match = self._issue_cmd_get_results([''], [r"localhost\x1b\[01;34m\s"
-                                                 r"[^\s/]+\s[#$]|"
-                                                 r"localhost login:"])
+      match = self._issue_cmd_get_results(
+          [''],
+          [r'localhost\x1b\[01;34m\s'
+           r'[^\s/]+\s[#$]|'
+           r'localhost login:'])
       return 0 if 'localhost login:' in match[0] else 1
     except pty_driver.ptyError:
       return 0
@@ -99,20 +98,20 @@ class ap(pty_driver.ptyDriver):
           # response
           self._interface.pause_capture()
           try:
-            self._send("")
+            self._send('')
             self._child.expect('localhost login:', 3)
             match = self._child.match
             if not match:
-              raise apError("Username prompt did not show up on login attempt")
+              raise apError('Username prompt did not show up on login attempt')
             self._send(self._login_info['username'], flush=False)
             self._child.expect('Password:', 2)
             match = self._child.match
             if not match:
-              raise apError("Password prompt did not show up on login attempt")
+              raise apError('Password prompt did not show up on login attempt')
             self._send(self._login_info['password'], flush=False)
           except pexpect.TIMEOUT:
-            raise apError("Timeout waiting for response when attempting to "
-                          "log into AP console.")
+            raise apError('Timeout waiting for response when attempting to '
+                          'log into AP console.')
           finally:
             # Reenable capturing the console output
             self._interface.resume_capture()

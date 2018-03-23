@@ -7,12 +7,12 @@ import logging
 import usb
 
 import stm32usb
-
-
 """Accesses I2C buses through stm32 usb endpoint."""
+
 
 class Si2cError(Exception):
   """Class for exceptions of Si2c."""
+
   def __init__(self, msg, value=0):
     """Si2cError constructor.
 
@@ -40,22 +40,24 @@ class Si2cBus(object):
     _port: stm32 i2c controller index
     _susb: stm32 usb class
   """
-  def __init__(self, vendor=0x18d1, product=0x501a,
-      interface=1, port=0, serialname=None):
-    self._logger = logging.getLogger("Si2c")
-    self._logger.debug("")
+
+  def __init__(self, vendor=0x18d1, product=0x501a, interface=1, port=0,
+               serialname=None):
+    self._logger = logging.getLogger('Si2c')
+    self._logger.debug('')
 
     self._port = port
-    self._logger.debug("Set port %d" % port)
+    self._logger.debug('Set port %d' % port)
 
     self._susb = stm32usb.Susb(vendor=vendor, product=product,
-        interface=interface, serialname=serialname, logger=self._logger)
+                               interface=interface, serialname=serialname,
+                               logger=self._logger)
 
-    self._logger.debug("Set up stm32 i2c")
+    self._logger.debug('Set up stm32 i2c')
 
   def __del__(self):
     """Si2c destructor."""
-    self._logger.debug("Close")
+    self._logger.debug('Close')
 
   def reinitialize(self):
     """Reinitialize the usb endpoint"""
@@ -82,9 +84,10 @@ class Si2cBus(object):
     Raises:
       Si2cError on transaction failure.
     """
-    self._logger.debug("Si2c.wr_rd("
-        "port=%d, slave_address=0x%x, write_list=%s, read_count=%s)" % (
-          self._port, slave_address, write_list, read_count))
+    self._logger.debug(
+        'Si2c.wr_rd('
+        'port=%d, slave_address=0x%x, write_list=%s, read_count=%s)' %
+        (self._port, slave_address, write_list, read_count))
 
     # Clean up args from python style to correct types.
     if not write_list:
@@ -99,10 +102,11 @@ class Si2cBus(object):
     # Read back response if necessary.
     bytes = self._susb._read_ep.read(read_count + 4, self._susb.TIMEOUT_MS)
     if len(bytes) < (read_count + 4):
-      raise Si2cError("Read status failed.")
+      raise Si2cError('Read status failed.')
 
     if bytes[0] != 0 or bytes[1] != 0:
-      raise Si2cError("Read status failed: 0x%02x%02x" % (bytes[1], bytes[0]))
+      raise Si2cError('Read status failed: 0x%02x%02x' % (bytes[1], bytes[0]))
 
-    self._logger.debug("Si2c.wr_rd result 0x%02x%02x, read %s" % (bytes[1], bytes[0], bytes[4:]))
+    self._logger.debug('Si2c.wr_rd result 0x%02x%02x, read %s' %
+                       (bytes[1], bytes[0], bytes[4:]))
     return bytes[4:]

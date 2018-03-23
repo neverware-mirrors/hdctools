@@ -1,7 +1,6 @@
 # Copyright 2016 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Allow creation of uart/console interface via stm32 usb endpoint."""
 import errno
 import exceptions
@@ -20,6 +19,7 @@ import stm32usb
 
 class SuartError(Exception):
   """Class for exceptions of Suart."""
+
   def __init__(self, msg, value=0):
     """SuartError constructor.
 
@@ -34,6 +34,7 @@ class SuartError(Exception):
 
 class Suart():
   """Provide interface to stm32 serial usb endpoint."""
+
   def __init__(self, vendor=0x18d1, product=0x501a, interface=0,
                serialname=None, ftdi_context=None):
     """Suart contstructor.
@@ -51,8 +52,7 @@ class Suart():
       SuartError: If init fails
     """
     self._susb = stm32usb.Susb(vendor=vendor, product=product,
-        interface=interface, serialname=serialname)
-
+                               interface=interface, serialname=serialname)
 
   def __del__(self):
     """Suart destructor."""
@@ -95,7 +95,6 @@ class Suart():
       else:
         time.sleep(.1)
 
-
   def run(self):
     """Creates pthreads to poll stm32 & PTY for data.
     """
@@ -133,7 +132,6 @@ class Suart():
     self._tx_thread.daemon = True
     self._tx_thread.start()
 
-
   def get_uart_props(self):
     """Get the uart's properties.
 
@@ -150,11 +148,7 @@ class Suart():
           1: 1.5 stop bits
           2: 2 stop bits
     """
-    return {'baudrate': 115200,
-            'bits': 8,
-            'parity': 0,
-            'sbits': 1}
-
+    return {'baudrate': 115200, 'bits': 8, 'parity': 0, 'sbits': 1}
 
   def set_uart_props(self, line_props):
     """Set the uart's properties. Note that Suart cannot set properties
@@ -179,10 +173,9 @@ class Suart():
     curr_props = self.get_uart_props()
     for prop in line_props:
       if line_props[prop] != curr_props[prop]:
-        raise SuartError("Line property %s cannot be set from %s to %s" % (
-            prop, curr_props[prop], line_props[prop]))
+        raise SuartError('Line property %s cannot be set from %s to %s' %
+                         (prop, curr_props[prop], line_props[prop]))
     return True
-
 
   def get_pty(self):
     """Gets path to pty for communication to/from uart.
@@ -194,7 +187,7 @@ class Suart():
 
 
 def test():
-  format='%(asctime)s - %(name)s - %(levelname)s'
+  format = '%(asctime)s - %(name)s - %(levelname)s'
   if True:
     format += ' - %(filename)s:%(lineno)d:%(funcName)s'
   format += ' - %(message)s'
@@ -206,6 +199,7 @@ def test():
   while True:
     # ours sleeps to eleven!
     time.sleep(11)
+
 
 if __name__ == '__main__':
   try:

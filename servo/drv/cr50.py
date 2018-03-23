@@ -13,9 +13,8 @@ import functools
 import logging
 import pty_driver
 
-
 # cr50 firmware versions verified compatible with servod
-VALID_VERSIONS = ["0.1.0/cr50_v1.9308_B.293-ad55183"]
+VALID_VERSIONS = ['0.1.0/cr50_v1.9308_B.293-ad55183']
 
 
 class cr50Error(Exception):
@@ -24,6 +23,7 @@ class cr50Error(Exception):
 
 def restricted_command(func):
   """Decorator for methods which use restricted console command."""
+
   @functools.wraps(func)
   def wrapper(instance, *args, **kwargs):
     try:
@@ -31,9 +31,10 @@ def restricted_command(func):
     except pty_driver.ptyError, e:
       if str(e) == 'Timeout waiting for response.':
         if instance._Get_ccd_level() == 'Locked':
-          raise cr50Error("CCD console is locked. Perform the unlock process!")
+          raise cr50Error('CCD console is locked. Perform the unlock process!')
       # Raise the original exception
       raise
+
   return wrapper
 
 
@@ -60,14 +61,14 @@ class cr50(pty_driver.ptyDriver):
         request.
     """
     super(cr50, self).__init__(interface, params)
-    self._logger.debug("")
+    self._logger.debug('')
     self._interface = interface
     if not hasattr(self._interface, '_ec_uart_bitbang_props'):
-        self._interface._ec_uart_bitbang_props = {
-          "enabled" : False,
-          "parity" : None,
-          "baudrate" : None
-        }
+      self._interface._ec_uart_bitbang_props = {
+          'enabled': False,
+          'parity': None,
+          'baudrate': None
+      }
 
   def _issue_cmd_get_results(self, cmds, regex_list,
                              timeout=pty_driver.DEFAULT_UART_TIMEOUT):
@@ -83,10 +84,10 @@ class cr50(pty_driver.ptyDriver):
       1: cold_reset off.
     """
     result = self._issue_cmd_get_results(
-        "ecrst", ["EC_RST_L is (asserted|deasserted)"])[0]
+        'ecrst', ['EC_RST_L is (asserted|deasserted)'])[0]
     if result is None:
-      raise cr50Error("Cannot retrieve ecrst result on cr50 console.")
-    return 0 if result[1] == "asserted" else 1
+      raise cr50Error('Cannot retrieve ecrst result on cr50 console.')
+    return 0 if result[1] == 'asserted' else 1
 
   def _Set_cold_reset(self, value):
     """Setter of cold_reset (active low).
@@ -95,9 +96,9 @@ class cr50(pty_driver.ptyDriver):
       value: 0=on, 1=off.
     """
     if value == 0:
-      self._issue_cmd("ecrst on")
+      self._issue_cmd('ecrst on')
     else:
-      self._issue_cmd("ecrst off")
+      self._issue_cmd('ecrst off')
 
   def _Get_ccd_state(self):
     """Run a basic command that should take a short amount of time to check
@@ -107,11 +108,11 @@ class cr50(pty_driver.ptyDriver):
       1: ccd is on.
     """
     try:
-        # If gettime fails then the cr50 console is not working, which means
-        # ccd is not working
-        result = self._issue_cmd_get_results("gettime", ['.'], 3)
+      # If gettime fails then the cr50 console is not working, which means
+      # ccd is not working
+      result = self._issue_cmd_get_results('gettime', ['.'], 3)
     except:
-        return 0
+      return 0
     return 1
 
   def _Get_warm_reset(self):
@@ -122,10 +123,10 @@ class cr50(pty_driver.ptyDriver):
       1: warm_reset off.
     """
     result = self._issue_cmd_get_results(
-        "sysrst", ["SYS_RST_L is (asserted|deasserted)"])[0]
+        'sysrst', ['SYS_RST_L is (asserted|deasserted)'])[0]
     if result is None:
-      raise cr50Error("Cannot retrieve sysrst result on cr50 console.")
-    return 0 if result[1] == "asserted" else 1
+      raise cr50Error('Cannot retrieve sysrst result on cr50 console.')
+    return 0 if result[1] == 'asserted' else 1
 
   def _Set_warm_reset(self, value):
     """Setter of warm_reset (active low).
@@ -134,9 +135,9 @@ class cr50(pty_driver.ptyDriver):
       value: 0=on, 1=off.
     """
     if value == 0:
-      self._issue_cmd("sysrst on")
+      self._issue_cmd('sysrst on')
     else:
-      self._issue_cmd("sysrst off")
+      self._issue_cmd('sysrst off')
 
   @restricted_command
   def _Get_pwr_button(self):
@@ -147,10 +148,10 @@ class cr50(pty_driver.ptyDriver):
       1: power button release.
     """
     result = self._issue_cmd_get_results(
-        "powerbtn", ["powerbtn: (forced press|pressed|released)"])[0]
+        'powerbtn', ['powerbtn: (forced press|pressed|released)'])[0]
     if result is None:
-      raise cr50Error("Cannot retrieve power button result on cr50 console.")
-    return 1 if result[1] == "released" else 0
+      raise cr50Error('Cannot retrieve power button result on cr50 console.')
+    return 1 if result[1] == 'released' else 0
 
   def _Get_reset_count(self):
     """Getter of reset count.
@@ -158,10 +159,9 @@ class cr50(pty_driver.ptyDriver):
     Returns:
         The reset count
     """
-    result = self._issue_cmd_get_results(
-        "sysinfo", ["Reset count: (\d+)"])[0]
+    result = self._issue_cmd_get_results('sysinfo', ['Reset count: (\d+)'])[0]
     if result is None:
-      raise cr50Error("Cannot retrieve the reset count on cr50 console.")
+      raise cr50Error('Cannot retrieve the reset count on cr50 console.')
     return result[1]
 
   def _Get_devid(self):
@@ -171,9 +171,9 @@ class cr50(pty_driver.ptyDriver):
         The cr50 devid string
     """
     result = self._issue_cmd_get_results(
-        "sysinfo", ["DEV_ID:\s+(0x[0-9a-z]{8} 0x[0-9a-z]{8})"])[0][1]
+        'sysinfo', ['DEV_ID:\s+(0x[0-9a-z]{8} 0x[0-9a-z]{8})'])[0][1]
     if result is None:
-      raise cr50Error("Cannot retrieve the devid result on cr50 console.")
+      raise cr50Error('Cannot retrieve the devid result on cr50 console.')
     return result
 
   def _Get_ver(self):
@@ -182,10 +182,9 @@ class cr50(pty_driver.ptyDriver):
     Returns:
         The cr50 version string
     """
-    result = self._issue_cmd_get_results(
-        "ver", ["RW_(A|B):\s+\*\s+(\S+)\s"])[0]
+    result = self._issue_cmd_get_results('ver', ['RW_(A|B):\s+\*\s+(\S+)\s'])[0]
     if result is None:
-      raise cr50Error("Cannot retrieve the version result on cr50 console.")
+      raise cr50Error('Cannot retrieve the version result on cr50 console.')
     return result[2]
 
   def _Get_ver_valid(self):
@@ -197,13 +196,13 @@ class cr50(pty_driver.ptyDriver):
     ver = self._Get_ver()
     valid = ver in VALID_VERSIONS
     if not valid:
-      logging.warn("Detected cr50 version: %s", ver)
-      logging.warn("Not in valid versions: %s", VALID_VERSIONS)
+      logging.warn('Detected cr50 version: %s', ver)
+      logging.warn('Not in valid versions: %s', VALID_VERSIONS)
     return valid
 
   def _Set_cr50_reboot(self, value):
     """Reboot cr50 ignoring the value."""
-    self._issue_cmd("reboot")
+    self._issue_cmd('reboot')
 
   def _Get_ccd_level(self):
     """Getter of ccd_level.
@@ -211,10 +210,10 @@ class cr50(pty_driver.ptyDriver):
     Returns:
       lock, unlock, or open based on the current ccd privilege level.
     """
-    result = self._issue_cmd_get_results(
-        "ccd", ["State:\s+(Lock|Unlock|Open)"])[0]
+    result = self._issue_cmd_get_results('ccd',
+                                         ['State:\s+(Lock|Unlock|Open)'])[0]
     if result is None:
-      raise cr50Error("Cannot retrieve ccd privilege level on cr50 console.")
+      raise cr50Error('Cannot retrieve ccd privilege level on cr50 console.')
     return result[1].lower()
 
   def _Set_ccd_noop(self, value):
@@ -223,11 +222,11 @@ class cr50(pty_driver.ptyDriver):
 
   def _Get_ccd_noop(self):
     """Used to ignore servo controls"""
-    return "ERR"
+    return 'ERR'
 
   def _get_ccd_cap_state(self, cap):
     """Get the current state of the ccd capability"""
-    result = self._issue_cmd_get_results("ccdstate", ["%s:([^\n]*)\n" % cap])
+    result = self._issue_cmd_get_results('ccdstate', ['%s:([^\n]*)\n' % cap])
     return result[0][1].strip()
 
   def _Get_ccd_testlab(self):
@@ -237,11 +236,11 @@ class cr50(pty_driver.ptyDriver):
       'on' or 'off' if ccd testlab mode is enabled or disabled. 'unsupported'
       if cr50 doesn't have testlab support.
     """
-    result = self._issue_cmd_get_results("ccd testlab",
-        ["(CCD test lab mode (ena|dis)|Access Denied)"])[0][1]
-    if result == "Access Denied":
-        return "unsupported"
-    return "on" if "ena" in result else "off"
+    result = self._issue_cmd_get_results(
+        'ccd testlab', ['(CCD test lab mode (ena|dis)|Access Denied)'])[0][1]
+    if result == 'Access Denied':
+      return 'unsupported'
+    return 'on' if 'ena' in result else 'off'
 
   def _Set_ccd_testlab(self, value):
     """Setter of ccd_testlab.
@@ -253,8 +252,8 @@ class cr50(pty_driver.ptyDriver):
     Args:
       value: 'open'
     """
-    if value == "open":
-      self._issue_cmd("ccd testlab open")
+    if value == 'open':
+      self._issue_cmd('ccd testlab open')
     else:
       raise ValueError("Invalid ccd testlab setting: '%s'. Try 'open'" % value)
 
@@ -265,8 +264,8 @@ class cr50(pty_driver.ptyDriver):
       0: keepalive disabled.
       1: keepalive enabled.
     """
-    rdd = self._get_ccd_cap_state("Rdd")
-    return "on" if "keepalive" in rdd else "off"
+    rdd = self._get_ccd_cap_state('Rdd')
+    return 'on' if 'keepalive' in rdd else 'off'
 
   def _Set_ccd_keepalive_en(self, value):
     """Setter of ccd_keepalive_en.
@@ -274,77 +273,77 @@ class cr50(pty_driver.ptyDriver):
     Args:
       value: 0=off, 1=on.
     """
-    if value == "off" or value == "on":
-      self._issue_cmd("rddkeepalive %s" % value)
+    if value == 'off' or value == 'on':
+      self._issue_cmd('rddkeepalive %s' % value)
     else:
       raise ValueError("Invalid ec_keepalive_en setting: '%s'. Try one of "
                        "'on', or 'off'." % value)
 
   def _Get_ec_uart_bitbang_en(self):
-      return self._interface._ec_uart_bitbang_props["enabled"]
+    return self._interface._ec_uart_bitbang_props['enabled']
 
   def _Set_ec_uart_bitbang_en(self, value):
     if value:
       # We need parity and baudrate settings in order to enable bit banging.
-      if not self._interface._ec_uart_bitbang_props["parity"]:
-        raise ValueError(
-          "No parity set.  Try setting 'ec_uart_parity' first.")
+      if not self._interface._ec_uart_bitbang_props['parity']:
+        raise ValueError("No parity set.  Try setting 'ec_uart_parity' first.")
 
-      if not self._interface._ec_uart_bitbang_props["baudrate"]:
+      if not self._interface._ec_uart_bitbang_props['baudrate']:
         raise ValueError(
-          "No baud rate set.  Try setting 'ec_uart_baudrate' first.")
+            "No baud rate set.  Try setting 'ec_uart_baudrate' first.")
 
       # The EC UART index is 2.
-      cmd = "%s %s %s" % ("bitbang 2",
-                          self._interface._ec_uart_bitbang_props["baudrate"],
-                          self._interface._ec_uart_bitbang_props["parity"])
+      cmd = '%s %s %s' % ('bitbang 2',
+                          self._interface._ec_uart_bitbang_props['baudrate'],
+                          self._interface._ec_uart_bitbang_props['parity'])
       try:
-        result = self._issue_cmd_get_results(cmd, ["Bit bang enabled"])
+        result = self._issue_cmd_get_results(cmd, ['Bit bang enabled'])
         if result is None:
-          raise cr50Error("Unable to enable bit bang mode!")
+          raise cr50Error('Unable to enable bit bang mode!')
       except pty_driver.ptyError:
-          raise cr50Error("Unable to enable bit bang mode!")
+        raise cr50Error('Unable to enable bit bang mode!')
 
-      self._interface._ec_uart_bitbang_props["enabled"] = 1
+      self._interface._ec_uart_bitbang_props['enabled'] = 1
 
     else:
-      self._issue_cmd("bitbang 2 disable")
-      self._interface._ec_uart_bitbang_props["enabled"] = 0
+      self._issue_cmd('bitbang 2 disable')
+      self._interface._ec_uart_bitbang_props['enabled'] = 0
 
   def _Get_ccd_ec_uart_parity(self):
-    self._logger.debug("%r", self._interface._ec_uart_bitbang_props)
-    return self._interface._ec_uart_bitbang_props["parity"]
+    self._logger.debug('%r', self._interface._ec_uart_bitbang_props)
+    return self._interface._ec_uart_bitbang_props['parity']
 
   def _Set_ccd_ec_uart_parity(self, value):
-    if value.lower() not in ["odd", "even", "none"]:
+    if value.lower() not in ['odd', 'even', 'none']:
       raise ValueError("Bad parity (%s). Try 'odd', 'even', or 'none'." % value)
 
-    self._interface._ec_uart_bitbang_props["parity"] = value
-    self._logger.debug("%r", self._interface._ec_uart_bitbang_props)
+    self._interface._ec_uart_bitbang_props['parity'] = value
+    self._logger.debug('%r', self._interface._ec_uart_bitbang_props)
 
   def _Get_ccd_ec_uart_baudrate(self):
-    return self._interface._ec_uart_bitbang_props["baudrate"]
+    return self._interface._ec_uart_bitbang_props['baudrate']
 
   def _Set_ccd_ec_uart_baudrate(self, value):
-    if value is not None and value.lower()  not in ["none","1200", "2400",
-                                                    "4800", "9600", "19200",
-                                                    "38400", "57600", "115200"]:
+    if value is not None and value.lower() not in [
+        'none', '1200', '2400', '4800', '9600', '19200', '38400', '57600',
+        '115200'
+    ]:
       raise ValueError("Bad baud rate(%s). Try '1200', '2400', '4800', '9600',"
                        " '19200', '38400', '57600', or '115200'" % value)
 
-    if value.lower() == "none":
+    if value.lower() == 'none':
       value = None
-    self._interface._ec_uart_bitbang_props["baudrate"] = value
+    self._interface._ec_uart_bitbang_props['baudrate'] = value
 
   def _Get_ec_boot_mode(self):
-    boot_mode = "off"
-    result = self._issue_cmd_get_results("gpioget EC_FLASH_SELECT",
-                                        ["\s+([01])\s+EC_FLASH_SELECT"])[0]
+    boot_mode = 'off'
+    result = self._issue_cmd_get_results('gpioget EC_FLASH_SELECT',
+                                         ['\s+([01])\s+EC_FLASH_SELECT'])[0]
     if result:
-      if result[0] == "1":
-        boot_mode = "on"
+      if result[0] == '1':
+        boot_mode = 'on'
 
     return boot_mode
 
   def _Set_ec_boot_mode(self, value):
-    self._issue_cmd("gpioset EC_FLASH_SELECT %s" % value)
+    self._issue_cmd('gpioset EC_FLASH_SELECT %s' % value)

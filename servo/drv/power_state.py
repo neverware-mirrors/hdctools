@@ -49,10 +49,8 @@ class PowerStateDriver(hw_driver.HwDriver):
       params: dictionary of params
     """
     super(PowerStateDriver, self).__init__(interface, params)
-    self._reset_hold_time = float(
-              self._params.get('reset_hold', 0.5))
-    self._reset_recovery_time = float(
-              self._params.get('reset_recovery', 5.0))
+    self._reset_hold_time = float(self._params.get('reset_hold', 0.5))
+    self._reset_recovery_time = float(self._params.get('reset_recovery', 5.0))
 
   def _cold_reset(self):
     """Apply cold reset to the DUT.
@@ -134,7 +132,7 @@ class PowerStateDriver(hw_driver.HwDriver):
     function will reinitialize all of the servo interfaces to recover
     from the usb reset.
     """
-    self._logger.info("Reinitialize all interfaces")
+    self._logger.info('Reinitialize all interfaces')
     self._interface.reinitialize()
 
   def _reset_cr50(self):
@@ -163,7 +161,7 @@ class PowerStateDriver(hw_driver.HwDriver):
       self._reset_cr50()
     else:
       raise ValueError("Invalid power_state setting: '%s'. Try one of "
-                       "'%s', '%s', '%s', '%s', '%s', or '%s'." % (statename,
-                           self._STATE_ON, self._STATE_OFF,
-                           self._STATE_REC_MODE, self._STATE_FASTBOOT,
-                           self._STATE_RESET_CYCLE, self._STATE_CCD_RESET))
+                       "'%s', '%s', '%s', '%s', '%s', or '%s'." %
+                       (statename, self._STATE_ON, self._STATE_OFF,
+                        self._STATE_REC_MODE, self._STATE_FASTBOOT,
+                        self._STATE_RESET_CYCLE, self._STATE_CCD_RESET))

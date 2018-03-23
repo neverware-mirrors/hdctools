@@ -4,6 +4,7 @@
 
 import cros_ec_softrec_power
 
+
 class daisyPower(cros_ec_softrec_power.crosEcSoftrecPower):
   """Driver for power_state for daisy and spring."""
 

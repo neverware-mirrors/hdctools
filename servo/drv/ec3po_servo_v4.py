@@ -13,12 +13,12 @@ import time
 import pty_driver
 import servo
 
-
 # EC console mask for enabling only command channel
 COMMAND_CHANNEL_MASK = 0x1
 
 # servo v4 firmware versions verified compatible with servod
-VALID_VERSIONS = ["servo_v4_v1.1.5734-4a47178"]
+VALID_VERSIONS = ['servo_v4_v1.1.5734-4a47178']
+
 
 class ec3poServoV4Error(Exception):
   """Exception class."""
@@ -46,14 +46,14 @@ class ec3poServoV4(pty_driver.ptyDriver):
     """
     super(ec3poServoV4, self).__init__(interface, params)
 
-    if "console" in params:
-      if params["console"] == "enhanced" and \
+    if 'console' in params:
+      if params['console'] == 'enhanced' and \
           type(interface) is servo.ec3po_interface.EC3PO:
         interface._console.oobm_queue.put('interrogate never enhanced')
       else:
-        raise ec3poServoV4Error("Enhanced console must be ec3po!")
+        raise ec3poServoV4Error('Enhanced console must be ec3po!')
 
-    self._logger.debug("")
+    self._logger.debug('')
 
   def _Get_ver(self):
     """Getter of ver.
@@ -61,11 +61,9 @@ class ec3poServoV4(pty_driver.ptyDriver):
     Returns:
         The version string
     """
-    result = self._issue_cmd_get_results(
-        "ver", ["Build:\s+(\S+)\s"])[0]
+    result = self._issue_cmd_get_results('ver', ['Build:\s+(\S+)\s'])[0]
     if result is None:
-      raise ec3poServoV4Error(
-          "Cannot retrieve the version.")
+      raise ec3poServoV4Error('Cannot retrieve the version.')
     return result[1]
 
   def _Get_ver_valid(self):
@@ -77,8 +75,8 @@ class ec3poServoV4(pty_driver.ptyDriver):
     ver = self._Get_ver()
     valid = ver in VALID_VERSIONS
     if not valid:
-      logging.warn("Detected servo v4 version: %s", ver)
-      logging.warn("Not in valid versions: %s", VALID_VERSIONS)
+      logging.warn('Detected servo v4 version: %s', ver)
+      logging.warn('Not in valid versions: %s', VALID_VERSIONS)
     return valid
 
   def batch_set(self, batch, index):
@@ -89,11 +87,11 @@ class ec3poServoV4(pty_driver.ptyDriver):
       index: index of batch preset
     """
     if index not in range(len(batch.values()[0])):
-      raise ec3poServoV4Error("Index %s out of range" % index)
+      raise ec3poServoV4Error('Index %s out of range' % index)
 
     cmds = []
     for name, values in batch.items():
-      cmds.append("gpioset %s %s\r" % (name, values[index]))
+      cmds.append('gpioset %s %s\r' % (name, values[index]))
 
     self._issue_cmd(cmds)
 
@@ -105,10 +103,9 @@ class ec3poServoV4(pty_driver.ptyDriver):
       "on": DTS mode is enabled.
     """
     # Get the current DTS mode
-    result = self._issue_cmd_get_results(
-        "dts", ["dts mode:\s*(off|on)"])[0]
+    result = self._issue_cmd_get_results('dts', ['dts mode:\s*(off|on)'])[0]
     if result is None:
-      raise ec3poServoV4Error("Cannot retrieve dts mode from console.")
+      raise ec3poServoV4Error('Cannot retrieve dts mode from console.')
     return result[1]
 
   def _Set_servo_v4_dts_mode(self, value):
@@ -117,8 +114,8 @@ class ec3poServoV4(pty_driver.ptyDriver):
     Args:
       value: "off", "on"
     """
-    if value == "off" or value == "on":
-      self._issue_cmd("dts %s" % value)
+    if value == 'off' or value == 'on':
+      self._issue_cmd('dts %s' % value)
     else:
       raise ValueError("Invalid dts_mode setting: '%s'. Try one of "
                        "'on' or 'off'." % value)
@@ -131,15 +128,15 @@ class ec3poServoV4(pty_driver.ptyDriver):
     Returns:
       "src|snk" for role  and state value
     """
-    pd_cmd = "pd %s state" % port
+    pd_cmd = 'pd %s state' % port
     # Two FW versions for this command, get full line.
-    m = self._issue_cmd_get_results(pd_cmd, ["State:\s+([\w]+)_([\w]+)"])[0]
+    m = self._issue_cmd_get_results(pd_cmd, ['State:\s+([\w]+)_([\w]+)'])[0]
     if m is None:
-      raise ec3poServoV4Error("Cannot retrieve pd state.")
+      raise ec3poServoV4Error('Cannot retrieve pd state.')
 
     info = {}
-    info["role"] = m[1].lower()
-    info["state"] = m[2].lower()
+    info['role'] = m[1].lower()
+    info['state'] = m[2].lower()
 
     return info
 
@@ -149,7 +146,7 @@ class ec3poServoV4(pty_driver.ptyDriver):
     @returns: Current power role
     """
     pd = self._get_pd_info(self.DUT_PORT)
-    return pd["role"]
+    return pd['role']
 
   def _Set_servo_v4_power_role(self, role):
     """Setter of servo_v4_role.
@@ -162,22 +159,22 @@ class ec3poServoV4(pty_driver.ptyDriver):
       role: src, snk
     """
     role = role.lower()
-    if role != "src" and role != "snk":
+    if role != 'src' and role != 'snk':
       raise ValueError("Invalid power role: '%s'. Try one of "
                        "'snk' or 'src'." % role)
 
     # Get current power role and state
     pd = self._get_pd_info(self.DUT_PORT)
     # If not in desired role and connected, then issue role swap
-    if pd["role"] != role and pd["state"] == "ready":
+    if pd['role'] != role and pd['state'] == 'ready':
       # Send pd power role swap command
-      self._issue_cmd("pd %s swap power" % self.DUT_PORT)
+      self._issue_cmd('pd %s swap power' % self.DUT_PORT)
       # Give a little time for role swap to complete
       time.sleep(self.SWAP_DELAY)
       pd_new = self._get_pd_info(self.DUT_PORT)
       # Check if power role swap completed
-      if pd_new["state"] != "ready" or pd["role"] == pd_new["role"]:
-        raise ec3poServoV4Error("Power role swap failed")
+      if pd_new['state'] != 'ready' or pd['role'] == pd_new['role']:
+        raise ec3poServoV4Error('Power role swap failed')
 
   def _Get_servo_v4_ccd_keepalive(self):
     """Get keepalive status.
@@ -185,9 +182,9 @@ class ec3poServoV4(pty_driver.ptyDriver):
     Returns:
        1 if keepalive is enabled, 0 if it's not.
     """
-    _, status = self._issue_cmd_get_results("keepalive",
-                                         ["ccd_keepalive: ([a-zA-Z]+)"])[0]
-    if status == "enabled":
+    _, status = self._issue_cmd_get_results('keepalive',
+                                            ['ccd_keepalive: ([a-zA-Z]+)'])[0]
+    if status == 'enabled':
       return 1
 
     return 0
@@ -203,8 +200,8 @@ class ec3poServoV4(pty_driver.ptyDriver):
               otherwise disabled.
     """
     if enable:
-      val = "enable"
+      val = 'enable'
     else:
-      val = "disable"
+      val = 'disable'
 
-    self._issue_cmd("keepalive %s" % val)
+    self._issue_cmd('keepalive %s' % val)

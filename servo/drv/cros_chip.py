@@ -7,6 +7,7 @@ import hw_driver
 
 class crosChip(hw_driver.HwDriver):
   """Driver for getting chip name of EC or PD."""
+
   def __init__(self, interface, params):
     """Constructor.
 

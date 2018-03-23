@@ -13,25 +13,25 @@ import pty_driver
 import servo
 
 # servo micro firmware versions verified compatible with servod
-VALID_VERSIONS = ["servo_micro_v1.1.5734-4a47178"]
+VALID_VERSIONS = ['servo_micro_v1.1.5734-4a47178']
 
 # EC console mask for enabling only command channel
 COMMAND_CHANNEL_MASK = 0x1
 
-
 # Controls to set in batch operations.
 # [off, samus, glados]
 usbpd_uart_config = {
-  "UART3_RX_JTAG_BUFFER_TO_SERVO_TDO": ("IN", "ALT", "ALT"),
-  "UART3_TX_SERVO_JTAG_TCK": ("IN", "ALT", "ALT"),
-  "SPI1_MUX_SEL": ("1", "0", "1"),
-  "SPI1_BUF_EN_L": ("1", "0", "1"),
-  "SPI1_VREF_18": ("0", "1", "0"),
-  "SPI1_VREF_33": ("0", "0", "0"),
-  "JTAG_BUFIN_EN_L": ("1", "1", "0"),
-  "SERVO_JTAG_TDO_BUFFER_EN": ("0", "0", "1"),
-  "SERVO_JTAG_TDO_SEL": ("0", "0", "1"),
+    'UART3_RX_JTAG_BUFFER_TO_SERVO_TDO': ('IN', 'ALT', 'ALT'),
+    'UART3_TX_SERVO_JTAG_TCK': ('IN', 'ALT', 'ALT'),
+    'SPI1_MUX_SEL': ('1', '0', '1'),
+    'SPI1_BUF_EN_L': ('1', '0', '1'),
+    'SPI1_VREF_18': ('0', '1', '0'),
+    'SPI1_VREF_33': ('0', '0', '0'),
+    'JTAG_BUFIN_EN_L': ('1', '1', '0'),
+    'SERVO_JTAG_TDO_BUFFER_EN': ('0', '0', '1'),
+    'SERVO_JTAG_TDO_SEL': ('0', '0', '1'),
 }
+
 
 class ec3poServoMicroError(Exception):
   """Exception class for ec."""
@@ -60,14 +60,14 @@ class ec3poServoMicro(pty_driver.ptyDriver):
     """
     super(ec3poServoMicro, self).__init__(interface, params)
 
-    if "console" in params:
-      if params["console"] == "enhanced" and \
+    if 'console' in params:
+      if params['console'] == 'enhanced' and \
           type(interface) is servo.ec3po_interface.EC3PO:
         interface._console.oobm_queue.put('interrogate never enhanced')
       else:
-        raise ec3poServoMicroError("Enhanced console must be ec3po!")
+        raise ec3poServoMicroError('Enhanced console must be ec3po!')
 
-    self._logger.debug("")
+    self._logger.debug('')
 
   def _Get_ver(self):
     """Getter of ver.
@@ -75,11 +75,9 @@ class ec3poServoMicro(pty_driver.ptyDriver):
     Returns:
         The version string
     """
-    result = self._issue_cmd_get_results(
-        "ver", ["Build:\s+(\S+)\s"])[0]
+    result = self._issue_cmd_get_results('ver', ['Build:\s+(\S+)\s'])[0]
     if result is None:
-      raise ec3poServoMicroError(
-          "Cannot retrieve the version.")
+      raise ec3poServoMicroError('Cannot retrieve the version.')
     return result[1]
 
   def _Get_ver_valid(self):
@@ -91,8 +89,8 @@ class ec3poServoMicro(pty_driver.ptyDriver):
     ver = self._Get_ver()
     valid = ver in VALID_VERSIONS
     if not valid:
-      logging.warn("Detected servo micro version: %s", ver)
-      logging.warn("Not in valid versions: %s", VALID_VERSIONS)
+      logging.warn('Detected servo micro version: %s', ver)
+      logging.warn('Not in valid versions: %s', VALID_VERSIONS)
     return valid
 
   def batch_set(self, batch, index):
@@ -103,12 +101,11 @@ class ec3poServoMicro(pty_driver.ptyDriver):
       index: index of batch preset
     """
     if index not in [0, 1, 2]:
-      raise ec3poServoMicroError("Index (%s) must be 0, 1, or 2" % index)
+      raise ec3poServoMicroError('Index (%s) must be 0, 1, or 2' % index)
 
     for name, values in batch.items():
-      cmd = "gpioset %s %s\r" % (name, values[index])
+      cmd = 'gpioset %s %s\r' % (name, values[index])
       self._issue_cmd(cmd)
-
 
   def _Set_usbpd_console(self, value):
     """Set or unset PD console routing

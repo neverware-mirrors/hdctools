@@ -11,7 +11,6 @@ import unittest
 
 import bbgpio
 
-
 GPIO_ROOT = 'sys/class/gpio'
 GPIO_FILE_PATH = 'sys/class/gpio/gpio57'
 GPIO_VALUE_FILE_PATH = 'sys/class/gpio/gpio57/value'
@@ -20,15 +19,15 @@ OFFSET = 25
 CHIP = '1'
 WIDTH = 1
 
-class TestBBgpio(mox.MoxTestBase):
 
+class TestBBgpio(mox.MoxTestBase):
 
   def setUp(self):
     super(TestBBgpio, self).setUp()
     self._tempfolder = tempfile.mkdtemp()
     # Redirect all the bbgpio os interactions to the tempfolder.
     bbgpio.GPIO_ROOT = os.path.join(self._tempfolder, GPIO_ROOT)
-    bbgpio.EXPORT_FILE =  os.path.join(bbgpio.GPIO_ROOT, 'export')
+    bbgpio.EXPORT_FILE = os.path.join(bbgpio.GPIO_ROOT, 'export')
     bbgpio.UNEXPORT_FILE = os.path.join(bbgpio.GPIO_ROOT, 'unexport')
     bbgpio.GPIO_PIN_PATTERN = os.path.join(bbgpio.GPIO_ROOT, 'gpio%d')
     # Create the fake directory structure.
@@ -39,8 +38,7 @@ class TestBBgpio(mox.MoxTestBase):
     self._direction_file = os.path.join(self._tempfolder,
                                         GPIO_DIRECTION_FILE_PATH)
     open(self._direction_file, 'a').close()
-    self._value_file = os.path.join(self._tempfolder,
-                                    GPIO_VALUE_FILE_PATH)
+    self._value_file = os.path.join(self._tempfolder, GPIO_VALUE_FILE_PATH)
     open(self._value_file, 'a').close()
 
   def tearDown(self):
@@ -81,4 +79,4 @@ class TestBBgpio(mox.MoxTestBase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+  unittest.main()

@@ -7,6 +7,7 @@ import alex_power
 
 
 class stumpyPower(alex_power.alexPower):
+
   def _power_off(self):
     # In test images in the lab, the 'autoreboot' upstart job will
     # commonly configure the unit so that it reboots after cold

@@ -5,7 +5,6 @@
 """
 import logging
 
-
 import pty_driver
 
 
@@ -47,10 +46,10 @@ class uart(pty_driver.ptyDriver):
       uartError: If unrecognized line_prop requested.
     """
     if 'line_prop' not in self._params:
-      raise uartError("line_prop key not defined in params dict")
+      raise uartError('line_prop key not defined in params dict')
     line_prop = self._params['line_prop']
     if line_prop not in valid_props:
-      raise uartError("Unknown uart line_prop %s requested" % line_prop)
+      raise uartError('Unknown uart line_prop %s requested' % line_prop)
     return line_prop
 
   def _Get_props(self):

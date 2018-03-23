@@ -34,7 +34,7 @@ class crosEcPdSoftrecPower(cros_ec_softrec_power.crosEcSoftrecPower):
     """
     super(crosEcPdSoftrecPower, self).__init__(interface, params)
     self._boot_to_rec_screen_delay = float(
-      self._params.get('boot_to_rec_screen_delay', 5.0))
+        self._params.get('boot_to_rec_screen_delay', 5.0))
 
   def _cold_reset(self):
     """Apply cold reset to the DUT.

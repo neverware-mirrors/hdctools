@@ -13,7 +13,7 @@ class ina3221(ina2xx.ina2xx):
   """
   MAX_CHANNEL = 3
   REG_IDX = dict(cfg=0, shv=1, busv=2, msken=15)
-  MAX_REG_INDEX = 0x11 # Power valid lower limit.  Ignoring Manuf/Die ID
+  MAX_REG_INDEX = 0x11  # Power valid lower limit.  Ignoring Manuf/Die ID
 
   MSKEN_CNVR = 0x1
 

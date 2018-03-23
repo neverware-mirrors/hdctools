@@ -10,17 +10,22 @@ from pexpect import fdpexpect
 
 DEFAULT_UART_TIMEOUT = 3  # 3 seconds is plenty even for slow platforms
 
+
 class ptyError(Exception):
   """Exception class for pty errors."""
 
-UART_PARAMS = {'uart_cmd': None,
-               'uart_multicmd': None,
-               'uart_regexp': None,
-               'uart_timeout': DEFAULT_UART_TIMEOUT
-               }
+
+UART_PARAMS = {
+    'uart_cmd': None,
+    'uart_multicmd': None,
+    'uart_regexp': None,
+    'uart_timeout': DEFAULT_UART_TIMEOUT
+}
+
 
 class ptyDriver():
   """."""
+
   def __init__(self, interface, params, fast=False):
     """."""
     self._child = None
@@ -48,11 +53,11 @@ class ptyDriver():
 
   def _flush(self):
     """Flush device output to prevent previous messages interfering."""
-    if self._child.sendline("") != 1:
-      raise ptyError("Failed to send newline.")
+    if self._child.sendline('') != 1:
+      raise ptyError('Failed to send newline.')
     while True:
       try:
-        self._child.expect(".", timeout=0.01)
+        self._child.expect('.', timeout=0.01)
       except (pexpect.TIMEOUT, pexpect.EOF):
         break
       except OSError, e:
@@ -79,7 +84,7 @@ class ptyDriver():
       cmds = [cmds]
     for cmd in cmds:
       if self._child.sendline(cmd) != len(cmd) + 1:
-        raise ptyError("Failed to send command.")
+        raise ptyError('Failed to send command.')
 
   def _issue_cmd(self, cmds):
     """Send command to the device and do not wait for response.
@@ -89,8 +94,8 @@ class ptyDriver():
     """
     self._issue_cmd_get_results(cmds, [])
 
-  def _issue_cmd_get_results(self, cmds,
-                             regex_list, timeout=DEFAULT_UART_TIMEOUT):
+  def _issue_cmd_get_results(self, cmds, regex_list,
+                             timeout=DEFAULT_UART_TIMEOUT):
     """Send command to the device and wait for response.
 
     This function waits for response message matching a regular
@@ -130,7 +135,7 @@ class ptyDriver():
         result = match.group(*range(lastindex + 1)) if match else None
         result_list.append(result)
     except pexpect.TIMEOUT:
-      raise ptyError("Timeout waiting for response.")
+      raise ptyError('Timeout waiting for response.')
     finally:
       self._close()
     return result_list
@@ -218,9 +223,7 @@ class ptyDriver():
     """
     if self._dict['uart_regexp']:
       self._dict['uart_cmd'] = self._issue_cmd_get_results(
-                                   cmd,
-                                   self._dict['uart_regexp'],
-                                   self._dict['uart_timeout'])
+          cmd, self._dict['uart_regexp'], self._dict['uart_timeout'])
     else:
       self._dict['uart_cmd'] = None
       self._issue_cmd(cmd)

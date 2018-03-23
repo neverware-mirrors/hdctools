@@ -9,7 +9,7 @@ where 'lidstate' console function does not exist.
 import ec
 
 # The memory address storing lid switch state on lm4 ECs
-LID_STATUS_ADDR = "0x40080730"
+LID_STATUS_ADDR = '0x40080730'
 LID_STATUS_MASK = 0x1
 
 
@@ -32,8 +32,9 @@ class ecLm4(ec.ec):
       1: Lid opened.
     """
     self._limit_channel()
-    result = self._issue_cmd_get_results("rw %s" % LID_STATUS_ADDR,
-        ["read %s = 0x.......(.)" % LID_STATUS_ADDR])[0]
+    result = self._issue_cmd_get_results(
+        'rw %s' % LID_STATUS_ADDR,
+        ['read %s = 0x.......(.)' % LID_STATUS_ADDR])[0]
     self._restore_channel()
     res_code = int(result[1], 16)
     return res_code & LID_STATUS_MASK

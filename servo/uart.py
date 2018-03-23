@@ -10,8 +10,10 @@ import threading
 import time
 import tty
 
-MAX_BUFFER_SIZE = 20000 # Do not keep more than this number of bytes
-                        # when capturing.
+MAX_BUFFER_SIZE = 20000  # Do not keep more than this number of bytes
+
+# when capturing.
+
 
 class Uart(object):
   """Base Class for UART interface implementations.
@@ -66,8 +68,7 @@ class Uart(object):
     """
     self._logger.debug('starting capture')
 
-    uart_fd = os.open(self.get_pty(),
-                      os.O_RDONLY | os.O_NONBLOCK | os.O_NOCTTY)
+    uart_fd = os.open(self.get_pty(), os.O_RDONLY | os.O_NONBLOCK | os.O_NOCTTY)
     saved_conf = termios.tcgetattr(uart_fd)
     tty.setraw(uart_fd)
 
@@ -84,7 +85,7 @@ class Uart(object):
       try:
         data = os.read(uart_fd, 100)
       except OSError, e:
-        if e.errno == errno.EWOULDBLOCK: # Data unavailable
+        if e.errno == errno.EWOULDBLOCK:  # Data unavailable
           time.sleep(.1)
           continue
         os.close(uart_fd)

@@ -1,7 +1,6 @@
 # Copyright 2014 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """ADC driver.
 
 It returns Larvae's ADC sensors' value (AIN0 to AIN6).

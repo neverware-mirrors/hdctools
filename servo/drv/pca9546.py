@@ -5,8 +5,8 @@
 """
 import hw_driver
 
-
 CMD_MASK = 0xf
+
 
 class Pca9546Error(Exception):
   """Error class for PCA9546"""
@@ -14,6 +14,7 @@ class Pca9546Error(Exception):
 
 class pca9546(hw_driver.HwDriver):
   """Object to access drv=pca9546 controls."""
+
   def __init__(self, interface, params):
     """Constructor.
 
@@ -26,7 +27,7 @@ class pca9546(hw_driver.HwDriver):
       slv: integer, 7-bit i2c slave address
     """
     super(pca9546, self).__init__(interface, params)
-    self._logger.debug("")
+    self._logger.debug('')
     self._slave = int(self._params['slv'], 0)
 
   def get(self):
@@ -43,7 +44,7 @@ class pca9546(hw_driver.HwDriver):
     Raises:
       Pca9546Error: if value is out of bounds
     """
-    self._logger.debug("value = %s" % str(value))
+    self._logger.debug('value = %s' % str(value))
     if value & ~CMD_MASK:
       raise Pca9546Error("command value 0x%x can't be greater than 0x%x" %
                          (value, CMD_MASK))

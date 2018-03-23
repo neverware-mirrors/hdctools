@@ -18,8 +18,10 @@ import numpy
 import multiservo
 import client
 
+
 class ControlError(Exception):
   pass
+
 
 VERSION = pkg_resources.require('servo')[0].version
 
@@ -41,57 +43,54 @@ def _parse_args():
     method
   """
   description = (
-    "%prog allows users to set and get various controls on a DUT system via"
-    " the servo debug & control board.  This client communicates to the board"
-    " via a socket connection to the servo server."
-    )
+      '%prog allows users to set and get various controls on a DUT system via'
+      ' the servo debug & control board.  This client communicates to the board'
+      ' via a socket connection to the servo server.')
   examples = (
-    "\nExamples:\n"
-    "   %prog\n\tgets value for all controls\n"
-    "   %prog -v\n\tgets value for all controls verbosely\n"
-    "   %prog i2c_mux\n\tgets value for 'i2c_mux' control\n"
-    "\tif the exact control name is not found, "
-    "a list of similar controls is printed\n"
-    "   %prog -r 100 i2c_mux\n\tgets value for 'i2c_mux' control 100 times\n"
-    "   %prog -t 2 loc_0x40_mv\n\tgets value for 'loc_0x40_mv' control for 2 "
-    "seconds\n"
-    "   %prog -y -t 2 loc_0x40_mv\n\tgets value for 'loc_0x40_mv' control for "
-    "2 seconds and prepends time in seconds to results\n"
-    "   %prog -g -y -t 2 loc_0x40_mv loc_0x41_mv\n"
-    "\tgets value for 'loc_0x4[0|1]_mv' control for 2 seconds with gnuplot "
-    "style"
-    "   %prog -z 100 -t 2 loc_0x40_mv\n\tgets value for 'loc_0x40_mv' control "
-    "for 2 seconds sampling every 100ms\n"
-    "   %prog -v i2c_mux\n\tgets value for 'i2c_mux' control verbosely\n"
-    "   %prog i2c_mux:remote_adcs\n\tsets 'i2c_mux' to value 'remote_adcs'\n"
-    )
-  parser = optparse.OptionParser(version="%prog "+VERSION)
+      '\nExamples:\n   %prog\n\tgets value for all controls\n   %prog '
+      '-v\n\tgets value for all controls verbosely\n   %prog i2c_mux\n\tgets '
+      "value for 'i2c_mux' control\n\tif the exact control name is not found, "
+      'a list of similar controls is printed\n   %prog -r 100 i2c_mux\n\tgets '
+      "value for 'i2c_mux' control 100 times\n   %prog -t 2 "
+      "loc_0x40_mv\n\tgets value for 'loc_0x40_mv' control for 2 seconds\n   "
+      "%prog -y -t 2 loc_0x40_mv\n\tgets value for 'loc_0x40_mv' control for 2"
+      ' seconds and prepends time in seconds to results\n   %prog -g -y -t 2 '
+      "loc_0x40_mv loc_0x41_mv\n\tgets value for 'loc_0x4[0|1]_mv' control for"
+      ' 2 seconds with gnuplot style   %prog -z 100 -t 2 loc_0x40_mv\n\tgets '
+      "value for 'loc_0x40_mv' control for 2 seconds sampling every 100ms\n   "
+      "%prog -v i2c_mux\n\tgets value for 'i2c_mux' control verbosely\n   "
+      "%prog i2c_mux:remote_adcs\n\tsets 'i2c_mux' to value 'remote_adcs'\n")
+  parser = optparse.OptionParser(version='%prog ' + VERSION)
   parser.description = description
-  parser.add_option("-s", "--server", help="host where servod is running",
+  parser.add_option('-s', '--server', help='host where servod is running',
                     default=client.DEFAULT_HOST)
-  parser.add_option("-p", "--port", help="port where servod is listening",
+  parser.add_option('-p', '--port', help='port where servod is listening',
                     default=None)
-  parser.add_option("-v", "--verbose", help="show verbose info about controls",
-                    action="store_true", default=False)
-  parser.add_option("-i", "--info", help="show info about controls",
-                    action="store_true", default=False)
-  parser.add_option("-r", "--repeat", type=int,
-                    help="repeat requested command multiple times", default=1)
-  parser.add_option("-t", "--time_in_secs", help="repeat requested command for "
-                    + "this many seconds", type='float', default=0.0)
-  parser.add_option("-z", "--sleep_msecs", help="sleep for this many " +
-                    "milliseconds between queries", type='float', default=0.0)
-  parser.add_option("-y", "--print_time", help="print time in seconds with " +
-                    "queries to stdout", action="store_true", default=False)
-  parser.add_option("-g", "--gnuplot", help="gnuplot style to stdout.  Implies "
-                    "print_time", action="store_true", default=False)
-  parser.add_option("--hwinit", help="Initialize controls to their POR/safe "
-                    "state", action="store_true", default=False)
-  parser.add_option("--ftdii2c", help="Call a method of Fi2c object"
-                    "state", action="store_true", default=False)
+  parser.add_option('-v', '--verbose', help='show verbose info about controls',
+                    action='store_true', default=False)
+  parser.add_option('-i', '--info', help='show info about controls',
+                    action='store_true', default=False)
+  parser.add_option('-r', '--repeat', type=int,
+                    help='repeat requested command multiple times', default=1)
+  parser.add_option('-t', '--time_in_secs',
+                    help='repeat requested command for ' + 'this many seconds',
+                    type='float', default=0.0)
+  parser.add_option(
+      '-z', '--sleep_msecs',
+      help='sleep for this many ' + 'milliseconds between queries',
+      type='float', default=0.0)
+  parser.add_option('-y', '--print_time',
+                    help='print time in seconds with ' + 'queries to stdout',
+                    action='store_true', default=False)
+  parser.add_option('-g', '--gnuplot', help='gnuplot style to stdout.  Implies '
+                    'print_time', action='store_true', default=False)
+  parser.add_option('--hwinit', help='Initialize controls to their POR/safe '
+                    'state', action='store_true', default=False)
+  parser.add_option('--ftdii2c', help='Call a method of Fi2c object'
+                    'state', action='store_true', default=False)
 
-  parser.add_option("-d", "--debug", help="enable debug messages",
-                    action="store_true", default=False)
+  parser.add_option('-d', '--debug', help='enable debug messages',
+                    action='store_true', default=False)
 
   multiservo.add_multiservo_parser_options(parser)
   parser.set_usage(parser.get_usage() + examples)
@@ -175,10 +174,10 @@ def display_stats(stats, prefix=STATS_PREFIX):
       stats_np = numpy.array(stats[key])
       disp_key = key.lstrip(KEY_PREFIX)
       row = [disp_key, str(len(stats_np))]
-      row.append("%.2f" % stats_np.mean())
-      row.append("%.2f" % stats_np.std())
-      row.append("%.2f" % stats_np.max())
-      row.append("%.2f" % stats_np.min())
+      row.append('%.2f' % stats_np.mean())
+      row.append('%.2f' % stats_np.std())
+      row.append('%.2f' % stats_np.max())
+      row.append('%.2f' % stats_np.min())
       table.append(row)
   display_table(table, prefix)
 
@@ -205,7 +204,7 @@ def _print_gnuplot_header(control_args):
   hdr.extend(arg for arg in control_args if ':' not in arg)
   if not hdr:
     logging.critical("Can't use --gnuplot without supplying controls to read "
-                     "on command line")
+                     'on command line')
     sys.exit(-1)
   print GNUPLOT_PREFIX + ' seconds ' + ' seconds '.join(hdr)
 
@@ -239,7 +238,7 @@ def do_iteration(requests, options, sclient, stats):
     results = sclient.set_get_all(requests)
 
   if options.print_time:
-    time_str = "%.4f " % (time.time() - _start_time)
+    time_str = '%.4f ' % (time.time() - _start_time)
 
   for i, result in enumerate(results):
     control = requests[i]
@@ -255,13 +254,13 @@ def do_iteration(requests, options, sclient, stats):
         pass
 
     if options.verbose:
-      out_list.append("%s%s %s -> %s" % (time_str, request_type.upper(),
+      out_list.append('%s%s %s -> %s' % (time_str, request_type.upper(),
                                          control, result))
     elif request_type is not 'set':
       if options.gnuplot:
-        out_list.append("%s%s" % (time_str, result))
+        out_list.append('%s%s' % (time_str, result))
       else:
-        out_list.append("%s%s:%s" % (time_str, control, result))
+        out_list.append('%s%s:%s' % (time_str, control, result))
 
   # format of gnuplot is <seconds_val1> <val1> <seconds_val2> <val2> ... such
   # that plotting can then be done with time on x-axis, value on y-axis.  For
@@ -270,9 +269,9 @@ def do_iteration(requests, options, sclient, stats):
   #   plot   "file.out" using 1:2 with linespoint
   #   replot "file.out" using 3:4 with linespoint
   if options.gnuplot:
-    out_str = " ".join(out_list)
+    out_str = ' '.join(out_list)
   else:
-    out_str = "\n".join(out_list)
+    out_str = '\n'.join(out_list)
 
   iter_time_msecs = (time.time() - sample_start) * 1000
   stats[TIME_KEY].append(iter_time_msecs)
@@ -302,7 +301,7 @@ def iterate(controls, options, sclient):
 
   for _ in iterate_over:
     iter_output = do_iteration(controls, options, sclient, stats)
-    if iter_output: # Avoid printing empty lines
+    if iter_output:  # Avoid printing empty lines
       print iter_output
 
   if (options.repeat != 1) or (options.time_in_secs > 0):
@@ -317,9 +316,9 @@ def real_main():
   loglevel = logging.INFO
   if options.debug:
     loglevel = logging.DEBUG
-  logging.basicConfig(level=loglevel,
-                      format="%(asctime)s - %(name)s - " +
-                      "%(levelname)s - %(message)s")
+  logging.basicConfig(
+      level=loglevel,
+      format='%(asctime)s - %(name)s - ' + '%(levelname)s - %(message)s')
   logger = logging.getLogger()
   multiservo.get_env_options(logger, options)
   rc = multiservo.parse_rc(logger, options.rcfile)
@@ -355,7 +354,7 @@ def real_main():
 
   if options.ftdii2c:
     if not len(args):
-      print "Usage: dut-control --ftdii2c [method of Fi2c]"
+      print 'Usage: dut-control --ftdii2c [method of Fi2c]'
       return
 
     sclient.ftdii2c(args)
@@ -386,6 +385,7 @@ def main():
   except SocketError as e:
     sys.stderr.write(e.strerror + '\n')
     sys.exit(1)
+
 
 # global start time for script
 _start_time = 0

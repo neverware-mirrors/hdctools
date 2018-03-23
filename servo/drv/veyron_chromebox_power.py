@@ -5,6 +5,7 @@
 import power_state
 import time
 
+
 class veyronChromeboxPower(power_state.PowerStateDriver):
   """Driver for power_state for the veyron chromebox boards.
 
@@ -17,7 +18,7 @@ class veyronChromeboxPower(power_state.PowerStateDriver):
   _RECOVERY_DETECTION_DELAY = 2.5
 
   # Time in seconds to wait device off when cold_reset:on
-  _POWER_OFF_DETECTION_DELAY= 1
+  _POWER_OFF_DETECTION_DELAY = 1
 
   def _power_off(self):
     """Power off the DUT.

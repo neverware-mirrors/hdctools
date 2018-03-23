@@ -5,7 +5,6 @@
 """
 import logging
 
-
 # dictionary key'd off (interface, slv) with value == Ina219 instance such that
 # multiple controls that map to same physical IC on same I2C bus share one
 # object.  This caching allows object to keep track of stateful things about the
@@ -19,6 +18,7 @@ class I2cRegError(Exception):
 
 class I2cReg(object):
   """Provides methods for devices with registered indexing over i2c."""
+
   def __init__(self, i2c, slave, addr_len=1, reg_len=2, msb_first=True,
                no_read=False, use_reg_cache=False):
     """I2cReg constructor.
@@ -37,7 +37,7 @@ class I2cReg(object):
     Raises:
       ValueError: if addr_len is != 1
     """
-    self._logger = logging.getLogger("I2cReg")
+    self._logger = logging.getLogger('I2cReg')
     self._i2c = i2c
     self._slave = slave
     self._addr_len = addr_len
@@ -49,10 +49,10 @@ class I2cReg(object):
 
     # TODO(tboch) fixme addr_len unused
     if self._addr_len != 1:
-      raise ValueError("address length must be 1")
+      raise ValueError('address length must be 1')
     # 7-bit i2c has 112 valid slaves addresses from 0x8 -> 0x77 only
     if (slave < 0x8) or (slave > 0x77):
-      raise I2cRegError("slave addr range should be within (8,119)")
+      raise I2cRegError('slave addr range should be within (8,119)')
 
   @classmethod
   def get_device(cls, i2c, slave, addr_len, reg_len, msb_first, no_read,
@@ -81,7 +81,7 @@ class I2cReg(object):
                     use_reg_cache)
       _devices[key] = dev_obj
     return dev_obj
-    
+
   def _read_reg(self, reg):
     """Read the register.
     
@@ -91,7 +91,7 @@ class I2cReg(object):
     Returns:
       integer value read from i2c reg
     """
-    self._logger.debug("")
+    self._logger.debug('')
     rlist = self._wr_rd(reg, [], self._reg_len)
     return self._convert_rd(rlist, self._msb_first)
 
@@ -105,13 +105,13 @@ class I2cReg(object):
     Returns:
       integer value read after the write of reg
     """
-    self._logger.debug("")
+    self._logger.debug('')
     wlist = []
     for _ in xrange(self._reg_len):
       wlist.append(value & 0xff)
       value = value >> 8
-    if value != 0: 
-      raise ValueError("write reg value larger than register")
+    if value != 0:
+      raise ValueError('write reg value larger than register')
     if self._msb_first:
       wlist.reverse()
 
@@ -146,7 +146,7 @@ class I2cReg(object):
 
     value = 0
     for cnt, byte in enumerate(rlist):
-      assert (byte & 0xff) == byte, "byte range is 0 -> 255"
+      assert (byte & 0xff) == byte, 'byte range is 0 -> 255'
       value |= byte << (cnt * 8)
     return value
 
@@ -163,11 +163,11 @@ class I2cReg(object):
     """
     # checked the last register access ... if same can remove from
     # operation if device keeps last index.
-    self._logger.debug("")
+    self._logger.debug('')
     if not self._use_reg_cache or reg != self._reg:
       wlist = [reg] + wlist
     else:
-      self._logger.debug("Ignoring register index %d is cached" % reg)
+      self._logger.debug('Ignoring register index %d is cached' % reg)
 
     rlist = self._i2c.wr_rd(self._slave, wlist, rcnt)
     if self._use_reg_cache:

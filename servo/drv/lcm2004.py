@@ -1,12 +1,10 @@
 # Copyright (c) 2014 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """ Text-based LCD module driver for LCM2004."""
 
 # servo libs
 import hw_driver
-
 
 # commands
 LCD_CLEAR_DISPLAY = 0x01
@@ -77,6 +75,7 @@ class Lcm2004Device(object):
   Public Attributes:
     backlight_value: value indicating if a device has backlight.
   """
+
   def __init__(self):
     self.backlight_value = LCD_BACKLIGHT_ON
 
@@ -133,12 +132,12 @@ class lcm2004(hw_driver.HwDriver):
     self._command(LCD_FUNCTION_SET | LCD_4BIT_MODE | LCD_2LINE | LCD_5x8_DOTS)
 
     # turn on the display with cursor
-    self._command(LCD_DISPLAY_CONTROL | LCD_DISPLAY_ON |
-                  LCD_CURSOR_ON | LCD_BLINK_OFF)
+    self._command(LCD_DISPLAY_CONTROL | LCD_DISPLAY_ON | LCD_CURSOR_ON
+                  | LCD_BLINK_OFF)
 
     # entry mode set
-    self._command(LCD_ENTRY_MODE_SET | LCD_ENTRY_LEFT |
-                  LCD_ENTRY_SHIFT_DECREMENT)
+    self._command(LCD_ENTRY_MODE_SET | LCD_ENTRY_LEFT
+                  | LCD_ENTRY_SHIFT_DECREMENT)
 
     self._home()
 
@@ -266,8 +265,8 @@ class lcm2004(hw_driver.HwDriver):
     if row >= lcm2004.ROW:
       raise LcmError('Row number(%d) is out of range(0-3).' % row)
 
-    self._command(LCD_SET_DDRAM_ADDR |
-                  (lcm2004.ROW_ADDR_OFFSET[min(row, lcm2004.ROW - 1)]))
+    self._command(LCD_SET_DDRAM_ADDR
+                  | (lcm2004.ROW_ADDR_OFFSET[min(row, lcm2004.ROW - 1)]))
 
   def _Set_lcm_cmd(self, cmd):
     """Sends command to LCM.

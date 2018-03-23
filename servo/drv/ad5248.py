@@ -29,10 +29,13 @@ For subtype 'r2p5k', 'r10k', 'r50k', 'r100k':
 import hw_driver
 
 WIPER_RESISTANCE = 160
-FULL_RESISTANCE_SPEC = {'r2p5k': 2500,
-                        'r10k': 10000,
-                        'r50k': 50000,
-                        'r100k': 100000}
+FULL_RESISTANCE_SPEC = {
+    'r2p5k': 2500,
+    'r10k': 10000,
+    'r50k': 50000,
+    'r100k': 100000
+}
+
 
 class Ad5248Error(Exception):
   """Error occurred accessing AD5248."""
@@ -69,7 +72,7 @@ class ad5248(hw_driver.HwDriver):
       slave: 7-bit i2c address.
     """
     if 'slv' not in self._params:
-      raise Ad5248Error("getting slave address")
+      raise Ad5248Error('getting slave address')
     slave = int(self._params['slv'], 0)
     return slave
 
@@ -80,10 +83,10 @@ class ad5248(hw_driver.HwDriver):
       port: port ( 0 | 1 ) on the ad5248.
     """
     if 'port' not in self._params:
-      raise Ad5248Error("getting port")
+      raise Ad5248Error('getting port')
     port = int(self._params['port'], 0)
     if port & 0x1 != port:
-      raise Ad5248Error("port value should be 0 | 1")
+      raise Ad5248Error('port value should be 0 | 1')
     return port
 
   def _get_subtype(self):
@@ -93,11 +96,11 @@ class ad5248(hw_driver.HwDriver):
       subtype: subtype for full resistance spec.
     """
     if 'subtype' not in self._params:
-      raise Ad5248Error("getting subtype")
+      raise Ad5248Error('getting subtype')
     subtype = self._params['subtype']
     if subtype != 'rdac' and subtype not in FULL_RESISTANCE_SPEC:
-      raise Ad5248Error("subtype value should be 'rdac' or %s" %
-                        FULL_RESISTANCE_SPEC.keys())
+      raise Ad5248Error(
+          "subtype value should be 'rdac' or %s" % FULL_RESISTANCE_SPEC.keys())
     return subtype
 
   def _set_rdac(self, byte):
@@ -110,7 +113,7 @@ class ad5248(hw_driver.HwDriver):
     if isinstance(byte, str):
       byte = int(byte, 0)
     if not 0 <= byte <= 255:
-      raise Ad5248Error("setting value out of range 0~255")
+      raise Ad5248Error('setting value out of range 0~255')
     self._interface.wr_rd(self._slave, [self._port << 7, byte])
 
   def _set_resistance_value(self, value):
@@ -128,7 +131,7 @@ class ad5248(hw_driver.HwDriver):
     lsb_value = full_resistance / 256
     max_value = full_resistance + 2 * WIPER_RESISTANCE - lsb_value
     if not 0 <= value <= max_value:
-      raise Ad5248Error("setting value out of range 0~%d" % max_value)
+      raise Ad5248Error('setting value out of range 0~%d' % max_value)
     if value <= 2 * WIPER_RESISTANCE:
       write_byte = 0
     else:
