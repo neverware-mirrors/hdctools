@@ -24,7 +24,7 @@
   <control>
     <name>power_state</name>
     <doc>Used to turn the DUT off and on</doc>
-    <params clobber_ok="" reset_recovery="0.5"/>
+    <params clobber_ok="" shutdown_delay="11.0" reset_recovery="0.5"/>
   </control>
   <control>
     <name>lid_open</name>
