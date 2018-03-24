@@ -47,6 +47,8 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
         self._params.get('boot_to_rec_screen_delay', 5.0))
     self._warm_reset_can_hold_ap = ('yes' == self._params.get(
         'warm_reset_can_hold_ap', 'yes'))
+    self._role_swap_delay = float(
+        self._params.get('role_swap_delay', 1.0))
 
   def _power_on_ap(self):
     """Power on the AP after initializing recovery state."""
@@ -122,7 +124,7 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
       #
       # This is needed because the data role swaps normally don't happen in
       # EC_RO (which is the image we MUST be in for entering recovery mode).
-      if 'servo_v4_with_ccd_cr50' in self._interface.get('servo_type'):
+      if 'ccd' in self._interface.get('servo_type'):
         try:
           # Check current data role.  Assuming port 0 is the CCD port.
           cmd = 'pd 0 state'
@@ -133,6 +135,17 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
           self._interface.set('ec_uart_regexp', 'None')
           cmd = 'pd 0 swap data'
           self._interface.set('ec_uart_cmd', cmd)
+
+          # Did it work?
+          try:
+            time.sleep(self._role_swap_delay)
+            cmd = 'pd 0 state'
+            self._interface.set('ec_uart_regexp', '["DFP"]')
+            self._interface.set('ec_uart_cmd', 'pd 0 state')
+            self._logger.debug('Checking data role swap...')
+            self._interface.set('ec_uart_regexp', 'None')
+          except Exception as e:
+            self._logger.error('DUT cannot enable DFP!')
         except Exception as e:
           # Assuming the DUT's data role is already a DFP.
           self._logger.debug('DUT\'s port may already be a DFP.')
