@@ -233,7 +233,8 @@ for board in ['elm', 'hana', 'oak', 'samus']:
 
 # re-purposes JTAG to be UART for USBPD MCU or H1
 for board in [
-    'asuka', 'caroline', 'cave', 'chell', 'eve', 'fizz', 'glados', 'grunt',
+    'asuka', 'atlas',
+    'caroline', 'cave', 'chell', 'eve', 'fizz', 'glados', 'grunt',
     'kunimitsu', 'lars', 'meowth', 'nami', 'nautilus', 'pbody', 'poppy', 'reef',
     'scarlet', 'sentry', 'soraka', 'strago', 'zoombini'
 ]:
