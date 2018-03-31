@@ -94,6 +94,7 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
       finally:
         self._interface.set('ec_uart_regexp', 'None')
 
+      self._logger.debug('Reset recovery wait: %s', self._reset_recovery_time)
       time.sleep(self._reset_recovery_time)
 
       if self._warm_reset_can_hold_ap:
@@ -111,6 +112,7 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
         self._interface.set('ec_uart_regexp', 'None')
 
     # Tell the EC to tell the CPU we're in recovery mode or non-recovery mode.
+    self._logger.debug('Hostevent delay: %s', self._hostevent_delay)
     time.sleep(self._hostevent_delay)
     cmd = self._REC_TYPE_HOSTEVENT_CMD_DICT[rec_type]
     try:
@@ -118,10 +120,14 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
       self._interface.set('ec_uart_cmd', cmd)
     finally:
       self._interface.set('ec_uart_regexp', 'None')
+    self._logger.debug('Recovery detection delay: %s',
+        self._RECOVERY_DETECTION_DELAY)
     time.sleep(self._RECOVERY_DETECTION_DELAY)
     self._power_on_ap()
     if rec_mode == self.REC_ON:
       # Allow time to reach the recovery screen before yielding control.
+      self._logger.debug('Boot to rec screen delay: %s',
+          self._boot_to_rec_screen_delay)
       time.sleep(self._boot_to_rec_screen_delay)
 
       # If we are using CCD, make sure the DUT's Type-C port is a DFP so that
@@ -148,6 +154,8 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
 
           # Did it work?
           try:
+            self._logger.debug('Role swap delay: %s',
+                self._role_swap_delay)
             time.sleep(self._role_swap_delay)
             cmd = 'pd 0 state'
             self._interface.set('ec_uart_regexp', '["DFP"]')
