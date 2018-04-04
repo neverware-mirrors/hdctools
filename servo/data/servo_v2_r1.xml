@@ -38,4 +38,10 @@
     <params interface="2" drv="tca6416" slv="0x24" port="0"
     offset="5" map="vref_sel1" init="off"></params>
   </control>
+  <control>
+    <name>usbpd_uart_routing</name>
+    <doc>override enable pd uart routing</doc>
+    <params subtype="not_applicable" interface="servo" drv="na" input_type="str"
+    clobber_ok=""></params>
+  </control>
 </root>

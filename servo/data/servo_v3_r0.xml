@@ -645,4 +645,10 @@
     <params interface="servo" drv="fw_wp_servoflex" input_type="str"
     fw_wp_vref="pp1800"/>
   </control>
+  <control>
+    <name>usbpd_uart_routing</name>
+    <doc>override enable pd uart routing</doc>
+    <params subtype="not_applicable" interface="servo" drv="na" input_type="str"
+    clobber_ok=""></params>
+  </control>
 </root>
