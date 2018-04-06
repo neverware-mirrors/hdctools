@@ -27,12 +27,6 @@
     <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
     drv="cros_chip" chip="npcx_spi"/>
   </control>
-  <control>
-    <name>usbpd_uart_routing</name>
-    <doc>override enable pd uart routing</doc>
-    <params subtype="not_applicable" interface="servo" drv="na" map="na"
-    init="not_applicable" clobber_ok=""></params>
-  </control>
    <!-- cr50 UART Buffers & VREF Controls -->
   <control>
     <name>jtag_vref_sel0</name>
