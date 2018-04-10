@@ -261,16 +261,18 @@ class SweetberryINAConfigGenerator(INAConfigGenerator):
         board_content: json list of dictionaries describing INAs used
         scenario_content: json list of INA names in board_content
     """
-    adc_lines = ''
+    adc_list = []
     rails = []
     for (drvname, slv, name, nom, sense, mux, is_calib) in adcs:
-      adc_lines = '%s%s\n' % (adc_lines,
-                              json.dumps({'name': name,
-                                          'rs': float(sense),
-                                          'sweetberry': 'A',
-                                          'channel': slv - 64}))
+      if not isinstance(slv, int):
+        slv = int(slv, 0)
+      adc_list.append('  %s' % json.dumps({'name': name,
+                                           'rs': float(sense),
+                                           'sweetberry': 'A',
+                                           'channel': slv - 64}))
       rails.append(name)
-    return ('[\n%s]' % adc_lines,
+    adc_lines = ',\n'.join(adc_list)
+    return ('[\n%s\n]' % adc_lines,
             json.dumps(rails, indent=2))
 
   def ExportConfig(self, outdir):
