@@ -1,0 +1,61 @@
+<root>
+  <include>
+    <name>servoflex_v2_r0_p50.xml</name>
+  </include>
+  <include>
+    <name>arm_ec_common.xml</name>
+  </include>
+  <include>
+    <name>cr50.xml</name>
+  </include>
+  <include>
+    <name>detachable.xml</name>
+  </include>
+
+  <!-- ******** Controls ******** -->
+
+  <!--
+    Simple property indicating what model of EC we have.  We use a Nuvoton EC
+    and the UART programmer, hence "npcx_uut".
+  -->
+  <control>
+    <name>ec_chip</name>
+    <doc>EC chip name (read-only)</doc>
+    <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
+    drv="cros_chip" chip="npcx_uut"/>
+  </control>
+
+  <!--
+    Add a massive shutdown_delay because other similar boards have it, so we
+    probably need it too.  Speculation is that this is due to b/76229658,
+    AKA: 'Cr50 drops a bunch of characters from EC uart on "apshutdown"'.
+
+    The 'reset_recovery="0.5"' seems redundant since it's already in
+    ec_common.xml (which is included by arm_ec_common.xml), but for some reason
+    everyone else likes to put it here so I guess we should too?
+  -->
+  <control>
+    <name>power_state</name>
+    <doc>Used to turn the DUT off and on</doc>
+    <params clobber_ok="" shutdown_delay="11.0" reset_recovery="0.5"/>
+  </control>
+
+  <!--
+    If you have the rework, this lets you choose between SD and SPI for
+    firmware. It repurposes the original "rec_mode" pin as "cpu_boot_mode".
+
+    NOTE: Without the rework, you'll end up with SPI boot, but if you have a
+    a fully erased SPI it appears to fall back to SD anyway.
+  -->
+  <map>
+    <name>sd_spi</name>
+    <doc>Choose between SD and SPI</doc>
+    <params spi="1" sd="0"></params>
+  </map>
+  <control>
+    <name>rec_mode</name>
+    <alias>cpu_boot_mode</alias>
+    <doc>Google SPI boot mode</doc>
+    <params map="sd_spi" init="sd" clobber_ok=""></params>
+  </control>
+</root>
