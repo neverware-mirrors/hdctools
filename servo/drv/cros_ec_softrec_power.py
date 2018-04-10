@@ -51,6 +51,8 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
         self._params.get('hostevent_delay', 0.1))
     self._warm_reset_can_hold_ap = ('yes' == self._params.get(
         'warm_reset_can_hold_ap', 'yes'))
+    self._wait_ext_is_fake = ('yes' == self._params.get(
+        'wait_ext_is_fake', 'no'))
     self._role_swap_delay = float(
         self._params.get('role_swap_delay', 1.0))
 
@@ -68,6 +70,8 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
         self._interface.set('warm_reset', 'on')
 
       try:
+        if self._wait_ext_is_fake:
+          raise Exception("wait-ext isn't supported")
         # Before proceeding, we should really check that the EC has reset from
         # our command.  Pexpect is minimally greedy so we won't be able to match
         # the exact reset cause string.  But, this should be good enough.
@@ -123,6 +127,7 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
     self._logger.debug('Recovery detection delay: %s',
         self._RECOVERY_DETECTION_DELAY)
     time.sleep(self._RECOVERY_DETECTION_DELAY)
+
     self._power_on_ap()
     if rec_mode == self.REC_ON:
       # Allow time to reach the recovery screen before yielding control.
