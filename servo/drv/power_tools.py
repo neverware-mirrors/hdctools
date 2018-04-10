@@ -8,7 +8,7 @@ import logging
 import re
 
 
-class PowerTools(hw_driver.HwDriver):
+class powerTools(hw_driver.HwDriver):
   """Implement commands that pertain to power measurement.
 
   Attributes:
@@ -58,7 +58,7 @@ class PowerTools(hw_driver.HwDriver):
     """
     if not self._rails_init:
       self._InitRails()
-    rails = self._rails[rail_type]
+    rails = self._rails[reg_type]
     if suffix:
       rails = ['%s_%s' % (rail, suffix) for rail in rails]
     return rails
