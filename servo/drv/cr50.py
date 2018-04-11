@@ -153,6 +153,12 @@ class cr50(pty_driver.ptyDriver):
       raise cr50Error('Cannot retrieve power button result on cr50 console.')
     return 1 if result[1] == 'released' else 0
 
+
+  def _Set_pwr_button(self, value):
+    """CCD doesn't support pwr_button. Tell user about pwr_button_hold"""
+    raise cr50Error('pwr_button not supported use pwr_button_hold')
+
+
   def _Get_reset_count(self):
     """Getter of reset count.
 

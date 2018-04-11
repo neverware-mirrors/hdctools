@@ -80,7 +80,7 @@
   <control>
     <name>pwr_button</name>
     <doc>Power button GPIO</doc>
-    <params cmd="get" subtype="pwr_button" interface="9" drv="cr50" map="press"
+    <params subtype="pwr_button" interface="9" drv="cr50" map="press"
     clobber_ok=""></params>
   </control>
   <control>
