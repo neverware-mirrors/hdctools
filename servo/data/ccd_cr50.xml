@@ -122,7 +122,14 @@
     init="not_applicable" clobber_ok=""></params>
   </control>
   <control>
-    <name>ccd_ec_boot_mode</name>
+    <name>ccd_ec_boot_mode_uut</name>
+    <alias>ec_boot_mode_uut</alias>
+    <doc>UUT boot mode GPIO.</doc>
+    <params subtype="uut_boot_mode" interface="9" drv="cr50" map="onoff_i"
+    init="off" />
+  </control>
+  <control>
+    <name>ccd_ec_boot_mode_bitbang</name>
     <alias>ec_boot_mode,fw_up</alias>
     <doc>EC boot mode GPIO.</doc>
     <params subtype="ec_boot_mode" interface="9" drv="cr50" map="onoff"

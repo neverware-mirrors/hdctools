@@ -12,6 +12,7 @@ Provides the following Cr50 controlled function:
 import functools
 import logging
 import pty_driver
+import re
 
 # cr50 firmware versions verified compatible with servod
 VALID_VERSIONS = ['0.1.0/cr50_v1.9308_B.293-ad55183']
@@ -353,3 +354,12 @@ class cr50(pty_driver.ptyDriver):
 
   def _Set_ec_boot_mode(self, value):
     self._issue_cmd('gpioset EC_FLASH_SELECT %s' % value)
+
+  def _Get_uut_boot_mode(self):
+    result = self._issue_cmd_get_results('gpiocfg', ['gpiocfg(.*)>'])[0][0]
+    if re.search('GPIO0_GPIO15:\s+read 0 drive 0', result):
+        return 'on'
+    return 'off'
+
+  def _Set_uut_boot_mode(self, value):
+    self._issue_cmd('gpioset EC_TX_CR50_RX_OUT %s' % value)
