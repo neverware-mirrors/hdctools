@@ -141,6 +141,8 @@ class PowerStateDriver(hw_driver.HwDriver):
     Reboot cr50 and reset ccd to recover from the usb reset.
     """
     self._interface.set('cr50_reboot', 'on')
+    # Wait long enough for cr50 to reboot and for usb to have dropped out.
+    time.sleep(1)
     self._reset_ccd()
 
   def set(self, statename):
