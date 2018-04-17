@@ -90,8 +90,12 @@ class EC3PO(uart.Uart):
     os.fchown(user_pty, uid, gid)
     os.fchown(control_pty, uid, gid)
 
+    # Close pts to indicate HUP to ec3po.
+    user_pty_name = os.ttyname(user_pty)
+    os.close(user_pty)
+
     # Create a console.
-    c = ec3po.console.Console(master_pty, os.ttyname(user_pty), interface_pty,
+    c = ec3po.console.Console(master_pty, user_pty_name, interface_pty,
                               cmd_pipe_interactive, dbg_pipe_interactive)
     self._console = c
     c._logger = logging.getLogger('Console')
@@ -106,14 +110,14 @@ class EC3PO(uart.Uart):
     console_process.start()
     self._logger.debug('Console: %s', self._console)
 
-    self._logger.debug('User console: %s', os.ttyname(user_pty))
+    self._logger.debug('User console: %s', user_pty_name)
     self._logger.debug('Control console: %s', os.ttyname(control_pty))
-    self._pty = os.ttyname(user_pty)
+    self._pty = user_pty_name
     self._control_pty = os.ttyname(control_pty)
     self._cmd_pipe_int = cmd_pipe_interactive
 
     self._logger.info('-------------------- %s console on: %s', self._source,
-                      os.ttyname(user_pty))
+                      user_pty_name)
 
   def get_pty(self):
     """Gets the path of the served PTY."""
