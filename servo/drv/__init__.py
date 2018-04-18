@@ -8,7 +8,6 @@ Details of the drivers can be found in hw_driver.py
 """
 import ad5248
 import alex_power
-import arm_ec
 import beltino_power
 import cr50
 import cros_chip
