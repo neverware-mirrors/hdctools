@@ -209,6 +209,13 @@ def _print_gnuplot_header(control_args):
   print GNUPLOT_PREFIX + ' seconds ' + ' seconds '.join(hdr)
 
 
+def _pretty_print_result(result):
+  if isinstance(result, list):
+    return ', '.join(result)
+  if isinstance(result, dict):
+    return '\n'.join(['%s: %s' % (k, v) for k, v in result.iteritems()])
+  return result
+
 def do_iteration(requests, options, sclient, stats):
   """Perform one iteration across the controls.
 
@@ -252,6 +259,10 @@ def do_iteration(requests, options, sclient, stats):
         stats[control].append(float(result))
       except ValueError:
         pass
+      except TypeError:
+        pass
+
+    result = _pretty_print_result(result)
 
     if options.verbose:
       out_list.append('%s%s %s -> %s' % (time_str, request_type.upper(),

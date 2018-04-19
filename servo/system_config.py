@@ -428,18 +428,20 @@ class SystemConfig(object):
     Formatting determined via:
       1. if has map, then remap
       2. else if has fmt param, use that function
-      3. else, just convert to str
 
     Args:
       params: parameter dictionary for control
       value: value to reformat
 
     Returns:
-      formatted string value.
+      formatted string value if reformatting needed
+      value otherwise
 
     Raises:
       SystemConfigError: errors using formatting param
     """
+    if 'map' not in params and 'fmt' not in params:
+      return value
     reformat_value = str(value)
     if 'map' in params:
       map_dict = self._lookup('map', params['map'])

@@ -33,9 +33,6 @@ class servoMetadata(hw_driver.HwDriver):
 
   def _Get_config_files(self):
     """Gets the configuration files used for this servo server invocation"""
-    files = []
     xml_files = self._interface._syscfg._loaded_xml_files
     # See system_config.py for schema, but entry[0] is the file name
-    for entry in xml_files:
-      files.append(entry[0])
-    return ', '.join(files)
+    return [entry[0] for entry in xml_files]
