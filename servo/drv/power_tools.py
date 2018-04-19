@@ -13,19 +13,25 @@ class powerTools(hw_driver.HwDriver):
 
   Attributes:
     _rails: dictionary to cache rail information
-
+    _rails_init: flag to indicate if cache is initialized
   """
 
   _rails = {}
+  _rails_init = False
 
   def __init__(self, interface, params):
-    """Init powerTools by setting init to False, and clearing cache."""
+    """Init powerTools by storing suffix and reg_type info for command.
+
+    Since each command gets their own drv instance, store the suffix (e.g. _mv)
+    for the command, and the reg_type (e.g. 'calib') in the class for later
+    retrieval.
+    """
     super(powerTools, self).__init__(interface, params)
     self._logger = logging.getLogger('')
     self._interface = interface
     self._params = params
-    self._rails = {}
-    self._rails_init = False
+    self._reg_type = params['reg_type']
+    self._suffix = params.get('suffix', '')
 
   def _InitRails(self):
     """Helper function to parse out INA power measurement rails."""
@@ -38,9 +44,9 @@ class powerTools(hw_driver.HwDriver):
     # Take the union of mw rails and shuntmv rails to remove _mw ec controls,
     # like ppvar_vbat_mw, and also INA rails that are marked as non-calib.
     mw_rails = mw_rails & shuntmv_rails
-    self._rails['all'] = list(shuntmv_rails)
-    self._rails['calib'] = list(mw_rails)
-    self._rails_init = True
+    powerTools._rails['all'] = list(shuntmv_rails)
+    powerTools._rails['calib'] = list(mw_rails)
+    powerTools._rails_init = True
 
   def _RetrieveRails(self, reg_type, suffix=''):
     """Retrieve rails by checking cache and on miss populating it.
@@ -56,39 +62,18 @@ class powerTools(hw_driver.HwDriver):
       list of all rails under |reg_type| with _|suffix| appended to each
       name, making it a list of servod controls.
     """
-    if not self._rails_init:
+    if not powerTools._rails_init:
       self._InitRails()
-    rails = self._rails[reg_type]
+    rails = powerTools._rails[reg_type]
     if suffix:
       rails = ['%s_%s' % (rail, suffix) for rail in rails]
     return rails
 
-  def _Get_current_rails(self):
-    """Prints a list of cmds to measure current on available rails."""
-    current_rails = self._RetrieveRails('calib', 'ma')
-    return ', '.join(current_rails)
+  def _Get_rails(self):
+    """Prints a list of rails according to reg_type and suffix param.
 
-  def _Get_power_rails(self):
-    """Prints a list of cmds to measure power on available rails."""
-    mw_rails = self._RetrieveRails('calib', 'mw')
-    return ', '.join(mw_rails)
-
-  def _Get_shunt_voltage_rails(self):
-    """Prints a list of cmds to measure shunt voltage on available rails."""
-    shuntmv_rails = self._RetrieveRails('all', 'shuntmv')
-    return ', '.join(shuntmv_rails)
-
-  def _Get_bus_voltage_rails(self):
-    """Prints a list of cmds to measure bus voltage on available rails."""
-    mv_rails = self._RetrieveRails('all', 'mv')
-    return ', '.join(mv_rails)
-
-  def _Get_raw_rails(self):
-    """Prints a list of cmd prefixes for all INA rails."""
-    rails = self._RetrieveRails('all')
-    return ', '.join(rails)
-
-  def _Get_raw_calib_rails(self):
-    """Prints a list of cmd prefixes for all INA rails marked calib."""
-    rails = self._RetrieveRails('calib')
-    return ', '.join(rails)
+    A valid suffix makes the return a string of valid servod commands,
+    while an empty suffix simply returns a list of stubs showing what
+    rails are configured on the servod instance.
+    """
+    return self._RetrieveRails(self._reg_type, self._suffix)
