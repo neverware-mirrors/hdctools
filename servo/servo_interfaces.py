@@ -238,6 +238,7 @@ for board in [
     'cave',
     'chell',
     'cheza',
+    'cheza_r0',
     'eve',
     'fizz',
     'glados',
