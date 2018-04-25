@@ -15,6 +15,7 @@ import cros_ec_hardrec_power
 import cros_ec_pd_softrec_power
 import cros_ec_power
 import cros_ec_softrec_power
+import cros_ec_hardrec_pbinitidle_power
 import daisy_ec
 import daisy_power
 import ec
