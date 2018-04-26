@@ -259,4 +259,9 @@
     <params subtype="servo_v4_ccd_keepalive" interface="26" drv="ec3po_servo_v4"
             map="onoff" init="on"></params>
   </control>
+  <control>
+    <name>fw_wp_state</name>
+    <doc>Used to turn fw wp off and on</doc>
+    <params clobber_ok="" init="force_off"></params>
+  </control>
 </root>
