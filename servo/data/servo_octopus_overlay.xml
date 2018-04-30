@@ -1,5 +1,8 @@
 <root>
   <include>
+    <name>cr50.xml</name>
+  </include>
+  <include>
     <name>servo_reef_overlay.xml</name>
   </include>
 </root>

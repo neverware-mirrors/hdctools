@@ -248,6 +248,7 @@ for board in [
     'meowth',
     'nami',
     'nautilus',
+    'octopus',
     'pbody',
     'poppy',
     'reef',
