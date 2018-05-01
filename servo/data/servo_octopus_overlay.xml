@@ -5,4 +5,7 @@
   <include>
     <name>servo_reef_overlay.xml</name>
   </include>
+  <include>
+    <name>octopus_r0_inas.xml</name>
+  </include>
 </root>
