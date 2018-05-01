@@ -73,15 +73,19 @@ class Uart(object):
     tty.setraw(uart_fd)
 
     buffer_overflow = False
+    capture_pause_count = 0
 
     while self._capture_active and self._parent_thread.is_alive():
       # The pty_driver may pause capture, so it may be searching the console
       # output and wants to prevent capture from consuming that. Wait to read
       # from the pty until capture is resumed.
       if self._capture_paused:
-        self._logger.debug('capture paused')
-        time.sleep(.1)
+        if (capture_pause_count % 10) == 0:
+            self._logger.debug('capture paused %d', capture_pause_count)
+        capture_pause_count += 1
+        time.sleep(.01)
         continue
+      capture_pause_count = 0
       try:
         data = os.read(uart_fd, 100)
       except OSError, e:
