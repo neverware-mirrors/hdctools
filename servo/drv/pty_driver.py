@@ -178,9 +178,11 @@ class ptyDriver(hw_driver.HwDriver):
     result_list = []
 
     with self._open():
-      # Make sure uart capture does not interfere with matching the expected
-      # response
-      self._interface.pause_capture()
+      # If there is no command interface, make sure console capture isn't active
+      # while trying to read command output. If it was it might read the output
+      # the command expects and then the command would timeout.
+      if not self._cmd_iface:
+        self._interface.pause_capture()
       try:
         self._send(cmds)
         self._logger.debug('Sent cmds: %s' % cmds)
