@@ -248,6 +248,7 @@ for board in [
     'meowth',
     'nami',
     'nautilus',
+    'nocturne',
     'octopus',
     'pbody',
     'poppy',
