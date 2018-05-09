@@ -33,6 +33,7 @@ SERVO_PID_DEFAULTS = OrderedDict([
     ('servo_v4', [0x501b]),
     ('servo_micro', [0x501a]),  # should be below servo_v4
     ('ccd_cr50', [0x5014]),  # should be below servo_v4
+    ('sweetberry',[0x5020]),
     ('toad_v1', [0x6015]),  # Vendor ID is 0x403 : FTDI
     ('reston', [0x5007]),
     ('fruitpie', [0x5009]),
@@ -47,6 +48,7 @@ SERVO_CONFIG_DEFAULTS = \
      'servo_v3': ['servo_v3_r0.xml'],
      'servo_v4': ['servo_v4.xml'],
      'servo_micro': ['servo_micro.xml'],
+     'sweetberry' : ['sweetberry.xml'],
      'ccd_cr50': ['ccd_cr50.xml'],
      'toad_v1': ['toad.xml'],
      'reston': ['reston.xml'],

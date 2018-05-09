@@ -102,6 +102,18 @@ for vid, pid in CCD_DEFAULTS:
       'raw_pty': 'raw_ec_uart_pty', 'source': 'EC'},
     ]
 
+# Sweetberry
+SWEETBERRY_ID_DEFAULTS = [(0x18d1, 0x5020)]
+for vid, pid in SWEETBERRY_ID_DEFAULTS:
+  INTERFACE_DEFAULTS[vid][pid] = \
+    ['dummy',
+     'dummy',
+     {'name': 'stm32_i2c', 'interface': 3},  # 2: i2c
+     {'name': 'stm32_uart', 'interface': 0}, # 3: sweetberry console
+    ]
+
+SERVO_ID_DEFAULTS.extend(SWEETBERRY_ID_DEFAULTS)
+
 # Servo micro
 SERVO_MICRO_DEFAULTS = [(0x18d1, 0x501a)]
 for vid, pid in SERVO_MICRO_DEFAULTS:

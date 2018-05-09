@@ -59,6 +59,7 @@ import servo_metadata
 import sleep
 import storm_power
 import stumpy_power
+import sweetberry
 import sx1505
 import sx1506
 import sx1506_v4
