@@ -440,7 +440,9 @@ class SystemConfig(object):
     Raises:
       SystemConfigError: errors using formatting param
     """
-    if 'map' not in params and 'fmt' not in params:
+    # TODO(crbug.com/841097): revisit logic for value here once
+    # resolution found on bug.
+    if value is not None and 'map' not in params and 'fmt' not in params:
       return value
     reformat_value = str(value)
     if 'map' in params:

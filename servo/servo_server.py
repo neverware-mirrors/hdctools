@@ -1051,8 +1051,8 @@ class Servod(object):
     except HwDriverError:
       self._logger.error('Setting %s -> %s' % (name, wr_val_str))
       raise
-    # TODO(tbroch) Figure out why despite allow_none=True for both xmlrpc server
-    # & client I still have to return something to appease the
+    # TODO(crbug.com/841097) Figure out why despite allow_none=True for both
+    # xmlrpc server & client I still have to return something to appease the
     # marshall/unmarshall
     return True
 
