@@ -1,0 +1,16 @@
+<root>
+  <!-- ******** Includes ******** -->
+  <include>
+    <name>octopus_common.xml</name>
+  </include>
+  <include>
+    <name>octopus_r0_npcx_inas.xml</name>
+  </include>
+  <!-- ******** Controls ******** -->
+  <control>
+    <name>ec_chip</name>
+    <doc>EC chip name (read-only)</doc>
+    <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
+    drv="cros_chip" chip="npcx_spi"/>
+  </control>
+</root>
