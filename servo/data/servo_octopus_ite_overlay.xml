@@ -3,7 +3,20 @@
   <include>
     <name>octopus_common.xml</name>
   </include>
+  <!-- ******** Maps ******** -->
+  <map>
+    <name>dut_i2c_mux</name>
+    <doc>Valid mux values for DUT's I2C buses</doc>
+    <params clobber_ok="" none="0" inas="1" ec_prog="2"></params>
+  </map>
   <!-- ******** Controls ******** -->
+  <control>
+    <name>dut_i2c_mux</name>
+    <doc>Controls 2-to-1 i2c mux (TCA9543) on dut switching between
+    inas and ec_prog.</doc>
+    <params clobber_ok="" interface="2" drv="pca9546" slv="0x70"
+    map="dut_i2c_mux"></params>
+  </control>
   <control>
     <name>ec_chip</name>
     <doc>EC chip name (read-only)</doc>
