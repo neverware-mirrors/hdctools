@@ -17,18 +17,21 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
   _REC_TYPE_REC_OFF = 'rec_off'
   _REC_TYPE_REC_OFF_CLEARB = 'rec_off_clearb'
   _REC_TYPE_FASTBOOT = 'fastboot'
+  _REC_TYPE_REC_ON_FORCE_MRC = 'rec_on_force_mrc'
 
   # Corresponding hostevent commands entered on the EC.
   _HOSTEVENT_CMD_REC_ON = 'hostevent set 0x4000'
   _HOSTEVENT_CMD_REC_OFF = 'hostevent clear 0x4000'
   _HOSTEVENT_CMD_REC_OFF_CLEARB = 'hostevent clearb 0x4000'
   _HOSTEVENT_CMD_FASTBOOT = 'hostevent set 0x1000000'
+  _HOSTEVENT_CMD_REC_ON_FORCE_MRC = 'hostevent set 0x20004000'
 
   _REC_TYPE_HOSTEVENT_CMD_DICT = {
       _REC_TYPE_REC_ON: _HOSTEVENT_CMD_REC_ON,
       _REC_TYPE_REC_OFF: _HOSTEVENT_CMD_REC_OFF,
       _REC_TYPE_REC_OFF_CLEARB: _HOSTEVENT_CMD_REC_OFF_CLEARB,
-      _REC_TYPE_FASTBOOT: _HOSTEVENT_CMD_FASTBOOT
+      _REC_TYPE_FASTBOOT: _HOSTEVENT_CMD_FASTBOOT,
+      _REC_TYPE_REC_ON_FORCE_MRC: _HOSTEVENT_CMD_REC_ON_FORCE_MRC
   }
 
   # Time in seconds to allow the EC to pick up the recovery
@@ -63,7 +66,7 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
 
   def _power_on_bytype(self, rec_mode, rec_type=_REC_TYPE_REC_ON):
     self._interface.set('ec_uart_cmd', '\r')
-    if rec_mode == self.REC_ON:
+    if rec_mode == self.REC_ON or rec_mode == self.REC_ON_FORCE_MRC:
       if self._warm_reset_can_hold_ap:
         # Hold warm reset so the AP doesn't boot when EC reboots.
         # Note that this only seems to work reliably for ARM devices.
@@ -129,7 +132,7 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
     time.sleep(self._RECOVERY_DETECTION_DELAY)
 
     self._power_on_ap()
-    if rec_mode == self.REC_ON:
+    if rec_mode == self.REC_ON or rec_mode == self.REC_ON_FORCE_MRC:
       # Allow time to reach the recovery screen before yielding control.
       self._logger.debug('Boot to rec screen delay: %s',
           self._boot_to_rec_screen_delay)
@@ -180,6 +183,8 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
   def _power_on(self, rec_mode):
     if rec_mode == self.REC_ON:
       rec_type = self._REC_TYPE_REC_ON
+    elif rec_mode == self.REC_ON_FORCE_MRC:
+      rec_type = self._REC_TYPE_REC_ON_FORCE_MRC
     else:
       rec_type = self._REC_TYPE_REC_OFF
 

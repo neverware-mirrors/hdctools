@@ -23,6 +23,8 @@ class PowerStateDriver(hw_driver.HwDriver):
     * 'reset' - Equivalent to 'off' followed by 'on'.
       Additionally, the EC will be reset as by the 'cold_reset'
       signal.
+    * 'rec_force_mrc' - Equivalent to 'rec', except that upon bootup,
+      the DUT will perform memory training.
 
   Actual implementation of the required behaviors is delegated to
   the methods `_power_off()` and `_power_on()`, which must be
@@ -37,9 +39,11 @@ class PowerStateDriver(hw_driver.HwDriver):
   _STATE_RESET_CYCLE = 'reset'
   _STATE_CCD_RESET = 'ccd_reset'
   _STATE_CR50_RESET = 'cr50_reset'
+  _STATE_REC_FORCE_MRC = 'rec_force_mrc'
 
   REC_ON = 'on'
   REC_OFF = 'off'
+  REC_ON_FORCE_MRC = 'force_mrc'
 
   def __init__(self, interface, params):
     """Constructor.
@@ -161,9 +165,12 @@ class PowerStateDriver(hw_driver.HwDriver):
       self._reset_ccd()
     elif statename == self._STATE_CR50_RESET:
       self._reset_cr50()
+    elif statename == self._STATE_REC_FORCE_MRC:
+      self._power_on(self.REC_ON_FORCE_MRC)
     else:
       raise ValueError("Invalid power_state setting: '%s'. Try one of "
-                       "'%s', '%s', '%s', '%s', '%s', or '%s'." %
+                       "'%s', '%s', '%s', '%s', '%s', '%s', or '%s'." %
                        (statename, self._STATE_ON, self._STATE_OFF,
                         self._STATE_REC_MODE, self._STATE_FASTBOOT,
-                        self._STATE_RESET_CYCLE, self._STATE_CCD_RESET))
+                        self._STATE_RESET_CYCLE, self._STATE_CCD_RESET,
+                        self._STATE_REC_FORCE_MRC))

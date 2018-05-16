@@ -16,6 +16,7 @@ class crosEcHardrecPower(cros_ec_power.CrosECPower):
   # Time in seconds to allow the BIOS and EC to detect the
   # 'rec_mode' signal after cold reset.
   _RECOVERY_DETECTION_DELAY = 2.5
+  _HW_REINIT_SECS = 25
 
   def _power_on_rec(self):
     """Power on with recovery mode."""
@@ -29,8 +30,16 @@ class crosEcHardrecPower(cros_ec_power.CrosECPower):
     """Power on with in normal mode, i.e., no recovery."""
     self._interface.power_short_press()
 
+  def _power_on_rec_force_mrc(self):
+    """Power on with recovery mode, forcing memory training."""
+    self._interface.set('rec_mode', self.REC_ON)
+    self._interface.power_key(secs=self._HW_REINIT_SECS)
+    self._interface.set('rec_mode', self.REC_OFF)
+
   def _power_on(self, rec_mode):
     if rec_mode == self.REC_ON:
       self._power_on_rec()
+    elif rec_mode == self.REC_ON_FORCE_MRC:
+      self._power_on_rec_force_mrc()
     else:
       self._power_on_normal()
