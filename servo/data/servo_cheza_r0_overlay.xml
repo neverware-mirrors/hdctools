@@ -13,13 +13,4 @@
     <!-- Reverse its polarity, active-low to trigger the mode -->
     <params clobber_ok="" map="onoff_i" init="off"/>
   </control>
-  <!--
-    TODO(b/79226094): Don't give voltage when forcing to enable/disable WP.
-    Setting WP through servo doesn't work until the hardware bug gets fixed.
-  -->
-  <control>
-    <name>fw_wp_state</name>
-    <doc>Used to turn fw wp off and on</doc>
-    <params clobber_ok="" fw_wp_vref="off"/>
-  </control>
 </root>
