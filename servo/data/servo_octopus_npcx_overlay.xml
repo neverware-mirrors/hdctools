@@ -4,7 +4,7 @@
     <name>octopus_common.xml</name>
   </include>
   <include>
-    <name>octopus_r0_npcx_inas.xml</name>
+    <name>octopus_npcx_r0_inas.xml</name>
   </include>
   <!-- ******** Controls ******** -->
   <control>
