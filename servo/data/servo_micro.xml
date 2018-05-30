@@ -399,11 +399,11 @@
   <control>
     <name>enable_ite_dfu</name>
     <doc>Enable direct firmware update (DFU) over I2C mode on ITE IT8320 EC chip by sending special non-I2C waveforms over the I2C bus wires.</doc>
-    <params cmd="get" subtype="enable_ite_dfu" interface="6" drv="ec3po_servo_micro" map="str" clobber_ok=""></params>
+    <params cmd="get" subtype="enable_ite_dfu" interface="6" drv="ec3po_servo_micro" input_type="str" clobber_ok=""></params>
   </control>
   <control>
     <name>get_ite_chipid</name>
     <doc>Verify that ITE IT8320 EC chip direct firmware update (DFU) mode is enabled by querying the EC over I2C for its CHIPID1 and CHIPID2 registers.  It will only respond over I2C when in DFU mode.</doc>
-    <params cmd="get" subtype="get_ite_chipid" interface="6" drv="ec3po_servo_micro" map="str" clobber_ok=""></params>
+    <params cmd="get" subtype="get_ite_chipid" interface="6" drv="ec3po_servo_micro" input_type="str" clobber_ok=""></params>
   </control>
 </root>

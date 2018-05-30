@@ -105,7 +105,7 @@
     <name>cr50_ccd_level</name>
     <doc>State of CCD</doc>
     <params cmd="get" subtype="ccd_level" interface="9" drv="cr50"
-    map="str" clobber_ok=""></params>
+    input_type="str" clobber_ok=""></params>
   </control>
   <control>
     <name>cr50_testlab</name>
@@ -117,13 +117,13 @@
     <name>cr50_reset_count</name>
     <doc>Cr50 reset count</doc>
     <params cmd="get" subtype="reset_count" interface="9" drv="cr50"
-    map="str" clobber_ok=""></params>
+    input_type="str" clobber_ok=""></params>
   </control>
   <control>
     <name>cr50_devid</name>
     <doc>current cr50 devid</doc>
     <params cmd="get" subtype="devid" interface="9" drv="cr50"
-    map="str" clobber_ok=""></params>
+    input_type="str" clobber_ok=""></params>
   </control>
   <control>
     <name>cr50_version</name>
