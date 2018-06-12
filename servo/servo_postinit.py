@@ -362,7 +362,14 @@ class ServoV4PostInit(BasePostInit):
         self.servod._version += '_with_ccd_cr50'
         return
 
-    self._logger.info('No servo micro and CCD detected.')
+    # Fail if we requested board control but don't have an interface for this.
+    if self.servod._board:
+      self._logger.error('No servo micro or CCD detected for board %s',
+          self.servod._board)
+      raise ServoPostInitError('No device interface '
+                               '(servo micro or CCD) connected.')
+    else:
+      self._logger.info('No servo micro and CCD detected.')
 
 
 # Add in servo v4 post init method.
