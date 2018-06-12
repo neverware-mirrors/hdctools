@@ -21,6 +21,11 @@
     <params clobber_ok="" init="pp3300"></params>
   </control>
   <control>
+    <name>spi2_vref</name>
+    <doc>Used as 1.8V rail for the sensor.</doc>
+    <params clobber_ok="" init="pp1800"></params>
+  </control>
+  <control>
     <name>jtag_vref_sel0</name>
     <params clobber_ok="" init="pp3300"></params>
   </control>
