@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import array
+import errno
 import logging
 import usb
 
@@ -97,10 +98,17 @@ class Si2cBus(object):
 
     # Send wr_rd command to stm32.
     cmd = [self._port, slave_address, write_length, read_count] + write_list
-    ret = self._susb._write_ep.write(cmd, self._susb.TIMEOUT_MS)
+    try:
+      ret = self._susb._write_ep.write(cmd, self._susb.TIMEOUT_MS)
+    except IOError as e:
+      if e.errno == errno.ENODEV:
+        self._logger.error('USB disconnected 0x%04x:%04x, servod failed.',
+            self._susb._vendor, self._susb._product)
+      raise
 
     # Read back response if necessary.
     bytes = self._susb._read_ep.read(read_count + 4, self._susb.TIMEOUT_MS)
+
     if len(bytes) < (read_count + 4):
       raise Si2cError('Read status failed.')
 

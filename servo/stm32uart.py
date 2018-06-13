@@ -111,6 +111,12 @@ class Suart(uart.Uart):
           if r:
             self._susb._write_ep.write(r, self._susb.TIMEOUT_MS)
 
+        except IOError as e:
+          self._logger.debug('tx %s: %s' % (self.get_pty(), e))
+          if e.errno == errno.ENODEV:
+            self._logger.error('USB disconnected 0x%04x:%04x, servod failed.',
+                self._susb._vendor, self._susb._product)
+            raise
         except Exception as e:
           self._logger.debug('tx %s: %s' % (self.get_pty(), e))
       else:
