@@ -294,10 +294,12 @@ class Servod(object):
         return keyboard_handlers.MatrixKeyboardHandler(servo)
       return keyboard_handlers.ChromeECHandler(servo)
 
-  def __del__(self):
-    """Servod deconstructor."""
-    for interface in self._interface_list:
-      del (interface)
+  def close(self):
+    """Servod turn down logic."""
+    for i, interface in enumerate(self._interface_list):
+      self._logger.info('Turning down interface %d' % i)
+      if hasattr(interface, 'close'):
+        interface.close()
 
   def _init_ftdi_dummy(self, vendor, product, serialname, interface):
     """Dummy interface for ftdi devices.

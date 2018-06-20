@@ -118,3 +118,13 @@ class Si2cBus(object):
     self._logger.debug('Si2c.wr_rd result 0x%02x%02x, read %s' %
                        (bytes[1], bytes[0], bytes[4:]))
     return bytes[4:]
+
+  def close(self):
+    """Stm32i2c wind down logic.
+
+    Note: because servod runs in a thread, an exception gets thrown at the very
+    end unless we explicitly predelete this instance.
+    """
+    self._logger.info('Turning down STM32i2c interface.')
+    del self._susb
+

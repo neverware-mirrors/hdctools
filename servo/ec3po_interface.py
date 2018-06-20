@@ -108,6 +108,9 @@ class EC3PO(uart.Uart):
     console_process.daemon = True
     # Start the console.
     console_process.start()
+
+    self.console_process = console_process
+
     self._logger.debug('Console: %s', self._console)
 
     self._logger.debug('User console: %s', user_pty_name)
@@ -158,3 +161,10 @@ class EC3PO(uart.Uart):
   def get_interp_connect(self):
     """Get the state of the interpreter connection to the UART."""
     return self._interp_connected
+
+  def close(self):
+    """Turn down the ec3po interface by terminating interpreter & console."""
+    for p in [self.itpr_process, self.console_process]:
+      p.terminate()
+      p.join(timeout=0.1)
+    self._logger.info('Closing EC3PO console at %s' % self._pty)

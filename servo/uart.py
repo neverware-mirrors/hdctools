@@ -215,6 +215,7 @@ class Uart(object):
       # Need to start capturing
       self._capture_buffer = []
       self._capture_thread = threading.Thread(target=self._capture_function)
+      self._capture_thread.daemon = True
       self._capture_active = activate
       self._capture_thread.start()
       self._capture_paused = False

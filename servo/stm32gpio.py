@@ -114,6 +114,13 @@ class Sgpio(gpio_interface.GpioInterface):
     self._logger.debug('Read value: 0x%x' % readvalue)
     return readvalue
 
+  def close(self):
+    """Stm32gpio wind down logic.
+
+    Note: because we run this in a thread, an exception gets thrown at the very
+    end unless we explicitly predelete this instance.
+    """
+    del self._susb
 
 def test():
   """Test code.

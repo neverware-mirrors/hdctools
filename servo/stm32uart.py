@@ -61,15 +61,19 @@ class Suart(uart.Uart):
                        (vendor, product, interface, serialname))
     self._props = {}
 
+    self._done = threading.Event()
     self._susb = stm32usb.Susb(vendor=vendor, product=product,
                                interface=interface, serialname=serialname,
                                logger=self._logger)
 
     self._logger.debug('Set up stm32 uart')
 
-  def __del__(self):
-    """Suart destructor."""
-    self._logger.debug('')
+  def close(self):
+    """Suart wind down logic."""
+    self._done.set()
+    for t in [self._rx_thread, self._tx_thread]:
+      t.join(timeout=0.2)
+    del self._susb
 
   def reinitialize(self):
     """Reinitialize the usb endpoint"""
@@ -80,7 +84,7 @@ class Suart(uart.Uart):
 
     ep = select.epoll()
     ep.register(self._ptym, select.EPOLLHUP)
-    while True:
+    while not self._done.is_set():
       events = ep.poll(0)
       # Check if the pty is connected to anything, or hungup.
       if not events:
@@ -95,21 +99,24 @@ class Suart(uart.Uart):
           if type(e) not in [exceptions.OSError, usb.core.USBError]:
             self._logger.debug('rx %s: %s' % (self.get_pty(), e))
       else:
-        time.sleep(.1)
+        self._done.wait(.1)
 
   def run_tx_thread(self):
     self._logger.debug('tx thread started on %s' % self.get_pty())
 
     ep = select.epoll()
+    readp = select.epoll()
     ep.register(self._ptym, select.EPOLLHUP)
-    while True:
+    readp.register(self._ptym, select.EPOLLIN)
+    while not self._done.is_set():
       events = ep.poll(0)
       # Check if the pty is connected to anything, or hungup.
       if not events:
         try:
-          r = os.read(self._ptym, 64)
-          if r:
-            self._susb._write_ep.write(r, self._susb.TIMEOUT_MS)
+          if readp.poll(.1):
+            r = os.read(self._ptym, 64)
+            if r:
+              self._susb._write_ep.write(r, self._susb.TIMEOUT_MS)
 
         except IOError as e:
           self._logger.debug('tx %s: %s' % (self.get_pty(), e))
@@ -120,7 +127,7 @@ class Suart(uart.Uart):
         except Exception as e:
           self._logger.debug('tx %s: %s' % (self.get_pty(), e))
       else:
-        time.sleep(.1)
+        self._done.wait(.1)
 
   def run(self):
     """Creates pthreads to poll stm32 & PTY for data.
@@ -157,11 +164,11 @@ class Suart(uart.Uart):
 
     self._rx_thread = threading.Thread(target=self.run_rx_thread, args=[])
     self._rx_thread.daemon = True
-    self._rx_thread.start()
-
     self._tx_thread = threading.Thread(target=self.run_tx_thread, args=[])
     self._tx_thread.daemon = True
+
     self._tx_thread.start()
+    self._rx_thread.start()
 
     self._logger.debug('stm32 rx and tx threads started.')
 
