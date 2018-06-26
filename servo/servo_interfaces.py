@@ -251,6 +251,7 @@ for board in [
     'chell',
     'cheza',
     'cheza_r0',
+    'dragonegg',
     'eve',
     'fizz',
     'glados',
