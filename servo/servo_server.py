@@ -202,7 +202,7 @@ class Servod(object):
       for vid, pid, serialname in self._devices:
         for current in usb.core.find(idVendor=vid, idProduct=pid,
                                      find_all=True):
-          current_serial = usb.util.get_string(current, 256,
+          current_serial = usb.util.get_string(current,
                                                current.iSerialNumber)
           if not serialname or serialname == current_serial:
             # This device still available
