@@ -13,7 +13,7 @@ import pty_driver
 import servo
 
 # servo micro firmware versions verified compatible with servod
-VALID_VERSIONS = ['servo_micro_v1.1.5734-4a47178']
+VALID_VERSIONS = ['servo_micro_v1.1.5739-a4ab463']
 
 # EC console mask for enabling only command channel
 COMMAND_CHANNEL_MASK = 0x1
