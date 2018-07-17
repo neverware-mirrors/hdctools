@@ -60,6 +60,7 @@ setup(
     'console_scripts': [
       'servod = servo.servod:main',
       'dut-control = servo.dut_control:main',
+      'dut-power = servo.dut_power:main'
     ]
   }
 )
