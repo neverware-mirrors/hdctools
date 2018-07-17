@@ -1,181 +1,27 @@
+#!/usr/bin/env python2
 # Copyright 2011 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-"""Helper module to generate system control files for INA219 adcs."""
+
+"""Helper module to generate system control files for INA adcs."""
+
+import argparse
 import copy
+import glob
 import imp
 import json
 import os
 import re
+import sys
 import time
 
-
-class XMLElementGenerator(object):
-  """Helper class to generate a formatted XML element.
-
-  Attributes:
-    _name: name of the element
-    _text: text to go between opening and close brackets
-    _attribute_string: string containing attributes and values for element
-  """
-
-
-  def __init__(self, name, text, attributes={}, attribute_order=[]):
-    """Prepare substrings to make formatted XML element retrieval easier.
-
-    Args:
-      name: name of the element <[name]>.
-      text: text to go between opening and closing tag.
-      attributes: key/value pairs of attributes for the tag.
-      attribute_order: order in which to print the attributes.
-    """
-    self._name = name
-    self._text = text
-    keys = [k for k in attribute_order if k in attributes]
-    keys += list(set(attributes.keys()) - set(attribute_order))
-    self._attribute_string = ''.join(' %s="%s"' %
-                                     (k, attributes[k]) for k in keys)
-
-  def GetXML(self, newline_for_text=False):
-    """Retrieves XML string for element.
-
-    Args:
-      newline_for_text: if |True|, introduce a newline after opening
-                        tag and before closing tag.
-
-    Returns:
-      formatted string for the element.
-    """
-    output_format = '<%s%s>\n%s\n</%s>'
-    if not newline_for_text:
-      output_format.replace('\n', '')
-    return output_format % (self._name, self._attribute_string,
-                            self._text, self._name)
-
-
-class ServoControlGenerator(object):
-  """Helper class to generate formatted XML for servo controls.
-
-  Attributes:
-    _ctrl_elements: list XMLElementGenerators to build control
-                    element on retrieval.
-  """
-
-  # order of the attributes for the params element.
-  params_attr_order = ['cmd', 'interface', 'drv', 'slv',
-                       'channel', 'type', 'subtype']
-
-  def __init__(self, name, docstring, params, params2=None):
-    """Init an XMLElementGenerator for each element.
-
-    Prepare control XML retrieval by preparing XML generators for each
-    component.
-
-    Args:
-      name: name tag for the control
-      docstring: docstring for the control
-      params: attributes for the params tag
-      params2: attributes for the 2nd params tag
-               (applicable for controls that have both set & get)
-
-    Raises:
-      INAConfigGeneratorError if two malformatted params elements are
-      provided.
-    """
-    parameters = [params]
-    if params2:
-      # checking to make sure that if there are two paramteter sets, one of them
-      # is a set command and the other is a get command.
-      if 'cmd' not in params or 'cmd' not in params2:
-        raise INAConfigGeneratorError('Control %s has 2 params. cmd attribute '
-                                      'is required for each param.' % name)
-      cmds = set([params['cmd'], params2['cmd']])
-      if cmds != set(['get', 'set']):
-        raise INAConfigGeneratorError("Control %s has 2 params, and cmd "
-                                      "attributes are not 'set' and 'get'"
-                                      % name)
-      parameters.append(params2)
-
-    self._ctrl_elements = [XMLElementGenerator('name', name),
-                           XMLElementGenerator('doc', docstring)]
-    for parameter in parameters:
-      self._ctrl_elements.append(XMLElementGenerator('params', '',
-                                                     parameter,
-                                                     self.params_attr_order))
-
-  def GetControlXML(self):
-    """Retrieves XML string for a servod control.
-
-    Returns:
-      formatted string for the XML control.
-    """
-    # for each control element, generate the XML and join together into one
-    # string.
-    ctrl_text = '\n'.join(element.GetXML() for element in self._ctrl_elements)
-    ctrl_element = XMLElementGenerator('control', ctrl_text, {})
-    return ctrl_element.GetXML()
-
-
-class XMLFileGenerator(object):
-  """Helper to generate XML servod configuration files.
-
-  Attributes:
-    _text: xml file as a string
-  """
-
-  XML_VERSION = '1.0'
-
-  def __init__(self, body, includes=None, intro_comments=''):
-    """Prepares entire XML file as a string for easier export later.
-
-    Args:
-      body: xml file body as a string
-      includes: list of xml files to include
-      intro_comments: comments to add in the beginning.
-    """
-    self._text = '<?xml version="%s"?>\n' % self.XML_VERSION
-    true_body = ''
-    if intro_comments:
-      true_body += '<!-- %s -->\n' % intro_comments
-    if includes:
-      for include in includes:
-        name_element = XMLElementGenerator(name='name', text=include)
-        include_tag = XMLElementGenerator(name='include',
-                                          text=name_element.GetXML())
-        true_body += '%s\n' % include_tag.GetXML()
-    true_body += body
-    file_as_element = XMLElementGenerator(name='root', text=true_body)
-    self._text += file_as_element.GetXML(newline_for_text=True)
-
-  def WriteToFile(self, destination, run_tidy=True):
-    """Helper to write to file. Runs tidy after file is written.
-
-    Args:
-      destination: dest where to save the file.
-      run_tidy: runs tidy if |True|
-    """
-    with open(destination, 'w') as f:
-      f.write(self._text)
-
-    if run_tidy:
-      rv = os.system('tidy -quiet -mi -xml %s' % destination)
-      if rv:
-        raise INAConfigGeneratorError('Running tidy on %s failed.'
-                                      % destination)
-
-  def GetAsString(self):
-    """Get entire XML configuration file as a string.
-
-    Returns:
-      formatted string for the entire XML config file.
-    """
-    return self._text
-
+from sweetberry_preprocessor import SweetberryPreprocessor
+from servo_config_generator import ServoConfigFileGenerator
+from servo_config_generator import ServoControlGenerator
 
 class INAConfigGeneratorError(Exception):
   """Error class for INA control generation errors."""
   pass
-
 
 class INAConfigGenerator(object):
   """Base class for any INA Configuration Generator.
@@ -185,30 +31,30 @@ class INAConfigGenerator(object):
   Attributes:
     _configs_to_generate: a list of configurations that this template produces.
   """
-  def __init__(self, ina_pkg, module_name):
+  def __init__(self, module_name, ina_pkg):
     """Init all INA Configuration Generators.
 
     This sets up the common logic of deciding how many configurations to produce
     based on a given template.
 
     Args:
-      ina_pkg: template loaded as a module
       module_name: name of template module
+      ina_pkg: template loaded as a module
     """
     self._configs_to_generate = []
-    try:
+    if hasattr(ina_pkg, 'revs'):
       # modules need to be named board_[anything].py
       board = re.sub(r'_.*', '', module_name)
       for rev in ina_pkg.revs:
-        self._configs_to_generate.append('%s_rev_%d' % (board, int(rev)))
-    except AttributeError:
-      # if controls_to_generate doesn't exist, then it's an old-style
-      # INA file, in which case this script produces just one control,
-      # named the same as the module.
+        try:
+          self._configs_to_generate.append('%s_rev_%d' % (board, int(rev)))
+        except ValueError:
+          raise INAConfigGeneratorError('Rev: %s has to be an integer.'
+                                        % str(rev))
+    else:
+      # if rev doesn't exist, then it's an old-style INA file, in which case
+      # this script produces just one control named the same as the module.
       self._configs_to_generate.append(module_name)
-    except ValueError:
-      raise INAConfigGeneratorError('Rev: %s has to be an integer.'
-                                    % str(rev))
 
   def ExportConfig(self, outdir):
     """Export the configuration(s) of a template to outdir.
@@ -218,7 +64,7 @@ class INAConfigGenerator(object):
     raise NotImplementedError()
 
 
-class SweetberryINAConfigGenerator(INAConfigGenerator):
+class PowerlogINAConfigGenerator(INAConfigGenerator):
   """Generator to make sweetberry configurations given a template.
 
   Attributes:
@@ -233,25 +79,25 @@ class SweetberryINAConfigGenerator(INAConfigGenerator):
       module_name: name of the template module
       ina_pkg: template loaded as a module
     """
-    super(SweetberryINAConfigGenerator, self).__init__(ina_pkg, module_name)
+    super(PowerlogINAConfigGenerator, self).__init__(module_name, ina_pkg)
     self._board_content, self._scenario_content = self.DumpADCs(ina_pkg.inas)
 
   def DumpADCs(self, adcs):
-    """Dump json formatted INA231 configurations for Sweetberry board.
+    """Dump json formatted INA231 configurations for powerlog configuration.
 
-    While this uses the same adcs template formate as servod (for compatability,
-    Sweetberry configuration only needs slv, name, and sense.
+    This uses the same adcs template formate as servod (for compatability)
+    but sweetberry configuration only needs slv, name, sense, and is_calib.
 
     Args:
       adcs: array of adc elements.  Each array element is a tuple consisting of:
-          drvname: string name of adc driver to enumerate to control the adc.
-          slv: int representing the i2c slave address
+          drvname: string name of adc driver to enumerate to control the adc
+          slv: string formatted '0xAA:B': AA is i2c slv addr and B is i2c port
           name: string name of the power rail
-          nom: float of nominal voltage of power rail.
+          nom: float of nominal voltage of power rail
           sense: float of sense resitor size in ohms
-          mux: string name of i2c mux leg these ADC's live on
+          mux: string name of bank on sweetberry these ADC's live on: j2, j3, j4
           is_calib: boolean to indicate if calibration is possible for this rail
-      interface: interface index to handle low-level communication.
+                    if false, no config will be exported
 
     The adcs list above is in order, meaning this function looks for name at
     adc[2], where adc is the tuple for a particular adc.
@@ -264,12 +110,13 @@ class SweetberryINAConfigGenerator(INAConfigGenerator):
     adc_list = []
     rails = []
     for (drvname, slv, name, nom, sense, mux, is_calib) in adcs:
-      if not isinstance(slv, int):
-        slv = int(slv, 0)
-      adc_list.append('  %s' % json.dumps({'name': name,
-                                           'rs': float(sense),
-                                           'sweetberry': 'A',
-                                           'channel': slv - 64}))
+      if is_calib:
+        addr, port = [int(entry, 0) for entry in slv.split(':')]
+        adc_list.append('  %s' % json.dumps({'name': name,
+                                             'rs': float(sense),
+                                             'sweetberry': 'A',
+                                             'addr': addr,
+                                             'port': port}))
       rails.append(name)
     adc_lines = ',\n'.join(adc_list)
     return ('[\n%s\n]' % adc_lines,
@@ -297,7 +144,7 @@ class ServoINAConfigGenerator(INAConfigGenerator):
 
   Attributes:
     _servo_drv_dir = servo directory to check for ina driver.
-    _outfile_generator = servo config xml generator.
+    _outfile_gen = servo config xml generator.
   """
 
   def __init__(self, module_name, ina_pkg, servo_data_dir, servo_drv_dir=None):
@@ -309,7 +156,7 @@ class ServoINAConfigGenerator(INAConfigGenerator):
       servo_data_dir: servo data directory to include configs
       servo_drv_dir: servo drv directory to check drv availability
     """
-    super(ServoINAConfigGenerator, self).__init__(ina_pkg, module_name)
+    super(ServoINAConfigGenerator, self).__init__(module_name, ina_pkg)
     if not servo_drv_dir:
       servo_drv_dir = os.path.join(servo_data_dir, '..', 'drv')
     self._servo_drv_dir = servo_drv_dir
@@ -332,11 +179,16 @@ class ServoINAConfigGenerator(INAConfigGenerator):
     if os.path.isfile(ina2xx_drv_cfg):
       includes.append(os.path.basename(ina2xx_drv_cfg))
     if hasattr(ina_pkg, 'inline'):
-      body += '%s\n' % ina_pkg.inline
+      inline = ina_pkg.inline
+    else:
+      inline = ''
 
-    body += self.DumpADCs(ina_pkg.inas, interface)
-    self._outfile_generator = XMLFileGenerator(body=body, includes=includes,
-                                               intro_comments=comments)
+
+    ctrl_gens = self.DumpADCs(ina_pkg.inas, interface)
+    self._outfile_gen = ServoConfigFileGenerator(ctrl_generators=ctrl_gens,
+                                                 includes=includes,
+                                                 inline=inline,
+                                                 intro_comments=comments)
 
   def DumpADCs(self, adcs, interface=2):
     """Dump XML formatted INAxxx adcs for servod.
@@ -344,10 +196,11 @@ class ServoINAConfigGenerator(INAConfigGenerator):
     Args:
       adcs: array of adc elements.  Each array element is a tuple consisting of:
           drvname: string name of adc driver to enumerate to control the adc.
-          slv: int representing the i2c slave address plus optional channel if
-               ADC (INA3221 only) has multiple channels.  For example,
-                 "0x40"   : address 0x40 ... no channel
-                 "0x40:1" : address 0x40, channel 1
+          slv: int representing the i2c slave address.
+               optional channel/port if ADC (INA3221 only) has multiple channels
+               or adc is on a different i2c port (sweetberry only). For example,
+                 "0x40"   : address 0x40 ... no channel/port
+                 "0x40:1" : address 0x40, channel/port 1
           name: string name of the power rail
           nom: float of nominal voltage of power rail.
           sense: float of sense resitor size in ohms
@@ -362,13 +215,13 @@ class ServoINAConfigGenerator(INAConfigGenerator):
       string (large) of XML for the system config of these ADCs to eventually be
       parsed by servod daemon ( servo/system_config.py )
     """
-    all_controls = ''
+    control_generators = []
     for (drvname, slv, name, nom, sense, mux, is_calib) in adcs:
       drvpath = os.path.join(self._servo_drv_dir, drvname + '.py')
       if not os.path.isfile(drvpath):
         raise INAConfigGeneratorError('Unable to locate driver for %s at %s'
                                       % (drvname, drvpath))
-      controls_for_rail = []
+      ina_type = 'ina231' if drvname == 'sweetberry' else drvname
       params_base = {
           'type'      : 'get',
           'drv'       : drvname,
@@ -380,22 +233,27 @@ class ServoINAConfigGenerator(INAConfigGenerator):
       # Must match REG_IDX.keys() in servo/drv/ina2xx.py
       regs = ['cfg', 'shv', 'busv', 'pwr', 'cur', 'cal']
 
-      if drvname == 'ina231':
+      if ina_type == 'ina231':
         regs.extend(['msken', 'alrt'])
-      elif drvname == 'ina3221':
+      elif ina_type == 'ina3221':
         regs = ['cfg', 'shv', 'busv', 'msken']
 
-      if drvname == 'ina3221':
+      if ina_type == 'ina3221':
         (slv, chan_id) = slv.split(':')
         params_base['slv'] = slv
         params_base['channel'] = chan_id
+
+      if drvname == 'sweetberry':
+        (slv, port) = slv.split(':')
+        params_base['slv'] = slv
+        params_base['port'] = port
 
       mv_ctrl_docstring = ('Bus Voltage of %s rail in millivolts on i2c_mux:%s'
                            % (name, params_base['mux']))
       mv_ctrl_params = {'subtype' : 'millivolts',
                         'nom'     : nom}
       mv_ctrl_params.update(params_base)
-      controls_for_rail.append(ServoControlGenerator(name + '_mv',
+      control_generators.append(ServoControlGenerator(name + '_mv',
                                                      mv_ctrl_docstring,
                                                      mv_ctrl_params))
 
@@ -404,7 +262,7 @@ class ServoINAConfigGenerator(INAConfigGenerator):
       shuntmv_ctrl_params = {'subtype'  : 'shuntmv',
                              'nom'      : nom}
       shuntmv_ctrl_params.update(params_base)
-      controls_for_rail.append(ServoControlGenerator(name + '_shuntmv',
+      control_generators.append(ServoControlGenerator(name + '_shuntmv',
                                                      shuntmv_ctrl_docstring,
                                                      shuntmv_ctrl_params))
 
@@ -417,7 +275,7 @@ class ServoINAConfigGenerator(INAConfigGenerator):
                              'on i2c_mux:%s' % (name, params_base['mux']))
         ma_ctrl_params = {'subtype' : 'milliamps'}
         ma_ctrl_params.update(params_base)
-        controls_for_rail.append(ServoControlGenerator(name + '_ma',
+        control_generators.append(ServoControlGenerator(name + '_ma',
                                                        ma_ctrl_docstring,
                                                        ma_ctrl_params))
 
@@ -425,7 +283,7 @@ class ServoINAConfigGenerator(INAConfigGenerator):
                              'on i2c_mux:%s' % (name, params_base['mux']))
         mw_ctrl_params = {'subtype' : 'milliwatts'}
         mw_ctrl_params.update(params_base)
-        controls_for_rail.append(ServoControlGenerator(name + '_mw',
+        control_generators.append(ServoControlGenerator(name + '_mw',
                                                        mw_ctrl_docstring,
                                                        mw_ctrl_params))
       for reg in regs:
@@ -448,15 +306,12 @@ class ServoINAConfigGenerator(INAConfigGenerator):
           if reg == 'cal':
             reg_ctrl_params_set['map'] = 'calibrate'
           if reg == 'cfg':
-            reg_ctrl_params_set['map'] = '%s_cfg' % drvname
-        controls_for_rail.append(ServoControlGenerator(reg_ctrl_name,
+            reg_ctrl_params_set['map'] = '%s_cfg' % ina_type
+        control_generators.append(ServoControlGenerator(reg_ctrl_name,
                                                        reg_ctrl_docstring,
                                                        reg_ctrl_params_get,
                                                        reg_ctrl_params_set))
-      for generator in controls_for_rail:
-        all_controls += generator.GetControlXML()
-
-    return all_controls
+    return control_generators
 
   def ExportConfig(self, outdir):
     """Write the configuration files in the outdir.
@@ -468,9 +323,10 @@ class ServoINAConfigGenerator(INAConfigGenerator):
     """
     for outfile in self._configs_to_generate:
       outfile_dest = os.path.join(outdir, '%s.xml' % outfile)
-      self._outfile_generator.WriteToFile(outfile_dest)
+      self._outfile_gen.WriteToFile(outfile_dest)
 
-def GenerateINAControls(servo_data_dir, servo_drv_dir=None, outdir=None):
+def GenerateINAControls(servo_data_dir, servo_drv_dir=None, outdir=None,
+                        export=True, candidates=[]):
   """Attempt to generate INA configurations for all modules.
 
   Generates the configuration for every module found inside
@@ -488,11 +344,17 @@ def GenerateINAControls(servo_data_dir, servo_drv_dir=None, outdir=None):
                    servo_data_dir/../drv/
     outdir: directory where to dump generated configuration files.
             If |None|, config files are dumped into |servo_data_dir|
+    export: if True config files will be exported to |outdir|
+            if False it's only a dry-run to detect errors
+    candidates: list of files in |servo_data_dir| to generate configs for.
+                if empty, all files in |servo_data_dir| will be considered.
   """
   if not outdir:
     outdir = servo_data_dir
   generators = []
-  for candidate in os.listdir(servo_data_dir):
+  if not candidates:
+    candidates = os.listdir(servo_data_dir)
+  for candidate in candidates:
     if candidate.endswith('.py'):
       module_name = candidate[:-3]
       ina_pkg = imp.load_module(module_name,
@@ -500,20 +362,63 @@ def GenerateINAControls(servo_data_dir, servo_drv_dir=None, outdir=None):
                                                  [servo_data_dir]))
       if not hasattr(ina_pkg, 'inas'):
         continue
-      try:
+      if hasattr(ina_pkg, 'config_type'):
         config_type = ina_pkg.config_type
-      except AttributeError:
+      else:
       # If config_type is not defined, it is a servod config
         config_type = 'servod'
       if config_type not in ['sweetberry', 'servod']:
         raise INAConfigGeneratorError('Unknown config type %s' % config_type)
       if config_type == 'sweetberry':
-        generators.append(SweetberryINAConfigGenerator(module_name,
-                                                       ina_pkg))
-      else:
-        generators.append(ServoINAConfigGenerator(module_name,
-                                                  ina_pkg,
-                                                  servo_data_dir,
-                                                  servo_drv_dir))
-  for generator in generators:
-    generator.ExportConfig(outdir)
+        #translate inas from pin-style to i2c-addr style config (if applicable)
+        ina_pkg.inas = SweetberryPreprocessor.Preprocess(ina_pkg.inas)
+        #also output powerlog config files (.board/.scenario)
+        generators.append(PowerlogINAConfigGenerator(module_name,
+                                                     ina_pkg))
+      #always output Servod configurations
+      generators.append(ServoINAConfigGenerator(module_name,
+                                                ina_pkg,
+                                                servo_data_dir,
+                                                servo_drv_dir))
+  if export:
+    for generator in generators:
+      generator.ExportConfig(outdir)
+
+def main(cmdline=sys.argv[1:]):
+  """cmdline interface to generate &| verify config files.
+
+  Note: This is mainly inteded as a development tool to verify a new or
+  modified powermap before submitting it, and without having to build the full
+  hdctools.
+  """
+  parser = argparse.ArgumentParser(description='cmdline tool to generate and '
+                                   'validate servod power configurations.')
+  parser.add_argument('--dry-run', default=False, action='store_true',
+                      help='Do not export files, only verify that no errors '
+                      'on config generation occur.')
+  parser.add_argument('-i', '--input', action='store',
+                      default=os.path.dirname(__file__),
+                      help='file or directory to perform conversions on.')
+  args = parser.parse_args(cmdline)
+  if os.path.isdir(args.input):
+    servo_data_dir = args.input
+    candidates = glob.glob(os.path.join(servo_data_dir, '*.py'))
+  if os.path.isfile(args.input):
+    servo_data_dir = os.path.dirname(args.input)
+    candidates = [args.input]
+  #having only the basename is required for load_module to work better
+  candidates = [os.path.basename(candidate) for candidate in candidates]
+  #if dry_run is set then we don't want to export.
+  export = not args.dry_run
+  for candidate in candidates:
+    try:
+      GenerateINAControls(servo_data_dir=servo_data_dir,
+                          export=export,
+                          candidates=[candidate])
+      msg_prefix = 'Success:'
+    except Exception as e:
+      msg_prefix = 'FAILURE: %s' % e.message
+    print('%s for candidate file %s' % (msg_prefix, candidate))
+
+if __name__ == '__main__':
+  main()

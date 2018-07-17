@@ -33,11 +33,11 @@ class sweetberry(ina231.ina231):
     """Initialize i2c driver by determining & setting up port.
     Args:
       interface: i2c driver, in this case stm32i2c as it's sweetberry
-      params: params used for i2c transaction. 'mux' attribute is read
+      params: params used for i2c transaction. 'port' attribute is read
               as the i2c port.
     """
     try:
-      port = int(params['mux'])
+      port = int(params['port'])
     except KeyError:
       raise sweetberryError("Sweetberry INAs need to define their port.")
     if port > 3 or port < 0:
