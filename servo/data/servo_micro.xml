@@ -230,12 +230,14 @@
   </control>
   <control>
     <name>dev_mode</name>
+    <alias>usbpd_boot_mode</alias>
     <doc>dev_mode GPIO</doc>
     <params interface="2" drv="tca6416" slv="0x20" od="PU" port="1"
     offset="5" map="onoff"></params>
   </control>
   <control>
     <name>pch_disable</name>
+    <alias>usbpd_reset</alias>
     <doc>DUT specific.</doc>
     <params interface="2" drv="tca6416" slv="0x20" od="PU" port="1"
     offset="6" map="onoff_i" init="off"></params>
@@ -389,6 +391,7 @@
 
   <control>
     <name>jtag_buf_en</name>
+    <alias>fpmcu_uart_en,usbpd_uart_en</alias>
     <doc>Dummy control. Controlled by usbpd_uart_routing instead.</doc>
     <params interface="9" drv="na" subtype="not_applicable" map="onoff"
     clobber_ok="" />
