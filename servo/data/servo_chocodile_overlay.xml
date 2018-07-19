@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<root>
+  <include>
+    <name>servo_micro.xml</name>
+  </include>
+
+  <!-- Init UART3 -->
+  <control>
+    <name>usbpd_uart_routing</name>
+    <doc>enable pd uart routing</doc>
+    <params clobber_ok="" init="glados"></params>
+  </control>
+
+  <!-- Invert usbpd_boot_mode since it's backwards on chocodile. -->
+  <control>
+    <name>dev_mode</name>
+    <alias>usbpd_boot_mode</alias>
+    <doc>BEC_UPDATE_L</doc>
+    <params clobber_ok="" map="onoff_i" od="PP"></params>
+  </control>
+
+  <!-- Override warm_reset to BEC_EN. -->
+  <control>
+    <name>bec_en</name>
+    <doc>BEC_EN</doc>
+    <params clobber_ok="" interface="2" drv="tca6416" slv="0x20" od="PP"
+      port="0" offset="5" map="onoff" init="on"></params>
+  </control>
+  <!-- Move warm_reset to tp2 since we can't delete it. -->
+  <control>
+    <name>warm_reset</name>
+    <doc>redirect to tp2</doc>
+    <params clobber_ok="" interface="2" drv="tca6416" slv="0x20" od="PU"
+      port="1" offset="7" map="onoff" init="off"></params>
+  </control>
+</root>
+
