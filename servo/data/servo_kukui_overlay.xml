@@ -11,9 +11,6 @@
   <include>
     <name>detachable.xml</name>
   </include>
-  <include>
-    <name>warm_reset_reconf.xml</name>
-  </include>
   <control>
     <name>ec_chip</name>
     <doc>EC chip name (read-only)</doc>
