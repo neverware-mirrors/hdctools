@@ -2,14 +2,18 @@
 # Copyright 2018 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
 """Servod power measurement utility."""
+
 from __future__ import print_function
 import argparse
 import logging
 import os
 import shutil
+import signal
 import sys
 import tempfile
+import time
 
 import client
 # This module is just a wrapper around measure_power functionality
@@ -98,7 +102,19 @@ def main(cmdline=sys.argv[1:]):
                                       ina_rate=args.ina_rate,
                                       vbat_rate=args.vbat_rate,
                                       fast=args.fast)
-  pm.MeasureTimedPower(sample_time=args.time, wait=args.wait)
+  setup_done, stop_signal, processing_done = pm.MeasurePower(wait=args.wait)
+  # Ensure that SIGTERM and SIGNINT gracefully stop the measurement
+  handler = lambda signal, _, stop_signal=stop_signal: stop_signal.set()
+  signal.signal(signal.SIGINT, handler)
+  signal.signal(signal.SIGTERM, handler)
+  # Wait until measurement is is setup
+  setup_done.wait()
+  # Sleep for measurement time and wait time
+  time.sleep(args.time + args.wait)
+  # Indicate that measurement should stop
+  stop_signal.set()
+  # Wait until summary calculations are done
+  processing_done.wait()
   pm.DisplaySummary()
   if args.save_summary:
     pm.SaveSummary(args.outdir, args.message)
