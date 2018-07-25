@@ -162,8 +162,7 @@ class ServoV4PostInit(BasePostInit):
     """
     all_devices = []
     for vid, pid in vid_pid_list:
-      devs_gen = usb.core.find(idVendor=vid, idProduct=pid, find_all=True)
-      devs = list(devs_gen)
+      devs = usb.core.find(idVendor=vid, idProduct=pid, find_all=True)
       if devs:
         all_devices.extend(devs)
     return all_devices
@@ -177,7 +176,7 @@ class ServoV4PostInit(BasePostInit):
     servo_v4_candidates = self._get_all_usb_devices(
         servo_interfaces.SERVO_V4_DEFAULTS)
     for d in servo_v4_candidates:
-      d_serial = usb.util.get_string(d, d.iSerialNumber)
+      d_serial = usb.util.get_string(d, 256, d.iSerialNumber)
       if (not self.servod._serialnames[self.servod.MAIN_SERIAL] or
           d_serial == self.servod._serialnames[self.servod.MAIN_SERIAL]):
         return d
@@ -233,7 +232,7 @@ class ServoV4PostInit(BasePostInit):
           servo we should be checking against.
       servo_serial_key: Key to the servo serial dict.
     """
-    serial = usb.util.get_string(servo_usb, servo_usb.iSerialNumber)
+    serial = usb.util.get_string(servo_usb, 256, servo_usb.iSerialNumber)
     self.servod._serialnames[servo_serial_key] = serial
     self._logger.debug('servod.serialnames = %r', self.servod._serialnames)
 
@@ -246,7 +245,7 @@ class ServoV4PostInit(BasePostInit):
     """
     vendor = servo_usb.idVendor
     product = servo_usb.idProduct
-    serial = usb.util.get_string(servo_usb, servo_usb.iSerialNumber)
+    serial = usb.util.get_string(servo_usb, 256, servo_usb.iSerialNumber)
     servo_interface = servo_interfaces.INTERFACE_DEFAULTS[vendor][product]
 
     self.servod.init_servo_interfaces(vendor, product, serial, servo_interface)
