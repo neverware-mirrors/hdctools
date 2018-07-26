@@ -6,6 +6,9 @@
     <name>x86_ec_common.xml</name>
   </include>
   <include>
+    <name>detachable.xml</name>
+  </include>
+  <include>
     <name>fpmcu.xml</name>
   </include>
   <include>
