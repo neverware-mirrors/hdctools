@@ -144,6 +144,10 @@ def usb_get_iserial(device):
     #   usb.USBError: error sending control message: Broken pipe
     # Need to investigate further
     pass
+  except Exception as e:
+    # This was causing servod to fail to start in the presence of
+    # a broken usb interface.
+    print 'usb_get_iserial failed in an unknown way: [%s]' % e
   return iserial
 
 
