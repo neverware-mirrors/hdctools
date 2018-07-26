@@ -265,6 +265,7 @@ for board in [
     'octopus_npcx',
     'pbody',
     'poppy',
+    'rammus',
     'reef',
     'scarlet',
     'sentry',
