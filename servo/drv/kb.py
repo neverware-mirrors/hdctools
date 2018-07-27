@@ -1,16 +1,18 @@
 # Copyright 2015 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-"""Driver for keyboard control servo feature.
-"""
+
+"""Driver for keyboard control servo feature."""
 
 import hw_driver
 
 
-class kbError(Exception):
+class KbError(Exception):
   """Error class for kb class."""
 
 
+# pylint: disable=invalid-name
+# Servod requires camel-case class names
 class kb(hw_driver.HwDriver):
   """HwDriver wrapper around servod's keyboard functions."""
 
@@ -19,37 +21,28 @@ class kb(hw_driver.HwDriver):
 
     Args:
       interface: driver interface object; servod in this case.
-      params: dictionary of params; ignored.
+      params: dictionary of params;
+        'key' attribute indicates what key should be pressed with each instance.
     """
     super(kb, self).__init__(interface, params.copy())
-    self._servo = interface
+    # pylint: disable=protected-access
+    self._keyboard = interface._keyboard
+    self._key = params['key']
 
-  def set(self, key):
-    """Press and release the specified key combo for 0.1s.
+  def set(self, duration):
+    """Press key combo for |duration| seconds.
+
+    Note: the key to press is defined in the params of the control under
+    'key'.
 
     Args:
-      key: see keyboard.xml's kb_precanned map,
-        d_key="0" ctrl_d="1" ctrl_u="2" ctrl_enter="3" enter_key="4"
-        refresh_key="5" ctrl_refresh_key="6" sysrq_x="7"
+      duration: seconds to hold the key pressed.
 
     Raises:
-      kbError: if key is not a member of kb_precanned map.
+      KbError: if key is not a member of kb_precanned map.
     """
-    if key == 0:
-      self._servo.d_key(.1)
-    elif key == 1:
-      self._servo.ctrl_d(.1)
-    elif key == 2:
-      self._servo.ctrl_u(.1)
-    elif key == 3:
-      self._servo.ctrl_enter(.1)
-    elif key == 4:
-      self._servo.enter_key(.1)
-    elif key == 5:
-      self._servo.refresh_key(.1)
-    elif key == 6:
-      self._servo.ctrl_refresh_key(.1)
-    elif key == 7:
-      self._servo.sysrq_x(.1)
-    else:
-      raise kbError('Unknown key enum: %s', key)
+    try:
+      func = getattr(self._keyboard, self._key)
+    except AttributeError:
+      raise KbError('Key %s not found' % self._key)
+    func(press_secs=duration)

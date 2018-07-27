@@ -1137,18 +1137,15 @@ class Servod(object):
     # button press (at least on Alex).  To guarantee that this
     # won't happen, we need to allow the EC one second to
     # collect itself.
-    self._keyboard.power_long_press()
-    return True
+    return self.set('power_key', 'long_press')
 
   def power_normal_press(self):
     """Simulate a normal power button press."""
-    self._keyboard.power_normal_press()
-    return True
+    return self.set('power_key', 'press')
 
   def power_short_press(self):
     """Simulate a short power button press."""
-    self._keyboard.power_short_press()
-    return True
+    return self.set('power_key', 'tab')
 
   def power_key(self, secs=''):
     """Simulate a power button press.
@@ -1156,67 +1153,56 @@ class Servod(object):
     Args:
       secs: Time in seconds to simulate the keypress.
     """
-    self._keyboard.power_key(secs)
-    return True
+    return self.set('power_key', secs)
 
   def ctrl_d(self, press_secs=''):
     """Simulate Ctrl-d simultaneous button presses."""
-    self._keyboard.ctrl_d(press_secs)
-    return True
+    return self.set('ctrl_d', press_secs)
 
   def ctrl_u(self, press_secs=''):
     """Simulate Ctrl-u simultaneous button presses."""
-    self._keyboard.ctrl_u(press_secs)
-    return True
+    return self.set('ctrl_u', press_secs)
 
   def ctrl_enter(self, press_secs=''):
     """Simulate Ctrl-enter simultaneous button presses."""
-    self._keyboard.ctrl_enter(press_secs)
-    return True
+    return self.set('ctrl_enter', press_secs)
 
   def d_key(self, press_secs=''):
     """Simulate Enter key button press."""
-    self._keyboard.d_key(press_secs)
-    return True
+    return self.set('d_key', press_secs)
 
   def ctrl_key(self, press_secs=''):
     """Simulate Enter key button press."""
-    self._keyboard.ctrl_key(press_secs)
-    return True
+    return self.set('ctrl_key', press_secs)
 
   def enter_key(self, press_secs=''):
     """Simulate Enter key button press."""
-    self._keyboard.enter_key(press_secs)
-    return True
+    return self.set('enter_key', press_secs)
 
   def refresh_key(self, press_secs=''):
     """Simulate Refresh key (F3) button press."""
-    self._keyboard.refresh_key(press_secs)
-    return True
+    return self.set('refresh_key', press_secs)
 
   def ctrl_refresh_key(self, press_secs=''):
     """Simulate Ctrl and Refresh (F3) simultaneous press.
 
     This key combination is an alternative of Space key.
     """
-    self._keyboard.ctrl_refresh_key(press_secs)
-    return True
+    return self.set('ctrl_refresh_key', press_secs)
 
   def imaginary_key(self, press_secs=''):
     """Simulate imaginary key button press.
 
     Maps to a key that doesn't physically exist.
     """
-    self._keyboard.imaginary_key(press_secs)
-    return True
+    return self.set('imaginary_key', press_secs)
 
   def sysrq_x(self, press_secs=''):
     """Simulate Alt VolumeUp X simultaneous press.
 
     This key combination is the kernel system request (sysrq) x.
     """
-    self._keyboard.sysrq_x(press_secs)
-    return True
+    return self.set('sysrq_x', press_secs)
 
   def get_servo_serials(self):
     """Return all the serials associated with this process."""

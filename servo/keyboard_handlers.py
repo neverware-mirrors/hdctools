@@ -71,14 +71,14 @@ class _BaseHandler(object):
     """Simulate a short power button press."""
     self.power_key(self.SHORT_DELAY)
 
-  def power_key(self, secs=''):
+  def power_key(self, press_secs=''):
     """Simulate a power button press.
 
         Args:
-          secs: Time in seconds to simulate the keypress.
+          press_secs: Time in seconds to simulate the keypress.
         """
-    if secs is '':
-      secs = self.NORMAL_TRANSITION_DELAY
+    if press_secs is '':
+      press_secs = self.NORMAL_TRANSITION_DELAY
 
     # Check if pwr_button control available, by setting it to
     # its current value. Use pwr_button control by default.
@@ -98,29 +98,29 @@ class _BaseHandler(object):
         use_hold_command = True
 
     if use_hold_command:
-      self.power_key_hold(secs)
+      self.power_key_hold(press_secs)
     else:
-      self.power_key_press_release(secs)
+      self.power_key_press_release(press_secs)
 
-  def power_key_hold(self, secs):
+  def power_key_hold(self, press_secs):
     """Simulate a power button by a single EC console command.
 
         Args:
-          secs: Time in seconds to simulate the keypress.
+          press_secs: Time in seconds to simulate the keypress.
         """
     # Convert to milliseconds
-    self._servo.set('pwr_button_hold', int(secs * 1000))
+    self._servo.set('pwr_button_hold', int(press_secs * 1000))
 
-  def power_key_press_release(self, secs):
+  def power_key_press_release(self, press_secs):
     """Simulate a power button by setting it to press and then release.
 
         Args:
-          secs: Time in seconds to simulate the keypress.
+          press_secs: Time in seconds to simulate the keypress.
         """
-    logging.info('Pressing power button for %.4f secs', secs)
+    logging.info('Pressing power button for %.4f secs', press_secs)
     self._servo.set_get_all(
         ['pwr_button:press',
-         'sleep:%.4f' % secs, 'pwr_button:release'])
+         'sleep:%.4f' % press_secs, 'pwr_button:release'])
     # TODO(tbroch) Different systems have different release times on the
     # power button that this loop addresses.  Longer term we may want to
     # make this delay platform specific.
