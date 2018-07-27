@@ -1,0 +1,9 @@
+<root>
+  <!-- ******** Controls ******** -->
+  <control>
+    <name>ftdii2c_cmd</name>
+    <doc>execute command on servo's ftdi i2c interface.</doc>
+    <params cmd="set" interface="servo" drv="ftdii2c_cmd" input_type="str">
+    </params>
+  </control>
+</root>

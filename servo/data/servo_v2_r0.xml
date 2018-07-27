@@ -10,6 +10,9 @@
   <include>
     <name>uart_common.xml</name>
   </include>
+  <include>
+    <name>ftdii2c_cmd.xml</name>
+  </include>
   <map>
     <name>i2c_mux</name>
     <doc>4 to 1 mux to steer ftdi i2c bus to different sets of

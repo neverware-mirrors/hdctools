@@ -1094,17 +1094,6 @@ class Servod(object):
     self._keyboard = self._init_keyboard_handler(self, self._board)
     return True
 
-  def ftdii2c(self, args):
-    """Calling a method of Fi2c."""
-    index = self._interfaces.index('ftdi_i2c')
-    if index:
-      obj = self._interface_list[index]
-      func = getattr(obj, '%s' % args[0])
-      func()
-      return True
-
-    return False
-
   def echo(self, echo):
     """Dummy echo function for testing/examples.
 
