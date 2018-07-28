@@ -1,0 +1,223 @@
+# Servod Overview
+
+This is intended to give a brief overview of how the servo code works, enabling
+developers to quickly make additions, and improve the servo framework.
+
+## Terminology
+
+- config file
+
+  .xml files that outline what controls a servod instance will expose. These can
+  be found inside data/. [Example][2].
+
+- drv
+
+  The drivers used to execute controls. [Example][17].
+
+```
+  <control>
+    <name>ppvar_vbat_ma</name>
+    <doc>milliamps being consumed (discharging/positive) or
+    supplied (charging/negative) to the battery</doc>
+    <params cmd="get" subtype="milliamps" interface="10" drv="ec">
+    </params>
+  </control>
+```
+
+- control
+
+  A control - like ppvar_vbat_ma - is defined in a configuration file and
+  executes code on invocation through dut-control or an RPC proxy.
+  `
+- params
+
+  Params are a dictionary of parameters that controls are defined with, and are
+  used to execute the control. The params list is passed to the drv on
+  initialization for a specific control.
+
+- interface
+
+  The interface describes what interface the drv should use to execute a
+  control. Some important interfaces are: 8 == AP console, and 10 == EC console.
+
+- map
+
+  In the servod world a `<map>` is used to map a human readable name to a
+  numerial value. E.g. the "onoff" map defines on = 1 and off = 0.
+
+## System overview
+
+The servo framework works by having a servod instance (a server to process
+requests) running and executing controls with the help of physical servo devices
+(v2, v4 etc).
+
+The servod instance is invoked with a couple of implicit configuration files
+(like common.xml) and some explicit configuration files
+(like when invoking sudo servod -b lulu -c lulu_r2.xml).
+These configuration files define the controls this servod instance can handle,
+and configure how to execute them.
+
+
+
+### What happens when we type dut-control ec_board (birds-eye view):
+
+The following graphic shows how a call to dut-control ec_board works.
+
+![control flow](control_flow.png)
+
+1. The dut-control control issues a request to the servo server, asking it to
+get the control ‘ec_board’.
+
+
+2. The servod [instance][14] then looks up what the control ec_board means, and
+how to execute it. It uses its [system config][15] to find the drv and the
+params used to execute an ec_board request.
+
+
+3. The server initializes and keeps around an ec drv instance to execute the
+ec_board control.
+
+   Note: This is crucial, because it means that one can share state between two
+   invocations of ec\_board - since they use the same drv instance to execute
+   them - but not as easily between two invocations of different controls, since
+   they will use different drv instances to execute.
+
+
+4. The server then dispatches an attempt to retrieve the information by calling
+  .get() on the drv.
+
+
+5. The return value then gets propagated all the way back up until finally
+dut-control prints out the response on the terminal.
+
+
+## Data and Configuration file structure
+
+A configuration file is an xml file that has `<control>`, `<map>`, and
+`<include>` elements as top level tags.
+
+- `<control>` [elements][2]
+
+  These elements define what you would use for dut-control. They are for
+  instance pwr_button, ec_board, etc.
+
+  `<control>` elements can have the following subtags:
+
+
+   - `<name>` Defines the control’s name. _required_.
+   - `<doc>` A docstring to display.
+   - `<alias>` Alias is another name to use for this control.
+   - `<params>` Params used to instantiate a driver.
+
+      This allows for generic drivers that get the information they need passed
+      through by the params dictionary. _required_. See more below
+
+   - `<remap>` Remap makes the control at `<remap>` an alias for the control.
+      See [FAQ][16] for details.
+
+
+  Note: two params may be defined if the params for the set version of the
+  control is different from the get version of the control. In that case, the
+  params are required to have a 'cmd' attribute each, one defined as 'get' the
+  other defined as 'set' to [distinguish between them][1].
+
+- `<include>` [elements][3]
+
+  These elements indicate a config file to source before this config file. They
+  only have one subtag, `<name>` with the config file name.
+
+- `<map>` [elements][4]
+
+  These elements string to numerial value mappings that can be used when setting
+  a control. When the user calls pwr_button:press, there is a config file loaded
+  into the servod instance that [defines a map][5] to map _press_ to a numerial
+  value. The [pwr_button control][6] uses that map in its params.
+
+  Maps use a `<name>` tag to indicate their name, and _one_ `<params>` tag to
+  configure the transformations.
+
+## Drv structure
+
+Drv (drivers) are classes used to perform the actions listed out in the
+configuration file. These drivers handle low level communication, and execution
+of the control.
+
+[HwDriver][7] is the source of all drivers, and needs to be inherited from when
+building out a new driver. It contains the logic for calling the
+`_Set_|control_name|` of a derived class when a control with a subtype is
+defined.
+
+Another important driver is [ptyDriver][8] that the EC, AP, and Cr50 console
+controls use.
+
+As mentioned above, it’s crucial to note that drivers get instantiated with a
+set of params for each control.
+
+
+## Interfaces and their usage
+
+Interfaces are what get passed to a driver to use for control execution. These
+can either be real interfaces, or the servod instance, if [interface="servo"][9]
+is defined in the params.
+
+Inside [servo_interfaces.py][10] one can see all the interfaces defined for each
+servo type (v2, v4, ccd, etc). The interface index in the list is what the
+interface attribute in the params dictionary specifies.
+
+The driver needs to know what interface it is expecting in order to meaningfully
+execute a control.
+
+
+## Params
+
+In general, params can be any parameters that the config file writer decides to
+add that are needed for a driver.
+However, there are a couple special parameters that one should be aware of:
+
+- map
+
+  As a parameter map tells servod what map to use for input on this control.
+
+- cmd
+
+  Either set or get. On controls with different params for get and set  method
+  this needs to be defined to associate the right params dictionar to the right
+  method.
+
+- fmt
+
+  [fmt function to execute][11] on output values. Currently only supports hex.
+
+- subtype
+
+  If a driver has more than one method it exposes, then subtype defines what
+  method should be called to execute a given control. The method [called][12]
+  on the driver instance then is drv.`_(Set|Get)_|subtype|`.
+
+- input_type
+
+  Input on set methods will be [cast][13] to |input_type|. Currently float, int,
+  and str are supported.
+
+- interface
+
+  Index of the interface to use for this control. “servo” if the interface is
+  intended to be the servod instance.
+
+[1]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/system_config.py#220
+[2]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/data/ec_common.xml
+[3]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/data/servo_glados_overlay.xml#2
+[4]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/data/common.xml
+[5]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/data/common.xml#95
+[6]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/data/servo_micro.xml#194
+[7]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/drv/hw_driver.py#38
+[8]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/drv/pty_driver.py
+[9]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/data/arm_ec_common.xml#14
+[10]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/servo_interfaces.py
+[11]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/system_config.py#455
+[12]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/drv/hw_driver.py#72
+[13]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/system_config.py#382
+[14]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/servo_server.py#52
+[15]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/system_config.py#19
+[16]: ./FAQ.md#how-do-i-reroute_overwrite-a-control-for-a-board-tl_dr
+[17]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/drv/ec.py
