@@ -273,6 +273,12 @@
     init="on"></params>
   </control>
   <control>
+    <name>image_usbkey_dev</name>
+    <doc>Get USB dev attached to this servo</doc>
+    <params subtype="image_usbkey_dev" interface="servo" drv="usb_image_manager"
+      hub_port="2"></params>
+  </control>
+  <control>
     <name>prtctl4_pwren</name>
     <alias>image_usbkey_pwr</alias>
     <doc>USB port 4 (TYPE A/J3, USB key) power enable</doc>

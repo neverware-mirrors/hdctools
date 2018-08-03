@@ -188,6 +188,13 @@
   </control>
 
   <control>
+    <name>image_usbkey_dev</name>
+    <doc>Get USB dev attached to this servo</doc>
+    <params subtype="image_usbkey_dev" interface="servo" drv="usb_image_manager"
+      hub_port="4"></params>
+  </control>
+
+  <control>
     <name>dut_usb3_en</name>
     <doc>Enable Parade USB3 mux on DUT type-c</doc>
     <params interface="23" drv="ps8742" slv="0x10" port="1"

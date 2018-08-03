@@ -2,13 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Servo Server."""
-import contextlib
 import datetime
 import fcntl
 import fnmatch
 import logging
 import os
-import random
 import re
 import shutil
 import SimpleXMLRPCServer
@@ -41,10 +39,6 @@ HwDriverError = servo_drv.hw_driver.HwDriverError
 
 MAX_I2C_CLOCK_HZ = 100000
 
-# It takes about 16-17 seconds for the entire probe usb device method,
-# let's wait double plus some buffer.
-_MAX_USB_LOCK_WAIT = 40
-
 
 class ServodError(Exception):
   """Exception class for servod."""
@@ -53,7 +47,6 @@ class ServodError(Exception):
 class Servod(object):
   """Main class for Servo debug/controller Daemon."""
   _HTTP_PREFIX = 'http://'
-  _USB_LOCK_FILE = '/var/lib/servod/lock_file'
 
   # This is the key to get the main serial used in the _serialnames dict.
   MAIN_SERIAL = 'main'
@@ -178,9 +171,6 @@ class Servod(object):
     self._base_board = ''
     self._version = version
     self._usbkm232 = usbkm232
-    # Seed the random generator with the serial to differentiate from other
-    # servod processes.
-    random.seed(serialname if serialname else time.time())
     if not interfaces:
       try:
         interfaces = servo_interfaces.INTERFACE_BOARDS[board][vendor][product]
@@ -621,61 +611,6 @@ class Servod(object):
     else:
       raise NameError('No control %s' % name)
 
-  def _get_usb_port_set(self):
-    """Gets a set of USB disks currently connected to the system
-
-    Returns:
-      A set of USB disk paths.
-    """
-    usb_set = fnmatch.filter(os.listdir('/dev/'), 'sd[a-z]')
-    return set(['/dev/' + dev for dev in usb_set])
-
-  @contextlib.contextmanager
-  def _block_other_servod(self, timeout):
-    """Block other servod processes by locking a file.
-
-    To enable multiple servods processes to safely probe_host_usb_dev, we use
-    a given lock file to signal other servod processes that we're probing
-    for a usb device.  This will be a context manager that will return
-    if the block was successful or not.
-
-    If the lock file exists, we open it and try to lock it.
-    - If another servod processes has locked it already, we'll sleep a random
-      amount of time and try again, we'll keep doing that until
-      timeout amount of time has passed.
-
-    - If we're able to lock the file, we'll yield that the block was successful
-      and upon return, unlock the file and exit out.
-
-    This blocking behavior is only enabled if the lock file exists, if it
-    doesn't, then we pretend the block was successful.
-
-    Args:
-      timeout: Max waiting time for the block to succeed; 0 to wait forever.
-    """
-    if not os.path.exists(self._USB_LOCK_FILE):
-      # No lock file so we'll pretend the block was a success.
-      yield True
-    else:
-      start_time = datetime.datetime.now()
-      while True:
-        with open(self._USB_LOCK_FILE, 'w') as lock_file:
-          try:
-            fcntl.flock(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
-            yield True
-            fcntl.flock(lock_file, fcntl.LOCK_UN)
-            break
-          except IOError:
-            current_time = datetime.datetime.now()
-            current_wait_time = (current_time - start_time).total_seconds()
-            if timeout and current_wait_time > timeout:
-              yield False
-              break
-        # Sleep random amount.
-        sleep_time = random.random()
-        logging.debug('sleep %.04fs and try obtaining a lock...', sleep_time)
-        time.sleep(sleep_time)
-
   def safe_switch_usbkey_power(self, power_state, _=None):
     """Toggle the usb power safely.
 
@@ -702,67 +637,25 @@ class Servod(object):
     self.set('image_usbkey_direction', mux_direction)
     return ''
 
-  def probe_host_usb_dev(self, timeout=_MAX_USB_LOCK_WAIT):
+  def probe_host_usb_dev(self, _=0):
     """Probe the USB disk device plugged in the servo from the host side.
 
-    Method can fail by:
-    1) Having multiple servos connected and returning incorrect /dev/sdX of
-       another servo unless _USB_LOCK_FILE exists on the servo host.  If that
-       file exists, then it is safe to probe for usb devices among multiple
-       servod instances.
-    2) Finding multiple /dev/sdX and returning None.
-
     Args:
-      timeout: Timeout to wait for blocking other servod processes.
+      _: to conform to current API
 
     Returns:
       USB disk path if one and only one USB disk path is found, otherwise an
-      empty string.
-
-    Raises:
-      ServodError if failed to obtain a lock.
     """
-    with self._block_other_servod(timeout=timeout) as block_success:
-      if not block_success:
-        raise ServodError('Timed out obtaining a lock to block other servod')
+    return self.get('image_usbkey_dev')
 
-      original_value = self.get('image_usbkey_direction')
-      original_usb_power = self.get('image_usbkey_pwr')
-      # Make the host unable to see the USB disk.
-      if (original_usb_power == 'on' and
-          original_value != 'dut_sees_usbkey'):
-        self.set('image_usbkey_direction', 'dut_sees_usbkey')
-      no_usb_set = self._get_usb_port_set()
-      logging.debug('Device set when USB disk unplugged: %r', no_usb_set)
-
-      # Make the host able to see the USB disk.
-      self.set('image_usbkey_direction', 'servo_sees_usbkey')
-      has_usb_set = self._get_usb_port_set()
-      logging.debug('Device set when USB disk plugged: %r', has_usb_set)
-
-      # Back to its original value.
-      if original_value != 'servo_sees_usbkey':
-        self.set('image_usbkey_direction', original_value)
-      if original_usb_power != 'on':
-        self.set('image_usbkey_pwr', 'off')
-        time.sleep(10)
-
-      # Subtract the two sets to find the usb device.
-      diff_set = has_usb_set - no_usb_set
-      if len(diff_set) == 1:
-        return diff_set.pop()
-      else:
-        logging.warn("Can't find the USB device. Diff: %r", diff_set)
-        return ''
-
-  def download_image_to_usb(self, image_path, probe_timeout=_MAX_USB_LOCK_WAIT):
+  def download_image_to_usb(self, image_path, _=0):
     """Download image and save to the USB device found by probe_host_usb_dev.
     If the image_path is a URL, it will download this url to the USB path;
     otherwise it will simply copy the image_path's contents to the USB path.
 
     Args:
       image_path: path or url to the recovery image.
-      probe_timeout: timeout for the probe to take.
+      _: to conform to current API
 
     Returns:
       True|False: True if process completed successfully, False if error
@@ -772,7 +665,7 @@ class Servod(object):
     """
     self._logger.debug('image_path(%s)' % image_path)
     self._logger.debug('Detecting USB stick device...')
-    usb_dev = self.probe_host_usb_dev(timeout=probe_timeout)
+    usb_dev = self.get('image_usbkey_dev')
     if not usb_dev:
       self._logger.error('No usb device connected to servo')
       return False
@@ -826,7 +719,7 @@ class Servod(object):
                   occurred.
     """
     result = True
-    usb_dev = self.probe_host_usb_dev()
+    usb_dev = self.get('image_usbkey_dev')
     if not usb_dev:
       self._logger.error('No usb device connected to servo')
       return False
