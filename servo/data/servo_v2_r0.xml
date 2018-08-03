@@ -13,6 +13,9 @@
   <include>
     <name>ftdii2c_cmd.xml</name>
   </include>
+  <include>
+    <name>usb_image_management.xml</name>
+  </include>
   <map>
     <name>i2c_mux</name>
     <doc>4 to 1 mux to steer ftdi i2c bus to different sets of
@@ -290,6 +293,7 @@
   </control>
   <control>
     <name>usb_mux_sel1</name>
+    <alias>image_usbkey_mux</alias>
     <doc>2to1 mux select for USB port (vert TYPE A/J3). Set either
     'dut_sees_usbkey' or 'servo_sees_usbkey'</doc>
     <params interface="2" drv="tca6416" slv="0x21" port="0"
@@ -318,6 +322,7 @@
   </control>
   <control>
     <name>prtctl4_pwren</name>
+    <alias>image_usbkey_pwr</alias>
     <doc>USB port 4 (TYPE A/J3, USB key) power enable</doc>
     <params interface="2" drv="tca6416" slv="0x21" port="0"
     offset="7" map="onoff"></params>

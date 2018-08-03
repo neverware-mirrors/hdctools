@@ -1,0 +1,9 @@
+<root>
+  <control>
+    <name>image_usbkey_direction</name>
+    <doc>Safely switch image usbkey direction by cycling power first. Use if
+      usb drive is attached to port to avoid issues.</doc>
+    <params subtype="image_usbkey_direction" interface="servo"
+      drv="usb_image_manager" map="usbkey" usb_power_off_delay="2"></params>
+  </control>
+</root>

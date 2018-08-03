@@ -11,6 +11,9 @@
   <include>
     <name>uart_common.xml</name>
   </include>
+  <include>
+    <name>usb_image_management.xml</name>
+  </include>
   <map>
     <name>vref_sel_v3</name>
     <doc>Determine VREF between pp3300, pp2500, pp1800 and off.
@@ -271,6 +274,7 @@
   </control>
   <control>
     <name>prtctl4_pwren</name>
+    <alias>image_usbkey_pwr</alias>
     <doc>USB port 4 (TYPE A/J3, USB key) power enable</doc>
     <params interface="1" drv="gpio" chip="2" offset="13" map="onoff"
     init="on"></params>
@@ -290,6 +294,7 @@
   </control>
   <control>
     <name>usb_mux_sel1</name>
+    <alias>image_usbkey_mux</alias>
     <doc>2to1 mux select for USB port (vert TYPE A/J3). Set either
     'dut_sees_usbkey' or 'servo_sees_usbkey'</doc>
     <params interface="1" drv="gpio" chip="0" offset="11" map="usbkey"

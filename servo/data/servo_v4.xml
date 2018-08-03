@@ -6,6 +6,9 @@
   <include>
     <name>servo_v4_inas.xml</name>
   </include>
+  <include>
+    <name>usb_image_management.xml</name>
+  </include>
   <map>
     <name>onoff_pwrsrc_sel</name>
     <doc>Source DUT Type-C power from input Type-C or host USB.
@@ -133,7 +136,7 @@
   </control>
   <control>
     <name>usb3_mux_sel</name>
-    <alias>usb_mux_sel1</alias>
+    <alias>usb_mux_sel1,image_usbkey_mux</alias>
     <doc>USB3.0_TYPEA_MUX_SEL</doc>
     <params interface="23" drv="tca6416" slv="0x20" port="0"
     offset="3" map="usbkey" init="dut_sees_usbkey"></params>
@@ -147,7 +150,7 @@
   </control>
   <control>
     <name>usb3_pwr_en</name>
-    <alias>prtctl4_pwren</alias>
+    <alias>prtctl4_pwren,image_usbkey_pwr</alias>
     <doc>USB3.0_TYPE_A_PWR_EN</doc>
     <params interface="23" drv="tca6416" slv="0x20" port="0"
     offset="5" map="onoff" init="on"></params>

@@ -52,15 +52,7 @@ class ServodError(Exception):
 
 class Servod(object):
   """Main class for Servo debug/controller Daemon."""
-  _USB_DETECTION_DELAY = 10
-  _USB_POWEROFF_DELAY = 2
   _HTTP_PREFIX = 'http://'
-  _USB_J3 = 'usb_mux_sel1'
-  _USB_J3_TO_SERVO = 'servo_sees_usbkey'
-  _USB_J3_TO_DUT = 'dut_sees_usbkey'
-  _USB_J3_PWR = 'prtctl4_pwren'
-  _USB_J3_PWR_ON = 'on'
-  _USB_J3_PWR_OFF = 'off'
   _USB_LOCK_FILE = '/var/lib/servod/lock_file'
 
   # This is the key to get the main serial used in the _serialnames dict.
@@ -629,27 +621,6 @@ class Servod(object):
     else:
       raise NameError('No control %s' % name)
 
-  def _switch_usbkey(self, mux_direction):
-    """Connect USB flash stick to either servo or DUT.
-
-    This function switches 'usb_mux_sel1' to provide electrical
-    connection between the USB port J3 and either servo or DUT side.
-
-    Switching the usb mux is accompanied by powercycling
-    of the USB stick, because it sometimes gets wedged if the mux
-    is switched while the stick power is on.
-
-    Args:
-      mux_direction: "servo_sees_usbkey" or "dut_sees_usbkey".
-    """
-    self.set(self._USB_J3_PWR, self._USB_J3_PWR_OFF)
-    time.sleep(self._USB_POWEROFF_DELAY)
-    self.set(self._USB_J3, mux_direction)
-    time.sleep(self._USB_POWEROFF_DELAY)
-    self.set(self._USB_J3_PWR, self._USB_J3_PWR_ON)
-    if mux_direction == self._USB_J3_TO_SERVO:
-      time.sleep(self._USB_DETECTION_DELAY)
-
   def _get_usb_port_set(self):
     """Gets a set of USB disks currently connected to the system
 
@@ -705,52 +676,30 @@ class Servod(object):
         logging.debug('sleep %.04fs and try obtaining a lock...', sleep_time)
         time.sleep(sleep_time)
 
-  def safe_switch_usbkey_power(self, power_state, timeout=0):
+  def safe_switch_usbkey_power(self, power_state, _=None):
     """Toggle the usb power safely.
-
-    We'll make sure we're the only servod process toggling the usbkey power.
 
     Args:
       power_state: The setting to set for the usbkey power.
-      timeout: Timeout to wait for blocking other servod processes, default is
-          no timeout.
+      _: to conform to current API
 
     Returns:
       An empty string to appease the xmlrpc gods.
-
-    Raises:
-      ServodError if failed to obtain a lock.
     """
-    with self._block_other_servod(timeout=timeout) as block_success:
-      if not block_success:
-        raise ServodError('Timed out obtaining a lock to block other servod')
-
-      if power_state != self.get(self._USB_J3_PWR):
-        self.set(self._USB_J3_PWR, power_state)
+    self.set('image_usbkey_pwr', power_state)
     return ''
 
-  def safe_switch_usbkey(self, mux_direction, timeout=0):
+  def safe_switch_usbkey(self, mux_direction, _=0):
     """Toggle the usb direction safely.
-
-    We'll make sure we're the only servod process toggling the usbkey direction.
 
     Args:
       mux_direction: "servo_sees_usbkey" or "dut_sees_usbkey".
-      timeout: Timeout to wait for blocking other servod processes, default is
-          no timeout.
+      _: to conform to current API
 
     Returns:
       An empty string to appease the xmlrpc gods.
-
-    Raises:
-      ServodError if failed to obtain a lock.
     """
-    with self._block_other_servod(timeout=timeout) as block_success:
-      if not block_success:
-        raise ServodError('Timed out obtaining a lock to block other servod')
-
-      self._switch_usbkey(mux_direction)
-
+    self.set('image_usbkey_direction', mux_direction)
     return ''
 
   def probe_host_usb_dev(self, timeout=_MAX_USB_LOCK_WAIT):
@@ -777,26 +726,26 @@ class Servod(object):
       if not block_success:
         raise ServodError('Timed out obtaining a lock to block other servod')
 
-      original_value = self.get(self._USB_J3)
-      original_usb_power = self.get(self._USB_J3_PWR)
+      original_value = self.get('image_usbkey_direction')
+      original_usb_power = self.get('image_usbkey_pwr')
       # Make the host unable to see the USB disk.
-      if (original_usb_power == self._USB_J3_PWR_ON and
-          original_value != self._USB_J3_TO_DUT):
-        self._switch_usbkey(self._USB_J3_TO_DUT)
+      if (original_usb_power == 'on' and
+          original_value != 'dut_sees_usbkey'):
+        self.set('image_usbkey_direction', 'dut_sees_usbkey')
       no_usb_set = self._get_usb_port_set()
       logging.debug('Device set when USB disk unplugged: %r', no_usb_set)
 
       # Make the host able to see the USB disk.
-      self._switch_usbkey(self._USB_J3_TO_SERVO)
+      self.set('image_usbkey_direction', 'servo_sees_usbkey')
       has_usb_set = self._get_usb_port_set()
       logging.debug('Device set when USB disk plugged: %r', has_usb_set)
 
       # Back to its original value.
-      if original_value != self._USB_J3_TO_SERVO:
-        self._switch_usbkey(original_value)
-      if original_usb_power != self._USB_J3_PWR_ON:
-        self.set(self._USB_J3_PWR, self._USB_J3_PWR_OFF)
-        time.sleep(self._USB_POWEROFF_DELAY)
+      if original_value != 'servo_sees_usbkey':
+        self.set('image_usbkey_direction', original_value)
+      if original_usb_power != 'on':
+        self.set('image_usbkey_pwr', 'off')
+        time.sleep(10)
 
       # Subtract the two sets to find the usb device.
       diff_set = has_usb_set - no_usb_set

@@ -67,6 +67,7 @@ import sx1506_v4
 import tca6416
 import tcs3414
 import uart
+import usb_image_manager
 import veyron_chromebox_power
 import veyron_mickey_power
 import veyron_power
