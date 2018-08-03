@@ -63,7 +63,7 @@ class HwDriver(object):
       _params: parameter dictionary.  May be accessed via sub-class
       _io_type: String of io type or False if not explicitly assigned.
     """
-    self._logger = logging.getLogger('Driver')
+    self._logger = logging.getLogger(type(self).__name__)
     self._logger.debug('')
     self._interface = interface
     self._params = params
