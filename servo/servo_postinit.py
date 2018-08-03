@@ -11,6 +11,7 @@ import subprocess
 import usb
 
 import servo_interfaces
+import servodutil as util
 import system_config
 
 POST_INIT = collections.defaultdict(dict)
@@ -18,112 +19,6 @@ POST_INIT = collections.defaultdict(dict)
 
 class ServoPostInitError(Exception):
   """Exception class for ServoPostInit."""
-
-
-class UsbHierarchy(object):
-  """A helper class to analyze the sysfs hierarchy of USB devices."""
-
-  USB_SYSFS_PATH = '/sys/bus/usb/devices'
-  CHILD_RE = re.compile(r'\d+-\d+(\.\d+){1,}\Z')
-  BUS_FILE = 'busnum'
-  DEV_FILE = 'devnum'
-
-  def __init__(self):
-    # Get the current USB sysfs hierarchy.
-    self.refresh_usb_hierarchy()
-
-  def refresh_usb_hierarchy(self):
-    """Walk through usb sysfs files and gather parent identifiers.
-
-    The usb sysfs dir contains dirs of the following format:
-    - 1-2
-    - 1-2:1.0
-    - 1-2.4
-    - 1-2.4:1.0
-
-    The naming convention works like so:
-      <roothub>-<hub port>[.port[.port]]:config.interface
-
-    We are only going to be concerned with the roothub, hub port and port.
-    We are going to create a hierarchy where each device will store the usb
-    sysfs path of its roothub and hub port.  We will also grab the device's
-    bus and device number to help correlate to a usb.core.Device object.
-
-    We will walk through each dir and only match on device dirs
-    (e.g. '1-2.4') and ignore config.interface dirs.  When we get a hit, we'll
-    grab the bus/dev and infer the roothub and hub port from the dir name
-    ('1-2' from '1-2.4') and store the info into a dict.
-
-    The dict key will be a tuple of (bus, dev) and value be the sysfs path.
-
-    Returns:
-      Dict of tuple (bus,dev) to sysfs path.
-    """
-    usb_hierarchy = {}
-    for usb_dir in os.listdir(self.USB_SYSFS_PATH):
-      bus_file = os.path.join(self.USB_SYSFS_PATH, usb_dir, self.BUS_FILE)
-      dev_file = os.path.join(self.USB_SYSFS_PATH, usb_dir, self.DEV_FILE)
-      if (self.CHILD_RE.match(usb_dir) and os.path.exists(bus_file) and
-          os.path.exists(dev_file)):
-        parent_arr = usb_dir.split('.')[:-1]
-        parent = '.'.join(parent_arr)
-
-        bus = ''
-        with open(bus_file, 'r') as bfile:
-          bus = bfile.read().strip()
-
-        dev = ''
-        with open(dev_file, 'r') as dfile:
-          dev = dfile.read().strip()
-
-        usb_hierarchy[(bus, dev)] = parent
-
-    self._usb_hierarchy = usb_hierarchy
-
-  def _get_parent_path(self, usb_device):
-    """Return the USB sysfs path of the supplied usb_device's parent.
-
-    Args:
-      usb_device: usb.core.Device object.
-
-    Returns:
-      SysFS path string of parent of the supplied usb device.
-    """
-    return self._usb_hierarchy.get((str(usb_device.bus), str(
-        usb_device.address)))
-
-  def share_same_hub(self, usb_servo, usb_candidate):
-    """Check if the given USB device shares the same hub with servo v4.
-
-    Args:
-      usb_servo: usb.core.Device object of servo v4.
-      usb_candidate: usb.core.Device object of USB device canditate.
-
-    Returns:
-      True if they share the same hub; otherwise, False.
-    """
-    usb_servo_parent = self._get_parent_path(usb_servo)
-    usb_candidate_parent = self._get_parent_path(usb_candidate)
-
-    if usb_servo_parent is None or usb_candidate_parent is None:
-      return False
-
-    # Check the hierarchy:
-    #   internal hub <-- servo v4 mcu
-    #         \--------- USB candidate
-    if usb_servo_parent == usb_candidate_parent:
-      return True
-
-    # Check the hierarchy:
-    #   internal hub <-- servo v4 mcu
-    #         \--------- external hub
-    #                          \--------- USB candidate
-    # Check having '.' to make sure it is one of the ports of the internal hub.
-    if usb_candidate_parent.startswith(usb_servo_parent + '.'):
-      return True
-
-    return False
-
 
 class BasePostInit(object):
   """Base Class for Post Init classes."""
@@ -151,21 +46,6 @@ class ServoV4PostInit(BasePostInit):
   # Only support CR50 CCD.
   CCD_CFG = 'ccd_cr50.xml'
 
-  def _get_all_usb_devices(self, vid_pid_list):
-    """Return all associated USB devices which match the given VID/PID's.
-
-    Args:
-      vid_pid_list: List of tuple (vid, pid).
-
-    Returns:
-      List of usb.core.Device objects.
-    """
-    all_devices = []
-    for vid, pid in vid_pid_list:
-      devs = usb.core.find(idVendor=vid, idProduct=pid, find_all=True)
-      if devs:
-        all_devices.extend(devs)
-    return all_devices
 
   def get_servo_v4_usb_device(self):
     """Return associated servo v4 usb.core.Device object.
@@ -173,7 +53,7 @@ class ServoV4PostInit(BasePostInit):
     Returns:
       servo v4 usb.core.Device object associated with the servod instance.
     """
-    servo_v4_candidates = self._get_all_usb_devices(
+    servo_v4_candidates = util.UsbHierarchy.GetAllUsbDevices(
         servo_interfaces.SERVO_V4_DEFAULTS)
     for d in servo_v4_candidates:
       d_serial = usb.util.get_string(d, 256, d.iSerialNumber)
@@ -188,7 +68,8 @@ class ServoV4PostInit(BasePostInit):
     Returns:
       List of servo micro devices as usb.core.Device objects.
     """
-    return self._get_all_usb_devices(servo_interfaces.SERVO_MICRO_DEFAULTS)
+    vid_pid_list = servo_interfaces.SERVO_MICRO_DEFAULTS
+    return util.UsbHierarchy.GetAllUsbDevices(vid_pid_list)
 
   def get_ccd_devices(self):
     """Return all CCD USB devices detected.
@@ -196,7 +77,7 @@ class ServoV4PostInit(BasePostInit):
     Returns:
       List of CCD USB devices as usb.core.Device objects.
     """
-    return self._get_all_usb_devices(servo_interfaces.CCD_DEFAULTS)
+    return util.UsbHierarchy.GetAllUsbDevices(servo_interfaces.CCD_DEFAULTS)
 
   def prepend_config(self, new_cfg_file, remove_head=False, name_prefix=None,
                      interface_increment=0):
@@ -286,7 +167,7 @@ class ServoV4PostInit(BasePostInit):
     self.kick_devices()
 
     # Snapshot the USB hierarchy at this moment.
-    usb_hierarchy = UsbHierarchy()
+    usb_hierarchy = util.UsbHierarchy()
 
     main_micro_found = False
     # We want to check if we have one/multiple servo micros connected to
@@ -297,7 +178,7 @@ class ServoV4PostInit(BasePostInit):
       # The servo_micro and the STM chip of servo v4 share the same internal hub
       # on servo v4 board. Check the USB hierarchy to find the servo_micro
       # behind.
-      if usb_hierarchy.share_same_hub(servo_v4, servo_micro):
+      if usb_hierarchy.ShareSameHub(servo_v4, servo_micro):
         default_slot = servo_interfaces.SERVO_V4_SLOT_POSITIONS['default']
         slot_size = servo_interfaces.SERVO_V4_SLOT_SIZE
         backup_interfaces = self.servod.get_servo_interfaces(
@@ -355,7 +236,7 @@ class ServoV4PostInit(BasePostInit):
     ccd_candidates = self.get_ccd_devices()
     for ccd in ccd_candidates:
       # Pick the proper CCD endpoint behind the servo v4.
-      if usb_hierarchy.share_same_hub(servo_v4, ccd):
+      if usb_hierarchy.ShareSameHub(servo_v4, ccd):
         self.prepend_config(self.CCD_CFG)
         self.add_servo_serial(ccd, self.servod.CCD_SERIAL)
         self.init_servo_interfaces(ccd)
