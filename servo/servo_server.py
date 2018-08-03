@@ -9,8 +9,6 @@ import logging
 import os
 import re
 import SimpleXMLRPCServer
-import subprocess
-import tempfile
 import threading
 import time
 import usb
@@ -674,56 +672,15 @@ class Servod(object):
 
     Returns:
       True|False: True if process completed successfully, False if error
-                  occurred.
+                        occurred.
     """
-    result = True
-    usb_dev = self.get('image_usbkey_dev')
-    if not usb_dev:
-      self._logger.error('No usb device connected to servo')
+    try:
+      usb_dev = self.get('image_usbkey_dev')
+      usb_dev_partition = '%s1' % usb_dev
+      self.set('make_usb_dev_image_noninteractive', usb_dev_partition)
+      return True
+    except Exception:
       return False
-    # Create TempDirectory
-    tmpdir = tempfile.mkdtemp()
-    if tmpdir:
-      # Mount drive to tmpdir.
-      partition_1 = '%s1' % usb_dev
-      rc = subprocess.call(['mount', partition_1, tmpdir])
-      if rc == 0:
-        # Create file 'non_interactive'
-        non_interactive_file = os.path.join(tmpdir, 'non_interactive')
-        try:
-          open(non_interactive_file, 'w').close()
-        except IOError as e:
-          self._logger.error('Failed to create file %s : %s ( %d )',
-                             non_interactive_file, e.strerror, e.errno)
-          result = False
-        except BaseException as e:
-          self._logger.error('Unexpected Exception creating file %s : %s',
-                             non_interactive_file, str(e))
-          result = False
-        # Unmount drive regardless if file creation worked or not.
-        rc = subprocess.call(['umount', partition_1])
-        if rc != 0:
-          self._logger.error('Failed to unmount USB Device')
-          result = False
-      else:
-        self._logger.error('Failed to mount USB Device')
-        result = False
-
-      # Delete tmpdir. May throw exception if 'umount' failed.
-      try:
-        os.rmdir(tmpdir)
-      except OSError as e:
-        self._logger.error('Failed to remove temp directory %s : %s', tmpdir,
-                           str(e))
-        return False
-      except BaseException as e:
-        self._logger.error('Unexpected Exception removing tempdir %s : %s',
-                           tmpdir, str(e))
-        return False
-    else:
-      self._logger.error('Failed to create temp directory.')
-      return False
-    return result
 
   def set_get_all(self, cmds):
     """Set &| get one or more control values.

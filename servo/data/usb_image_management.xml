@@ -12,4 +12,9 @@
     <params subtype="download_to_usb_dev" interface="servo" drv="usb_image_manager"
       input_type="str"></params>
   </control>
+  <control>
+    <name>make_usb_dev_image_noninteractive</name>
+    <doc>Make the image on the attached USB noninteractive</doc>
+    <params subtype="make_image_noninteractive" input_type="str" interface="servo" drv="usb_image_manager"></params>
+  </control>
 </root>

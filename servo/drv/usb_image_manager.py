@@ -7,6 +7,7 @@
 import os
 import shutil
 import subprocess
+import tempfile
 import time
 import urllib
 
@@ -33,6 +34,7 @@ class usbImageManager(hw_driver.HwDriver):
   # Control aliases to the usb mux (and its power) intended for image management
   _IMAGE_MUX = 'image_usbkey_mux'
   _IMAGE_MUX_PWR = 'image_usbkey_pwr'
+  _IMAGE_DEV = 'image_usbkey_dev'
   _IMAGE_MUX_TO_SERVO = 'servo_sees_usbkey'
 
   _HTTP_PREFIX = 'http://'
@@ -73,7 +75,7 @@ class usbImageManager(hw_driver.HwDriver):
     self._interface.set(self._IMAGE_MUX_PWR, 'on')
     if self._interface.get(self._IMAGE_MUX) == self._IMAGE_MUX_TO_SERVO:
       end = time.time() + self._WAIT_TIMEOUT
-      while not self._interface.get('image_usbkey_dev') and time.time() < end:
+      while not self._interface.get(self._IMAGE_DEV) and time.time() < end:
         time.sleep(self._POLLING_DELAY)
 
   def _Get_image_usbkey_dev(self):
@@ -131,8 +133,8 @@ class usbImageManager(hw_driver.HwDriver):
     # Ensure that any issue gets caught & reported as UsbImageError
     self._logger.debug('image_path(%s)', image_path)
     self._logger.debug('Detecting USB stick device...')
-    usb_dev = self._interface.get('image_usbkey_dev')
-    # |errormsg| is used later to indicate the error
+    usb_dev = self._interface.get(self._IMAGE_DEV)
+    # |errormsg| is usd later to indicate the error
     errormsg = ''
     if not usb_dev:
       # No usb dev attached, skip straight to the end.
@@ -180,3 +182,70 @@ class usbImageManager(hw_driver.HwDriver):
       raise UsbImageManagerError(errormsg)
     # If everything goes smooth, cache the image path
     self._image_path = image_path
+
+  def _Set_make_image_noninteractive(self, usb_dev_partition):
+    """Makes the recovery image noninteractive.
+
+    A noninteractive image will reboot automatically after installation
+    instead of waiting for the USB device to be removed to initiate a system
+    reboot.
+
+    Mounts |usb_dev_partition| and creates a file called "non_interactive" so
+    that the image will become noninteractive.
+
+    Args:
+      usb_dev_partition: string of dev partition file e.g. sdb1 or sdc3
+
+    Raises:
+     UsbImageManagerError: if error occurred during the process
+    """
+    # pylint: disable=broad-except
+    # Ensure that any issue gets caught & reported as UsbImageError
+    if not usb_dev_partition or not os.path.exists(usb_dev_partition):
+      msg = 'Usb parition device file provided %r invalid.' % usb_dev_partition
+      self._logger.error(msg)
+      raise UsbImageManagerError(msg)
+    # Create TempDirectory
+    tmpdir = tempfile.mkdtemp()
+    result = True
+    if not tmpdir:
+      self._logger.error('Failed to create temp directory.')
+      result = False
+    else:
+      # Mount drive to tmpdir.
+      rc = subprocess.call(['mount', usb_dev_partition, tmpdir])
+      if rc == 0:
+        # Create file 'non_interactive'
+        non_interactive_file = os.path.join(tmpdir, 'non_interactive')
+        try:
+          open(non_interactive_file, 'w').close()
+        except IOError as e:
+          self._logger.error('Failed to create file %s : %s ( %d )',
+                             non_interactive_file, e.strerror, e.errno)
+          result = False
+        except BaseException as e:
+          self._logger.error('Unexpected Exception creating file %s : %s',
+                             non_interactive_file, str(e))
+          result = False
+        # Unmount drive regardless if file creation worked or not.
+        rc = subprocess.call(['umount', usb_dev_partition])
+        if rc != 0:
+          self._logger.error('Failed to unmount USB Device')
+          result = False
+      else:
+        self._logger.error('Failed to mount USB Device')
+        result = False
+
+      # Delete tmpdir. May throw exception if 'umount' failed.
+      try:
+        os.rmdir(tmpdir)
+      except OSError as e:
+        self._logger.error('Failed to remove temp directory %s : %s', tmpdir,
+                           str(e))
+        result = False
+      except BaseException as e:
+        self._logger.error('Unexpected Exception removing tempdir %s : %s',
+                           tmpdir, str(e))
+        result = False
+    if not result:
+      raise UsbImageManagerError('Failed to make image noninteractive.')
