@@ -7,6 +7,7 @@ Provides the following console controlled function subtypes:
   usbpd_console
 """
 
+import re
 import logging
 
 import pty_driver
@@ -35,6 +36,36 @@ usbpd_uart_config = {
 
 class ec3poServoMicroError(Exception):
   """Exception class for ec."""
+
+
+def _GetIteChipidReStr(command):
+  """Get a regexp for matching get_ite_chipid Servo console command output.
+
+  Args:
+    command: str - The actual console command that will be run.  This should
+        either be 'get_ite_chipid' itself or another command with identical
+        output.
+
+  Returns:
+    str - A regexp that will match either the expected output, or the usage
+        output, because the latter is typically printed after any error message.
+        Match group 1 will contain the output either way.  If it starts with
+        'Usage:' then an error occurred.
+
+  This returns str instead of re.compile() because that is what the
+  pty_driver.ptyDriver._issue_cmd_get_results() interface accepts.
+  """
+  return (
+      # Match the beginning of a line.
+      r'[\r\n\f]('
+      # Match the expected output.
+      r'ITE EC info:[^\r\n\f]*'
+      # Alternatively, match the usage output, because it is typically printed
+      # after any error message.  This avoids waiting for the Servod pexpect
+      # timeout after typical errors.
+      r'|Usage: %s(?:[ \t\v]+[^\r\n\f]*)?'
+      # Match the end of a line.
+      r')[\r\n\f]' % (re.escape(command),))
 
 
 class ec3poServoMicro(pty_driver.ptyDriver):
@@ -69,19 +100,20 @@ class ec3poServoMicro(pty_driver.ptyDriver):
 
     self._logger.debug('')
 
-  def _Get_ver(self):
-    """Getter of ver.
+  def _Get_version(self):
+    """Getter of version.
 
     Returns:
         The version string
     """
-    result = self._issue_cmd_get_results('ver', ['Build:\s+(\S+)\s'])[0]
+    result = self._issue_cmd_get_results('version', [
+        r'(?:^|\n)Build:\s+(\S+)\s'])[0]
     if result is None:
       raise ec3poServoMicroError('Cannot retrieve the version.')
     return result[1]
 
-  def _Get_ver_valid(self):
-    """Getter of ver_valid.
+  def _Get_version_valid(self):
+    """Getter of version_valid.
 
     Returns:
         Boolean: Is the version string one of the validated versions?
@@ -122,3 +154,31 @@ class ec3poServoMicro(pty_driver.ptyDriver):
       value: An integer value, 0: none, 1:samus, 2:glados
     """
     return 0
+
+  def _Get_enable_ite_dfu(self):
+    """Enable ITE EC direct firmware update over I2C mode.
+
+    Enable direct firmware update (DFU) over I2C mode on ITE IT8320 EC chip by
+    sending special non-I2C waveforms over the I2C bus wires.
+    """
+    results = self._issue_cmd_get_results('enable_ite_dfu', [
+        _GetIteChipidReStr('enable_ite_dfu')])
+    if results[0] is None or results[0][1].startswith('Usage:'):
+      raise ec3poServoMicroError(
+          'Failed to enable DFU mode.  results=%r' % (results,))
+    return results[0][1].strip()
+
+  def _Get_get_ite_chipid(self):
+    """Verify that ITE EC chip is in DFU mode by querying for its chip ID.
+
+    Verify that ITE IT8320 EC chip direct firmware update (DFU) mode is enabled
+    by querying the EC over I2C for its CHIPID1 and CHIPID2 registers.  It will
+    only respond over I2C when in DFU mode.
+    """
+    results = self._issue_cmd_get_results('get_ite_chipid', [
+        _GetIteChipidReStr('get_ite_chipid')])
+    if results[0] is None or results[0][1].startswith('Usage:'):
+      raise ec3poServoMicroError(
+          'Failed to query ITE EC chip ID, or failed to parse the output.  Has '
+          'enable_ite_dfu been called?  results=%r' % (results,))
+    return results[0][1].strip()

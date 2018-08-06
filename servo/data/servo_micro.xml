@@ -153,7 +153,6 @@
     subtype="single" map="onoff_i" init="off"></params>
   </control>
 
-
   <!-- GPIO on expander settings -->
   <control>
     <name>fw_wp_en</name>
@@ -329,20 +328,16 @@
     </params>
   </control>
 
-
   <control>
     <name>servo_micro_version</name>
     <doc>current fw version</doc>
-    <params cmd="get" subtype="ver" interface="6" drv="ec3po_servo_micro"
-    map="str" clobber_ok=""></params>
+    <params cmd="get" subtype="version" interface="6" drv="ec3po_servo_micro" map="str" clobber_ok=""></params>
   </control>
   <control>
     <name>servo_micro_version_compatible</name>
     <doc>Is current version compatible</doc>
-    <params cmd="get" subtype="ver_valid" interface="6" drv="ec3po_servo_micro"
-    map="yesno" clobber_ok=""></params>
+    <params cmd="get" subtype="version_valid" interface="6" drv="ec3po_servo_micro" map="yesno" clobber_ok=""></params>
   </control>
-
 
   <!-- EC-3PO console interpreter linkup -->
   <control>
@@ -402,5 +397,17 @@
     <doc>Dummy control. No way to change it.</doc>
     <params interface="9" drv="na" subtype="not_applicable" input_type="str"
     clobber_ok="" />
+  </control>
+
+  <!-- ITE EC firmware flashing support -->
+  <control>
+    <name>enable_ite_dfu</name>
+    <doc>Enable direct firmware update (DFU) over I2C mode on ITE IT8320 EC chip by sending special non-I2C waveforms over the I2C bus wires.</doc>
+    <params cmd="get" subtype="enable_ite_dfu" interface="6" drv="ec3po_servo_micro" map="str" clobber_ok=""></params>
+  </control>
+  <control>
+    <name>get_ite_chipid</name>
+    <doc>Verify that ITE IT8320 EC chip direct firmware update (DFU) mode is enabled by querying the EC over I2C for its CHIPID1 and CHIPID2 registers.  It will only respond over I2C when in DFU mode.</doc>
+    <params cmd="get" subtype="get_ite_chipid" interface="6" drv="ec3po_servo_micro" map="str" clobber_ok=""></params>
   </control>
 </root>
