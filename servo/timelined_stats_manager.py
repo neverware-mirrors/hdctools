@@ -8,6 +8,7 @@ from __future__ import print_function
 import copy
 import time
 
+import numpy
 import stats_manager
 
 TIME_KEY = 'time'
@@ -60,6 +61,7 @@ class TimelinedStatsManager(stats_manager.StatsManager):
     super(TimelinedStatsManager, self).CalculateStats()
 
   def AddSample(self, domain, sample):
+    # pylint: disable=C6113
     """NotImplemented.
 
     In order to preserve the balanced timeline adding invidual samples is
@@ -100,3 +102,26 @@ class TimelinedStatsManager(stats_manager.StatsManager):
     samples.extend(known_domains_missing_nans)
     for domain, sample in samples:
       super(TimelinedStatsManager, self).AddSample(domain, sample)
+
+  def TrimSamples(self, tstart=None, tend=None):
+    """Trim raw data to [tstart, tend].
+
+    Args:
+      tstart: first timestamp to include. Seconds since epoch
+      tend: last timestamp to include. Seconds since epoch
+    """
+    if tstart is None and tend is None:
+      # Avoid doing any work if there will be no trimming.
+      return
+
+    timeline = numpy.array(self._data[self._tkey])
+    if tstart is None:
+      tstart = timeline[0]
+    if tend is None:
+      tend = timeline[-1]
+    # pylint: disable=W0212
+    for domain, samples in self._data.iteritems():
+      sample_arr = numpy.array(samples)
+      trimmed_samples = sample_arr[numpy.bitwise_and(tstart <= timeline,
+                                                     timeline <= tend)]
+      self._data[domain] = trimmed_samples.tolist()

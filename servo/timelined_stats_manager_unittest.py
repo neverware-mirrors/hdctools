@@ -75,5 +75,35 @@ class TestTimelinedStatsManager(unittest.TestCase):
     with self.assertRaises(stats_manager.StatsManagerError):
       self.data.AddSamples(samples)
 
+  def test_TrimSamples(self):
+    """Ensure that trimming works as expected."""
+    self.data.AddSamples([('A', 10)])
+    tstart = time.time()
+    time.sleep(0.01)
+    self.data.AddSamples([('A', 23)])
+    self.data.AddSamples([('A', 20)])
+    tend = time.time()
+    time.sleep(0.01)
+    self.data.AddSamples([('A', 10)])
+    self.data.TrimSamples(tstart=tstart, tend=tend)
+    self.data.CalculateStats()
+    # Verify that only the samples between the timestamps are left
+    self.assertEqual([23, 20], self.data._data['A'])
+    for samples in self.data._data.itervalues():
+      # Verify that all domains were trimmed to size 2
+      self.assertEqual(2, len(samples))
+
+  def test_TrimSamplesNoStartNoEnd(self):
+    """Ensure that the trimming encompasses the whole dataset."""
+    orig_samples = [10, 23, 20, 10]
+    for sample in orig_samples:
+      self.data.AddSamples([('A', sample)])
+    self.data.CalculateStats()
+    self.data.TrimSamples()
+    self.assertEqual(orig_samples, self.data._data['A'])
+    for samples in self.data._data.itervalues():
+      # Verify that all domains were not trimmed
+      self.assertEqual(len(orig_samples), len(samples))
+
 if __name__ == '__main__':
   unittest.main()
