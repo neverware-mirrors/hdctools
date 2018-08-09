@@ -374,42 +374,35 @@ class SystemConfig(object):
           an alphanumeric which is key in the corresponding map dictionary.
 
     Returns:
-      Resolved value as float or int
+      Resolved value as float or int or str depending on mapping & input type
 
     Raises:
       SystemConfigError: mapping issues found
     """
+    # its a map
+    if 'map' in params:
+      map_dict = self._lookup('map', params['map'])
+      if map_dict is None:
+        raise SystemConfigError("Map %s isn't defined" % params['map'])
+      try:
+        map_vstr = map_dict['map_params'][map_vstr]
+      except KeyError:
+        raise SystemConfigError(
+            ("Map %s doesn't contain key %s\n" + "Try one of -> '%s'") %
+            (params['map'], map_vstr,
+             "', '".join(map_dict['map_params'].keys())))
     if 'input_type' in params:
       if params['input_type'] in ALLOWABLE_INPUT_TYPES:
         input_type = ALLOWABLE_INPUT_TYPES[params['input_type']]
         return input_type(map_vstr)
       else:
         self._logger.error('Unrecognized input type.')
-    else:
-      # TODO(tbroch): deprecate below once all controls have input_type params
-      try:
-        return int(str(map_vstr), 0)
-      except ValueError:
-        pass
-      try:
-        return float(str(map_vstr))
-      except ValueError:
-        pass
-
-    # its a map
-    if 'map' not in params:
-      raise SystemConfigError('No map for control but value is a string')
-    map_dict = self._lookup('map', params['map'])
-    if map_dict is None:
-      raise SystemConfigError("Map %s isn't defined" % params['map'])
+    # TODO(tbroch): deprecate below once all controls have input_type params
     try:
-      map_value = map_dict['map_params'][map_vstr]
-    except KeyError:
-      raise SystemConfigError(
-          ("Map %s doesn't contain key %s\n" + "Try one of -> '%s'") %
-          (params['map'], map_vstr, "', '".join(map_dict['map_params'].keys())))
-    # TODO(tbroch) likely that maps are only integers but what if ...
-    return int(map_value, 0)
+      return int(str(map_vstr), 0)
+    except ValueError:
+      pass
+    return float(str(map_vstr))
 
   def _Fmt_hex(self, int_val):
     """Format integer into hex.
