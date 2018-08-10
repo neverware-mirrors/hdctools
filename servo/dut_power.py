@@ -43,11 +43,13 @@ def _AddMutuallyExclusiveAction(name, parser, default=True, action='save'):
   saver.add_argument(argname, default=default, dest=dest,
                      action='store_true', help=arghelp)
   noarghelp = "don't %s %s" % (action, name)
-  saver.add_argument(noargname, default=default, dest=dest,
+  saver.add_argument(noargname, default=argparse.SUPPRESS, dest=dest,
                      action='store_false', help=noarghelp)
 
 def main(cmdline=sys.argv[1:]):
-  parser = argparse.ArgumentParser(description='Measure power using servod.')
+  parser = argparse.ArgumentParser(
+      description='Measure power using servod.',
+      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
   # servod connection
   parser.add_argument('--host', default=client.DEFAULT_HOST,
                       help='servod host')
