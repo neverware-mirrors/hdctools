@@ -1,3 +1,7 @@
+# Copyright 2018 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 Servo AVR keyboard emulator
 ---------------------------
 
@@ -25,7 +29,8 @@ atmega_pty:/dev/pts/31
 
 Confirm the AVR is connected to USB via the USB mux.
 dut-control atmega_rst:off
-dut-control usb_mux_sel4:on
+For Servo V2/V3, connect AVR to usb:
+  dut-control usb_mux_sel4:on
 
 Verify on the DUT that the avr is visible:
 lsusb should show "LUFA Keyboard"
@@ -59,8 +64,8 @@ dut-control atmega_rst:on
 dut-control atmega_rst:off
 dut-control at_hwb:off
 
-Select avr on the USB mux.
-dut-control usb_mux_sel4:on
+For Servo V2/V3, select AVR on the USB mux.
+  dut-control usb_mux_sel4:on
 
 At this point you will see an Atmel DFU device in lsusb.
 
