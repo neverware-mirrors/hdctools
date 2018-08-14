@@ -85,7 +85,7 @@
 		void SendNextReport(void);
 		void ReceiveNextReport(void);
 
-		void keyclear();
+		void keyclear(void);
 		int iskeypressed(uint8_t key);
 		int insertkey(uint8_t key);
 		int removekey(uint8_t key);

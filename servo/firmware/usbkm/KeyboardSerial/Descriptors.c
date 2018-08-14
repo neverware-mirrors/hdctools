@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 /*
-             LUFA Library
+	     LUFA Library
      Copyright (C) Dean Camera, 2014.
 
   dean [at] fourwalledcubicle [dot] com
-           www.lufa-lib.org
+	   www.lufa-lib.org
 */
 
 /*
@@ -128,7 +128,9 @@ const USB_Descriptor_Configuration_t PROGMEM ConfigurationDescriptor =
 			.ConfigurationNumber    = 1,
 			.ConfigurationStrIndex  = NO_DESCRIPTOR,
 
-			.ConfigAttributes       = (USB_CONFIG_ATTR_RESERVED | USB_CONFIG_ATTR_SELFPOWERED),
+			.ConfigAttributes       = (USB_CONFIG_ATTR_RESERVED |
+						   USB_CONFIG_ATTR_SELFPOWERED |
+						   USB_CONFIG_ATTR_REMOTEWAKEUP),
 
 			.MaxPowerConsumption    = USB_CONFIG_POWER_MA(100)
 		},
@@ -206,8 +208,8 @@ const USB_Descriptor_String_t PROGMEM ProductString = USB_STRING_DESCRIPTOR(L"LU
  *  USB host.
  */
 uint16_t CALLBACK_USB_GetDescriptor(const uint16_t wValue,
-                                    const uint8_t wIndex,
-                                    const void** const DescriptorAddress)
+				    const uint8_t wIndex,
+				    const void** const DescriptorAddress)
 {
 	const uint8_t  DescriptorType   = (wValue >> 8);
 	const uint8_t  DescriptorNumber = (wValue & 0xFF);

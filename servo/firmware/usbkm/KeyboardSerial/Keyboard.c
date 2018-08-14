@@ -600,15 +600,25 @@ ISR(USART1_RX_vect, ISR_BLOCK)
 	if (ReceivedByte == 0) {
 		/* Acknowledge presence regardless of USB state */
 		RingBuffer_Insert(&USBtoUSART_Buffer, ~(ReceivedByte));
-	} else if ((USB_DeviceState == DEVICE_STATE_Configured) &&
-		   !(RingBuffer_IsFull(&USARTtoUSB_Buffer))) {
-		RingBuffer_Insert(&USARTtoUSB_Buffer, ReceivedByte);
+	} else {
+		/**
+		*  Trigger a remote wake if USB_Device_RemoteWakeupEnabled
+		*  is set. Kernel is supposed to set this flag on it
+		*  way to suspend.
+		*/
+		if (USB_Device_RemoteWakeupEnabled) {
+			USB_Device_SendRemoteWakeup();
+			USB_Device_RemoteWakeupEnabled = false;
+		}
+		if ((USB_DeviceState == DEVICE_STATE_Configured) &&
+		    !(RingBuffer_IsFull(&USARTtoUSB_Buffer))) {
+			RingBuffer_Insert(&USARTtoUSB_Buffer, ReceivedByte);
+		}
 	}
 }
 
 
 void SetupSerial() {
-	uint8_t ConfigMask = 0;
 	uint32_t baud = 9600;
 
 	/* Must turn off USART before reconfiguring it, otherwise incorrect operation may occur */
