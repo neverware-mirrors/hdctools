@@ -469,6 +469,8 @@ class PowerMeasurement(object):
     Returns:
       A dictionary of the form:
         { 'EC'  : { 'time'              : [0.01, 0.02 ... ],
+                    'timeline'          : [0.0, 0.01 ...],
+                    'Sample_msecs'      : [0.4, 0.2 ...],
                     'ec_ppvar_vbat_mw'  : [52.23, 87.23 ... ]}
           'Onboard INA' : ... }
       Possible keys are: 'EC', 'Onboard INA'
@@ -503,6 +505,32 @@ class PowerMeasurement(object):
           f.write('\n%s\n' % message)
     self._logger.info('Storing summaries at:\n%s', '\n'.join(outfiles))
     return outfiles
+
+  def GetSummary(self):
+    """Retrieve summary of the PowerMeasurement run.
+
+    Retrieve a dictionary of each StatsManager object this run used, where
+    each entry is a dictionary of the rail to its statistics.
+
+    Returns:
+      A dictionary of the form:
+        {'EC':          {'ppvar_vbat_mw': {'count':  1,
+                                           'max':    0.0,
+                                           'mean':   0.0,
+                                           'min':    0.0,
+                                           'stddev': 0.0},
+                         'Sample_msecs':  {...},
+                         'time':          {...},
+                         'timeline':      {...}},
+         'Onboard INA': {...}}
+      Possible keys are: 'EC', 'Onboard INA'
+
+    Raises:
+      PowerMeasurementError: if called before measurement processing is done
+    """
+    if not self._processing_done:
+      raise PowerMeasurementError(self.PREMATURE_RETRIEVAL_WARNING)
+    return {name: stat.GetSummary() for name, stat in self._stats.iteritems()}
 
   def GetFormattedSummary(self):
     """Retrieve summary of the PowerMeasurement run.
