@@ -23,6 +23,7 @@ DEFAULT_INA_RATE = 1
 # Powerstate name used when no powerstate is known
 UNKNOWN_POWERSTATE = 'S?'
 
+
 class PowerTrackerError(Exception):
   """Error class to invoke on PowerTracker errors."""
 
@@ -71,12 +72,17 @@ class PowerTracker(threading.Thread):
     raise NotImplementedError('run needs to be implemented for PowerTracker '
                               'subclasses.')
 
-  def process_measurement(self):
+  def process_measurement(self, tstart=None, tend=None):
     """Process the measurement by calculating stats.
+
+    Args:
+      tstart: first timestamp to include. Seconds since epoch
+      tend: last timestamp to include. Seconds since epoch
 
     Returns:
       StatsManager object containing info from the run
     """
+    self._stats.TrimSamples(tstart, tend)
     self._stats.CalculateStats()
     return self._stats
 
@@ -182,6 +188,7 @@ class HighResServodPowerTracker(ServodPowerTracker):
       # Sleep until the end of the sample rate
       self._stop_signal.wait(max(0, end - time.time()))
 
+
 class OnboardINAPowerTracker(HighResServodPowerTracker):
   """Off-the-shelf PowerTracker to measure onboard INAs through servod."""
 
@@ -247,9 +254,9 @@ class PowerMeasurement(object):
     _stats: collection of power measurement stats after run completes
     _outdir: default outdir to save data to
              After the measurement a new directory is generated
+    _processing_done: bool flag indicating if measurement data is processed
     _setup_done: Event object to indicate power collection is about to start
     _stop_signal: Event object to indicate that power collection should stop
-    _processing_done: Event object to signal end of measurement processing
     _power_trackers: list of PowerTracker objects setup for measurement
     _fast: if True measurements will skip explicit powerstate retrieval
     _logger: PowerMeasurement logger
@@ -263,7 +270,6 @@ class PowerMeasurement(object):
 
   PREMATURE_RETRIEVAL_MSG = ('Cannot retrieve information before data '
                              'collection has finished.')
-
 
   def __init__(self, host, port, ina_rate=DEFAULT_INA_RATE,
                vbat_rate=DEFAULT_VBAT_RATE, fast=False):
@@ -290,9 +296,9 @@ class PowerMeasurement(object):
         self._board = self._sclient.get('ec_board')
       except client.ServoClientError:
         self._logger.warn('Failed to get ec_board, setting to unknown.')
+    self._processing_done = False
     self._setup_done = threading.Event()
     self._stop_signal = threading.Event()
-    self._processing_done = threading.Event()
     self._power_trackers = []
     self._stats = {}
     power_trackers = []
@@ -334,7 +340,7 @@ class PowerMeasurement(object):
     self._stats = {}
     self._setup_done.clear()
     self._stop_signal.clear()
-    self._processing_done.clear()
+    self._processing_done = False
     # this is clean up unused files that might have been created
     self.Cleanup()
 
@@ -351,12 +357,10 @@ class PowerMeasurement(object):
       wait: seconds to wait before collecting power
       powerstate: (optional) pass the powerstate if known
     """
-    signals = self.MeasurePower(wait=wait, powerstate=powerstate)
-    setup_done, stop_signal, processing_done = signals
+    setup_done = self.MeasurePower(wait=wait, powerstate=powerstate)
     setup_done.wait()
     time.sleep(sample_time+wait)
-    stop_signal.set()
-    processing_done.wait()
+    self.FinishMeasurement()
 
   def MeasurePower(self, wait=0, powerstate=UNKNOWN_POWERSTATE):
     """Measure power in the background until caller indicates to stop.
@@ -371,11 +375,8 @@ class PowerMeasurement(object):
       powerstate: (optional) pass the powerstate if known
 
     Returns:
-      Tuple of Events - (|setup_done|, |stop_signal|, |processing_done|)
+      Event - |setup_done|
       Caller can wait on |setup_done| to know when setup for measurement is done
-      Caller is to set() |stop_signal| when power collection should end
-      Caller is then to wait() on processing_done to know that processing
-      of the raw data has concluded, and it is safe to retrieve/save/display
     """
     self.Reset()
     measure_t = threading.Thread(target=self._MeasurePower, kwargs=
@@ -383,13 +384,10 @@ class PowerMeasurement(object):
                                   'powerstate': powerstate})
     measure_t.daemon = True
     measure_t.start()
-    return (self._setup_done, self._stop_signal, self._processing_done)
+    return self._setup_done
 
   def _MeasurePower(self, wait, powerstate=UNKNOWN_POWERSTATE):
     """Power measurement thread method coordinating sampling threads.
-
-    Kick off PowerTrackers. On stop signal, processes them before setting the
-    processing done signal.
 
     Args:
       wait: seconds to wait before collecting power
@@ -403,25 +401,39 @@ class PowerMeasurement(object):
         self._logger.warn('Failed to get powerstate from EC.')
     for power_tracker in self._power_trackers:
       power_tracker.prepare(self._fast, powerstate)
+    ts = time.strftime('%Y%m%d-%H%M%S', time.localtime(time.time()))
+    self._outdir = os.path.join(self.DEFAULT_OUTDIR_BASE, self._board,
+                                '%s_%s' % (powerstate, ts))
     # Signal that setting the measurement is complete
     self._setup_done.set()
     # Wait on the stop signal for |wait| seconds. Preemptible.
     self._stop_signal.wait(wait)
     for power_tracker in self._power_trackers:
       power_tracker.start()
-    self._stop_signal.wait()
-    try:
-      for power_tracker in self._power_trackers:
-        power_tracker.join()
-        self._stats[power_tracker.title] = power_tracker.process_measurement()
-    finally:
-      ts = time.strftime('%Y%m%d-%H%M%S', time.localtime(time.time()))
-      self._outdir = os.path.join(self.DEFAULT_OUTDIR_BASE, self._board,
-                                  '%s_%s' % (powerstate, ts))
-      if not os.path.exists(self._outdir):
-        os.makedirs(self._outdir)
-      self._processing_done.set()
 
+  def FinishMeasurement(self):
+    """Signal to stop collection to Trackers before joining their threads."""
+    self._stop_signal.set()
+    for tracker in self._power_trackers:
+      tracker.join()
+
+  def ProcessMeasurement(self, tstart=None, tend=None):
+    """Trim data to [tstart, tend] before calculating stats.
+
+    Call FinishMeasurement internally to ensure that data collection is fully
+    wrapped up.
+
+    Args:
+      tstart: first timestamp to include. Seconds since epoch
+      tend: last timestamp to include. Seconds since epoch
+    """
+    # In case the caller did not explicitly call FinishMeasurement yet.
+    self.FinishMeasurement()
+    try:
+      for tracker in self._power_trackers:
+        self._stats[tracker.title] = tracker.process_measurement(tstart, tend)
+    finally:
+      self._processing_done = True
 
   def SaveRawData(self, outdir=None):
     """Save raw data of the PowerMeasurement run.
@@ -438,7 +450,7 @@ class PowerMeasurement(object):
     Raises:
       PowerMeasurementError: if called before measurement processing is done
     """
-    if not self._processing_done.is_set():
+    if not self._processing_done:
       raise PowerMeasurementError(self.PREMATURE_RETRIEVAL_WARNING)
     outdir = outdir if outdir else self._outdir
     outfiles = []
@@ -463,7 +475,7 @@ class PowerMeasurement(object):
     Raises:
       PowerMeasurementError: if called before measurement processing is done
     """
-    if not self._processing_done.is_set():
+    if not self._processing_done:
       raise PowerMeasurementError(self.PREMATURE_RETRIEVAL_WARNING)
     return {name: stat.GetRawData() for name, stat in self._stats.iteritems()}
 
@@ -480,7 +492,7 @@ class PowerMeasurement(object):
     Raises:
       PowerMeasurementError: if called before measurement processing is done
     """
-    if not self._processing_done.is_set():
+    if not self._processing_done:
       raise PowerMeasurementError(self.PREMATURE_RETRIEVAL_WARNING)
     outdir = outdir if outdir else self._outdir
     outfiles = [stat.SaveSummary(outdir) for stat in self._stats.itervalues()]
@@ -502,7 +514,7 @@ class PowerMeasurement(object):
     Raises:
       PowerMeasurementError: if called before measurement processing is done
     """
-    if not self._processing_done.is_set():
+    if not self._processing_done:
       raise PowerMeasurementError(self.PREMATURE_RETRIEVAL_WARNING)
     summaries = [stat.SummaryToString() for stat in self._stats.itervalues()]
     return '\n'.join(summaries)

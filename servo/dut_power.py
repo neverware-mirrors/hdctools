@@ -13,7 +13,7 @@ import shutil
 import signal
 import sys
 import tempfile
-import time
+import threading
 
 import client
 # This module is just a wrapper around measure_power functionality
@@ -46,6 +46,8 @@ def _AddMutuallyExclusiveAction(name, parser, default=True, action='save'):
   saver.add_argument(noargname, default=argparse.SUPPRESS, dest=dest,
                      action='store_false', help=noarghelp)
 
+
+# pylint: disable=dangerous-default-value
 def main(cmdline=sys.argv[1:]):
   parser = argparse.ArgumentParser(
       description='Measure power using servod.',
@@ -104,25 +106,30 @@ def main(cmdline=sys.argv[1:]):
                                       ina_rate=args.ina_rate,
                                       vbat_rate=args.vbat_rate,
                                       fast=args.fast)
-  setup_done, stop_signal, processing_done = pm.MeasurePower(wait=args.wait)
+  setup_done = pm.MeasurePower(wait=args.wait)
+  # pylint: disable=undefined-variable
+  # sleep is used as a preemptible way to sleep & allow for SIGTERM/SIGINT
+  sleep = threading.Event()
+  # pylint: disable=g-long-lambda
+  handler = lambda signal, _, pm=pm, sleep=sleep: (sleep.set(),
+                                                   pm.FinishMeasurement())
   # Ensure that SIGTERM and SIGNINT gracefully stop the measurement
-  handler = lambda signal, _, stop_signal=stop_signal: stop_signal.set()
   signal.signal(signal.SIGINT, handler)
   signal.signal(signal.SIGTERM, handler)
   # Wait until measurement is is setup
   setup_done.wait()
-  # Sleep for measurement time and wait time
-  time.sleep(args.time + args.wait)
-  # Indicate that measurement should stop
-  stop_signal.set()
-  # Wait until summary calculations are done
-  processing_done.wait()
+  # Sleep for measurement time and wait time. Will wake on SIGINT & SIGTERM
+  sleep.wait(args.time + args.wait)
+  # Indicate that measurement should stop, as ProcessMeasurement sets
+  # stop_signal internally as well
+  pm.ProcessMeasurement()
   pm.DisplaySummary()
   if args.save_summary:
     pm.SaveSummary(args.outdir, args.message)
   if args.save_raw_data:
     pm.SaveRawData(args.outdir)
   if args.save_logs:
+    # pylint: disable=protected-access
     outdir = pm._outdir
     if args.outdir and os.path.isdir(args.outdir):
       outdir = args.outdir
