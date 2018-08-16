@@ -379,6 +379,12 @@
     map="onoff_i" init="on"></params>
   </control>
   <control>
+    <name>init_usb_keyboard</name>
+    <doc>initialize usb keyboard handler</doc>
+    <params init_atmega_uart="" map="onoff" init="off" drv="kb_handler_init"
+      subtype="init_usb_keyboard" interface="servo"></params>
+  </control>
+  <control>
     <name>spi1_buf_en</name>
     <doc>spi1_buf_en</doc>
     <params interface="1" drv="gpio" chip="0" offset="23"

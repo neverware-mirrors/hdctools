@@ -169,6 +169,8 @@ class Servod(object):
     self._model = model
     self._version = version
     self._usbkm232 = usbkm232
+    self._keyboard = None
+    self._usb_keyboard = None
     if not interfaces:
       try:
         interfaces = servo_interfaces.INTERFACE_BOARDS[board][vendor][product]
@@ -207,58 +209,6 @@ class Servod(object):
     """
     size = len(interfaces)
     self._interface_list[position:(position + size)] = interfaces
-
-  def _init_keyboard_handler(self, servo, board=''):
-    """Initialize the correct keyboard handler for board.
-
-    Args:
-      servo: servo object.
-      board: string, board name.
-
-    Returns:
-      keyboard handler object, or None if no keyboard supported.
-    """
-    if board == 'parrot':
-      return keyboard_handlers.ParrotHandler(servo)
-    elif board == 'stout':
-      return keyboard_handlers.StoutHandler(servo)
-    elif board in ('buddy', 'cranky', 'guado', 'jecht', 'mccloud', 'mistral',
-                   'monroe', 'ninja', 'nyan_kitty', 'panther', 'rikku',
-                   'sarien', 'stumpy', 'sumo', 'tidus', 'tricky',
-                   'veyron_fievel', 'veyron_mickey', 'veyron_rialto',
-                   'veyron_tiger', 'zako'):
-      if self._usbkm232 is None:
-        logging.info('No device path specified for usbkm232 handler. Use '
-                     'the servo atmega chip to handle.')
-
-        # Use servo onboard keyboard emulator.
-        if not self._syscfg.is_control('atmega_rst'):
-          logging.warn('No atmega in servo board. So no keyboard support.')
-          return None
-
-        self.set('atmega_rst', 'on')
-        self.set('at_hwb', 'off')
-        self.set('atmega_rst', 'off')
-        self._usbkm232 = self.get('atmega_pty')
-
-        # We don't need to set the atmega uart settings if we're a servo v4.
-        if 'servo_v4' not in self._version:
-          self.set('atmega_baudrate', '9600')
-          self.set('atmega_bits', 'eight')
-          self.set('atmega_parity', 'none')
-          self.set('atmega_sbits', 'one')
-          self.set('usb_mux_sel4', 'on')
-          self.set('usb_mux_oe4', 'on')
-          # Allow atmega bootup time.
-          time.sleep(1.0)
-
-      self._logger.info('USBKM232: %s', self._usbkm232)
-      return keyboard_handlers.USBkm232Handler(servo, self._usbkm232)
-    else:
-      # The following boards don't use Chrome EC.
-      if board in ('alex', 'butterfly', 'lumpy', 'zgb'):
-        return keyboard_handlers.MatrixKeyboardHandler(servo)
-      return keyboard_handlers.ChromeECHandler(servo)
 
   def close(self):
     """Servod turn down logic."""
@@ -861,8 +811,6 @@ class Servod(object):
         self._logger.exception(
             'Problem initializing %s -> %s', control_name, value)
 
-    # Init keyboard after all the intefaces are up.
-    self._keyboard = self._init_keyboard_handler(self, self._board)
     return True
 
   def echo(self, echo):

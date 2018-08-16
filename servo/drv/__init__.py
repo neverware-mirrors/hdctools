@@ -38,6 +38,7 @@ import ina231
 import ina2xx
 import ina3221
 import kb
+import kb_handler_init
 import kitty_power
 import larvae_adc
 import lcm2004

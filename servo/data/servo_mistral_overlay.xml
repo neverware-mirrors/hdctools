@@ -45,4 +45,9 @@
     <doc>ATMEL_RESET_L: reset atmega</doc>
     <params clobber_ok="" init="off"></params>
   </control>
+  <control>
+    <name>init_keyboard</name>
+    <doc>initialize keyboard handler</doc>
+    <params handler_type="usb" clobber_ok=""></params>
+  </control>
 </root>

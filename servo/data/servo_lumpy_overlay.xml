@@ -12,4 +12,9 @@
     <doc>Used to turn the DUT off and on</doc>
     <params cmd="set" interface="servo" drv="lumpy_power" input_type="str"/>
   </control>
+  <control>
+    <name>init_keyboard</name>
+    <doc>initialize keyboard handler</doc>
+    <params handler_type="MatrixKeyboard" clobber_ok=""></params>
+  </control>
 </root>

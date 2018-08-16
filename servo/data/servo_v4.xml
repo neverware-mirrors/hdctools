@@ -261,6 +261,13 @@
       drv="ec3po_servo_v4"></params>
   </control>
 
+  <control>
+    <name>init_usb_keyboard</name>
+    <doc>initialize usb keyboard handler</doc>
+    <params map="onoff" init="off" drv="kb_handler_init" interface="servo"
+      subtype="init_usb_keyboard"></params>
+  </control>
+
   <!-- UART and CONSOLE settings -->
   <control>
     <name>raw_servo_v4_uart_pty</name>

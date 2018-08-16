@@ -26,6 +26,9 @@ class kb(hw_driver.HwDriver):
     """
     super(kb, self).__init__(interface, params.copy())
     # pylint: disable=protected-access
+    # As the user is intending to use the keyboard handler, initialize it
+    # if it hasn't been initialized yet.
+    interface.set('init_keyboard', 'on')
     self._keyboard = interface._keyboard
     self._key = params['key']
 
@@ -41,6 +44,8 @@ class kb(hw_driver.HwDriver):
     Raises:
       KbError: if key is not a member of kb_precanned map.
     """
+    if not self._keyboard:
+      raise KbError('Keyboard handler not setup.')
     try:
       func = getattr(self._keyboard, self._key)
     except AttributeError:

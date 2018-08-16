@@ -6,4 +6,11 @@
   <include>
     <name>servoflex_v2_r0_p50.xml</name>
   </include>
+  <control>
+    <name>init_keyboard</name>
+    <doc>initialize keyboard handler</doc>
+    <params  map="onoff" init="on" drv="kb_handler_init" interface="servo"
+      subtype="init_default_keyboard" handler_type="Stout" clobber_ok="">
+    </params>
+  </control>
 </root>

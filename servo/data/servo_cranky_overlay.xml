@@ -2,4 +2,9 @@
   <include>
     <name>servo_rambi_overlay.xml</name>
   </include>
+  <control>
+    <name>init_keyboard</name>
+    <doc>initialize keyboard handler</doc>
+    <params handler_type="usb" clobber_ok=""></params>
+  </control>
 </root>

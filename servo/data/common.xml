@@ -82,4 +82,10 @@
     <doc>What type of servo is being used.</doc>
     <params drv="servo_metadata" subtype="type" interface="servo" />
   </control>
+  <control>
+    <name>init_keyboard</name>
+    <doc>initialize keyboard handler</doc>
+    <params  map="onoff" init="on" drv="kb_handler_init" interface="servo"
+      subtype="init_default_keyboard" handler_type="ChromeEC"></params>
+  </control>
 </root>

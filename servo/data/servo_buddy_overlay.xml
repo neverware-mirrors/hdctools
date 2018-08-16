@@ -8,4 +8,9 @@
     <doc>fake lid for products without one</doc>
     <params interface="servo" drv="na" clobber_ok=""></params>
   </control>
+  <control>
+    <name>init_keyboard</name>
+    <doc>initialize keyboard handler</doc>
+    <params handler_type="usb" clobber_ok=""></params>
+  </control>
 </root>

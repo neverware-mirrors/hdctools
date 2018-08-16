@@ -3,4 +3,9 @@
   <include>
     <name>servoflex_v2_r0_p50.xml</name>
   </include>
+  <control>
+    <name>init_keyboard</name>
+    <doc>initialize keyboard handler</doc>
+    <params handler_type="MatrixKeyboard" clobber_ok=""></params>
+  </control>
 </root>

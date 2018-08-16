@@ -27,6 +27,11 @@
     <params clobber_ok="" cmd="set" interface="servo" drv="sarien_power"
             input_type="str" reset_hold="0.1" reset_recovery="0.0"/>
   </control>
+  <control>
+    <name>init_keyboard</name>
+    <doc>initialize keyboard handler</doc>
+    <params handler_type="usb" clobber_ok=""></params>
+  </control>
   <map>
     <name>keypress_duration</name>
     <doc>short hand configs for keypress durations</doc>

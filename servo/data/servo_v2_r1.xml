@@ -28,6 +28,12 @@
     </params>
   </control>
   <control>
+    <name>init_usb_keyboard</name>
+    <doc>initialize usb keyboard handler</doc>
+    <params init_atmega_uart="" map="onoff" init="off" drv="kb_handler_init"
+      subtype="init_usb_keyboard" interface="servo"></params>
+  </control>
+  <control>
     <name>uart3_vref</name>
     <doc>uart3_vref</doc>
     <params interface="2" drv="tca6416" slv="0x22" port="0"
