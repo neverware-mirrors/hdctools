@@ -24,6 +24,7 @@ import ftdi_common
 import multiservo
 import servo_interfaces
 import servo_server
+import servodutil
 import system_config
 import terminal_freezer
 import usb
@@ -556,6 +557,12 @@ class ServodStarter(object):
       return []
     return ftdi_common.SERVO_CONFIG_DEFAULTS[board_version]
 
+  def cleanup(self):
+    """Perform any cleanup related work after servod server shut down."""
+    self._scratchutil.RemoveEntry(self._servo_port)
+    self._logger.info('Server on %s port %s turned down', self._host,
+                      self._servo_port)
+
   def _serve(self):
     """Wrapper around rpc server's serve_forever to catch server errors."""
     # pylint: disable=broad-except
@@ -573,9 +580,19 @@ class ServodStarter(object):
     handler = lambda signal, unused, starter=self: starter.handle_sig(signal)
     signal.signal(signal.SIGINT, handler)
     signal.signal(signal.SIGTERM, handler)
+    self._scratchutil = servodutil.ServoScratch()
+    # pylint: disable=protected-access, invalid-name, unused-variable
+    # current method of retrieving device information requires this
+    serials = [serial for _vid, _pid, serial in self._servod._devices]
+    try:
+      self._scratchutil.AddEntry(self._servo_port, serials, os.getpid())
+    except servodutil.ServodUtilError:
+      self._servod.close()
+      sys.exit(1)
     self._server_thread.start()
     signal.pause()
     self._server_thread.join()
+    self.cleanup()
     sys.exit(self._exit_status)
 
 
