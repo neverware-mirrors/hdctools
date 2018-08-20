@@ -23,13 +23,22 @@ class kb(hw_driver.HwDriver):
       interface: driver interface object; servod in this case.
       params: dictionary of params;
         'key' attribute indicates what key should be pressed with each instance.
+        'handler' optional, indicate if default or usb keyboard handler should
+                  be used for key press execution.
     """
     super(kb, self).__init__(interface, params.copy())
     # pylint: disable=protected-access
+    handler = self._params.get('handler', 'default')
+    if handler not in ['default', 'usb']:
+      raise KbError('Unknown keyboard handler requested: %s' % handler)
     # As the user is intending to use the keyboard handler, initialize it
-    # if it hasn't been initialized yet.
-    interface.set('init_keyboard', 'on')
-    self._keyboard = interface._keyboard
+    # anyways.
+    if handler == 'default':
+      interface.set('init_keyboard', 'on')
+      self._keyboard = interface._keyboard
+    if handler == 'usb':
+      interface.set('init_usb_keyboard', 'on')
+      self._keyboard = interface._usb_keyboard
     self._key = params['key']
 
   def set(self, duration):

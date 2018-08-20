@@ -76,4 +76,11 @@
     <params cmd="set" key="sysrq_x" interface="servo" drv="kb"
     input_type="float" map="keypress_duration" clobber_ok=""></params>
   </control>
+  <control>
+    <name>usb_keyboard_enter_key</name>
+    <doc>Send enter key via USB KB emulation</doc>
+    <params cmd="set" key="enter_key" interface="servo" drv="kb"
+      input_type="float" handler="usb" map="keypress_duration" clobber_ok="">
+    </params>
+  </control>
 </root>
