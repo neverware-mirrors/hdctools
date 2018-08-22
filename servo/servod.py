@@ -59,6 +59,58 @@ DEFAULT_PORT_RANGE = (9990, 9999)
 DEFAULT_RC_FILE = '/home/%s/.servodrc' % os.getenv('SUDO_USER', '')
 
 
+def usb_get_iserial(device):
+  """Get USB device's iSerial string
+
+  Args:
+    device: usb.Device object
+
+  Returns:
+    iserial: USB devices iSerial string or empty string if the device has
+             no serial number.
+  """
+  device_handle = device.open()
+  # The device has no serial number string descriptor.
+  if device.iSerialNumber == 0:
+    return ''
+  iserial = ''
+  try:
+    iserial = device_handle.getString(device.iSerialNumber, MAX_ISERIAL_STR)
+  except usb.USBError, e:
+    # TODO(tbroch) other non-FTDI devices on my host cause following msg
+    #   usb.USBError: error sending control message: Broken pipe
+    # Need to investigate further
+    pass
+  except Exception as e:
+    # This was causing servod to fail to start in the presence of
+    # a broken usb interface.
+    print 'usb_get_iserial failed in an unknown way: [%s]' % e
+  return iserial
+
+
+def usb_find(vendor, product, serialname):
+  """Find USB devices based on vendor, product and serial identifiers.
+
+  Locates all USB devices that match the criteria of the arguments.  In the
+  case where input arguments are 'None' that argument is a don't care
+
+  Args:
+    vendor: USB vendor id (integer)
+    product: USB product id (integer)
+    serial: USB serial id (string)
+
+  Returns:
+    matched_devices : list of pyusb devices matching input args
+  """
+  matched_devices = []
+  for bus in usb.busses():
+    for device in bus.devices:
+      if (not vendor or device.idVendor == vendor) and \
+            (not product or device.idProduct == product) and \
+            (not serialname or usb_get_iserial(device).endswith(serialname)):
+        matched_devices.append(device)
+  return matched_devices
+
 class ServodError(Exception):
   """Exception class for servod server."""
 
@@ -120,59 +172,6 @@ def _parse_args():
   multiservo.add_multiservo_parser_options(parser)
   parser.set_usage(parser.get_usage() + examples)
   return parser.parse_args()
-
-
-def usb_get_iserial(device):
-  """Get USB device's iSerial string
-
-  Args:
-    device: usb.Device object
-
-  Returns:
-    iserial: USB devices iSerial string or empty string if the device has
-             no serial number.
-  """
-  device_handle = device.open()
-  # The device has no serial number string descriptor.
-  if device.iSerialNumber == 0:
-    return ''
-  iserial = ''
-  try:
-    iserial = device_handle.getString(device.iSerialNumber, MAX_ISERIAL_STR)
-  except usb.USBError, e:
-    # TODO(tbroch) other non-FTDI devices on my host cause following msg
-    #   usb.USBError: error sending control message: Broken pipe
-    # Need to investigate further
-    pass
-  except Exception as e:
-    # This was causing servod to fail to start in the presence of
-    # a broken usb interface.
-    print 'usb_get_iserial failed in an unknown way: [%s]' % e
-  return iserial
-
-
-def usb_find(vendor, product, serialname):
-  """Find USB devices based on vendor, product and serial identifiers.
-
-  Locates all USB devices that match the criteria of the arguments.  In the
-  case where input arguments are 'None' that argument is a don't care
-
-  Args:
-    vendor: USB vendor id (integer)
-    product: USB product id (integer)
-    serial: USB serial id (string)
-
-  Returns:
-    matched_devices : list of pyusb devices matching input args
-  """
-  matched_devices = []
-  for bus in usb.busses():
-    for device in bus.devices:
-      if (not vendor or device.idVendor == vendor) and \
-            (not product or device.idProduct == product) and \
-            (not serialname or usb_get_iserial(device).endswith(serialname)):
-        matched_devices.append(device)
-  return matched_devices
 
 
 def find_servod_match(logger, options, all_servos, servodrc):
