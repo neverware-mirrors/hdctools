@@ -4,16 +4,19 @@
 # found in the LICENSE file.
 """Python version of Servo hardware debug & control board server."""
 
+# pylint: disable=g-bad-import-order
+# pkg_resources is erroneously suggested to be in the 1st party segment
 import errno
 import logging
 import optparse
 import os
 import pkg_resources
 import select
+import signal
 import SimpleXMLRPCServer
 import socket
 import sys
-import usb
+import threading
 
 import drv.loglevel
 import ftdi_common
@@ -22,6 +25,7 @@ import servo_interfaces
 import servo_server
 import system_config
 import terminal_freezer
+import usb
 
 VERSION = pkg_resources.require('servo')[0].version
 
@@ -60,7 +64,7 @@ DEFAULT_RC_FILE = '/home/%s/.servodrc' % os.getenv('SUDO_USER', '')
 
 
 def usb_get_iserial(device):
-  """Get USB device's iSerial string
+  """Get USB device's iSerial string.
 
   Args:
     device: usb.Device object
@@ -69,6 +73,7 @@ def usb_get_iserial(device):
     iserial: USB devices iSerial string or empty string if the device has
              no serial number.
   """
+  # pylint: disable=broad-except
   device_handle = device.open()
   # The device has no serial number string descriptor.
   if device.iSerialNumber == 0:
@@ -97,7 +102,7 @@ def usb_find(vendor, product, serialname):
   Args:
     vendor: USB vendor id (integer)
     product: USB product id (integer)
-    serial: USB serial id (string)
+    serialname: USB serial id (string)
 
   Returns:
     matched_devices : list of pyusb devices matching input args
@@ -111,12 +116,138 @@ def usb_find(vendor, product, serialname):
         matched_devices.append(device)
   return matched_devices
 
+
 class ServodError(Exception):
   """Exception class for servod server."""
   pass
 
+
 class ServodStarter(object):
   """Class to manage servod instance and rpc server its being served on."""
+
+  def __init__(self):
+    """Prepare servod invocation.
+
+    Parse cmdline and prompt user for missing information if necessary to start
+    servod. Prepare servod instance & thread for it to be served from.
+
+    Raises:
+      ServodError: if automatic config cannot be found
+    """
+    (options, _) = self._parse_args()
+    if options.debug:
+      level = 'debug'
+    else:
+      level = drv.loglevel.DEFAULT_LOGLEVEL
+
+    loglevel, fmt = drv.loglevel.LOGLEVEL_MAP[level]
+    logging.basicConfig(level=loglevel, format=fmt)
+
+    # Servod needs to be running in the chroot without PID namespaces in order
+    # to freeze terminals when reading from the UARTs.
+    terminal_freezer.CheckForPIDNamespace()
+
+    self._logger = logging.getLogger(os.path.basename(sys.argv[0]))
+    self._logger.info('Start')
+    multiservo.get_env_options(self._logger, options)
+
+    if options.name and options.serialname:
+      self._logger.error("Mutually exclusive '--name' or '--serialname' is "
+                         'allowed')
+      sys.exit(-1)
+
+    servo_device = self.discover_servo(options,
+                                       multiservo.parse_rc(self._logger,
+                                                           options.rcfile))
+    if not servo_device:
+      sys.exit(-1)
+
+    self._host = options.host
+    lot_id = self.get_lot_id(servo_device)
+    board_version = self.get_board_version(lot_id, servo_device.idProduct)
+    self._logger.debug('board_version = %s', board_version)
+    all_configs = []
+    if not options.noautoconfig:
+      all_configs += self.get_auto_configs(board_version)
+
+    if options.config:
+      for config in options.config:
+        # quietly ignore duplicate configs for backwards compatibility
+        if config not in all_configs:
+          all_configs.append(config)
+
+    if not all_configs:
+      raise ServodError('No automatic config found,'
+                        ' and no config specified with -c <file>')
+
+    scfg = system_config.SystemConfig()
+
+    if options.board:
+      board_config = 'servo_' + options.board + '_overlay.xml'
+      if not scfg.find_cfg_file(board_config):
+        self._logger.error('No XML overlay for board %s', options.board)
+        sys.exit(-1)
+
+      self._logger.info('Found XML overlay for board %s', options.board)
+      all_configs.append(board_config)
+
+    for cfg_file in all_configs:
+      scfg.add_cfg_file(cfg_file)
+
+    self._logger.debug('\n%s', scfg.display_config())
+
+    self._logger.debug('Servo is vid:0x%04x pid:0x%04x sid:%s',
+                       servo_device.idVendor, servo_device.idProduct,
+                       usb_get_iserial(servo_device))
+
+    if options.port:
+      start_port = options.port
+      end_port = options.port
+    else:
+      end_port, start_port = DEFAULT_PORT_RANGE
+    for self._servo_port in xrange(start_port, end_port - 1, -1):
+      try:
+        self._server = SimpleXMLRPCServer.SimpleXMLRPCServer((self._host,
+                                                              self._servo_port),
+                                                             logRequests=False)
+        break
+      except socket.error as e:
+        if e.errno == errno.EADDRINUSE:
+          continue  # Port taken, see if there is another one next to it.
+        self._logger.fatal("Problem opening Server's socket: %s", e)
+        sys.exit(-1)
+    else:
+      if options.port:
+        err_msg = ('Port %d is busy' % options.port)
+      else:
+        err_msg = ('Could not find a free port in %d..%d range' % (end_port,
+                                                                   start_port))
+
+      self._logger.fatal(err_msg)
+      sys.exit(-1)
+
+    self._servod = servo_server.Servod(
+        scfg, vendor=servo_device.idVendor, product=servo_device.idProduct,
+        serialname=usb_get_iserial(servo_device),
+        interfaces=options.interfaces.split(), board=options.board,
+        version=board_version, usbkm232=options.usbkm232)
+    self._servod.hwinit(verbose=True)
+    self._server.register_introspection_functions()
+    self._server.register_multicall_functions()
+    self._server.register_instance(self._servod)
+    # pylint: disable=undefined-loop-variable
+    # |servo_port| is either initialized in the loop or the loop fails.
+    self._server_thread = threading.Thread(target=self._serve)
+    self._server_thread.daemon = True
+    self._exit_status = 0
+
+  def handle_sig(self, signum):
+    """Handle a signal by turning off the server & cleaning up servod."""
+    self._logger.info('Received signal: %d. Attempting to turn off', signum)
+    self._server.shutdown()
+    self._server.server_close()
+    self._servod.close()
+    self._logger.info('Successfully turned off')
 
   # TODO(tbroch) merge w/ parse_common_args properly
   def _parse_args(self):
@@ -164,7 +295,7 @@ class ServodStarter(object):
     parser.add_option('--noautoconfig', action='store_true', default=False,
                       help='Disable automatic determination of config files')
     parser.add_option('-i', '--interfaces', type=str, default='',
-                      help='ordered space-delimited list of interfaces.  ' +
+                      help='ordered space-delimited list of interfaces. '
                       'Valid choices are gpio|i2c|uart|gpiouart|dummy')
     parser.add_option('-u', '--usbkm232', type=str,
                       help='path to USB-KM232 device which allow for '
@@ -176,9 +307,8 @@ class ServodStarter(object):
     parser.set_usage(parser.get_usage() + examples)
     return parser.parse_args()
 
-
   def find_servod_match(self, options, all_servos, servodrc):
-    """Find a servo matching one of servodrc lines
+    """Find a servo matching one of servodrc lines.
 
     Given a list of servod objects matching discovered servos, display the list
     to the user and check if there is a configuration file line corresponding to
@@ -199,7 +329,7 @@ class ServodStarter(object):
       a matching servod object, if found, None otherwise
 
     Raises:
-      ServodEror in case required name is not found in the config file
+      ServodError: in case required name is not found in the config file
     """
 
     for servo in all_servos:
@@ -252,7 +382,6 @@ class ServodStarter(object):
 
     raise ServodError('No matching servo found')
 
-
   def choose_servo(self, all_servos):
     """Let user choose a servo from available list of unique devices.
 
@@ -293,9 +422,8 @@ class ServodStarter(object):
     logging.info('')
     return servo
 
-
   def discover_servo(self, options, servodrc):
-    """Find a servo USB device to use
+    """Find a servo USB device to use.
 
     First, find all servo devices matching command line options, this may result
     in discovering none, one or more devices.
@@ -341,11 +469,11 @@ class ServodStarter(object):
       return all_servos[0]
 
     # See if only one primary servo. Filter secordary servos, like servo-micro.
-    SECONDARY_SERVOS = (
+    secondary_servos = (
         servo_interfaces.SERVO_MICRO_DEFAULTS + servo_interfaces.CCD_DEFAULTS)
     all_primary_servos = [
         servo for servo in all_servos
-        if (servo.idVendor, servo.idProduct) not in SECONDARY_SERVOS
+        if (servo.idVendor, servo.idProduct) not in secondary_servos
     ]
     if len(all_primary_servos) == 1:
       return all_primary_servos[0]
@@ -356,11 +484,10 @@ class ServodStarter(object):
       return matching_servo
 
     self._logger.error('Use --vendor, --product or --serialname switches to '
-                 'identify servo uniquely, or create a servodrc file '
-                 ' and use the --name switch')
+                       'identify servo uniquely, or create a servodrc file '
+                       'and use the --name switch')
 
     return None
-
 
   def get_board_version(self, lot_id, product_id):
     """Get board version string.
@@ -388,7 +515,6 @@ class ServodStarter(object):
 
     return None
 
-
   def get_lot_id(self, servo):
     """Get lot_id for a given servo.
 
@@ -410,7 +536,6 @@ class ServodStarter(object):
         self._logger.warn("Servo device's iserial was unrecognized.")
     return lot_id
 
-
   def get_auto_configs(self, board_version):
     """Get xml configs that should be loaded.
 
@@ -426,122 +551,36 @@ class ServodStarter(object):
       return []
     return ftdi_common.SERVO_CONFIG_DEFAULTS[board_version]
 
+  def _serve(self):
+    """Wrapper around rpc server's serve_forever to catch server errors."""
+    # pylint: disable=broad-except
+    self._logger.info('Listening on %s port %s', self._host, self._servo_port)
+    try:
+      self._server.serve_forever()
+    except Exception:
+      self._exit_status = 1
 
   def serve(self):
-    (options, args) = self._parse_args()
-    if options.debug:
-      level = 'debug'
-    else:
-      level = drv.loglevel.DEFAULT_LOGLEVEL
+    """Add signal handlers, start servod on its own thread & wait for signal.
 
-    loglevel, format = drv.loglevel.LOGLEVEL_MAP[level]
-    logging.basicConfig(level=loglevel, format=format)
-
-    # Servod needs to be running in the chroot without PID namespaces in order
-    # to freeze terminals when reading from the UARTs.
-    terminal_freezer.CheckForPIDNamespace()
-
-    self._logger = logging.getLogger(os.path.basename(sys.argv[0]))
-    self._logger.info('Start')
-    multiservo.get_env_options(self._logger, options)
-
-    if options.name and options.serialname:
-      self._logger.error("Mutually exclusive '--name' or '--serialname' is "
-                         'allowed')
-      sys.exit(-1)
-
-    servo_device = self.discover_servo(options,
-                                       multiservo.parse_rc(self._logger,
-                                                           options.rcfile))
-    if not servo_device:
-      sys.exit(-1)
-
-    lot_id = self.get_lot_id(servo_device)
-    board_version = self.get_board_version(lot_id, servo_device.idProduct)
-    self._logger.debug('board_version = %s', board_version)
-    all_configs = []
-    if not options.noautoconfig:
-      all_configs += self.get_auto_configs(board_version)
-
-    if options.config:
-      for config in options.config:
-        # quietly ignore duplicate configs for backwards compatibility
-        if config not in all_configs:
-          all_configs.append(config)
-
-    if not all_configs:
-      raise ServodError('No automatic config found,'
-                        ' and no config specified with -c <file>')
-
-    scfg = system_config.SystemConfig()
-
-    if options.board:
-      board_config = 'servo_' + options.board + '_overlay.xml'
-      if not scfg.find_cfg_file(board_config):
-        self._logger.error('No XML overlay for board %s', options.board)
-        sys.exit(-1)
-
-      self._logger.info('Found XML overlay for board %s', options.board)
-      all_configs.append(board_config)
-
-    for cfg_file in all_configs:
-      scfg.add_cfg_file(cfg_file)
-
-    self._logger.debug('\n' + scfg.display_config())
-
-    self._logger.debug('Servo is vid:0x%04x pid:0x%04x sid:%s' % \
-                   (servo_device.idVendor, servo_device.idProduct,
-                    usb_get_iserial(servo_device)))
-
-    if options.port:
-      start_port = options.port
-      end_port = options.port
-    else:
-      end_port, start_port = DEFAULT_PORT_RANGE
-    for servo_port in xrange(start_port, end_port - 1, -1):
-      try:
-        server = SimpleXMLRPCServer.SimpleXMLRPCServer((options.host,
-                                                        servo_port),
-                                                       logRequests=False)
-        break
-      except socket.error as e:
-        if e.errno == errno.EADDRINUSE:
-          continue  # Port taken, see if there is another one next to it.
-        self._logger.fatal("Problem opening Server's socket: %s", e)
-        sys.exit(-1)
-    else:
-      if options.port:
-        err_msg = ('Port %d is busy' % options.port)
-      else:
-        err_msg = ('Could not find a free port in %d..%d range' % (end_port,
-                                                                   start_port))
-
-      self._logger.fatal(err_msg)
-      sys.exit(-1)
-
-    servod = servo_server.Servod(
-        scfg, vendor=servo_device.idVendor, product=servo_device.idProduct,
-        serialname=usb_get_iserial(servo_device),
-        interfaces=options.interfaces.split(), board=options.board,
-        version=board_version, usbkm232=options.usbkm232)
-    servod.hwinit(verbose=True)
-    server.register_introspection_functions()
-    server.register_multicall_functions()
-    server.register_instance(servod)
-    self._logger.info('Listening on %s port %s' % (options.host, servo_port))
-    server.serve_forever()
+    Intercepts and handles SIGINT and SIGTERM.
+    """
+    handler = lambda signal, unused, starter=self: starter.handle_sig(signal)
+    signal.signal(signal.SIGINT, handler)
+    signal.signal(signal.SIGTERM, handler)
+    self._server_thread.start()
+    signal.pause()
+    self._server_thread.join()
+    sys.exit(self._exit_status)
 
 
 def main():
-  """Main function wrapper to catch exceptions properly"""
   try:
-    ServodStarter().serve()
-  except KeyboardInterrupt:
-    sys.exit(0)
+    starter = ServodStarter()
   except ServodError as e:
     print 'Error: ', e.message
     sys.exit(1)
-
+  starter.serve()
 
 if __name__ == '__main__':
   main()
