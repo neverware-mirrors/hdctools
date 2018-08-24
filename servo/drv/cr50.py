@@ -14,10 +14,6 @@ import logging
 import pty_driver
 import re
 
-# cr50 firmware versions verified compatible with servod
-VALID_VERSIONS = ['0.3.7/cr50_v1.9308_87_mp.57-8881e72',
-                  '0.4.7/cr50_v1.9308_B.384-529f632']
-
 
 class cr50Error(Exception):
   """Exception class for Cr50."""
@@ -184,8 +180,8 @@ class cr50(pty_driver.ptyDriver):
       raise cr50Error('Cannot retrieve the devid result on cr50 console.')
     return result
 
-  def _Get_ver(self):
-    """Getter of ver.
+  def _Get_version(self):
+    """Getter of version.
 
     Returns:
         The cr50 version string
@@ -195,18 +191,16 @@ class cr50(pty_driver.ptyDriver):
       raise cr50Error('Cannot retrieve the version result on cr50 console.')
     return result[2]
 
-  def _Get_ver_valid(self):
-    """Getter of ver_valid.
+  def _Set_version(self, value):
+    """'Setter' of version.
 
-    Returns:
-        Boolean: Is the cr50 version string one of the validated versions?
+    Args:
+        value: should equal print/0
+    Prints:
+        The version string
     """
-    ver = self._Get_ver()
-    valid = ver in VALID_VERSIONS
-    if not valid:
-      logging.warn('Detected cr50 version: %s', ver)
-      logging.warn('Not in valid versions: %s', VALID_VERSIONS)
-    return valid
+    version = self._Get_version()
+    self._logger.info('------------- cr50 version: %s', version)
 
   def _Set_cr50_reboot(self, value):
     """Reboot cr50 ignoring the value."""

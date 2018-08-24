@@ -16,9 +16,6 @@ import servo
 # EC console mask for enabling only command channel
 COMMAND_CHANNEL_MASK = 0x1
 
-# servo v4 firmware versions verified compatible with servod
-VALID_VERSIONS = ['servo_v4_v1.1.5740-5add44b']
-
 
 class ec3poServoV4Error(Exception):
   """Exception class."""
@@ -55,8 +52,8 @@ class ec3poServoV4(pty_driver.ptyDriver):
 
     self._logger.debug('')
 
-  def _Get_ver(self):
-    """Getter of ver.
+  def _Get_version(self):
+    """Getter of version.
 
     Returns:
         The version string
@@ -66,18 +63,16 @@ class ec3poServoV4(pty_driver.ptyDriver):
       raise ec3poServoV4Error('Cannot retrieve the version.')
     return result[1]
 
-  def _Get_ver_valid(self):
-    """Getter of ver_valid.
+  def _Set_version(self, value):
+    """'Setter' of version.
 
-    Returns:
-        Boolean: Is the version string one of the validated versions?
+    Args:
+        value: should equal print/0
+    Prints:
+        The version string
     """
-    ver = self._Get_ver()
-    valid = ver in VALID_VERSIONS
-    if not valid:
-      logging.warn('Detected servo v4 version: %s', ver)
-      logging.warn('Not in valid versions: %s', VALID_VERSIONS)
-    return valid
+    version = self._Get_version()
+    self._logger.info('------------- servo v4 version: %s', version)
 
   def batch_set(self, batch, index):
     """Set a batch of values on console gpio.

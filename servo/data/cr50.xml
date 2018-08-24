@@ -128,14 +128,8 @@
   <control>
     <name>cr50_version</name>
     <doc>current cr50 version</doc>
-    <params cmd="get" subtype="ver" interface="9" drv="cr50"
-    map="str" clobber_ok=""></params>
-  </control>
-  <control>
-    <name>cr50_version_compatible</name>
-    <doc>Is current cr50 version compatible</doc>
-    <params cmd="get" subtype="ver_valid" interface="9" drv="cr50"
-    map="yesno" clobber_ok=""></params>
+    <params cmd="get" subtype="version" interface="9" drv="cr50"
+    map="print" init="print" clobber_ok=""></params>
   </control>
   <!-- cr50 UART Buffers & VREF Controls -->
   <control>

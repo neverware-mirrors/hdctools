@@ -194,16 +194,9 @@
   <control>
     <name>servo_v4_version</name>
     <doc>current fw version</doc>
-    <params cmd="get" subtype="ver" interface="26" drv="ec3po_servo_v4"
-    map="str" clobber_ok=""></params>
+    <params cmd="get" subtype="version" interface="26" drv="ec3po_servo_v4"
+        map="print" init="print" clobber_ok=""></params>
   </control>
-  <control>
-    <name>servo_v4_version_compatible</name>
-    <doc>Is current version compatible</doc>
-    <params cmd="get" subtype="ver_valid" interface="26" drv="ec3po_servo_v4"
-    map="yesno" clobber_ok=""></params>
-  </control>
-
 
   <!-- UART and CONSOLE settings -->
   <control>

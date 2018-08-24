@@ -113,6 +113,11 @@
     <params five="5" six="6" seven="7" eight="8"></params>
   </map>
   <map>
+    <name>print</name>
+    <doc>debug print map</doc>
+    <params print="0"></params>
+  </map>
+  <map>
     <name>na</name>
     <doc>not applicable map</doc>
     <params not_applicable="0"></params>

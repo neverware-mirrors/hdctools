@@ -17,6 +17,7 @@ import SimpleXMLRPCServer
 import socket
 import sys
 import threading
+import time
 
 import drv.loglevel
 import ftdi_common
@@ -231,6 +232,10 @@ class ServodStarter(object):
         serialname=usb_get_iserial(servo_device),
         interfaces=options.interfaces.split(), board=options.board,
         version=board_version, usbkm232=options.usbkm232)
+
+    # Small timeout to allow interface threads to initialize.
+    time.sleep(0.5)
+
     self._servod.hwinit(verbose=True)
     self._server.register_introspection_functions()
     self._server.register_multicall_functions()
