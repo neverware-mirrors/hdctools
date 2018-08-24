@@ -3,9 +3,10 @@
 # found in the LICENSE file.
 """Driver for determining which type of servo is being used."""
 
-import hw_driver
 import logging
+import os
 
+import hw_driver
 
 class servoMetadata(hw_driver.HwDriver):
   """Class to access loglevel controls."""
@@ -24,6 +25,10 @@ class servoMetadata(hw_driver.HwDriver):
   def _Get_type(self):
     """Gets the current servo type."""
     return self._interface._version
+
+  def _Get_pid(self):
+    """Return servod instance pid"""
+    return os.getpid()
 
   def _Get_serial(self):
     """Gets the current servo serial."""
