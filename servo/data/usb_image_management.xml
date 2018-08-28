@@ -6,4 +6,10 @@
     <params subtype="image_usbkey_direction" interface="servo"
       drv="usb_image_manager" map="usbkey" usb_power_off_delay="2"></params>
   </control>
+  <control>
+    <name>download_image_to_usb_dev</name>
+    <doc>Download image from given path to usb dev attached to servo</doc>
+    <params subtype="download_to_usb_dev" interface="servo" drv="usb_image_manager"
+      input_type="str"></params>
+  </control>
 </root>

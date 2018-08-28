@@ -5,10 +5,18 @@
 """Driver for common sequences for image management on switchable usb port."""
 
 import os
+import shutil
+import subprocess
 import time
+import urllib
 
 import hw_driver
 import servo.servodutil as util
+
+
+class UsbImageManagerError(Exception):
+  """Error class for UsbImageManager errors."""
+  pass
 
 
 # pylint: disable=invalid-name
@@ -27,6 +35,8 @@ class usbImageManager(hw_driver.HwDriver):
   _IMAGE_MUX_PWR = 'image_usbkey_pwr'
   _IMAGE_MUX_TO_SERVO = 'servo_sees_usbkey'
 
+  _HTTP_PREFIX = 'http://'
+
   def __init__(self, interface, params):
     """Initialize driver by initializing HwDriver."""
     super(usbImageManager, self).__init__(interface, params)
@@ -36,6 +46,8 @@ class usbImageManager(hw_driver.HwDriver):
       self._poweroff_delay = float(self._poweroff_delay)
     # This is required to determine if the usbkey is connected to the host
     self._image_usbkey_hub_port = params.get('hub_port', None)
+    # Hold the last image path so we can reduce downloads to the usb device.
+    self._image_path = None
 
   def _Get_image_usbkey_direction(self):
     """Return direction of image usbkey mux."""
@@ -97,3 +109,74 @@ class usbImageManager(hw_driver.HwDriver):
         if os.path.exists(devpath):
           return devpath
     return ''
+
+  def _Get_download_to_usb_dev(self):
+    """Improved error reporting for misuse."""
+    raise UsbImageManagerError('Download requires image path. Please use set '
+                               'version of the control to provide path.')
+
+  def _Set_download_to_usb_dev(self, image_path):
+    """Download image and save to the USB device found by host_usb_dev.
+
+    If the image_path is a URL, it will download this url to the USB path;
+    otherwise it will simply copy the image_path's contents to the USB path.
+
+    Args:
+      image_path: path or url to the recovery image.
+
+    Raises:
+      UsbImageManagerError: if download fails for any reason.
+    """
+    # pylint: disable=broad-except
+    # Ensure that any issue gets caught & reported as UsbImageError
+    self._logger.debug('image_path(%s)', image_path)
+    self._logger.debug('Detecting USB stick device...')
+    usb_dev = self._interface.get('image_usbkey_dev')
+    # |errormsg| is used later to indicate the error
+    errormsg = ''
+    if not usb_dev:
+      # No usb dev attached, skip straight to the end.
+      errormsg = 'No usb device connected to servo'
+    # Let's check if we downloaded this last time and if so assume the image is
+    # still on the usb device and return True.
+    elif self._image_path == image_path:
+      self._logger.debug('Image already on USB device, skipping transfer')
+      return
+    else:
+      # There is a usb dev attached. Try to get the image.
+      try:
+        if image_path.startswith(self._HTTP_PREFIX):
+          self._logger.debug('Image path is a URL, downloading image')
+          urllib.urlretrieve(image_path, usb_dev)
+        else:
+          shutil.copyfile(image_path, usb_dev)
+        # Ensure that after the download the usb-device is still attached, as
+        # copyfile does not raise an error stick is removed mid-writing for
+        # instance.
+        if not self._interface.get('image_usbkey_dev'):
+          raise UsbImageManagerError('Device file %s not found again after '
+                                     'copy completed.' % usb_dev)
+      except urllib.ContentTooShortError:
+        errormsg = 'Failed to download URL: %s to USB device: %s' % (image_path,
+                                                                     usb_dev)
+      except (IOError, OSError) as e:
+        errormsg = ('Failed to transfer image to USB device: %s ( %s ) ' %
+                    (e.strerror, e.errno))
+      except UsbImageManagerError as e:
+        errormsg = 'Failed to transfer image to USB device: %s' % e.message
+      except BaseException as e:
+        errormsg = ('Unexpected exception downloading %s to %s: %s' %
+                    (image_path, usb_dev, str(e)))
+      finally:
+        # We just plastered the partition table for a block device.
+        # Pass or fail, we mustn't go without telling the kernel about
+        # the change, or it will punish us with sporadic, hard-to-debug
+        # failures.
+        subprocess.call(['sync'])
+        subprocess.call(['blockdev', '--rereadpt', usb_dev])
+    if errormsg:
+      self._logger.error(errormsg)
+      self._image_path = None
+      raise UsbImageManagerError(errormsg)
+    # If everything goes smooth, cache the image path
+    self._image_path = image_path

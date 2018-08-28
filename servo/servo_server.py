@@ -8,13 +8,11 @@ import fnmatch
 import logging
 import os
 import re
-import shutil
 import SimpleXMLRPCServer
 import subprocess
 import tempfile
 import threading
 import time
-import urllib
 import usb
 
 import drv as servo_drv
@@ -46,7 +44,6 @@ class ServodError(Exception):
 
 class Servod(object):
   """Main class for Servo debug/controller Daemon."""
-  _HTTP_PREFIX = 'http://'
 
   # This is the key to get the main serial used in the _serialnames dict.
   MAIN_SERIAL = 'main'
@@ -159,8 +156,6 @@ class Servod(object):
     self._devices = []
     self._serialnames = {self.MAIN_SERIAL: serialname}
     self._syscfg = config
-    # Hold the last image path so we can reduce downloads to the usb device.
-    self._image_path = None
     # list of objects (Fi2c, Fgpio) to physical interfaces (gpio, i2c) that ftdi
     # interfaces are mapped to
     self._interface_list = []
@@ -659,50 +654,13 @@ class Servod(object):
 
     Returns:
       True|False: True if process completed successfully, False if error
-                  occurred.
-      Can't return None because XMLRPC doesn't allow it. PTAL at tbroch's
-      comment at the end of set().
+                        occurred.
     """
-    self._logger.debug('image_path(%s)' % image_path)
-    self._logger.debug('Detecting USB stick device...')
-    usb_dev = self.get('image_usbkey_dev')
-    if not usb_dev:
-      self._logger.error('No usb device connected to servo')
-      return False
-
-    # Let's check if we downloaded this last time and if so assume the image is
-    # still on the usb device and return True.
-    if self._image_path == image_path:
-      self._logger.debug('Image already on USB device, skipping transfer')
-      return True
-
     try:
-      if image_path.startswith(self._HTTP_PREFIX):
-        self._logger.debug('Image path is a URL, downloading image')
-        urllib.urlretrieve(image_path, usb_dev)
-      else:
-        shutil.copyfile(image_path, usb_dev)
-    except IOError as e:
-      self._logger.error('Failed to transfer image to USB device: %s ( %s ) ',
-                         e.strerror, e.errno)
+      self.set('download_image_to_usb_dev', image_path)
+      return True
+    except Exception:
       return False
-    except urllib.ContentTooShortError:
-      self._logger.error('Failed to download URL: %s to USB device: %s',
-                         image_path, usb_dev)
-      return False
-    except BaseException as e:
-      self._logger.error('Unexpected exception downloading %s to %s: %s',
-                         image_path, usb_dev, str(e))
-      return False
-    finally:
-      # We just plastered the partition table for a block device.
-      # Pass or fail, we mustn't go without telling the kernel about
-      # the change, or it will punish us with sporadic, hard-to-debug
-      # failures.
-      subprocess.call(['sync'])
-      subprocess.call(['blockdev', '--rereadpt', usb_dev])
-    self._image_path = image_path
-    return True
 
   def make_image_noninteractive(self):
     """Makes the recovery image noninteractive.
