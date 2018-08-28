@@ -37,6 +37,8 @@ class SuartError(Exception):
 class Suart(uart.Uart):
   """Provide interface to stm32 serial usb endpoint."""
   USB_USART_SET_PARITY = 1
+  USB_USART_SET_BAUD = 3
+  USB_USART_BAUD_MULTIPLIER = 100
 
   def __init__(self, vendor=0x18d1, product=0x501a, interface=0,
                serialname=None, ftdi_context=None):
@@ -217,7 +219,11 @@ class Suart(uart.Uart):
     curr_props = self.get_uart_props()
     for prop in line_props:
       if line_props[prop] != curr_props[prop]:
-        if prop == 'parity' and line_props[prop] in [0, 1, 2]:
+        if (prop == 'baudrate' and
+            (line_props[prop] % self.USB_USART_BAUD_MULTIPLIER) == 0):
+          self._susb.control(self.USB_USART_SET_BAUD,
+                             line_props[prop] / self.USB_USART_BAUD_MULTIPLIER)
+        elif prop == 'parity' and line_props[prop] in [0, 1, 2]:
           self._susb.control(self.USB_USART_SET_PARITY, line_props[prop])
         else:
           raise SuartError('Line property %s cannot be set from %s to %s' %
