@@ -5,4 +5,7 @@
   <include>
     <name>detachable.xml</name>
   </include>
+  <include>
+    <name>dev_mode_to_ap_download_reconf.xml</name>
+  </include>
 </root>
