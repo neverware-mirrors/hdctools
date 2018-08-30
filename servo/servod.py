@@ -245,15 +245,18 @@ class ServodStarter(object):
     # |servo_port| is either initialized in the loop or the loop fails.
     self._server_thread = threading.Thread(target=self._serve)
     self._server_thread.daemon = True
+    self._turndown_initiated = False
     self._exit_status = 0
 
   def handle_sig(self, signum):
     """Handle a signal by turning off the server & cleaning up servod."""
-    self._logger.info('Received signal: %d. Attempting to turn off', signum)
-    self._server.shutdown()
-    self._server.server_close()
-    self._servod.close()
-    self._logger.info('Successfully turned off')
+    if not self._turndown_initiated:
+      self._turndown_initiated = True
+      self._logger.info('Received signal: %d. Attempting to turn off', signum)
+      self._server.shutdown()
+      self._server.server_close()
+      self._servod.close()
+      self._logger.info('Successfully turned off')
 
   # TODO(tbroch) merge w/ parse_common_args properly
   def _parse_args(self):
