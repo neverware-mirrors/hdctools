@@ -65,6 +65,60 @@ DEFAULT_PORT_RANGE = (9990, 9999)
 DEFAULT_RC_FILE = '/home/%s/.servodrc' % os.getenv('SUDO_USER', '')
 
 
+class ServoDeviceWatchdog(threading.Thread):
+  """Watchdog to ensure servod stops when a servo device gets lost.
+
+  Public Attributes:
+    done: event to signal that the watchdog functionality can stop
+
+  """
+
+  WATCHDOG_EXEMPT = set(servo_interfaces.CCD_DEFAULTS)
+
+  def __init__(self, servo_devices, poll_rate=1.0):
+    """Setup watchdog thread.
+
+    Args:
+      servo_devices: list of tuples in the form of (vid, pid, serial) for
+                     each servo device
+      poll_rate: poll rate in seconds
+    """
+    super(ServoDeviceWatchdog, self).__init__()
+    self._logger = logging.getLogger(type(self).__name__)
+    self.done = threading.Event()
+    ex = self.WATCHDOG_EXEMPT
+    # Do not add exempt devices to |_devices|.
+    self._devices = set([d for d in servo_devices if (d[0], d[1]) not in ex])
+    self._rate = poll_rate
+    # TODO(coconutruben): Here and below in addition to VID/PID also print out
+    # the device type i.e. servo_micro.
+    self._logger.info('Watchdog setup for devices: %s', str(self._devices))
+
+  def run(self):
+    """Poll |_devices| every |_rate| seconds. Send SIGTERM if device lost."""
+    while not self.done.is_set():
+      self.done.wait(self._rate)
+      for vid, pid, serial in self._devices:
+        try:
+          if not servodutil.UsbHierarchy.GetUsbDevice(vid, pid, serial):
+            # Device was not found, thus signaling to end servod.
+            self._logger.error('Device - vid: 0x%02x pid: 0x%02x serial: %r - '
+                               'not found when polling. Turning down servod.',
+                               vid, pid, serial)
+            # Watchdog should run in the same process as servod thread.
+            os.kill(os.getpid(), signal.SIGTERM)
+            self.done.set()
+            break
+        # pylint: disable=broad-except
+        # Catch-all to avoid uncomfortable threading synchronization issues
+        except Exception as e:
+          self._logger.error('Servo Watchdog ran into unexpected issue. '
+                             '%s. Turning down watchdog without turning down '
+                             'servod.', e)
+          self.done.set()
+          break
+
+
 def usb_get_iserial(device):
   """Get USB device's iSerial string.
 
@@ -241,11 +295,12 @@ class ServodStarter(object):
     self._server.register_introspection_functions()
     self._server.register_multicall_functions()
     self._server.register_instance(self._servod)
-    # pylint: disable=undefined-loop-variable
-    # |servo_port| is either initialized in the loop or the loop fails.
     self._server_thread = threading.Thread(target=self._serve)
     self._server_thread.daemon = True
     self._turndown_initiated = False
+    # pylint: disable=protected-access
+    # Need to ask servod instance for the devices it knows
+    self._watchdog_thread = ServoDeviceWatchdog(self._servod._devices)
     self._exit_status = 0
 
   def handle_sig(self, signum):
@@ -592,9 +647,14 @@ class ServodStarter(object):
     except servodutil.ServodUtilError:
       self._servod.close()
       sys.exit(1)
+    self._watchdog_thread.start()
     self._server_thread.start()
     signal.pause()
+    # Set watchdog thread to end
+    self._watchdog_thread.done.set()
+    # Collect servo and watchdog threads
     self._server_thread.join()
+    self._watchdog_thread.join()
     self.cleanup()
     sys.exit(self._exit_status)
 
