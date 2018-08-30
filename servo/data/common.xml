@@ -1,5 +1,8 @@
 <?xml version="1.0"?>
 <root>
+  <include>
+    <name>power_tools.xml</name>
+  </include>
   <map>
     <name>onoff</name>
     <doc>assertive high map for on/off</doc>
