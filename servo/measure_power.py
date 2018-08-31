@@ -117,8 +117,9 @@ class ServodPowerTracker(PowerTracker):
     try:
       self._sclient.set_get_all(self._ctrls)
     except client.ServoClientError:
-      raise PowerTrackerError('Failed to test servod commands. Commands tested:'
-                              ' %s' % str(self._ctrls))
+      msg = 'Failed to test servod commands. Tested: %s' % str(self._ctrls)
+      self._logger.error(msg)
+      raise PowerTrackerError(msg)
 
   def run(self):
     """run power collection thread by querying all |_ctrls| at |_rate| rate."""
