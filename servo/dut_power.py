@@ -20,6 +20,36 @@ import client
 import measure_power
 
 
+class ProgressPrinter(threading.Thread):
+  """Print a marker every few seconds to indicate progress.
+
+  Public Attributes:
+    stop: Event object to signal end to printing.
+  """
+
+  # Default progress marker.
+  DOT_MARKER = '.'
+  # Rate to print progress marker.
+  PROGRESS_UPDATE_RATE = 1.0
+
+  def __init__(self, marker=DOT_MARKER, rate=PROGRESS_UPDATE_RATE,
+               stop_signal=None):
+    """Initialize constants & prepare thread to run."""
+    super(ProgressPrinter, self).__init__()
+    self._marker = marker
+    self._rate = rate
+    if not stop_signal:
+      stop_signal = threading.Event()
+    self.stop = stop_signal
+
+  def run(self):
+    """Print |_marker| every |_rate| seconds until |stop| is set."""
+    while not self.stop.is_set():
+      sys.stdout.write(self._marker)
+      sys.stdout.flush()
+      self.stop.wait(self._rate)
+
+
 def _AddMutuallyExclusiveAction(name, parser, default=True, action='save'):
   """Add both '--do-something' and '--no-do-something' pair to parser.
 
@@ -106,10 +136,11 @@ def main(cmdline=sys.argv[1:]):
                                       ina_rate=args.ina_rate,
                                       vbat_rate=args.vbat_rate,
                                       fast=args.fast)
-  setup_done = pm.MeasurePower(wait=args.wait)
   # pylint: disable=undefined-variable
   # sleep is used as a preemptible way to sleep & allow for SIGTERM/SIGINT
   sleep = threading.Event()
+  progress_printer = ProgressPrinter(stop_signal=sleep)
+  setup_done = pm.MeasurePower(wait=args.wait)
   # pylint: disable=g-long-lambda
   handler = lambda signal, _, pm=pm, sleep=sleep: (sleep.set(),
                                                    pm.FinishMeasurement())
@@ -118,8 +149,13 @@ def main(cmdline=sys.argv[1:]):
   signal.signal(signal.SIGTERM, handler)
   # Wait until measurement is is setup
   setup_done.wait()
+  if not args.no_output:
+    # Start printing progress once power collection has started
+    progress_printer.start()
   # Sleep for measurement time and wait time. Will wake on SIGINT & SIGTERM
   sleep.wait(args.time + args.wait)
+  # To ensure the ProgressPrinter also stops printing.
+  sleep.set()
   # Indicate that measurement should stop, as ProcessMeasurement sets
   # stop_signal internally as well
   pm.ProcessMeasurement()
