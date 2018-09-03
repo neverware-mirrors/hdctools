@@ -14,6 +14,7 @@ import shutil
 import SimpleXMLRPCServer
 import subprocess
 import tempfile
+import threading
 import time
 import urllib
 import usb
@@ -66,6 +67,10 @@ class Servod(object):
   MAIN_SERIAL = 'main'
   SERVO_MICRO_SERIAL = 'servo_micro'
   CCD_SERIAL = 'ccd'
+
+  # Timeout to wait for interfaces to become available again if reinitialization
+  # is taking place. In seconds.
+  INTERFACE_AVAILABILITY_TIMEOUT = 60
 
   def init_servo_interfaces(self, vendor, product, serialname, interfaces):
     """Init the servo interfaces with the given interfaces.
@@ -161,6 +166,9 @@ class Servod(object):
     """
     self._logger = logging.getLogger('Servod')
     self._logger.debug('')
+    self._ifaces_available = threading.Event()
+    # Initially interfaces should be available.
+    self._ifaces_available.set()
     self._vendor = vendor
     self._product = product
     self._devices = []
@@ -193,36 +201,13 @@ class Servod(object):
 
   def reinitialize(self):
     """Reinitialize all interfaces that support reinitialization"""
-
-    # If all of the devices that were originally connected are not connected
-    # now, wait up to max_tries * sleep_time for the devices to reconnect
-    max_tries = 10
-    sleep_time = 0.5
-    for i in range(max_tries):
-      for vid, pid, serialname in self._devices:
-        for current in usb.core.find(idVendor=vid, idProduct=pid,
-                                     find_all=True):
-          current_serial = usb.util.get_string(current, 256,
-                                               current.iSerialNumber)
-          if not serialname or serialname == current_serial:
-            # This device still available
-            break
-        else:
-          self._logger.warn('Servo USB device not found: %x:%x serial:%s', vid,
-                            pid, serialname)
-          break
-      else:
-        # All the devices found. Reinitialize the interfaces...
-        break
-      time.sleep(sleep_time)
-    else:
-      raise ServodError('Servo USB device not found during reinitialize')
-
     for i, interface in enumerate(self._interface_list):
       if hasattr(interface, 'reinitialize'):
         interface.reinitialize()
       else:
         self._logger.debug('interface %d has no reset functionality', i)
+    # Indicate interfaces are safe to use again.
+    self._ifaces_available.set()
 
   def get_servo_interfaces(self, position, size):
     """Get the list of servo interfaces.
@@ -988,7 +973,10 @@ class Servod(object):
 
     Raises:
       HwDriverError: Error occurred while using drv
+      ServodError: if interfaces are not available within timeout period
     """
+    if not self._ifaces_available.wait(self.INTERFACE_AVAILABILITY_TIMEOUT):
+      raise ServodError('Timed out waiting for interfaces to become available.')
     self._logger.debug('name(%s)' % (name))
     # This route is to retrieve serialnames on servo v4, which
     # connects to multiple servo-micros or CCD, like the controls,
@@ -1044,7 +1032,10 @@ class Servod(object):
 
     Raises:
       HwDriverError: Error occurred while using driver
+      ServodError: if interfaces are not available within timeout period
     """
+    if not self._ifaces_available.wait(self.INTERFACE_AVAILABILITY_TIMEOUT):
+      raise ServodError('Timed out waiting for interfaces to become available.')
     self._logger.debug('name(%s) wr_val(%s)' % (name, wr_val_str))
     (params, drv) = self._get_param_drv(name, False)
     wr_val = self._syscfg.resolve_val(params, wr_val_str)

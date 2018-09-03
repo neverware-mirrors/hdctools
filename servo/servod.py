@@ -6,6 +6,7 @@
 
 # pylint: disable=g-bad-import-order
 # pkg_resources is erroneously suggested to be in the 1st party segment
+import collections
 import errno
 import logging
 import optparse
@@ -73,22 +74,27 @@ class ServoDeviceWatchdog(threading.Thread):
 
   """
 
-  WATCHDOG_EXEMPT = set(servo_interfaces.CCD_DEFAULTS)
+  REINIT_CAPABLE = set(servo_interfaces.CCD_DEFAULTS)
 
-  def __init__(self, servo_devices, poll_rate=1.0):
+  # Attempts based on REINIT_POLL_RATE that will be made to reconnect a device.
+  REINIT_ATTEMPTS = 100
+
+  # Rate used to poll when attempting to reconnect a device.
+  REINIT_POLL_RATE = 0.1
+
+  def __init__(self, servod, poll_rate=1.0):
     """Setup watchdog thread.
 
     Args:
-      servo_devices: list of tuples in the form of (vid, pid, serial) for
-                     each servo device
+      servod: servod server the watchdog is watching over.
       poll_rate: poll rate in seconds
     """
     super(ServoDeviceWatchdog, self).__init__()
     self._logger = logging.getLogger(type(self).__name__)
     self.done = threading.Event()
-    ex = self.WATCHDOG_EXEMPT
+    self._servod = servod
     # Do not add exempt devices to |_devices|.
-    self._devices = set([d for d in servo_devices if (d[0], d[1]) not in ex])
+    self._devices = set(self._servod._devices)
     self._rate = poll_rate
     # TODO(coconutruben): Here and below in addition to VID/PID also print out
     # the device type i.e. servo_micro.
@@ -96,11 +102,30 @@ class ServoDeviceWatchdog(threading.Thread):
 
   def run(self):
     """Poll |_devices| every |_rate| seconds. Send SIGTERM if device lost."""
+    # Tokens a reinit capable device has to attempt reinit. If these run out
+    # the watchdog will turn down servod.
+    reinit_tokens = collections.defaultdict(lambda: self.REINIT_ATTEMPTS)
+    rate = self._rate
     while not self.done.is_set():
-      self.done.wait(self._rate)
+      self.done.wait(rate)
       for vid, pid, serial in self._devices:
         try:
           if not servodutil.UsbHierarchy.GetUsbDevice(vid, pid, serial):
+            if (vid, pid) in self.REINIT_CAPABLE:
+              if reinit_tokens[(vid, pid)]:
+                # The device still has reinit tokens. Remove one.
+                reinit_tokens[(vid, pid)] -= 1
+                self._logger.warn('Device - vid: 0x%02x pid: 0x%02x serial: %r '
+                                  'not found when polling. Device is marked as '
+                                  'reinit capable. %d more reinit attempts '
+                                  'before giving up.', vid, pid, serial,
+                                  reinit_tokens[(vid, pid)])
+                # pylint: disable=protected-access
+                # Indicate to servod that interfaces are unavailable.
+                self._servod._ifaces_available.clear()
+                # Poll faster while there are devices that need to be reinit.
+                rate = self.REINIT_POLL_RATE
+                continue
             # Device was not found, thus signaling to end servod.
             self._logger.error('Device - vid: 0x%02x pid: 0x%02x serial: %r - '
                                'not found when polling. Turning down servod.',
@@ -109,6 +134,19 @@ class ServoDeviceWatchdog(threading.Thread):
             os.kill(os.getpid(), signal.SIGTERM)
             self.done.set()
             break
+          else:
+            # Device was found. Make sure it's not currently being considered
+            # for reinit.
+            if (vid, pid) in reinit_tokens:
+              # Device was waiting to be reinit. Remove from token tracker.
+              del reinit_tokens[(vid, pid)]
+              if not reinit_tokens:
+                # No device waiting for reinit anymore. Issue a servod interface
+                # reinitialization.
+                self._servod.reinitialize()
+                # Return to slower poll rate after no devices are in a reinit
+                # queue.
+                rate = self._rate
         # pylint: disable=broad-except
         # Catch-all to avoid uncomfortable threading synchronization issues
         except Exception as e:
@@ -299,8 +337,8 @@ class ServodStarter(object):
     self._server_thread.daemon = True
     self._turndown_initiated = False
     # pylint: disable=protected-access
-    # Need to ask servod instance for the devices it knows
-    self._watchdog_thread = ServoDeviceWatchdog(self._servod._devices)
+    # Needs access to the servod instance.
+    self._watchdog_thread = ServoDeviceWatchdog(self._servod)
     self._exit_status = 0
 
   def handle_sig(self, signum):

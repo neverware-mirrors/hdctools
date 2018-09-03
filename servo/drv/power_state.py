@@ -37,7 +37,6 @@ class PowerStateDriver(hw_driver.HwDriver):
   _STATE_REC_MODE = 'rec'
   _STATE_FASTBOOT = 'fastboot'
   _STATE_RESET_CYCLE = 'reset'
-  _STATE_CCD_RESET = 'ccd_reset'
   _STATE_CR50_RESET = 'cr50_reset'
   _STATE_REC_FORCE_MRC = 'rec_force_mrc'
 
@@ -129,25 +128,19 @@ class PowerStateDriver(hw_driver.HwDriver):
     """
     self._cold_reset()
 
-  def _reset_ccd(self):
-    """Reinitialize all servo interfaces.
-
-    When running servo through ccd, the usb endpoints may reset. This
-    function will reinitialize all of the servo interfaces to recover
-    from the usb reset.
-    """
-    self._logger.info('Reinitialize all interfaces')
-    self._interface.reinitialize()
-
   def _reset_cr50(self):
     """Reboot cr50 and reset CCD.
 
     Reboot cr50 and reset ccd to recover from the usb reset.
     """
     self._interface.set('cr50_reboot', 'on')
-    # Wait long enough for cr50 to reboot and for usb to have dropped out.
-    time.sleep(1)
-    self._reset_ccd()
+    # Wait long enough for cr50 to reboot and for usb to have dropped out,
+    # and ServoWatchdog to have reinitialized cr50 interfaces.
+    time.sleep(1.5)
+    # Attempt to reinitialize the device in case the cr50 reenumerated quicker
+    # than the polling resolution. By now, if the device did not reenumerate,
+    # the Watchdog should be attempting to catch & reinitalize it.
+    self._interface.reinitialize()
 
   def set(self, statename):
     """Set power state according to `statename`."""
@@ -161,8 +154,6 @@ class PowerStateDriver(hw_driver.HwDriver):
       self._power_on_fastboot()
     elif statename == self._STATE_RESET_CYCLE:
       self._reset_cycle()
-    elif statename == self._STATE_CCD_RESET:
-      self._reset_ccd()
     elif statename == self._STATE_CR50_RESET:
       self._reset_cr50()
     elif statename == self._STATE_REC_FORCE_MRC:
