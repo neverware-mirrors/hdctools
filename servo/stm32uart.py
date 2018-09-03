@@ -91,7 +91,7 @@ class Suart(uart.Uart):
       # Check if the pty is connected to anything, or hungup.
       if not events:
         try:
-          r = self._susb._read_ep.read(64, self._susb.TIMEOUT_MS)
+          r = self._susb._read_ep.read(256, self._susb.TIMEOUT_MS)
           if r:
             os.write(self._ptym, r)
 
