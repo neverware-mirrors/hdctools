@@ -390,12 +390,17 @@ class SystemConfig(object):
       except KeyError:
         # Do not raise error yet. This might just be that the input is not
         # using the map i.e. it's directly writing a raw mapped value.
-        err = "Map %s doesn't contain key %s\n" % (params['map'], map_vstr)
+        err = "Map '%s' doesn't contain key '%s'\n" % (params['map'], map_vstr)
         err += "Try one of -> '%s'" % "', '".join(map_dict['map_params'].keys())
     if 'input_type' in params:
       if params['input_type'] in ALLOWABLE_INPUT_TYPES:
-        input_type = ALLOWABLE_INPUT_TYPES[params['input_type']]
-        return input_type(map_vstr)
+        try:
+          input_type = ALLOWABLE_INPUT_TYPES[params['input_type']]
+          return input_type(map_vstr)
+        except ValueError:
+          err += "\n%s Input should be 'int' or 'float'." % ('Or' if 'Map' in
+                                                             err else '')
+          pass
       else:
         self._logger.error('Unrecognized input type.')
     # TODO(tbroch): deprecate below once all controls have input_type params

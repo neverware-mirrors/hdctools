@@ -3,11 +3,11 @@
   <map>
     <name>keypress_duration</name>
     <doc>short hand configs for keypress durations</doc>
-    <params tab="0.2" press="1.2" long_press="8.5"></params>
+    <params tab="0.1" short_press="0.2" press="1.2" long_press="8.5"></params>
   </map>
   <control>
     <name>power_key</name>
-    <doc>Send d key either by servoflex or USB KB emulation</doc>
+    <doc>Send power key either by servoflex or USB KB emulation</doc>
     <params cmd="set" key="power_key" interface="servo" drv="kb"
     input_type="float" map="keypress_duration" clobber_ok=""></params>
   </control>

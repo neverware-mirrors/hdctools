@@ -1125,64 +1125,65 @@ class Servod(object):
 
   def power_short_press(self):
     """Simulate a short power button press."""
-    return self.set('power_key', 'tab')
+    return self.set('power_key', 'short_press')
 
-  def power_key(self, secs=''):
+  def power_key(self, press_secs=''):
     """Simulate a power button press.
 
     Args:
-      secs: Time in seconds to simulate the keypress.
+      press_secs: Time in seconds to simulate the keypress.
     """
-    return self.set('power_key', secs)
+    return self.set('power_key', 'press' if press_secs is '' else press_secs)
 
   def ctrl_d(self, press_secs=''):
     """Simulate Ctrl-d simultaneous button presses."""
-    return self.set('ctrl_d', press_secs)
+    return self.set('ctrl_d', 'tab' if press_secs is '' else press_secs)
 
   def ctrl_u(self, press_secs=''):
     """Simulate Ctrl-u simultaneous button presses."""
-    return self.set('ctrl_u', press_secs)
+    return self.set('ctrl_u', 'tab' if press_secs is '' else press_secs)
 
   def ctrl_enter(self, press_secs=''):
     """Simulate Ctrl-enter simultaneous button presses."""
-    return self.set('ctrl_enter', press_secs)
+    return self.set('ctrl_enter', 'tab' if press_secs is '' else press_secs)
 
   def d_key(self, press_secs=''):
     """Simulate Enter key button press."""
-    return self.set('d_key', press_secs)
+    return self.set('d_key', 'tab' if press_secs is '' else press_secs)
 
   def ctrl_key(self, press_secs=''):
     """Simulate Enter key button press."""
-    return self.set('ctrl_key', press_secs)
+    return self.set('ctrl_key', 'tab' if press_secs is '' else press_secs)
 
   def enter_key(self, press_secs=''):
     """Simulate Enter key button press."""
-    return self.set('enter_key', press_secs)
+    return self.set('enter_key', 'tab' if press_secs is '' else press_secs)
 
   def refresh_key(self, press_secs=''):
     """Simulate Refresh key (F3) button press."""
-    return self.set('refresh_key', press_secs)
+    return self.set('refresh_key', 'tab' if press_secs is '' else press_secs)
 
   def ctrl_refresh_key(self, press_secs=''):
     """Simulate Ctrl and Refresh (F3) simultaneous press.
 
     This key combination is an alternative of Space key.
     """
-    return self.set('ctrl_refresh_key', press_secs)
+    return self.set('ctrl_refresh_key', ('tab' if press_secs is '' else
+                                         press_secs))
 
   def imaginary_key(self, press_secs=''):
     """Simulate imaginary key button press.
 
     Maps to a key that doesn't physically exist.
     """
-    return self.set('imaginary_key', press_secs)
+    return self.set('imaginary_key', 'tab' if press_secs is '' else press_secs)
 
   def sysrq_x(self, press_secs=''):
     """Simulate Alt VolumeUp X simultaneous press.
 
     This key combination is the kernel system request (sysrq) x.
     """
-    return self.set('sysrq_x', press_secs)
+    return self.set('sysrq_x', 'tab' if press_secs is '' else press_secs)
 
   def get_servo_serials(self):
     """Return all the serials associated with this process."""
