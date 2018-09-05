@@ -243,6 +243,10 @@ class ServodStarter(object):
 
     self._logger = logging.getLogger(os.path.basename(sys.argv[0]))
     self._logger.info('Start')
+    # The scratch initialization here ensures that potentially stale entries
+    # are removed from the scratch before attempting to create a new one.
+    self._scratchutil = servodutil.ServoScratch()
+
     multiservo.get_env_options(self._logger, options)
 
     if options.name and options.serialname:
@@ -676,7 +680,6 @@ class ServodStarter(object):
     handler = lambda signal, unused, starter=self: starter.handle_sig(signal)
     signal.signal(signal.SIGINT, handler)
     signal.signal(signal.SIGTERM, handler)
-    self._scratchutil = servodutil.ServoScratch()
     # pylint: disable=protected-access, invalid-name, unused-variable
     # current method of retrieving device information requires this
     serials = [serial for _vid, _pid, serial in self._servod._devices]
