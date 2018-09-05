@@ -39,6 +39,20 @@ class TestSystemConfig(unittest.TestCase):
     # Empty dictionary is passing empty params.
     self.assertEqual(float(input_str), self.syscfg.resolve_val({}, input_str))
 
+  def test_ResolveValMappedIntNotUsingMap(self):
+    """A mapped control allows for raw input when the map is not used."""
+    map_key = 'mapped_int'
+    map_val = '1'
+    map_name = 'sample_map'
+    map_params = {map_key: map_val}
+    self._AddMap(map_name, map_params)
+    # These are the params from the control using the map. In this case they
+    # need to include the map name.
+    control_params = {'map': map_name}
+    # The control is being set with 7, a raw input that is valid & does not
+    # use the map.
+    self.assertEqual(7, self.syscfg.resolve_val(control_params, 7))
+
   def test_ResolveValMappedInt(self):
     """A mapped integer value gets returned as its mapped integer value."""
     map_key = 'mapped_int'

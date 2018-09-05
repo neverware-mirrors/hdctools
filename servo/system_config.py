@@ -380,17 +380,18 @@ class SystemConfig(object):
       SystemConfigError: mapping issues found
     """
     # its a map
+    err = 'Unknown error formatting input value.'
     if 'map' in params:
       map_dict = self._lookup('map', params['map'])
       if map_dict is None:
         raise SystemConfigError("Map %s isn't defined" % params['map'])
       try:
-        map_vstr = map_dict['map_params'][map_vstr]
+          map_vstr = map_dict['map_params'][map_vstr]
       except KeyError:
-        raise SystemConfigError(
-            ("Map %s doesn't contain key %s\n" + "Try one of -> '%s'") %
-            (params['map'], map_vstr,
-             "', '".join(map_dict['map_params'].keys())))
+        # Do not raise error yet. This might just be that the input is not
+        # using the map i.e. it's directly writing a raw mapped value.
+        err = "Map %s doesn't contain key %s\n" % (params['map'], map_vstr)
+        err += "Try one of -> '%s'" % "', '".join(map_dict['map_params'].keys())
     if 'input_type' in params:
       if params['input_type'] in ALLOWABLE_INPUT_TYPES:
         input_type = ALLOWABLE_INPUT_TYPES[params['input_type']]
@@ -402,7 +403,11 @@ class SystemConfig(object):
       return int(str(map_vstr), 0)
     except ValueError:
       pass
-    return float(str(map_vstr))
+    try:
+      return float(str(map_vstr))
+    except ValueError:
+      # No we know that nothing worked, and there was an error.
+      raise SystemConfigError(err)
 
   def _Fmt_hex(self, int_val):
     """Format integer into hex.
