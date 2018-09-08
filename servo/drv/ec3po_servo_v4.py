@@ -81,6 +81,48 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
 
     self._issue_cmd(cmds)
 
+  def servo_cc_modes(self):
+    """Get cc line state info from servo V4.
+
+    returns:
+      (dts, charging, charge_enabled) tuple of on/off.
+
+    > cc
+    dts mode: on
+    chg mode: off
+    chg allowed: off
+    """
+    rx = ['dts mode:\s*(off|on)', 'chg mode:\s*(off|on)',
+          'chg allowed:\s*(off|on)']
+
+    res = self._issue_safe_cmd_get_results('cc', rx)
+
+    if len(res) != 3:
+      raise ec3poServoV4Error("Can't receive cc info: [%s]" % results)
+
+    dts = res[0][1]
+    chg = res[1][1]
+    mode = res[2][1]
+
+    return (dts, chg, mode)
+
+  def lookup_cc_setting(self, mode, dts):
+    """Composite settings into cc commandline arg.
+
+    Args:
+      mode: 'on'/'off' setting for charge enable
+      dts:  'on'/'off' setting for dts enable
+
+    Returns:
+      string: 'src', 'snk', 'srcdts', 'snkdts' as appropriate.
+    """
+    newdts = 'dts' if (dts == 'on') else ''
+    newmode = 'src' if (mode == 'on') else 'snk'
+
+    newcc = newmode + newdts
+
+    return newcc
+
   def _Get_servo_v4_dts_mode(self):
     """Getter of servo_v4_dts_mode.
 
@@ -88,12 +130,9 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
       "off": DTS mode is disabled.
       "on": DTS mode is enabled.
     """
-    # Get the current DTS mode
-    result = self._issue_safe_cmd_get_results('dts',
-        ['dts mode:\s*(off|on)'])[0]
-    if result is None:
-      raise ec3poServoV4Error('Cannot retrieve dts mode from console.')
-    return result[1]
+    dts, chg, mode = self.servo_cc_modes()
+
+    return dts
 
   def _Set_servo_v4_dts_mode(self, value):
     """Setter of servo_v4_dts_mode.
@@ -102,7 +141,10 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
       value: "off", "on"
     """
     if value == 'off' or value == 'on':
-      self._issue_cmd('dts %s' % value)
+      dts, chg, mode = self.servo_cc_modes()
+      newcc = self.lookup_cc_setting(mode, value)
+
+      self._issue_cmd('cc %s' % newcc)
     else:
       raise ValueError("Invalid dts_mode setting: '%s'. Try one of "
                        "'on' or 'off'." % value)
@@ -113,7 +155,7 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
     Args:
       port: Type C PD port 0/1
     Returns:
-      "src|snk" for role  and state value
+      "src|snk" for role and state value
     """
     pd_cmd = 'pd %s state' % port
     # Two FW versions for this command, get full line.
@@ -133,36 +175,25 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
 
     @returns: Current power role
     """
-    pd = self._get_pd_info(self.DUT_PORT)
-    return pd['role']
+    dts, chg, mode = self.servo_cc_modes()
+
+    return 'src' if (chg == 'on') else 'snk'
 
   def _Set_servo_v4_power_role(self, role):
-    """Setter of servo_v4_role.
+    """Setter of servo_v4_power_role.
 
-    This method is used to set the PD power role to the desired value. The
-    power role is changed by executing a 'pd <port> swap power' console
-    command. This requires that the DUT port be in an explicit contract
-    (i.e. SRC_READY or SNK_READY state).
     Args:
-      role: src, snk
+      role: "src", "snk"
     """
-    role = role.lower()
-    if role != 'src' and role != 'snk':
-      raise ValueError("Invalid power role: '%s'. Try one of "
-                       "'snk' or 'src'." % role)
+    if role == 'src' or role == 'snk':
+      dts, chg, mode = self.servo_cc_modes()
+      newrole = 'on' if role == 'src' else 'off'
+      newcc = self.lookup_cc_setting(newrole, dts)
 
-    # Get current power role and state
-    pd = self._get_pd_info(self.DUT_PORT)
-    # If not in desired role and connected, then issue role swap
-    if pd['role'] != role and pd['state'] == 'ready':
-      # Send pd power role swap command
-      self._issue_cmd('pd %s swap power' % self.DUT_PORT)
-      # Give a little time for role swap to complete
-      time.sleep(self.SWAP_DELAY)
-      pd_new = self._get_pd_info(self.DUT_PORT)
-      # Check if power role swap completed
-      if pd_new['state'] != 'ready' or pd['role'] == pd_new['role']:
-        raise ec3poServoV4Error('Power role swap failed')
+      self._issue_cmd('cc %s' % newcc)
+    else:
+      raise ValueError("Invalid power role setting: '%s'. Try one of "
+                       "'src' or 'snk'." % value)
 
   def _Get_servo_v4_ccd_keepalive(self):
     """Get keepalive status.
