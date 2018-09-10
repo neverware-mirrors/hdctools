@@ -204,6 +204,42 @@ However, there are a couple special parameters that one should be aware of:
   Index of the interface to use for this control. “servo” if the interface is
   intended to be the servod instance.
 
+# Servod Helpers
+
+## Servodutil
+
+[`servodutil`][18] is a cmdline tool (and library) to manage servod instances.
+It supports listing all instances running on a system and their info (e.g. what
+port they run on, what the main process' PID is, what the serial numbers of the
+attached servo devices are), and gracefully stopping an instance.
+
+It works by writing all the information into a file at /tmp/servoscratch on
+invocation & clearing out the entry when servod turns off. This flow is
+supported for almost all methods of turning off servod: Ctrl-C, servodutil stop,
+or sending a SIGTERM to the main process.
+
+Should it become necessary for servod to be killed using SIGKILL, servod cannot
+perform a clean-up and stale entries will be left around.
+On each usage of servodutil, or invocation of servod, the system attempts to
+clean out stale entries.
+
+The inverse is also problematic: should it for some reason become necessary to
+delete /tmp/servoscratch, then existing instances are not tracked. For
+this, `servodutil rebuild` provides a way to try and rebuild lost entries.
+
+## ServoDeviceWatchdog
+
+[`ServoDeviceWatchdog`][19] is a thread that regularly polls to ensure all
+devices that a servod instance started with are still connected. Should this
+not be the case, it will issue a signal to the servod instance to turn itself
+off.
+
+The one exeption here is `ccd`: for ccd as it is hosted by cr50, the watchdog
+allows for a reinit period, where if the connection to cr50 is lost (cr50
+reboot, cable unplug, etc) and the device is found again within the timeout
+period, the interface is reinitialized. Controls issued during the
+reinitalization phase will block until the interface is reinitialized.
+
 [1]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/system_config.py#220
 [2]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/data/ec_common.xml
 [3]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/data/servo_glados_overlay.xml#2
@@ -221,3 +257,5 @@ However, there are a couple special parameters that one should be aware of:
 [15]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/system_config.py#19
 [16]: ./FAQ.md#how-do-i-reroute_overwrite-a-control-for-a-board-tl_dr
 [17]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/drv/ec.py
+[18]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/servodutil.py
+[19]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/servod.py#69

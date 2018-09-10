@@ -1,5 +1,25 @@
 # Servod FAQ
 
+## How do I turn off servod?
+
+### tl;dr:
+- `servodutil -p $PORT stop`
+- `<unplug the servo device>`
+- `<Ctrl-C>` also still works
+
+### the longer read
+
+There are currently two mechanisms to help with servod management:
+[ServoScratch (through servodutil)][5] and [ServoDeviceWatchdog][6].
+
+ServoScratch leaves information about each servod
+instance around (e.g. port, pid). This information can be used to turn off
+servod.
+
+ServoDeviceWatchdog regularly polls to ensure all devices (i.e. servos) that the
+system started with are still attached. If not, it will gracefully terminate
+servod.
+
 ## Where is the code logic for the control |control|?
 
 ### tl;dr:
@@ -134,3 +154,5 @@ proxy][3].
 [2]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/dut_control.py#354
 [3]: https://chromium.googlesource.com/chromiumos/third_party/autotest/+/master/server/hosts/servo_host.py#177
 [4]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/system_config.py#134
+[5]: ./README.md#Servodutil
+[6]: ./README.md#ServoDeviceWatchdog
