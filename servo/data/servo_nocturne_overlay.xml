@@ -14,6 +14,12 @@
   <include>
     <name>warm_reset_reconf.xml</name>
   </include>
+  <!-- Init UART3 -->
+  <control>
+    <name>usbpd_uart_routing</name>
+    <doc>enable pd uart routing</doc>
+    <params clobber_ok="" init="glados"></params>
+  </control>
   <!-- ******** Controls ******** -->
   <control>
     <name>power_state</name>
