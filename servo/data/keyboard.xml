@@ -25,6 +25,12 @@
     input_type="float" map="keypress_duration" clobber_ok=""></params>
   </control>
   <control>
+    <name>ctrl_key</name>
+    <doc>Send ctrl either by servoflex or USB KB emulation</doc>
+    <params cmd="set" key="ctrl_key" interface="servo" drv="kb"
+    input_type="float" map="keypress_duration" clobber_ok=""></params>
+  </control>
+  <control>
     <name>ctrl_d</name>
     <doc>Send ctrl d either by servoflex or USB KB emulation</doc>
     <params cmd="set" key="ctrl_d" interface="servo" drv="kb"
