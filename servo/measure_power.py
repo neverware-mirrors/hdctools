@@ -452,7 +452,7 @@ class PowerMeasurement(object):
       PowerMeasurementError: if called before measurement processing is done
     """
     if not self._processing_done:
-      raise PowerMeasurementError(self.PREMATURE_RETRIEVAL_WARNING)
+      raise PowerMeasurementError(self.PREMATURE_RETRIEVAL_MSG)
     outdir = outdir if outdir else self._outdir
     outfiles = []
     for stat in self._stats.itervalues():
@@ -477,7 +477,7 @@ class PowerMeasurement(object):
       PowerMeasurementError: if called before measurement processing is done
     """
     if not self._processing_done:
-      raise PowerMeasurementError(self.PREMATURE_RETRIEVAL_WARNING)
+      raise PowerMeasurementError(self.PREMATURE_RETRIEVAL_MSG)
     return {name: stat.GetRawData() for name, stat in self._stats.iteritems()}
 
   def SaveSummary(self, outdir=None, message=None):
@@ -494,7 +494,7 @@ class PowerMeasurement(object):
       PowerMeasurementError: if called before measurement processing is done
     """
     if not self._processing_done:
-      raise PowerMeasurementError(self.PREMATURE_RETRIEVAL_WARNING)
+      raise PowerMeasurementError(self.PREMATURE_RETRIEVAL_MSG)
     outdir = outdir if outdir else self._outdir
     outfiles = [stat.SaveSummary(outdir) for stat in self._stats.itervalues()]
     if message:
@@ -516,7 +516,7 @@ class PowerMeasurement(object):
       PowerMeasurementError: if called before measurement processing is done
     """
     if not self._processing_done:
-      raise PowerMeasurementError(self.PREMATURE_RETRIEVAL_WARNING)
+      raise PowerMeasurementError(self.PREMATURE_RETRIEVAL_MSG)
     summaries = [stat.SummaryToString() for stat in self._stats.itervalues()]
     return '\n'.join(summaries)
 
