@@ -28,35 +28,38 @@ class PowerTrackerError(Exception):
   """Error class to invoke on PowerTracker errors."""
 
 
-class PowerTracker(threading.Thread):
-  """Abstract base class for threaded PowerTrackers.
+class ServodPowerTracker(threading.Thread):
+  """Threaded PowerTracker using servod as power number source.
+
+  This PowerTracker uses servod to sample all |_ctrls| at |_rate|.
 
   Attributes:
     title: human-readable title of the PowerTracker
-    _stop_signal: Event object to flag when to stop measuring power
-    _stats: TimelinedStatsManager to keep track of the power numbers collected
-    _logger: PowerTracker logger
   """
 
-  def __init__(self, stop_signal, tag, title):
-    """Initialize by storing stop_signal & creating TimelinedStatsManager.
+  def __init__(self, host, port, stop_signal, ctrls, sample_rate, tag='',
+               title='unnamed'):
+    """Initialize ServodPowerTracker by making servod proxy & storing ctrls.
 
     Args:
+      host: servod host name
+      port: servod port number
       stop_signal: Event object to flag when to stop measuring power
+      ctrls: list of servod ctrls to collect power numbers
+      sample_rate: rate for collecting samples for |ctrls|
       tag: string to prepend to summary & raw rail file names
       title: human-readable title of the PowerTracker
     """
-    super(PowerTracker, self).__init__()
-    self.title = title
+    super(ServodPowerTracker, self).__init__()
+    self._sclient = client.ServoClient(host=host, port=port)
     self._stop_signal = stop_signal
+    self._ctrls = ctrls
+    self._rate = sample_rate
+    self.title = title
     self._stats = timelined_stats_manager.TimelinedStatsManager(smid=tag,
                                                                 title=title)
     self._logger = logging.getLogger(type(self).__name__)
     self.daemon = True
-
-  def verify(self):
-    """Verify that the PowerTracker can do its job."""
-    pass
 
   def prepare(self, fast=False, powerstate=UNKNOWN_POWERSTATE):
     """Do any setup work right before number collection begins.
@@ -66,47 +69,6 @@ class PowerTracker(threading.Thread):
       powerstate: powerstate to allow for conditional preps based on powerstate
     """
     pass
-
-  def run(self):
-    """Run method to collect power numbers. To be implemented by subclasses."""
-    raise NotImplementedError('run needs to be implemented for PowerTracker '
-                              'subclasses.')
-
-  def process_measurement(self, tstart=None, tend=None):
-    """Process the measurement by calculating stats.
-
-    Args:
-      tstart: first timestamp to include. Seconds since epoch
-      tend: last timestamp to include. Seconds since epoch
-
-    Returns:
-      StatsManager object containing info from the run
-    """
-    self._stats.TrimSamples(tstart, tend)
-    self._stats.CalculateStats()
-    return self._stats
-
-
-class ServodPowerTracker(PowerTracker):
-  """PowerTracker using servod as power number source.
-
-  This PowerTracker uses servod to sample all |ctrls| at |sample_rate|.
-
-  Attributes:
-    _sclient: servod proxy
-    _ctrls: list of servod controls to query
-    _rate: rate at which to query controls
-  """
-
-  def __init__(self, host, port, stop_signal, ctrls, sample_rate,
-               tag='', title='unnamed'):
-    """Initialize ServodPowerTracker by making servod proxy & storing ctrls."""
-    self._sclient = client.ServoClient(host=host, port=port)
-    self._ctrls = ctrls
-    self._rate = sample_rate
-    super(ServodPowerTracker, self).__init__(stop_signal=stop_signal,
-                                             tag=tag,
-                                             title=title)
 
   def verify(self):
     """Verify by trying to query all ctrls once.
@@ -123,30 +85,48 @@ class ServodPowerTracker(PowerTracker):
 
   def run(self):
     """run power collection thread by querying all |_ctrls| at |_rate| rate."""
-    start = time.time()
     while not self._stop_signal.is_set():
-      samples = self._get_power_or_nan()
-      duration = time.time() - start
-      sample_tuples = zip(self._ctrls, samples)
-      sample_tuples.append((SAMPLE_TIME_KEY, duration))
+      sample_tuples, duration = self._sample_ctrls(self._ctrls)
       self._stats.AddSamples(sample_tuples)
       self._stop_signal.wait(max(self._rate - duration, 0))
-      start = time.time()
 
-  def _get_power_or_nan(self):
-    """Helper to query all servod ctrls.
+  def _sample_ctrls(self, ctrls):
+    """Helper to query all servod ctrls, and create (name, value) tuples.
+
+    Args:
+      ctrls: list of servod ctrls to sample
 
     Returns:
-      list of power numbers on success
-      list of NaN on failure
+      tuple (sample_tuples, duration)
+             sample_tuples: a list of (ctrl-name, value) tuples
+                            value is a power reading on success, NaN on failure
+             duration: the time it took to collect the sample
     """
+    start = time.time()
     try:
-      samples = self._sclient.set_get_all(self._ctrls)
+      samples = self._sclient.set_get_all(ctrls)
     except client.ServoClientError:
       self._logger.warn('Attempt to get commands: %s failed. Recording them'
-                        ' all as NaN.', ', '.join(self._ctrls))
-      samples = [float('nan')]*len(self._ctrls)
-    return samples
+                        ' all as NaN.', ', '.join(ctrls))
+      samples = [float('nan')]*len(ctrls)
+    duration = time.time() - start
+    sample_tuples = zip(ctrls, samples)
+    sample_tuples.append((SAMPLE_TIME_KEY, duration))
+    return (sample_tuples, duration)
+
+  def process_measurement(self, tstart=None, tend=None):
+    """Process the measurement by calculating stats.
+
+    Args:
+      tstart: first timestamp to include. Seconds since epoch
+      tend: last timestamp to include. Seconds since epoch
+
+    Returns:
+      StatsManager object containing info from the run
+    """
+    self._stats.TrimSamples(tstart, tend)
+    self._stats.CalculateStats()
+    return self._stats
 
 
 class HighResServodPowerTracker(ServodPowerTracker):
@@ -174,10 +154,9 @@ class HighResServodPowerTracker(ServodPowerTracker):
       loop_end = end - self.BUFFER
       temp_stats = stats_manager.StatsManager()
       while start < loop_end:
-        samples = self._get_power_or_nan()
-        duration = time.time() - start
-        sample_tuples = zip(self._ctrls, samples)
-        sample_tuples.append((SAMPLE_TIME_KEY, duration))
+        # Setting duration to _ as this PowerTracker does not need duration
+        # to calculate for how long to sleep.
+        sample_tuples, _ = self._sample_ctrls(self._ctrls)
         for domain, sample in sample_tuples:
           temp_stats.AddSample(domain, sample)
         start = time.time()
