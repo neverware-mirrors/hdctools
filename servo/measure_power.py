@@ -229,6 +229,13 @@ class ECPowerTracker(ServodPowerTracker):
       # Revert back to ppvar_vbat_mw for main ctrls.
       self._ctrls = [self._ec_cmd]
 
+  def prepare(self, fast=False, powerstate=UNKNOWN_POWERSTATE):
+    """Reduce the time needed to enter deep-sleep after console interaction."""
+    # Do not check for failure or anything, as its a nice-to-have and increases
+    # accuracy, but does not impact functionality. Dsleep might also not be
+    # available on some EC images.
+    self._sclient.set('ec_uart_cmd','dsleep 2')
+
   def run(self):
     """EC vbat 'run' to ensure the first reading does not use averaging."""
     sample_tuples, duration = self._sample_ctrls([self._ec_cmd])
