@@ -206,12 +206,43 @@ class ECPowerTracker(ServodPowerTracker):
   def __init__(self, host, port, stop_signal, sample_rate=DEFAULT_VBAT_RATE):
     """Init EC power measurement by setting up ec 'vbat' servod control."""
     self._ec_cmd = 'ppvar_vbat_mw'
+    self._avg_ec_cmd = 'avg_ppvar_vbat_mw'
     super(ECPowerTracker, self).__init__(host=host, port=port,
                                          stop_signal=stop_signal,
                                          ctrls=[self._ec_cmd],
                                          sample_rate=sample_rate,
                                          tag='ec',
                                          title='EC')
+
+  def verify(self):
+    """ECPowerTracker verify that also checks if avg_ppvar is available."""
+    # First verify the normal ctrl.
+    super(ECPowerTracker, self).verify()
+    # Then get ambitious and check if the newer avg_ppvar_vbat_mw is also
+    # available.
+    self._ctrls = [self._avg_ec_cmd]
+    try:
+      super(ECPowerTracker, self).verify()
+      # This means that avg_ppvar_vbat_mw worked fine.
+    except PowerTrackerError:
+      # This means that avg_ppvar_vbat_mw is not supported.
+      # Revert back to ppvar_vbat_mw for main ctrls.
+      self._ctrls = [self._ec_cmd]
+
+  def run(self):
+    """EC vbat 'run' to ensure the first reading does not use averaging."""
+    sample_tuples, duration = self._sample_ctrls([self._ec_cmd])
+    # Rewrite the name to be whatever actual control is being used: avg &
+    # regular. This is required so that the output is not split into two
+    # domains that are really the same: regular & avg.
+    adjusted_sample_tuples = []
+    for name, sample in sample_tuples:
+      if name == self._ec_cmd:
+        name = self._ctrls[0]
+      adjusted_sample_tuples.append((name, sample))
+    self._stats.AddSamples(adjusted_sample_tuples)
+    self._stop_signal.wait(max(self._rate - duration, 0))
+    super(ECPowerTracker, self).run()
 
 
 class PowerMeasurementError(Exception):
