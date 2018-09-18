@@ -259,7 +259,8 @@ class ServoScratch(object):
       serialf = os.path.join(self._scratch, str(serial))
       if os.path.exists(serialf):
         # Add a symlink for each serial pointing back at the original file
-        msg = 'Adding entry for serial already in use. Serial: %s.' % serial
+        msg = 'Adding entry in %s for serial already in use. Serial: %s.' % (
+               serialf, serial)
         self._logger.error(msg)
         raise ServodUtilError(msg)
       serialfs.append(serialf)
