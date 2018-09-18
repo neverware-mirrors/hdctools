@@ -9,9 +9,6 @@
   <include>
     <name>cr50.xml</name>
   </include>
-  <include>
-    <name>warm_reset_reconf.xml</name>
-  </include>
   <!-- ******** Controls ******** -->
   <control>
     <name>power_state</name>
