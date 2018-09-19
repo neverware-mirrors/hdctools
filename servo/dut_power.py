@@ -41,14 +41,17 @@ class ProgressPrinter(threading.Thread):
     super(ProgressPrinter, self).__init__()
     self._marker = marker
     self._rate = rate
-    self._remaining_markers = max_duration / rate;
+    self._remaining_markers = max_duration / rate
     if not stop_signal:
       stop_signal = threading.Event()
     self.stop = stop_signal
 
   def run(self):
-    """Print |_marker| every |_rate| seconds until |stop| is set or
-    we've printed the maximum markers if the max_duration field was set."""
+    """Print |_marker|s.
+
+    Every |_rate| seconds until |stop| is set or we've printed the maximum
+    markers if the max_duration field was set.
+    """
     while not self.stop.is_set() and self._remaining_markers >= 1.0:
       sys.stdout.write(self._marker)
       self._remaining_markers -= 1.0
@@ -87,7 +90,7 @@ def _AddMutuallyExclusiveAction(name, parser, default=True, action='save'):
 def main(cmdline=sys.argv[1:]):
   description = 'Measure power using servod.'
   # BaseServodParser provides port, host, debug arguments
-  parser = servo_parsing.BaseServodParser(description=description)
+  parser = servo_parsing.ServodClientParser(description=description)
   # power measurement logistics
   parser.add_argument('-f', '--fast', default=False, action='store_true',
                       help='if fast no verification cmds are done')
@@ -122,7 +125,6 @@ def main(cmdline=sys.argv[1:]):
     args.save_logs = args.save_raw_data = args.save_summary = True
   pm_logger = logging.getLogger('')
   pm_logger.setLevel(logging.DEBUG)
-  servo_parsing.get_env_options(pm_logger, args)
   if not args.port:
     args.port = client.DEFAULT_PORT
   stdout_handler = logging.StreamHandler(sys.stdout)
@@ -148,14 +150,15 @@ def main(cmdline=sys.argv[1:]):
   setup_done = pm.MeasurePower(wait=args.wait)
   # pylint: disable=g-long-lambda
   handler = lambda signal, _, pm=pm, sw=sleep_waiting, ss=sleep_sampling: \
-                  (sw.set(),ss.set(), pm.FinishMeasurement())
+                  (sw.set(), ss.set(), pm.FinishMeasurement())
   # Ensure that SIGTERM and SIGNINT gracefully stop the measurement
   signal.signal(signal.SIGINT, handler)
   signal.signal(signal.SIGTERM, handler)
   # Wait until measurement is is setup
   setup_done.wait()
   if not args.no_output:
-    waiting_printer = ProgressPrinter(marker = ProgressPrinter.WAIT_MARKER, stop_signal=sleep_waiting,
+    waiting_printer = ProgressPrinter(marker=ProgressPrinter.WAIT_MARKER,
+                                      stop_signal=sleep_waiting,
                                       max_duration=args.wait)
     # Start printing progress once power collection has started
     waiting_printer.start()

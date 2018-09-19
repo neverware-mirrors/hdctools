@@ -198,6 +198,8 @@ def setup(logdir, port, debug_stdout=False):
   setup logging using basicConfig()
   """
   root_logger = logging.getLogger()
+  # Remove all handlers that might currently exist.
+  root_logger.handlers = []
   # Let the root logger process every log message, while the different
   # handlers chose which ones to put out.
   root_logger.setLevel(logging.DEBUG)

@@ -9,7 +9,6 @@
 import collections
 import errno
 import logging
-import logging.handlers
 import os
 import pkg_resources
 import select
@@ -58,6 +57,7 @@ DEFAULT_PORT_RANGE = (9990, 9999)
 #     . port-number - desired port number for servod for this board, can be
 #                     overridden by the command line switch --port or
 #                     environment variable setting SERVOD_PORT
+#                     NOTE: this is no longer in use, and will be ignored.
 #     . board-name - board configuration file to use, can be
 #                     overridden by the command line switch --board
 #     . model-name - model override to use, if applicable.
@@ -151,7 +151,7 @@ def usb_get_iserial(device):
   iserial = ''
   try:
     iserial = device_handle.getString(device.iSerialNumber, MAX_ISERIAL_STR)
-  except usb.USBError, e:
+  except usb.USBError:
     # TODO(tbroch) other non-FTDI devices on my host cause following msg
     #   usb.USBError: error sending control message: Broken pipe
     # Need to investigate further
@@ -187,6 +187,7 @@ def usb_find(vendor, product, serialname):
   return matched_devices
 
 
+# pylint: disable=g-bad-exception-name
 class ServodError(Exception):
   """Exception class for servod server."""
   pass
@@ -210,6 +211,11 @@ class ServodStarter(object):
     # The scratch initialization here ensures that potentially stale entries
     # are removed from the scratch before attempting to create a new one.
     self._scratchutil = servodutil.ServoScratch()
+    # Initialize logging up here first to ensure log messages from parsing
+    # can go through.
+    loglevel, fmt = servo_logging.LOGLEVEL_MAP[servo_logging.DEFAULT_LOGLEVEL]
+    logging.basicConfig(loglevel=loglevel, format=fmt)
+    self._logger = logging.getLogger(os.path.basename(sys.argv[0]))
     options = self._parse_args(cmdline)
     self._host = options.host
     if options.port:
@@ -249,19 +255,9 @@ class ServodStarter(object):
     # to freeze terminals when reading from the UARTs.
     terminal_freezer.CheckForPIDNamespace()
 
-    self._logger = logging.getLogger(os.path.basename(sys.argv[0]))
     self._logger.info('Start')
 
-    servo_parsing.get_env_options(self._logger, options)
-
-    if options.name and options.serialname:
-      self._logger.error("Mutually exclusive '--name' or '--serialname' is "
-                         'allowed')
-      sys.exit(-1)
-
-    servo_device = self.discover_servo(options,
-                                       servo_parsing.parse_rc(self._logger,
-                                                              options.rcfile))
+    servo_device = self.discover_servo(options)
     if not servo_device:
       sys.exit(-1)
 
@@ -292,9 +288,8 @@ class ServodStarter(object):
             options.board, options.model)
 
         if not scfg.find_cfg_file(board_config):
-          self._logger.info('No XML overlay for model '
-              '%s, falling back to board %s default',
-              options.model, options.board)
+          self._logger.info('No XML overlay for model %s, falling back to '
+                            'board %s default', options.model, options.board)
           board_config = None
         else:
           self._logger.info('Found XML overlay for model %s:%s',
@@ -376,12 +371,12 @@ class ServodStarter(object):
                  'Launch targetting usb device with vid:pid == 0x18d1:0x5001 '
                  '(Google/Servo)')]
     # BaseServodParser adds port, host, debug args & name/rcfile args for rc.
-    parser = servo_parsing.BaseServodParser(description=description,
-                                            examples=examples,
-                                            version='%(prog)s ' + VERSION)
-    parser.add_argument('--vendor', default=None, type=lambda x: int(x,0),
+    parser = servo_parsing.BaseServodRCParser(description=description,
+                                              examples=examples,
+                                              version='%(prog)s ' + VERSION)
+    parser.add_argument('--vendor', default=None, type=lambda x: int(x, 0),
                         help='vendor id of device to interface to')
-    parser.add_argument('--product', default=None, type=lambda x: int(x,0),
+    parser.add_argument('--product', default=None, type=lambda x: int(x, 0),
                         help='USB product id of device to interface with')
     parser.add_argument('-s', '--serialname', default=None, type=str,
                         help='device serialname stored in eeprom')
@@ -411,90 +406,7 @@ class ServodStarter(object):
     parser.add_argument('--allow-dual-v4', dest='dual_v4', default=False,
                         action='store_true',
                         help='Allow dual micro and ccd on servo v4.')
-    servo_parsing.add_servo_parsing_rc_options(parser)
     return parser.parse_args(cmdline)
-
-  def find_servod_match(self, options, all_servos, servodrc):
-    """Find a servo matching one of servodrc lines.
-
-    Given a list of servod objects matching discovered servos, display the list
-    to the user and check if there is a configuration file line corresponding to
-    one of the servos.
-
-    If a line like that exists, and it includes options which are not yet
-    defined in the options object - set these options' values. If the option is
-    already defined - report that this config line setting is ignored.
-
-    Args:
-      options: an options object as returned by parse_options
-      all_servos: a list of servod objects corresponding to discovered servo
-                  devices
-      servodrc: a dictionary representing the contents of the servodrc file, as
-                returned by parse_rc() above (if any)
-
-    Returns:
-      a matching servod object, if found, None otherwise
-
-    Raises:
-      ServodError: in case required name is not found in the config file
-    """
-
-    for servo in all_servos:
-      self._logger.info('Found servo, vid: 0x%04x pid: 0x%04x sid: %s',
-                        servo.idVendor, servo.idProduct, usb_get_iserial(servo))
-
-    # If user specified servod name in the command line - match it to the serial
-    # number.
-
-    if options.name:
-      config = servodrc.get(options.name)
-      if not config:
-        raise ServodError("Name '%s' not in the config file" % options.name)
-      options.serialname = config['sn']
-    elif options.serialname:
-      # Let's try finding config for a serial name
-      for config in servodrc.itervalues():
-        if config['sn'] == options.serialname:
-          break
-      else:
-        return None
-
-    if not options.serialname:
-      # There is nothing to match
-      return None
-
-    for servo in all_servos:
-      servo_sn = usb_get_iserial(servo)
-      if servo_sn != options.serialname:
-        continue
-
-      # Match found, some sanity checks/updates before using it
-      matching_servo = servo
-      rc_port = config['port']
-      if rc_port:
-        if not options.port:
-          options.port = rc_port
-        elif options.port != rc_port:
-          self._logger.warning('Ignoring rc configured port %s for servo %s',
-                               rc_port, servo_sn)
-
-      rc_board = config['board']
-      if rc_board:
-        if not options.board:
-          options.board = rc_board
-        elif options.board != rc_board:
-          self._logger.warning('Ignoring rc configured board name %s for servo '
-                               '%s', rc_board, servo_sn)
-      if 'model' in config:
-        rc_model = config['model']
-        if not options.model:
-          options.model = rc_model
-        elif options.model != rc_model:
-          self._logger.warning('Ignoring rc configured model name %s for servo '
-                               '%s', rc_model, servo_sn)
-      return matching_servo
-
-    raise ServodError('No matching servo found')
 
   def choose_servo(self, all_servos):
     """Let user choose a servo from available list of unique devices.
@@ -536,26 +448,21 @@ class ServodStarter(object):
     logging.info('')
     return servo
 
-  def discover_servo(self, options, servodrc):
+  def discover_servo(self, options):
     """Find a servo USB device to use.
 
     First, find all servo devices matching command line options, this may result
     in discovering none, one or more devices.
 
-    Then try matching discovered servos and the configuration defined in
-    servodrc. A match this will result in reading missing options from servodrc
-    file.
-
     If there is a match - return the matching device.
 
-    If no match found, but there is only one servo connected - return it. If
-    there is no match found and multiple servos are connected - report an error
-    and return None.
+    If there is only one servo connected - return it.
+    If there is no match found and multiple servos are connected - report an
+    error and return None.
 
     Args:
-      options: the options object returned by opt_parse
-      servodrc: a dictionary representing the contents of the servodrc file, as
-                returned by parse_rc() above (if any)
+      options: the options object returned by arg_parse
+
     Returns:
       servo object for the matching (or single) device, otherwise None
     """
@@ -572,12 +479,6 @@ class ServodStarter(object):
     if not all_servos:
       self._logger.error('No servos found')
       return None
-
-    # See if there is a matching entry in servodrc
-    matching_servo = self.find_servod_match(options, all_servos, servodrc)
-
-    if matching_servo:
-      return matching_servo
 
     if len(all_servos) == 1:
       return all_servos[0]

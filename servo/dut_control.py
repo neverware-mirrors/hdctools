@@ -12,6 +12,7 @@ import pkg_resources
 import sys
 import time
 
+# pylint: disable=g-importing-member
 from socket import error as SocketError
 
 import numpy
@@ -64,9 +65,9 @@ def _parse_args(cmdline):
                'for 2 seconds sampling every 100ms'),
               ('--verbose i2c_mux', 'gets value for i2c_mux control verbosely'),
               ('i2c_mux:remote_adcs', 'sets i2c_mux to value remote_adcs')]
-  parser = servo_parsing.BaseServodParser(description=description,
-                                          examples=examples,
-                                          version='%(prog)s ' + VERSION)
+  parser = servo_parsing.ServodClientParser(description=description,
+                                            examples=examples,
+                                            version='%(prog)s ' + VERSION)
   info_g = parser.add_mutually_exclusive_group()
   info_g.add_argument('-i', '--info', help='show info about controls',
                       action='store_true', default=False)
@@ -92,7 +93,6 @@ def _parse_args(cmdline):
   parser.add_argument('-z', '--sleep_msecs', type=float, default=0.0,
                       help='sleep for this many milliseconds between queries')
 
-  servo_parsing.add_servo_parsing_rc_options(parser)
   return parser.parse_known_args(cmdline)
 
 
@@ -335,18 +335,6 @@ def real_main(cmdline):
   logging.basicConfig(
       level=loglevel,
       format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-  logger = logging.getLogger()
-  servo_parsing.get_env_options(logger, options)
-  rc = servo_parsing.parse_rc(logger, options.rcfile)
-  if not options.port:
-    if options.name:
-      if options.name not in rc:
-        raise ControlError('%s not in the config file' % options.name)
-      options.port = int(rc.get(options.name)['port'])
-      if not options.port:
-        raise ControlError('unknown port for %s' % options.name)
-    else:
-      options.port = client.DEFAULT_PORT
 
   sclient = client.ServoClient(host=options.host, port=options.port,
                                verbose=options.verbose)
