@@ -303,16 +303,19 @@ class PowerMeasurement(object):
     self._power_trackers = []
     self._stats = {}
     power_trackers = []
-    try:
-      power_trackers.append(OnboardINAPowerTracker(host, port,
-                                                   self._stop_signal, ina_rate))
-    except PowerTrackerError:
-      self._logger.warn('Onboard INA tracker setup failed.')
-    try:
-      power_trackers.append(ECPowerTracker(host, port, self._stop_signal,
-                                           vbat_rate))
-    except PowerTrackerError:
-      self._logger.warn('EC Power tracker setup failed.')
+    if ina_rate > 0:
+      try:
+        power_trackers.append(OnboardINAPowerTracker(host, port,
+                                                     self._stop_signal,
+                                                     ina_rate))
+      except PowerTrackerError:
+        self._logger.warn('Onboard INA tracker setup failed.')
+    if vbat_rate > 0:
+      try:
+        power_trackers.append(ECPowerTracker(host, port, self._stop_signal,
+                                             vbat_rate))
+      except PowerTrackerError:
+        self._logger.warn('EC Power tracker setup failed.')
     self.Reset()
     for tracker in power_trackers:
       if not self._fast:

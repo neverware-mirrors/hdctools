@@ -95,10 +95,12 @@ def main(cmdline=sys.argv[1:]):
   parser.add_argument('-t', '--time', default=60, type=float,
                       help='time (sec) to measure power for')
   parser.add_argument('--ina-rate', default=measure_power.DEFAULT_INA_RATE,
-                      type=float, help='rate (sec) to query the INAs')
+                      type=float, help='rate (sec) to query the INAs, if <= 0 '
+                      'then INAs will not be queried')
   parser.add_argument('--vbat-rate', default=measure_power.DEFAULT_VBAT_RATE,
                       type=float,
-                      help='rate (sec) to query the ec vbat command')
+                      help='rate (sec) to query the ec vbat command, if <= 0 '
+                      'then ec vbat will not be queried')
   # output and logging logic
   parser.add_argument('-v', '--verbose', default=False, action='store_true',
                       help='print debug log')
