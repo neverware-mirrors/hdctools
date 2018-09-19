@@ -6,7 +6,6 @@
 """
 import collections
 import logging
-import optparse
 import pkg_resources
 import sys
 import time
@@ -15,8 +14,8 @@ from socket import error as SocketError
 
 import numpy
 
-import multiservo
 import client
+import servo_parsing
 
 
 class ControlError(Exception):
@@ -33,66 +32,62 @@ GNUPLOT_PREFIX = '##'
 TIME_KEY = KEY_PREFIX + 'sample_msecs'
 
 
-def _parse_args():
+def _parse_args(cmdline):
   """Parse commandline arguments.
 
-  Note, reads sys.argv directly
+  Args:
+    cmdline: list, cmdline to be parsed
 
   Returns:
-    tuple (options, args) as described by optparse.OptionParser.parse_args()
-    method
+    tuple (options, args) where args is a list of cmdline arguments that the
+    parser was unable to match i.e. they're servod controls, not options.
   """
   description = (
-      '%prog allows users to set and get various controls on a DUT system via'
-      ' the servo debug & control board.  This client communicates to the board'
-      ' via a socket connection to the servo server.')
-  examples = (
-      '\nExamples:\n   %prog\n\tgets value for all controls\n   %prog '
-      '-v\n\tgets value for all controls verbosely\n   %prog i2c_mux\n\tgets '
-      "value for 'i2c_mux' control\n\tif the exact control name is not found, "
-      'a list of similar controls is printed\n   %prog -r 100 i2c_mux\n\tgets '
-      "value for 'i2c_mux' control 100 times\n   %prog -t 2 "
-      "loc_0x40_mv\n\tgets value for 'loc_0x40_mv' control for 2 seconds\n   "
-      "%prog -y -t 2 loc_0x40_mv\n\tgets value for 'loc_0x40_mv' control for 2"
-      ' seconds and prepends time in seconds to results\n   %prog -g -y -t 2 '
-      "loc_0x40_mv loc_0x41_mv\n\tgets value for 'loc_0x4[0|1]_mv' control for"
-      ' 2 seconds with gnuplot style   %prog -z 100 -t 2 loc_0x40_mv\n\tgets '
-      "value for 'loc_0x40_mv' control for 2 seconds sampling every 100ms\n   "
-      "%prog -v i2c_mux\n\tgets value for 'i2c_mux' control verbosely\n   "
-      "%prog i2c_mux:remote_adcs\n\tsets 'i2c_mux' to value 'remote_adcs'\n")
-  parser = optparse.OptionParser(version='%prog ' + VERSION)
-  parser.description = description
-  parser.add_option('-s', '--server', help='host where servod is running',
-                    default=client.DEFAULT_HOST)
-  parser.add_option('-p', '--port', help='port where servod is listening',
-                    default=None)
-  parser.add_option('-v', '--verbose', help='show verbose info about controls',
-                    action='store_true', default=False)
-  parser.add_option('-i', '--info', help='show info about controls',
-                    action='store_true', default=False)
-  parser.add_option('-r', '--repeat', type=int,
-                    help='repeat requested command multiple times', default=1)
-  parser.add_option('-t', '--time_in_secs',
-                    help='repeat requested command for ' + 'this many seconds',
-                    type='float', default=0.0)
-  parser.add_option(
-      '-z', '--sleep_msecs',
-      help='sleep for this many ' + 'milliseconds between queries',
-      type='float', default=0.0)
-  parser.add_option('-y', '--print_time',
-                    help='print time in seconds with ' + 'queries to stdout',
-                    action='store_true', default=False)
-  parser.add_option('-g', '--gnuplot', help='gnuplot style to stdout.  Implies '
-                    'print_time', action='store_true', default=False)
-  parser.add_option('--hwinit', help='Initialize controls to their POR/safe '
-                    'state', action='store_true', default=False)
+      '%(prog)s allows users to set and get various controls on a DUT system '
+      'via the servo debug & control board. This client communicates to the '
+      'board via a socket connection to the servo server.')
+  examples = [('',
+               'gets value for all controls'),
+              ('--verbose', 'gets value for all controls verbosely'),
+              ('i2c_mux', 'gets value for i2c_mux control. If the exact control'
+               ' name is not found, a list of similar controls is printed'),
+              ('-r 100 i2c_mux', 'gets value for i2c_mux control 100 times'),
+              ('-t 2 loc_0x40_mv', 'gets value for loc_0x40_mv control for 2 '
+               'seconds'),
+              ('-y -t 2 loc_0x40_mv', 'gets value for loc_0x40_mv control for 2'
+               ' seconds and prepends time in seconds to results'),
+              ('-g -y -t 2 loc_0x40_mv loc_0x41_mv', 'gets value for '
+               'loc_0x4[0|1]_mv control for 2 seconds with gnuplot style'),
+              ('-z 100 -t 2 loc_0x40_mv', 'gets value for loc_0x40_mv control '
+               'for 2 seconds sampling every 100ms'),
+              ('-v i2c_mux', 'gets value for i2c_mux control verbosely'),
+              ('i2c_mux:remote_adcs', 'sets i2c_mux to value remote_adcs')]
+  parser = servo_parsing.BaseServodParser(description=description,
+                                          examples=examples,
+                                          version='%(prog)s ' + VERSION)
+  info_g = parser.add_mutually_exclusive_group()
+  info_g.add_argument('-i', '--info', help='show info about controls',
+                      action='store_true', default=False)
+  info_g.add_argument('--hwinit', help='Initialize controls to their POR/safe '
+                      'state', action='store_true', default=False)
+  print_g = parser.add_mutually_exclusive_group()
+  print_g.add_argument('--verbose', help='show verbose info about controls',
+                       action='store_true', default=False)
+  print_g.add_argument('-g', '--gnuplot', help='gnuplot style to stdout. '
+                       'Implies print_time', action='store_true', default=False)
+  parser.add_argument('-r', '--repeat', type=int,
+                      help='repeat requested command multiple times', default=1)
+  parser.add_argument('-t', '--time_in_secs',
+                      help='repeat requested command for this many seconds',
+                      type=float, default=0.0)
+  parser.add_argument('-z', '--sleep_msecs', type=float, default=0.0,
+                      help='sleep for this many milliseconds between queries')
+  parser.add_argument('-y', '--print_time',
+                      help='print time in seconds with queries to stdout',
+                      action='store_true', default=False)
 
-  parser.add_option('-d', '--debug', help='enable debug messages',
-                    action='store_true', default=False)
-
-  multiservo.add_multiservo_parser_options(parser)
-  parser.set_usage(parser.get_usage() + examples)
-  return parser.parse_args()
+  servo_parsing.add_servo_parsing_rc_options(parser)
+  return parser.parse_known_args(cmdline)
 
 
 def display_table(table, prefix):
@@ -320,8 +315,8 @@ def iterate(controls, options, sclient):
     display_stats(stats, prefix=prefix)
 
 
-def real_main():
-  (options, args) = _parse_args()
+def real_main(cmdline):
+  (options, args) = _parse_args(cmdline)
   loglevel = logging.INFO
   if options.debug:
     loglevel = logging.DEBUG
@@ -329,8 +324,8 @@ def real_main():
       level=loglevel,
       format='%(asctime)s - %(name)s - ' + '%(levelname)s - %(message)s')
   logger = logging.getLogger()
-  multiservo.get_env_options(logger, options)
-  rc = multiservo.parse_rc(logger, options.rcfile)
+  servo_parsing.get_env_options(logger, options)
+  rc = servo_parsing.parse_rc(logger, options.rcfile)
   if not options.port:
     if options.name:
       if options.name not in rc:
@@ -341,15 +336,7 @@ def real_main():
     else:
       options.port = client.DEFAULT_PORT
 
-  if options.verbose and options.gnuplot:
-    logging.critical("Can't use --verbose with --gnuplot")
-    sys.exit(-1)
-
-  if options.info and options.hwinit:
-    logging.critical("Can't use --hwinit with --info")
-    sys.exit(-1)
-
-  sclient = client.ServoClient(host=options.server, port=options.port,
+  sclient = client.ServoClient(host=options.host, port=options.port,
                                verbose=options.verbose)
   global _start_time
   _start_time = time.time()
@@ -374,9 +361,11 @@ def real_main():
     iterate(args, options, sclient)
 
 
-def main():
+# pylint: disable=dangerous-default-value
+# Ability to pass an arbitrary or artifical cmdline for testing is desirable.
+def main(cmdline=sys.argv[1:]):
   try:
-    real_main()
+    real_main(cmdline)
   except KeyboardInterrupt:
     sys.exit(0)
   except (client.ServoClientError, ControlError) as e:

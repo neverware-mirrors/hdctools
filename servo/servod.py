@@ -5,11 +5,10 @@
 """Python version of Servo hardware debug & control board server."""
 
 # pylint: disable=g-bad-import-order
-# pkg_resources is erroneously suggested to be in the 1st party segment
+# pkg_resources is erroneously suggested to be in the 3rd party segment
 import collections
 import errno
 import logging
-import optparse
 import os
 import pkg_resources
 import select
@@ -22,8 +21,8 @@ import time
 
 import drv.loglevel
 import ftdi_common
-import multiservo
 import servo_interfaces
+import servo_parsing
 import servo_server
 import servodutil
 import system_config
@@ -234,16 +233,19 @@ class ServodError(Exception):
 class ServodStarter(object):
   """Class to manage servod instance and rpc server its being served on."""
 
-  def __init__(self):
+  def __init__(self, cmdline):
     """Prepare servod invocation.
 
     Parse cmdline and prompt user for missing information if necessary to start
     servod. Prepare servod instance & thread for it to be served from.
 
+    Args:
+      cmdline: list, cmdline components to parse
+
     Raises:
       ServodError: if automatic config cannot be found
     """
-    (options, _) = self._parse_args()
+    options = self._parse_args(cmdline)
     if options.debug:
       level = 'debug'
     else:
@@ -262,7 +264,7 @@ class ServodStarter(object):
     # are removed from the scratch before attempting to create a new one.
     self._scratchutil = servodutil.ServoScratch()
 
-    multiservo.get_env_options(self._logger, options)
+    servo_parsing.get_env_options(self._logger, options)
 
     if options.name and options.serialname:
       self._logger.error("Mutually exclusive '--name' or '--serialname' is "
@@ -270,7 +272,7 @@ class ServodStarter(object):
       sys.exit(-1)
 
     servo_device = self.discover_servo(options,
-                                       multiservo.parse_rc(self._logger,
+                                       servo_parsing.parse_rc(self._logger,
                                                            options.rcfile))
     if not servo_device:
       sys.exit(-1)
@@ -391,66 +393,58 @@ class ServodStarter(object):
       self._servod.close()
       self._logger.info('Successfully turned off')
 
-  # TODO(tbroch) merge w/ parse_common_args properly
-  def _parse_args(self):
+  def _parse_args(self, cmdline):
     """Parse commandline arguments.
 
-    Note, reads sys.argv directly
+    Args:
+      cmdline: list of cmdline arguments
 
     Returns:
-      tuple (options, args) from optparse.parse_args().
+      args: argparse Namespace after parsing & processing cmdline
     """
     description = (
-        '%prog is server to interact with servo debug & control board.  '
+        '%(prog)s is server to interact with servo debug & control board. '
         'This server communicates to the board via USB and the client via '
-        'xmlrpc library.  Launcher most specify at least one --config <file> '
-        'in order for the server to provide any functionality.  In most cases, '
+        'xmlrpc library. Launcher most specify at least one --config <file> '
+        'in order for the server to provide any functionality. In most cases, '
         'multiple configs will be needed to expose complete functionality '
         'between debug & DUT board.')
-    examples = (
-        '\nExamples:\n   > %prog -b <path>/data/servo.xml\n\tLaunch server on '
-        'defualt host:port with configs native to servo\n   > %prog -b <file> '
-        '-p 8888\n\tLaunch server listening on port 8888\n   > %prog -b <file> '
-        '-v 0x18d1 -p 0x5001\n\tLaunch targetting usb device \n\twith vid:pid '
-        '== 0x18d1:0x5001 (Google/Servo)\n')
-    parser = optparse.OptionParser(version='%prog ' + VERSION)
-    parser.description = description
-    parser.add_option('-d', '--debug', action='store_true', default=False,
-                      help='enable debug messages')
-    parser.add_option('', '--host', default='localhost', type=str,
-                      help='hostname to start server on')
-    parser.add_option(
-        '', '--port', default=None, type=int,
-        help='port for server to listen on, by default '
-        'will try ports in %d..%d range, could also be supplied '
-        'through environment variable SERVOD_PORT' % DEFAULT_PORT_RANGE)
-    parser.add_option('-v', '--vendor', default=None, type=int,
-                      help='vendor id of ftdi device to interface to')
-    parser.add_option('-p', '--product', default=None, type=int,
-                      help='USB product id of ftdi device to interface with')
-    parser.add_option('-s', '--serialname', default=None, type=str,
-                      help='device serialname stored in eeprom')
-    parser.add_option('-c', '--config', default=None, type=str, action='append',
-                      help='system config files (XML) to read')
-    parser.add_option('-b', '--board', default='', type=str, action='store',
-                      help='include config file (XML) for given board')
-    parser.add_option('-m', '--model', default='', type=str, action='store',
-                      help='optional config for a model of the given board, '
-                      'requires --board')
-    parser.add_option('--noautoconfig', action='store_true', default=False,
-                      help='Disable automatic determination of config files')
-    parser.add_option('-i', '--interfaces', type=str, default='',
-                      help='ordered space-delimited list of interfaces. '
-                      'Valid choices are gpio|i2c|uart|gpiouart|dummy')
-    parser.add_option('-u', '--usbkm232', type=str,
-                      help='path to USB-KM232 device which allow for '
-                      'sending keyboard commands to DUTs that do not '
-                      'have built in keyboards. Used in FAFT tests. '
-                      '(Optional), e.g. /dev/ttyUSB0')
-
-    multiservo.add_multiservo_parser_options(parser)
-    parser.set_usage(parser.get_usage() + examples)
-    return parser.parse_args()
+    examples = [('-c <path>/data/servo.xml',
+                 'Launch server on default host:port with native servo config'),
+                ('-c <file> -p 8888', 'Launch server listening on port 8888'),
+                ('-c <file> --vendor 0x18d1 --product 0x5001',
+                 'Launch targetting usb device with vid:pid == 0x18d1:0x5001 '
+                 '(Google/Servo)')]
+    # BaseServodParser adds port, host, debug args & name/rcfile args for rc.
+    parser = servo_parsing.BaseServodParser(description=description,
+                                            examples=examples,
+                                            version='%(prog)s ' + VERSION)
+    parser.add_argument('--vendor', default=None, type=int,
+                        help='vendor id of device to interface to')
+    parser.add_argument('--product', default=None, type=int,
+                        help='USB product id of device to interface with')
+    parser.add_argument('-s', '--serialname', default=None, type=str,
+                        help='device serialname stored in eeprom')
+    parser.add_argument('-c', '--config', default=None, type=str,
+                        action='append', help='system config file (XML) to '
+                                              'read')
+    parser.add_argument('-b', '--board', default=None, type=str, action='store',
+                        help='include config file (XML) for given board')
+    parser.add_argument('-m', '--model', default='', type=str, action='store',
+                        help='optional config for a model of the given board, '
+                        'requires --board')
+    parser.add_argument('--noautoconfig', action='store_true', default=False,
+                        help='Disable automatic determination of config files')
+    parser.add_argument('-i', '--interfaces', type=str, default='',
+                        help='ordered space-delimited list of interfaces. '
+                        'Valid choices are gpio|i2c|uart|gpiouart|dummy')
+    parser.add_argument('-u', '--usbkm232', type=str,
+                        help='path to USB-KM232 device which allow for '
+                        'sending keyboard commands to DUTs that do not '
+                        'have built in keyboards. Used in FAFT tests. '
+                        '(Optional), e.g. /dev/ttyUSB0')
+    servo_parsing.add_servo_parsing_rc_options(parser)
+    return parser.parse_args(cmdline)
 
   def find_servod_match(self, options, all_servos, servodrc):
     """Find a servo matching one of servodrc lines.
@@ -746,9 +740,11 @@ class ServodStarter(object):
     sys.exit(self._exit_status)
 
 
-def main():
+# pylint: disable=dangerous-default-value
+# Ability to pass an arbitrary or artifical cmdline for testing is desirable.
+def main(cmdline=sys.argv[1:]):
   try:
-    starter = ServodStarter()
+    starter = ServodStarter(cmdline)
   except ServodError as e:
     print 'Error: ', e.message
     sys.exit(1)

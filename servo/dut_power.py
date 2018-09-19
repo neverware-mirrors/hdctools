@@ -18,6 +18,7 @@ import threading
 import client
 # This module is just a wrapper around measure_power functionality
 import measure_power
+import servo_parsing
 
 
 class ProgressPrinter(threading.Thread):
@@ -79,14 +80,9 @@ def _AddMutuallyExclusiveAction(name, parser, default=True, action='save'):
 
 # pylint: disable=dangerous-default-value
 def main(cmdline=sys.argv[1:]):
-  parser = argparse.ArgumentParser(
-      description='Measure power using servod.',
-      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-  # servod connection
-  parser.add_argument('--host', default=client.DEFAULT_HOST,
-                      help='servod host')
-  parser.add_argument('-p', '--port', default=client.DEFAULT_PORT, type=int,
-                      help='servod port')
+  description = 'Measure power using servod.'
+  # BaseServodParser provides port, host, debug arguments
+  parser = servo_parsing.BaseServodParser(description=description)
   # power measurement logistics
   parser.add_argument('-f', '--fast', default=False, action='store_true',
                       help='if fast no verification cmds are done')
@@ -102,8 +98,6 @@ def main(cmdline=sys.argv[1:]):
                       help='rate (sec) to query the ec vbat command, if <= 0 '
                       'then ec vbat will not be queried')
   # output and logging logic
-  parser.add_argument('-v', '--verbose', default=False, action='store_true',
-                      help='print debug log')
   parser.add_argument('--no-output', default=False, action='store_true',
                       help='do not output anything into stdout')
   parser.add_argument('-o', '--outdir', default=None,
@@ -114,18 +108,20 @@ def main(cmdline=sys.argv[1:]):
   _AddMutuallyExclusiveAction('summary', parser)
   # NOTE: if logging gets too verbose, turn default off
   _AddMutuallyExclusiveAction('logs', parser)
-  parser.add_argument('--save-all', default=False,
+  parser.add_argument('--save-all', default=False, action='store_true',
                       help='Equivalent to --save-summary --save-logs '
                       '--save-raw-data. Overwrites any of those if specified.')
   args = parser.parse_args(cmdline)
   # Save all logic
   if args.save_all:
     args.save_logs = args.save_raw_data = args.save_summary = True
+  if not args.port:
+    args.port = client.DEFAULT_PORT
   pm_logger = logging.getLogger('')
   pm_logger.setLevel(logging.DEBUG)
   stdout_handler = logging.StreamHandler(sys.stdout)
   stdout_handler.setLevel(logging.INFO)
-  if args.verbose:
+  if args.debug:
     stdout_handler.setLevel(logging.DEBUG)
   if not args.no_output:
     pm_logger.addHandler(stdout_handler)
