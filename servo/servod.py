@@ -68,6 +68,7 @@ DEFAULT_PORT_RANGE = (9990, 9999)
 #   command line <- environment definition <- rc config file
 DEFAULT_RC_FILE = '/home/%s/.servodrc' % os.getenv('SUDO_USER', '')
 
+
 class ServoDeviceWatchdog(threading.Thread):
   """Watchdog to ensure servod stops when a servo device gets lost.
 
@@ -118,7 +119,7 @@ class ServoDeviceWatchdog(threading.Thread):
           # reinitialize all devices.
           reinit_needed = disconnected_devices.pop(dev_id, None)
           if reinit_needed and not disconnected_devices:
-              self._servod.reinitialize()
+            self._servod.reinitialize()
         else:
           # Device was not found.
           self._logger.debug('Device - %s not found when polling.', device)
@@ -216,11 +217,12 @@ class ServodStarter(object):
     loglevel, fmt = servo_logging.LOGLEVEL_MAP[servo_logging.DEFAULT_LOGLEVEL]
     logging.basicConfig(loglevel=loglevel, format=fmt)
     self._logger = logging.getLogger(os.path.basename(sys.argv[0]))
-    options = self._parse_args(cmdline)
-    self._host = options.host
-    if options.port:
-      start_port = options.port
-      end_port = options.port
+    sopts, devopts = self._parse_args(cmdline)
+    self._host = sopts.host
+
+    if servo_parsing.ArgMarkedAsUserSupplied(sopts, 'port'):
+      start_port = sopts.port
+      end_port = sopts.port
     else:
       end_port, start_port = DEFAULT_PORT_RANGE
     for self._servo_port in xrange(start_port, end_port - 1, -1):
@@ -235,18 +237,18 @@ class ServodStarter(object):
         self._logger.fatal("Problem opening Server's socket: %s", e)
         sys.exit(-1)
     else:
-      if options.port:
-        err_msg = ('Port %d is busy' % options.port)
+      if sopts.port:
+        err_msg = ('Port %d is busy' % sopts.port)
       else:
         err_msg = ('Could not find a free port in %d..%d range' % (end_port,
                                                                    start_port))
 
       self._logger.fatal(err_msg)
       sys.exit(-1)
-    servo_logging.setup(logdir=options.log_dir, port=self._servo_port,
-                        debug_stdout=options.debug)
+    servo_logging.setup(logdir=sopts.log_dir, port=self._servo_port,
+                        debug_stdout=sopts.debug)
 
-    if options.dual_v4:
+    if sopts.dual_v4:
       # Leave the right breadcrumbs for servo_postinit to know whether to setup
       # a dual instance or not.
       os.environ[servo_postinit.DUAL_V4_VAR] = servo_postinit.DUAL_V4_VAR_DUMMY
@@ -257,7 +259,7 @@ class ServodStarter(object):
 
     self._logger.info('Start')
 
-    servo_device = self.discover_servo(options)
+    servo_device = self.discover_servo(devopts)
     if not servo_device:
       sys.exit(-1)
 
@@ -265,11 +267,11 @@ class ServodStarter(object):
     board_version = self.get_board_version(lot_id, servo_device.idProduct)
     self._logger.debug('board_version = %s', board_version)
     all_configs = []
-    if not options.noautoconfig:
+    if not devopts.noautoconfig:
       all_configs += self.get_auto_configs(board_version)
 
-    if options.config:
-      for config in options.config:
+    if devopts.config:
+      for config in devopts.config:
         # quietly ignore duplicate configs for backwards compatibility
         if config not in all_configs:
           all_configs.append(config)
@@ -280,29 +282,30 @@ class ServodStarter(object):
 
     scfg = system_config.SystemConfig()
 
-    if options.board:
+    if devopts.board:
       # Handle differentiated model case.
       board_config = None
-      if options.model:
+      if devopts.model:
         board_config = 'servo_%s_%s_overlay.xml' % (
-            options.board, options.model)
+            devopts.board, devopts.model)
 
         if not scfg.find_cfg_file(board_config):
-          self._logger.info('No XML overlay for model %s, falling back to '
-                            'board %s default', options.model, options.board)
+          self._logger.info('No XML overlay for model '
+                            '%s, falling back to board %s default',
+                            devopts.model, devopts.board)
           board_config = None
         else:
           self._logger.info('Found XML overlay for model %s:%s',
-                            options.board, options.model)
+                            devopts.board, devopts.model)
 
       # Handle generic board config.
       if not board_config:
-        board_config = 'servo_' + options.board + '_overlay.xml'
+        board_config = 'servo_' + devopts.board + '_overlay.xml'
         if not scfg.find_cfg_file(board_config):
-          self._logger.error('No XML overlay for board %s', options.board)
+          self._logger.error('No XML overlay for board %s', devopts.board)
           sys.exit(-1)
 
-        self._logger.info('Found XML overlay for board %s', options.board)
+        self._logger.info('Found XML overlay for board %s', devopts.board)
 
       all_configs.append(board_config)
       scfg.set_board_cfg(board_config)
@@ -316,12 +319,11 @@ class ServodStarter(object):
                        servo_device.idVendor, servo_device.idProduct,
                        usb_get_iserial(servo_device))
 
-
     self._servod = servo_server.Servod(
         scfg, vendor=servo_device.idVendor, product=servo_device.idProduct,
         serialname=usb_get_iserial(servo_device),
-        interfaces=options.interfaces.split(), board=options.board,
-        model=options.model, version=board_version, usbkm232=options.usbkm232)
+        interfaces=devopts.interfaces.split(), board=devopts.board,
+        model=devopts.model, version=board_version, usbkm232=devopts.usbkm232)
 
     # Small timeout to allow interface threads to initialize.
     time.sleep(0.5)
@@ -355,7 +357,10 @@ class ServodStarter(object):
       cmdline: list of cmdline arguments
 
     Returns:
-      args: argparse Namespace after parsing & processing cmdline
+      tuple: (server, dev) args Namespaces after parsing & processing cmdline
+        server: holds --port, --host, --log-dir, --allow-dual-v4, --debug flags
+        dev: holds all the device flags (serialname, interfaces, configs etc -
+             see below) necessary to configure a servo device.
     """
     description = (
         '%(prog)s is server to interact with servo debug & control board. '
@@ -370,43 +375,56 @@ class ServodStarter(object):
                 ('-c <file> --vendor 0x18d1 --product 0x5001',
                  'Launch targetting usb device with vid:pid == 0x18d1:0x5001 '
                  '(Google/Servo)')]
-    # BaseServodParser adds port, host, debug args & name/rcfile args for rc.
-    parser = servo_parsing.BaseServodRCParser(description=description,
-                                              examples=examples,
-                                              version='%(prog)s ' + VERSION)
-    parser.add_argument('--vendor', default=None, type=lambda x: int(x, 0),
-                        help='vendor id of device to interface to')
-    parser.add_argument('--product', default=None, type=lambda x: int(x, 0),
-                        help='USB product id of device to interface with')
-    parser.add_argument('-s', '--serialname', default=None, type=str,
-                        help='device serialname stored in eeprom')
-    parser.add_argument('-c', '--config', default=None, type=str,
-                        action='append', help='system config file (XML) to '
-                                              'read')
-    parser.add_argument('-b', '--board', default=None, type=str, action='store',
-                        help='include config file (XML) for given board')
-    parser.add_argument('-m', '--model', default='', type=str, action='store',
-                        help='optional config for a model of the given board, '
-                        'requires --board')
-    parser.add_argument('--noautoconfig', action='store_true', default=False,
-                        help='Disable automatic determination of config files')
-    parser.add_argument('-i', '--interfaces', type=str, default='',
-                        help='ordered space-delimited list of interfaces. '
-                        'Valid choices are gpio|i2c|uart|gpiouart|dummy')
-    parser.add_argument('-u', '--usbkm232', type=str,
-                        help='path to USB-KM232 device which allow for '
-                        'sending keyboard commands to DUTs that do not '
-                        'have built in keyboards. Used in FAFT tests. '
-                        '(Optional), e.g. /dev/ttyUSB0')
-    parser.add_argument('--log-dir', type=str, default=None, const='/var/log/',
-                        nargs='?',
-                        help='path where to dump servod debug logs as a file.'
-                        'If flag omitted in command line, no logs will be '
-                        'dumped to a file.')
-    parser.add_argument('--allow-dual-v4', dest='dual_v4', default=False,
-                        action='store_true',
-                        help='Allow dual micro and ccd on servo v4.')
-    return parser.parse_args(cmdline)
+    version = '%(prog)s ' + VERSION
+    # BaseServodParser adds port, host, debug args.
+    server_pars = servo_parsing.BaseServodParser(version=version,
+                                                 add_help=False)
+    server_pars.add_argument('--log-dir', type=str, default=None,
+                             const='/var/log/', nargs='?',
+                             help='path where to dump servod debug logs as a '
+                             'file. If flag omitted in command line, no logs '
+                             'will be dumped to a file.')
+    server_pars.add_argument('--allow-dual-v4', dest='dual_v4', default=False,
+                             action='store_true',
+                             help='Allow dual micro and ccd on servo v4.')
+    # ServodRCParser adds configs for -name/-rcfile & serialname & parses them.
+    dev_pars = servo_parsing.ServodRCParser(add_help=False)
+    dev_pars.add_argument('--vendor', default=None, type=lambda x: int(x, 0),
+                          help='vendor id of device to interface to')
+    dev_pars.add_argument('--product', default=None, type=lambda x: int(x, 0),
+                          help='USB product id of device to interface with')
+    dev_pars.add_argument('-c', '--config', default=None, type=str,
+                          action='append', help='system config file (XML) to '
+                                                'read')
+    dev_pars.add_argument('-b', '--board', default=None, type=str,
+                          action='store', help='include config file (XML) for '
+                                               'given board')
+    dev_pars.add_argument('-m', '--model', default='', type=str, action='store',
+                          help='optional config for a model of the given board,'
+                          ' requires --board')
+    dev_pars.add_argument('--noautoconfig', action='store_true', default=False,
+                          help='Disable automatic determination of config '
+                               'files')
+    dev_pars.add_argument('-i', '--interfaces', type=str, default='',
+                          help='ordered space-delimited list of interfaces. '
+                               'Valid choices are gpio|i2c|uart|gpiouart|dummy')
+    dev_pars.add_argument('-u', '--usbkm232', type=str,
+                          help='path to USB-KM232 device which allow for '
+                               'sending keyboard commands to DUTs that do not '
+                               'have built in keyboards. Used in FAFT tests. '
+                               '(Optional), e.g. /dev/ttyUSB0')
+    # Create a unified parser with both server & device arguments to display
+    # meaningful help messages to the user.
+    help_displayer = servo_parsing.BaseServodParser(description=description,
+                                                    examples=examples,
+                                                    version=version,
+                                                    parents=[dev_pars])
+    if any([True for argstr in cmdline if argstr in ['-h', '--help']]):
+      help_displayer.print_help()
+      help_displayer.exit()
+    server_args, dev_cmdline = server_pars.parse_known_args(cmdline)
+    dev_args = dev_pars.parse_args(dev_cmdline)
+    return (server_args, dev_args)
 
   def choose_servo(self, all_servos):
     """Let user choose a servo from available list of unique devices.

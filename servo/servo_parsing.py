@@ -6,7 +6,6 @@
 import argparse
 import logging
 import os
-import sys
 import textwrap
 
 import client
@@ -17,6 +16,37 @@ if os.getuid():
   DEFAULT_RC_FILE = '/home/%s/.servodrc' % os.getenv('USER', '')
 else:
   DEFAULT_RC_FILE = '/home/%s/.servodrc' % os.getenv('SUDO_USER', '')
+
+
+PORT_ENV_VAR = 'SERVOD_PORT'
+NAME_ENV_VAR = 'SERVOD_NAME'
+
+
+ARG_BY_USER_MARKER = 'supplied_by_user'
+
+
+def ArgMarkedAsUserSupplied(namespace, arg_name):
+  """Query whether an argument that uses StoreAndMarkAction is user supplied."""
+  marker_name = '%s_%s' % (arg_name, ARG_BY_USER_MARKER)
+  return hasattr(namespace, marker_name)
+
+# pylint: disable=protected-access
+# Need to expand the StoreAction of the parser.
+class StoreAndMarkAction(argparse._StoreAction):
+  """Helper to mark arguments whether they were supplied by the user.
+
+  If an argument is supplied by the user instead of using defaults or RC,
+  add another option with the name |arg|_supplied_by_user.
+  """
+
+  def __call__(self, parser, namespace, values, option_string=None):
+    """Extend default __call__ implementation."""
+    # This sets the |values| to |self.dest|.
+    super(StoreAndMarkAction, self).__call__(parser=parser, namespace=namespace,
+                                             values=values,
+                                             option_string=option_string)
+    marker_name = '%s_%s' % (self.dest, ARG_BY_USER_MARKER)
+    setattr(namespace, marker_name, True)
 
 
 class ServodParserHelpFormatter(argparse.RawDescriptionHelpFormatter,
@@ -91,66 +121,21 @@ class _BaseServodParser(argparse.ArgumentParser):
     kwargs['description'] = description
     super(_BaseServodParser, self).__init__(**kwargs)
 
-  @staticmethod
-  def _HandleEnvVar(cmdline, env_var, flag, pri_flags, logger, cast_type=None):
-    """Look for non-defined options in the environment and add to command line.
-
-    If |env_var| is defined in the environment and none of the variables defined
-    in |pri_flags| are in the command line, then add --|flag| |$(env_var)| to
-    the command line.
-
-    Notes:
-    - Modifies cmdline if name needs to be appended and an environment variable
-      is defined.
-
-    Args:
-      cmdline: the list of cmdline arguments
-      env_var: environment variable name to search
-      flag: flag name to add the environment variable under
-      pri_flags: list of flags in the cmdline that have priority over the
-                 environment variable. If any found, the environment variable
-                 will not be pulled in.
-      logger: logger instance to use
-      cast_type: optional callable to verify the environment flag is castable
-                 to a desired type
-    Returns:
-      tuple: (cmdline, flag_added)
-        cmdline - Reference back to the cmdline passed in
-        flag_added - True if the flag was added, or if a collision flag was
-                     found, false otherwise
-    """
-    if any(cl_flag in pri_flags for cl_flag in cmdline):
-      return (cmdline, True)
-    flag_added = False
-    # If port is not defined, attempt to retrieve it from the environment.
-    env_var_val = os.getenv(env_var)
-    if env_var_val:
-      try:
-        # Casting to int first to ensure the value is int-able and suitable
-        # to be a port option.
-        if cast_type:
-          cast_type(env_var_val)
-        cmdline.extend([flag, env_var_val])
-        logger.info("Adding '--%s %s' to the cmdline.", flag, env_var_val)
-        flag_added = True
-      except ValueError:
-        logger.warning('Ignoring environment %r definition %r', env_var,
-                       env_var_val)
-    return (cmdline, flag_added)
-
 
 class BaseServodParser(_BaseServodParser):
   """BaseServodParser handling common arguments in the servod cmdline tools."""
 
-  def __init__(self, **kwargs):
+  def __init__(self, add_port=True, **kwargs):
     """Initialize by adding common arguments.
 
     Adds:
     - host/port arguments to find/initialize a servod instance
     - debug argument to toggle debug message printing
-    - name/rcfile arguments to handle servodrc configurations
 
     Args:
+      add_port: bool, whether to add --port to the parser. A caller might want
+                to add port themselves either to rename it (servod-port),
+                or to create mutual exclusion with serialname and name (clients)
       **kwargs: keyword arguments forwarded to _BaseServodParser
     """
     super(BaseServodParser, self).__init__(**kwargs)
@@ -158,85 +143,73 @@ class BaseServodParser(_BaseServodParser):
                       help='enable debug messages')
     self.add_argument('--host', default='localhost', type=str,
                       help='hostname of the servod server.')
-    self.add_argument('-p', '--port', default=None, type=int,
-                      help='port of the servod server.')
+    if add_port:
+      BaseServodParser.AddRCEnabledPortArg(self)
 
   @staticmethod
-  def HandlePortEnvVar(cmdline=None, pri_flags=None, logger=logging):
-    """Probe SERVOD_PORT environment variable.
+  def AddRCEnabledPortArg(parser, port_flags=['-p', '--port']):
+    """Add the port to the argparser.
 
-    SERVOD_PORT environment variable will be used if defined and port not in
-    the cmdline
+    Set the default to environment variable ENV_PORT_NAME if defined
+
+    Note: while this helper does allow for arbitrary flags for the port
+    variable, the destination is still set to 'port'. It's on the caller to
+    ensure that there is no conflict.
 
     Args:
-      cmdline: the list of cmdline arguments
-      pri_flags: list of flags in the cmdline that have priority over the
-                 environment variable. If any found, the environment variable
-                 will not be pulled in.
-      logger: logger instance to use
-
-    Returns:
-      tuple: (cmdline, port_defined)
-        cmdline - Reference back to the cmdline passed in
-        port_defined - bool showing if after this port is now in the cmdline
+      parser: parser or group to add argument to
+      port_flags: optional, list, if the flags for the port should be different
+                  than the default ones.
     """
-    if not pri_flags:
-      pri_flags = ['-p', '--port']
-    if cmdline is None:
-      cmdline = sys.argv[1:0]
-    return _BaseServodParser._HandleEnvVar(cmdline=cmdline,
-                                           env_var='SERVOD_PORT', flag='-p',
-                                           pri_flags=pri_flags, logger=logger,
-                                           cast_type=int)
+    # pylint: disable=dangerous-default-value
+    # Having the default flags here simplifies the code logic.
+    default = os.environ.get(PORT_ENV_VAR, client.DEFAULT_PORT)
+    parser.add_argument(*port_flags, default=default, type=int, dest='port',
+                        action=StoreAndMarkAction,
+                        help='port of the servod server. Can also be supplied '
+                        'through environment variable ' + PORT_ENV_VAR)
 
 
-class _ServodRCParser(_BaseServodParser):
+class ServodRCParser(_BaseServodParser):
   """Base class to build Servod parsers to natively handle servorc.
 
   This class overwrites parse_args & parse_known_args to:
-  - handle SERVOD_NAME environment variable
+  - handle NAME_ENV_VAR environment variable
   - parse & substitute in the servorc file on matches
-
   """
 
   def __init__(self, **kwargs):
-    super(_ServodRCParser, self).__init__(**kwargs)
+    super(ServodRCParser, self).__init__(**kwargs)
     self.add_argument('--rcfile', type=str, default=DEFAULT_RC_FILE,
                       help='servo description file for multi-servo operation.')
-    self.add_argument('-n', '--name', type=str,
-                      help='symbolic name of the servo board, '
-                      'used as a config shortcut, could also be supplied '
-                      'through environment variable SERVOD_NAME')
+    # name and serialname are both ways to ID a servo device
+    self._id_group = self.add_mutually_exclusive_group()
+    self._id_group.add_argument('-s', '--serialname', default=None, type=str,
+                                help='device serialname stored in eeprom.')
+    ServodRCParser.AddRCEnabledNameArg(self._id_group)
 
   @staticmethod
-  def HandleNameEnvVar(cmdline=None, pri_flags=None, logger=logging):
-    """Probe SERVOD_NAME environment variable.
+  def AddRCEnabledNameArg(parser, name_flags=['-n', '--name']):
+    """Add the name to the argparser.
 
-    SERVOD_NAME environment variables can be used if -s/--serialname
-    and --name command line switches are not set.
+    Set the default to environment variable ENV_VAR_NAME if defined
 
+    Note: while this helper does allow for arbitrary flags for the name
+    variable, the destination is still set to 'name'. It's on the caller to
+    ensure that there is no conflict.
 
     Args:
-      cmdline: the list of cmdline arguments
-      pri_flags: list of flags in the cmdline that have priority over the
-                 environment variable. If any found, the environment variable
-                 will not be pulled in.
-      logger: logger instance to use
-
-    Returns:
-      tuple: (cmdline, name_defined)
-        cmdline - Reference back to the cmdline passed in
-        name_defined - bool showing if name or serialname (a unique id)
-                       is now defined in the cmdline
+      parser: parser or group to add argument to
+      name_flags: optional, list, if the flags for the name should be different
+                  than the default ones.
     """
-    if not pri_flags:
-      pri_flags = ['-n', '--name', '-s', '--serialname']
-    if cmdline is None:
-      cmdline = sys.argv[1:0]
-    return _BaseServodParser._HandleEnvVar(cmdline=cmdline,
-                                           env_var='SERVOD_NAME',
-                                           flag='-n', pri_flags=pri_flags,
-                                           logger=logger)
+    # pylint: disable=dangerous-default-value
+    # Having the default flags here simplifies the code logic.
+    default = os.environ.get(NAME_ENV_VAR, '')
+    parser.add_argument(*name_flags, default=default, type=str, dest='name',
+                        help='symbolic name of the servo board, '
+                        'used as a config shortcut, could also be supplied '
+                        'through environment variable ' + NAME_ENV_VAR)
 
   @staticmethod
   def PostProcessRCElements(options, rcpath=None, logger=logging):
@@ -261,22 +234,21 @@ class _ServodRCParser(_BaseServodParser):
       ServodParserError: if -n/--name and -s/--serialname both defined
       ServodParserError: if name in options doesn't show up in servodrc
     """
-    if options.name and options.serialname:
-      # NOTE(coconutruben): This is temporary until the CL that splits
-      # parsing inside of servod.py removes the need for this.
-      raise ServodParserError('error: argument -s/--serialname not allowed with'
-                              ' argument -n/--name.')
     if not rcpath:
       rcpath = options.rcfile
-    rcd = _ServodRCParser.ParseRC(rcpath, logger=logger)
+    rcd = ServodRCParser.ParseRC(rcpath, logger=logger)
     rc = None
-    if options.name:
+    if not options.serialname and options.name:
+      # |name| can be set through the commandline or through an environment
+      # variable. If it's set through the commandline, serialname cannot have
+      # been set. However, if serialname is set and name is also set (through
+      # the environment variable) name gets ignored.
       if options.name not in rcd:
         raise ServodParserError('Name %r not in rc at %r' % (options.name,
                                                              rcpath))
       rc = rcd[options.name]
-      if 'sn' in rc:
-        setattr(options, 'serialname', rc['sn'])
+      # For an rc to exist, 'sn' has to be a part of it
+      setattr(options, 'serialname', rc['sn'])
     elif options.serialname:
       # srcs meaning serialname runtime configurations (rcs).
       srcs = [(name, rc) for name, rc in rcd.iteritems() if
@@ -316,11 +288,9 @@ class _ServodRCParser(_BaseServodParser):
     Returns:
       tuple (options, xtra) the result from parsing known args
     """
-    args, _ = _ServodRCParser.HandleNameEnvVar(args, logger=self._logger)
-    result = super(_ServodRCParser, self).parse_known_args(args=args,
-                                                           namespace=namespace)
-    opts, xtra = result
-    opts = _ServodRCParser.PostProcessRCElements(opts, logger=self._logger)
+    opts, xtra = _BaseServodParser.parse_known_args(self, args=args,
+                                                    namespace=namespace)
+    opts = ServodRCParser.PostProcessRCElements(opts, logger=self._logger)
     return (opts, xtra)
 
   @staticmethod
@@ -344,46 +314,33 @@ class _ServodRCParser(_BaseServodParser):
     if not os.path.isfile(rc_file):
       return {}
     rcd = {}  # Dictionary representing the rc file contents.
-    other_attributes = ['port', 'board', 'model']
+    attributes = ['name', 'sn', 'port', 'board', 'model']
+    # These attributes have to be defined for a line to be valid.
+    required_attributes = ['name', 'sn']
     with open(rc_file) as f:
       for rc_line in f:
         line = rc_line.split('#')[0].strip()
         if not line:
           continue
         elts = [x.strip() for x in line.split(',')]
-        name = elts[0]
-        if not name or len(elts) < 2 or any(' ' in x for x in elts):
-          logger.warning('ignoring rc line %r', rc_line.rstrip())
+        if len(elts) < len(required_attributes):
+          logger.warning('ignoring rc line %r. Not all required '
+                         'attributes defined %r.', rc_line.rstrip(),
+                         required_attributes)
           continue
-        rcd[name] = {'sn': elts[1]}
-        # Initialize all to None
-        rcd[name].update({att: None for att in other_attributes})
-        rcd[name].update(dict(zip(other_attributes, elts[2:])))
-        # +2 comes from name & serialname
-        if len(elts) > len(other_attributes) + 2:
-          extra_info = elts[len(other_attributes) + 2:]
+        # Initialize all to None that are not in elts
+        line_content = dict(zip(attributes, elts + [None] * len(attributes)))
+        # All required attributes are defined. Store the entry.
+        name = line_content.pop('name')
+        if len(elts) > len(attributes):
+          extra_info = elts[len(attributes):]
           logger.warning('discarding %r for for %r', ', '.join(extra_info),
                          name)
+        rcd[name] = line_content
     return rcd
 
 
-class BaseServodRCParser(_ServodRCParser):
-  """BaseServodParser extension to also natively handle servo rc config."""
-
-  def __init__(self, **kwargs):
-    """Create a ServodRCParser that has the BaseServodParser args.
-
-    Args:
-      **kwargs: keyword arguments forwarded to _BaseServodParser
-    """
-    base_parser = BaseServodParser(add_help=False)
-    if 'parents' not in kwargs:
-      kwargs['parents'] = []
-    kwargs['parents'].append(base_parser)
-    super(BaseServodRCParser, self).__init__(**kwargs)
-
-
-class ServodClientParser(BaseServodRCParser):
+class ServodClientParser(ServodRCParser):
   """Parser to use for servod client cmdline tools.
 
   This parser adds servoscratch serialname<>port conversion to allow
@@ -391,16 +348,28 @@ class ServodClientParser(BaseServodRCParser):
   serialname as well.
   """
 
-  def __init__(self, **kwargs):
+  def __init__(self, scratch=None, **kwargs):
     """Create a ServodRCParser that has the BaseServodParser args.
 
+    (for testing) pass a scratch directory instead of the global default.
+
     Args:
+      scratch: scratch directory to use
       **kwargs: keyword arguments forwarded to _BaseServodParser
     """
+    # BaseServodParser is used here to get the common arguments. Later,
+    # the ServodClientParser adds port itself, because from a client perspective
+    # there is mutual exclusion between --port/--serialname/--name as they serve
+    # one purpose: to identify an instance.
+    self._scratchdir = scratch
+    base_parser = BaseServodParser(add_port=False, add_help=False)
+    if 'parents' not in kwargs:
+      kwargs['parents'] = []
+    kwargs['parents'].append(base_parser)
     super(ServodClientParser, self).__init__(**kwargs)
-    self.add_argument('-s', '--serialname', default=None, type=str,
-                      help='device serialname stored in eeprom. Ignored '
-                           'if port is already defined.')
+    # Add --port to the |_id_group| to ensure exclusion with name and
+    # serialname.
+    BaseServodParser.AddRCEnabledPortArg(self._id_group)
 
   def _MapSNToPort(self, opts):
     """Helper to map the serialname in opts to the port its running on.
@@ -415,7 +384,10 @@ class ServodClientParser(BaseServodRCParser):
       Forces a program exit if |opts.serialname| is not found in the servo
       scratch
     """
-    scratch = servodutil.ServoScratch()
+    # Passing None here uses the default production logic while passing any
+    # other directory can be used for testing. No need to check whether
+    # |self._scratchdir| is None.
+    scratch = servodutil.ServoScratch(self._scratchdir)
     try:
       entry = scratch.FindById(opts.serialname)
     except servodutil.ServodUtilError:
@@ -444,13 +416,12 @@ class ServodClientParser(BaseServodRCParser):
     Returns:
       tuple (opts, xtra) the result from parsing known args
     """
-    args, _ = BaseServodParser.HandlePortEnvVar(args, logger=self._logger)
-    rslt = super(ServodClientParser, self).parse_known_args(args=args,
-                                                            namespace=namespace)
-    opts, xtra = rslt
-    if not opts.port and opts.serialname:
-      # only overwrite the port if no port explicitly set
+    opts, xtra = _BaseServodParser.parse_known_args(self, args=args,
+                                                    namespace=namespace)
+    opts = ServodRCParser.PostProcessRCElements(opts, logger=self._logger)
+    if opts.serialname:
+      # If serialname is set, this means that either serialname or name was used
+      # to find it, and therefore port cannot have been set by the user due to
+      # mutual exclusion.
       opts = self._MapSNToPort(opts)
-    if not opts.port:
-      opts.port = client.DEFAULT_PORT
     return (opts, xtra)
