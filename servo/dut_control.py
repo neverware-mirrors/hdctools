@@ -2,8 +2,10 @@
 # Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-"""Client to control DUT hardware connected to servo debug board
-"""
+"""Client to control DUT hardware connected to servo debug board."""
+
+# pylint: disable=g-bad-import-order
+# pkg_resources is erroneously suggested to be in the 3rd party segment
 import collections
 import logging
 import pkg_resources
@@ -127,7 +129,7 @@ def display_table(table, prefix):
     table: A two-dimensional array (list of lists) to show.
     prefix: All lines will be prefixed with this and a space.
   """
-  if len(table) == 0 or len(table[0]) == 0:
+  if not table or not table[0]:
     return
 
   max_col_width = []
@@ -144,6 +146,7 @@ def display_table(table, prefix):
 
 def display_stats(stats, prefix=STATS_PREFIX):
   """Display various statistics for data captured in a table.
+
   >>> stats = {}
   >>> stats[TIME_KEY] = [50.0, 25.0, 40.0, 10.0]
   >>> stats['frobnicate'] = [11.5, 9.0]
@@ -209,6 +212,7 @@ def _pretty_print_result(result):
     return '\n'.join(['%s: %s' % (k, v) for k, v in result.iteritems()])
   return result
 
+
 def do_iteration(requests, options, sclient, stats):
   """Perform one iteration across the controls.
 
@@ -260,7 +264,7 @@ def do_iteration(requests, options, sclient, stats):
     if options.verbose:
       out_list.append('%s%s %s -> %s' % (time_str, request_type.upper(),
                                          control, result))
-    elif request_type is not 'set':
+    elif request_type != 'set':
       if options.gnuplot:
         out_list.append('%s%s' % (time_str, result))
       else:
@@ -316,13 +320,14 @@ def iterate(controls, options, sclient):
 
 
 def real_main(cmdline):
+  """actual main method logic."""
   (options, args) = _parse_args(cmdline)
   loglevel = logging.INFO
   if options.debug:
     loglevel = logging.DEBUG
   logging.basicConfig(
       level=loglevel,
-      format='%(asctime)s - %(name)s - ' + '%(levelname)s - %(message)s')
+      format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
   logger = logging.getLogger()
   servo_parsing.get_env_options(logger, options)
   rc = servo_parsing.parse_rc(logger, options.rcfile)
@@ -345,16 +350,16 @@ def real_main(cmdline):
   if options.hwinit:
     sclient.hwinit()
     # all done, don't read all controls
-    if not len(args):
+    if not args:
       return
 
-  if not len(args) and options.info:
+  if not args and options.info:
     # print all the doc info for the controls
     print sclient.doc_all()
-  elif not len(args):
+  elif not args:
     print sclient.get_all()
   else:
-    if not ':' in ' '.join(args):
+    if ':' not in ' '.join(args):
       # Sort args only if none of them sets values - otherwise the order is
       # important.
       args = sorted(args)
@@ -364,6 +369,7 @@ def real_main(cmdline):
 # pylint: disable=dangerous-default-value
 # Ability to pass an arbitrary or artifical cmdline for testing is desirable.
 def main(cmdline=sys.argv[1:]):
+  """main method exception wrapper."""
   try:
     real_main(cmdline)
   except KeyboardInterrupt:

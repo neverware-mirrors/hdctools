@@ -1,11 +1,10 @@
 # Copyright (c) 2014 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-"""Common code for servo_parsing operation support"""
+"""Common code for servo parsing support."""
 
 import argparse
 import os
-import sys
 import textwrap
 
 if os.getuid():
@@ -51,17 +50,16 @@ class _BaseServodParser(argparse.ArgumentParser):
   see servod, or dut_control for more examples.
   """
 
-  def __init__(self, description='', examples=None, *args, **kwargs):
+  def __init__(self, description='', examples=None, **kwargs):
     """Initialize _BaseServodParser by setting description and formatter.
 
     Args:
-      args: positional arguments forwarded to ArgumentParser
       description: description of the program
       examples: list of tuples where the first element is the cmdline example,
                 and the second element is a comment explaining the example.
                 %(prog)s will be prepended to each example if it does not
                 start with %(prog)s.
-      kwargs: keyword arguments forwarded to ArgumentParser
+      **kwargs: keyword arguments forwarded to ArgumentParser
     """
     # Generate description.
     description_lines = textwrap.wrap(description)
@@ -80,13 +78,13 @@ class _BaseServodParser(argparse.ArgumentParser):
         description_lines.append('\n\t'.join(example_lines))
     description = '\n'.join(description_lines)
     kwargs['description'] = description
-    super(_BaseServodParser, self).__init__(*args, **kwargs)
+    super(_BaseServodParser, self).__init__(**kwargs)
 
 
 class BaseServodParser(_BaseServodParser):
   """BaseServodParser handling common arguments in the servod cmdline tools."""
 
-  def __init__(self, *args, **kwargs):
+  def __init__(self, **kwargs):
     """Initialize by adding common arguments.
 
     Adds:
@@ -95,10 +93,9 @@ class BaseServodParser(_BaseServodParser):
     - name/rcfile arguments to handle servodrc configurations
 
     Args:
-      args: positional arguments forwarded to _BaseServodParser
-      kwargs: keyword arguments forwarded to _BaseServodParser
+      **kwargs: keyword arguments forwarded to _BaseServodParser
     """
-    super(BaseServodParser, self).__init__(*args, **kwargs)
+    super(BaseServodParser, self).__init__(**kwargs)
     self.add_argument('-d', '--debug', action='store_true', default=False,
                       help='enable debug messages')
     self.add_argument('--host', default='localhost', type=str,
@@ -108,7 +105,10 @@ class BaseServodParser(_BaseServodParser):
 
 
 def add_servo_parsing_rc_options(parser):
-  """Add common options descriptors to the parser object
+  """Add common options descriptors to the parser object.
+
+  Args:
+    parser: Argumentparser to append arguments to
 
   Both servod and dut-control accept command line options for configuring
   servo_parsing operation. This function configures the command line parser
@@ -123,7 +123,7 @@ def add_servo_parsing_rc_options(parser):
 
 
 def parse_rc(logger, rc_file):
-  """Parse servodrc configuration file
+  """Parse servodrc configuration file.
 
   The format of the configuration file is described above in comments to
   DEFAULT_RC_FILE. I the file is not found or is mis-formatted, a warning is
@@ -141,7 +141,7 @@ def parse_rc(logger, rc_file):
 
   rcd = {}  # Dictionary representing the rc file contents.
   if os.path.isfile(rc_file):
-    for rc_line in open(rc_file, 'r').readlines():
+    for rc_line in open(rc_file, 'r'):
       line = rc_line.split('#')[0].strip()
       if not line:
         continue
@@ -163,7 +163,7 @@ def parse_rc(logger, rc_file):
 
 
 def get_env_options(logger, options):
-  """Look for non-defined options in the environment
+  """Look for non-defined options in the environment.
 
   SERVOD_PORT and SERVOD_NAME environment variables can be used if --port
   and --name command line switches are not set. Set the options values as

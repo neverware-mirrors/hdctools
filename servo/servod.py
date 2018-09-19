@@ -273,7 +273,7 @@ class ServodStarter(object):
 
     servo_device = self.discover_servo(options,
                                        servo_parsing.parse_rc(self._logger,
-                                                           options.rcfile))
+                                                              options.rcfile))
     if not servo_device:
       sys.exit(-1)
 
