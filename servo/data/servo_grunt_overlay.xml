@@ -8,9 +8,6 @@
   <include>
     <name>cr50.xml</name>
   </include>
-  <include>
-    <name>grunt_evt_inas.xml</name>
-  </include>
 
   <!-- warm_reset is on pin 39, reconfigure -->
   <include>
