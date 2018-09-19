@@ -5,6 +5,7 @@
 """Collection of servod utilities."""
 
 import argparse
+import collections
 import json
 import logging
 import os
@@ -127,7 +128,7 @@ class UsbHierarchy(object):
     Returns:
       Dict of tuple (bus,dev) to sysfs path.
     """
-    usb_hierarchy = {}
+    usb_hierarchy = collections.defaultdict(lambda: (None, None))
     for usb_dir in os.listdir(self.USB_SYSFS_PATH):
       if self.CHILD_RE.match(usb_dir):
         usb_dir = os.path.join(self.USB_SYSFS_PATH, usb_dir)
@@ -144,6 +145,19 @@ class UsbHierarchy(object):
 
     self._usb_hierarchy = usb_hierarchy
 
+  def GetPath(self, usb_device):
+    """Return the USB sysfs path of the supplied usb_device.
+
+    Args:
+      usb_device: usb.core.Device object.
+
+    Returns:
+      SysFS path string of parent of the supplied usb device,
+      or None if not found.
+    """
+    return self._usb_hierarchy.get((int(usb_device.bus),
+                                    int(usb_device.address)))[0]
+
   def GetParentPath(self, usb_device):
     """Return the USB sysfs path of the supplied usb_device's parent.
 
@@ -151,10 +165,11 @@ class UsbHierarchy(object):
       usb_device: usb.core.Device object.
 
     Returns:
-      SysFS path string of parent of the supplied usb device.
+      SysFS path string of parent of the supplied usb device,
+      or None if not found.
     """
-    return self._usb_hierarchy.get((int(usb_device.bus), int(
-        usb_device.address)))[1]
+    return self._usb_hierarchy.get((int(usb_device.bus),
+                                    int(usb_device.address)))[1]
 
   def ShareSameHub(self, usb_servo, usb_candidate):
     """Check if the given USB device shares the same hub with servo v4.

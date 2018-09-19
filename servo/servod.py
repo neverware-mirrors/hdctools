@@ -95,9 +95,29 @@ class ServoDeviceWatchdog(threading.Thread):
     self._logger = logging.getLogger(type(self).__name__)
     self.done = threading.Event()
     self._servod = servod
-    # Do not add exempt devices to |_devices|.
-    self._devices = set(self._servod._devices)
     self._rate = poll_rate
+    # pylint: disable=protected-access
+    self._devices = set(self._servod._devices)
+    self._device_paths = {}
+    usbmap = servodutil.UsbHierarchy()
+    devices_not_found = set()
+    for vid, pid, serial in self._devices:
+      try:
+        dev = servodutil.UsbHierarchy.GetUsbDevice(vid, pid, serial)
+        dev_path = usbmap.GetPath(dev)
+        if not dev_path:
+          raise ServodError('No sysfs path found for device.')
+        self._device_paths[(vid, pid, serial)] = dev_path
+      # pylint: disable=broad-except
+      except Exception as e:
+        self._logger.error('Servod Watchdog ran into unexpected issue trying '
+                           'to find device with vid: 0x%02x pid: 0x%02x '
+                           'serial: %r. %s. Device will not be tracked.',
+                           vid, pid, serial, e)
+        devices_not_found.add((vid, pid, serial))
+    # Only track devices that a sysfs path was successfully found for.
+    self._devices -= devices_not_found
+
     # TODO(coconutruben): Here and below in addition to VID/PID also print out
     # the device type i.e. servo_micro.
     self._logger.info('Watchdog setup for devices: %s', str(self._devices))
@@ -111,50 +131,43 @@ class ServoDeviceWatchdog(threading.Thread):
     while not self.done.is_set():
       self.done.wait(rate)
       for vid, pid, serial in self._devices:
-        try:
-          if not servodutil.UsbHierarchy.GetUsbDevice(vid, pid, serial):
-            if (vid, pid) in self.REINIT_CAPABLE:
-              if reinit_tokens[(vid, pid)]:
-                # The device still has reinit tokens. Remove one.
-                reinit_tokens[(vid, pid)] -= 1
-                self._logger.warn('Device - vid: 0x%02x pid: 0x%02x serial: %r '
-                                  'not found when polling. Device is marked as '
-                                  'reinit capable. %d more reinit attempts '
-                                  'before giving up.', vid, pid, serial,
-                                  reinit_tokens[(vid, pid)])
-                # pylint: disable=protected-access
-                # Indicate to servod that interfaces are unavailable.
-                self._servod._ifaces_available.clear()
-                # Poll faster while there are devices that need to be reinit.
-                rate = self.REINIT_POLL_RATE
-                continue
-            # Device was not found, thus signaling to end servod.
-            self._logger.error('Device - vid: 0x%02x pid: 0x%02x serial: %r - '
-                               'not found when polling. Turning down servod.',
-                               vid, pid, serial)
-            # Watchdog should run in the same process as servod thread.
-            os.kill(os.getpid(), signal.SIGTERM)
-            self.done.set()
-            break
-          else:
-            # Device was found. Make sure it's not currently being considered
-            # for reinit.
-            if (vid, pid) in reinit_tokens:
-              # Device was waiting to be reinit. Remove from token tracker.
-              del reinit_tokens[(vid, pid)]
-              if not reinit_tokens:
-                # No device waiting for reinit anymore. Issue a servod interface
-                # reinitialization.
-                self._servod.reinitialize()
-                # Return to slower poll rate after no devices are in a reinit
-                # queue.
-                rate = self._rate
-        # pylint: disable=broad-except
-        # Catch-all to avoid uncomfortable threading synchronization issues
-        except Exception as e:
-          self._logger.error('Servo Watchdog ran into unexpected issue. '
-                             '%s. Turning down watchdog without turning down '
-                             'servod.', e)
+        sysfs_path = self._device_paths[(vid, pid, serial)]
+        if os.path.exists(sysfs_path):
+          # Device was found. Make sure it's not currently being considered
+          # for reinit.
+          if (vid, pid, serial) in reinit_tokens:
+            # Device was waiting to be reinit. Remove from token tracker.
+            del reinit_tokens[(vid, pid, serial)]
+            if not reinit_tokens:
+              # No device waiting for reinit anymore. Issue a servod interface
+              # reinitialization.
+              self._servod.reinitialize()
+              # Return to slower poll rate after no devices are in a reinit
+              # queue.
+              rate = self._rate
+        else:
+          # Device was not found.
+          if (vid, pid) in self.REINIT_CAPABLE:
+            if reinit_tokens[(vid, pid, serial)]:
+              # The device still has reinit tokens. Remove one.
+              reinit_tokens[(vid, pid, serial)] -= 1
+              self._logger.warn('Device - vid: 0x%02x pid: 0x%02x serial: %r '
+                                'not found when polling. Device is marked as '
+                                'reinit capable. %d more reinit attempts '
+                                'before giving up.', vid, pid, serial,
+                                reinit_tokens[(vid, pid, serial)])
+              # pylint: disable=protected-access
+              # Indicate to servod that interfaces are unavailable.
+              self._servod._ifaces_available.clear()
+              # Poll faster while there are devices that need to be reinit.
+              rate = self.REINIT_POLL_RATE
+              continue
+          # Device was not found, thus signaling to end servod.
+          self._logger.error('Device - vid: 0x%02x pid: 0x%02x serial: %r - '
+                             'not found when polling. Turning down servod.',
+                             vid, pid, serial)
+          # Watchdog should run in the same process as servod thread.
+          os.kill(os.getpid(), signal.SIGTERM)
           self.done.set()
           break
 
