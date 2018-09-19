@@ -529,7 +529,7 @@ class PowerMeasurement(object):
       PowerMeasurementError: if called before measurement processing is done
     """
     if not self._processing_done:
-      raise PowerMeasurementError(self.PREMATURE_RETRIEVAL_WARNING)
+      raise PowerMeasurementError(self.PREMATURE_RETRIEVAL_MSG)
     return {name: stat.GetSummary() for name, stat in self._stats.iteritems()}
 
   def GetFormattedSummary(self):
