@@ -9,11 +9,9 @@ Provides the following console controlled function:
 
 import logging
 
+import ec3po_servo
 import pty_driver
 import servo
-
-# EC console mask for enabling only command channel
-COMMAND_CHANNEL_MASK = 0x1
 
 # servod numeric translation for GPIO state.
 GPIO_STATE = {0: '0', 1: '1', 2: 'IN', 3: 'A', 4: 'ALT'}
@@ -23,7 +21,7 @@ class ec3poGpioError(Exception):
   """Exception class for ec."""
 
 
-class ec3poGpio(pty_driver.ptyDriver):
+class ec3poGpio(ec3po_servo.ec3poServo):
   """Object to access drv=ec3po_gpio controls.
 
   Note, instances of this object get dispatched via base class,
@@ -57,13 +55,6 @@ class ec3poGpio(pty_driver.ptyDriver):
     else:
       raise ec3poGpioError('No GPIO name specified')
 
-    if 'console' in params:
-      if params['console'] == 'enhanced' and \
-          type(interface) is servo.ec3po_interface.EC3PO:
-        interface._console.oobm_queue.put('interrogate never enhanced')
-      else:
-        raise ec3poGpioError('Enhanced console must be ec3po!')
-
     self._logger.debug('')
 
   def set_gpio(self, name, value):
@@ -89,7 +80,7 @@ class ec3poGpio(pty_driver.ptyDriver):
     cmd = 'gpioget %s\r' % name
     regex = '  ([01])[ *] .*%s' % name
 
-    results = self._issue_cmd_get_results(cmd, [regex])[0]
+    results = self._issue_safe_cmd_get_results(cmd, [regex])[0]
     res_value = int(results[1])
     return res_value
 

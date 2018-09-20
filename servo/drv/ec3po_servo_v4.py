@@ -10,18 +10,16 @@ Provides the following console controlled function subtypes:
 import logging
 import time
 
+import ec3po_servo
 import pty_driver
 import servo
-
-# EC console mask for enabling only command channel
-COMMAND_CHANNEL_MASK = 0x1
 
 
 class ec3poServoV4Error(Exception):
   """Exception class."""
 
 
-class ec3poServoV4(pty_driver.ptyDriver):
+class ec3poServoV4(ec3po_servo.ec3poServo):
   """Object to access drv=ec3po_servo_v4 controls.
 
   Note, instances of this object get dispatched via base class,
@@ -43,13 +41,6 @@ class ec3poServoV4(pty_driver.ptyDriver):
     """
     super(ec3poServoV4, self).__init__(interface, params)
 
-    if 'console' in params:
-      if params['console'] == 'enhanced' and \
-          type(interface) is servo.ec3po_interface.EC3PO:
-        interface._console.oobm_queue.put('interrogate never enhanced')
-      else:
-        raise ec3poServoV4Error('Enhanced console must be ec3po!')
-
     self._logger.debug('')
 
   def _Get_version(self):
@@ -58,7 +49,7 @@ class ec3poServoV4(pty_driver.ptyDriver):
     Returns:
         The version string
     """
-    result = self._issue_cmd_get_results('ver', ['Build:\s+(\S+)\s'])[0]
+    result = self._issue_safe_cmd_get_results('ver', ['Build:\s+(\S+)\s'])[0]
     if result is None:
       raise ec3poServoV4Error('Cannot retrieve the version.')
     return result[1]
@@ -98,7 +89,8 @@ class ec3poServoV4(pty_driver.ptyDriver):
       "on": DTS mode is enabled.
     """
     # Get the current DTS mode
-    result = self._issue_cmd_get_results('dts', ['dts mode:\s*(off|on)'])[0]
+    result = self._issue_safe_cmd_get_results('dts',
+        ['dts mode:\s*(off|on)'])[0]
     if result is None:
       raise ec3poServoV4Error('Cannot retrieve dts mode from console.')
     return result[1]
@@ -125,7 +117,8 @@ class ec3poServoV4(pty_driver.ptyDriver):
     """
     pd_cmd = 'pd %s state' % port
     # Two FW versions for this command, get full line.
-    m = self._issue_cmd_get_results(pd_cmd, ['State:\s+([\w]+)_([\w]+)'])[0]
+    m = self._issue_safe_cmd_get_results(pd_cmd,
+        ['State:\s+([\w]+)_([\w]+)'])[0]
     if m is None:
       raise ec3poServoV4Error('Cannot retrieve pd state.')
 
@@ -177,8 +170,8 @@ class ec3poServoV4(pty_driver.ptyDriver):
     Returns:
        1 if keepalive is enabled, 0 if it's not.
     """
-    _, status = self._issue_cmd_get_results('keepalive',
-                                            ['ccd_keepalive: ([a-zA-Z]+)'])[0]
+    _, status = self._issue_safe_cmd_get_results('keepalive',
+         ['ccd_keepalive: ([a-zA-Z]+)'])[0]
     if status == 'enabled':
       return 1
 

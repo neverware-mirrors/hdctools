@@ -10,11 +10,9 @@ Provides the following console controlled function subtypes:
 import re
 import logging
 
+import ec3po_servo
 import pty_driver
 import servo
-
-# EC console mask for enabling only command channel
-COMMAND_CHANNEL_MASK = 0x1
 
 # Controls to set in batch operations.
 # [off, samus, glados]
@@ -65,7 +63,7 @@ def _GetIteChipidReStr(command):
       r')[\r\n\f]' % (re.escape(command),))
 
 
-class ec3poServoMicro(pty_driver.ptyDriver):
+class ec3poServoMicro(ec3po_servo.ec3poServo):
   """Object to access drv=ec3po_servo_micro controls.
 
   Note, instances of this object get dispatched via base class,
@@ -88,13 +86,6 @@ class ec3poServoMicro(pty_driver.ptyDriver):
     """
     super(ec3poServoMicro, self).__init__(interface, params)
 
-    if 'console' in params:
-      if params['console'] == 'enhanced' and \
-          type(interface) is servo.ec3po_interface.EC3PO:
-        interface._console.oobm_queue.put('interrogate never enhanced')
-      else:
-        raise ec3poServoMicroError('Enhanced console must be ec3po!')
-
     self._logger.debug('')
 
   def _Get_version(self):
@@ -103,7 +94,7 @@ class ec3poServoMicro(pty_driver.ptyDriver):
     Returns:
         The version string
     """
-    result = self._issue_cmd_get_results('version', [
+    result = self._issue_safe_cmd_get_results('version', [
         r'(?:^|\n)Build:\s+(\S+)\s'])[0]
     if result is None:
       raise ec3poServoMicroError('Cannot retrieve the version.')
@@ -156,7 +147,7 @@ class ec3poServoMicro(pty_driver.ptyDriver):
     Enable direct firmware update (DFU) over I2C mode on ITE IT8320 EC chip by
     sending special non-I2C waveforms over the I2C bus wires.
     """
-    results = self._issue_cmd_get_results('enable_ite_dfu', [
+    results = self._issue_safe_cmd_get_results('enable_ite_dfu', [
         _GetIteChipidReStr('enable_ite_dfu')])
     if results[0] is None or results[0][1].startswith('Usage:'):
       raise ec3poServoMicroError(
@@ -170,7 +161,7 @@ class ec3poServoMicro(pty_driver.ptyDriver):
     by querying the EC over I2C for its CHIPID1 and CHIPID2 registers.  It will
     only respond over I2C when in DFU mode.
     """
-    results = self._issue_cmd_get_results('get_ite_chipid', [
+    results = self._issue_safe_cmd_get_results('get_ite_chipid', [
         _GetIteChipidReStr('get_ite_chipid')])
     if results[0] is None or results[0][1].startswith('Usage:'):
       raise ec3poServoMicroError(
