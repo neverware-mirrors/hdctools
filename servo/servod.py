@@ -59,6 +59,8 @@ DEFAULT_PORT_RANGE = (9990, 9999)
 #                     environment variable setting SERVOD_PORT
 #     . board-name - board configuration file to use, can be
 #                     overridden by the command line switch --board
+#     . model-name - model override to use, if applicable.
+#                     overridden by command line --model
 #
 # Since the same parameters could be defined using different means, there is a
 # hierarchy of definitions:
@@ -281,12 +283,30 @@ class ServodStarter(object):
     scfg = system_config.SystemConfig()
 
     if options.board:
-      board_config = 'servo_' + options.board + '_overlay.xml'
-      if not scfg.find_cfg_file(board_config):
-        self._logger.error('No XML overlay for board %s', options.board)
-        sys.exit(-1)
+      # Handle differentiated model case.
+      board_config = None
+      if options.model:
+        board_config = 'servo_%s_%s_overlay.xml' % (
+            options.board, options.model)
 
-      self._logger.info('Found XML overlay for board %s', options.board)
+        if not scfg.find_cfg_file(board_config):
+          self._logger.info('No XML overlay for model '
+              '%s, falling back to board %s default',
+              options.model, options.board)
+          board_config = None
+        else:
+          self._logger.info('Found XML overlay for model %s:%s',
+                            options.board, options.model)
+
+      # Handle generic board config.
+      if not board_config:
+        board_config = 'servo_' + options.board + '_overlay.xml'
+        if not scfg.find_cfg_file(board_config):
+          self._logger.error('No XML overlay for board %s', options.board)
+          sys.exit(-1)
+
+        self._logger.info('Found XML overlay for board %s', options.board)
+
       all_configs.append(board_config)
 
     for cfg_file in all_configs:
@@ -324,10 +344,13 @@ class ServodStarter(object):
       self._logger.fatal(err_msg)
       sys.exit(-1)
 
+    board_model = options.board
+    if options.model:
+      board_model += '_' + options.model
     self._servod = servo_server.Servod(
         scfg, vendor=servo_device.idVendor, product=servo_device.idProduct,
         serialname=usb_get_iserial(servo_device),
-        interfaces=options.interfaces.split(), board=options.board,
+        interfaces=options.interfaces.split(), board=board_model,
         version=board_version, usbkm232=options.usbkm232)
 
     # Small timeout to allow interface threads to initialize.
@@ -398,6 +421,9 @@ class ServodStarter(object):
                       help='system config files (XML) to read')
     parser.add_option('-b', '--board', default='', type=str, action='store',
                       help='include config file (XML) for given board')
+    parser.add_option('-m', '--model', default='', type=str, action='store',
+                      help='optional config for a model of the given board, '
+                      'requires --board')
     parser.add_option('--noautoconfig', action='store_true', default=False,
                       help='Disable automatic determination of config files')
     parser.add_option('-i', '--interfaces', type=str, default='',
@@ -484,6 +510,13 @@ class ServodStarter(object):
         elif options.board != rc_board:
           self._logger.warning('Ignoring rc configured board name %s for servo '
                                '%s', rc_board, servo_sn)
+      if 'model' in config:
+        rc_model = config['model']
+        if not options.model:
+          options.model = rc_model
+        elif options.model != rc_model:
+          self._logger.warning('Ignoring rc configured model name %s for servo '
+                               '%s', rc_model, servo_sn)
       return matching_servo
 
     raise ServodError('No matching servo found')

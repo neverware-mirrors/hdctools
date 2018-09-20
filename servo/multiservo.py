@@ -41,7 +41,7 @@ def parse_rc(logger, rc_file):
   Returns:
     a dictionary, where keys are symbolic servo names, and values are
     dictionaries representing servo parameters read from the config file,
-    keyed by strings 'sn' (for serial number), 'port', and 'board'.
+    keyed by strings 'sn' (for serial number), 'port', 'board', and 'model'.
   """
 
   rcd = {}  # Dictionary representing the rc file contents.
@@ -55,13 +55,15 @@ def parse_rc(logger, rc_file):
       if not name or len(elts) < 2 or [x for x in elts if ' ' in x]:
         logger.info('ignoring rc line "%s"', rc_line.rstrip())
         continue
-      rcd[name] = {'sn': elts[1], 'port': None, 'board': None}
+      rcd[name] = {'sn': elts[1], 'port': None, 'board': None, 'model': None}
       if (len(elts) > 2):
         rcd[name]['port'] = int(elts[2])
         if len(elts) > 3:
           rcd[name]['board'] = elts[3]
           if len(elts) > 4:
-            logger.info('discarding %s for for %s', ' '.join(elts[4:]), name)
+            rcd[name]['model'] = elts[4]
+            if len(elts) > 5:
+              logger.info('discarding %s for for %s', ' '.join(elts[5:]), name)
   return rcd
 
 
