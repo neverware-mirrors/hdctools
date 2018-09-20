@@ -12,6 +12,61 @@ import client
 import servo_logging
 import servodutil
 
+
+# A brief overview of the classes found here, and their abilities.
+# Indentation indicates inheritance.
+#
+# _BaseServodParser: ArgumentParser with pretty-formatting for example list
+#
+#   BaseServodParser: adds common args: port, host, and debug
+#
+#   ServodRCParser: adds -name/-rcfile & overwrites parsing logic so that
+#                   rc parsing & configuration is handled internally
+#                   i.e. the program does not need to know anything about
+#                   the servodrc system
+#
+#     ServodClientParser: parser intended for servod clients (e.g. dut-control)
+#                         - has all the BaseServodParser and ServodRCParser args
+#                         - has the native rc configuration handling
+#                         - adds a serialname argument that gets mapped to a
+#                           port using ServoScratch
+
+
+# This text file holds servod configuration parameters. This is especially
+# handy for multi servo operation.
+#
+# The file format is pretty loose:
+#  - text starting with # is ignored til the end of the line
+#  - empty lines are ignored
+#  - configuration lines consist of up to 5 comma separated fields (all
+#    but the first field optional):
+#        servo-name, serial-number, port-number, board-name, board-model
+#
+#    where
+#     . servo-name - a user defined symbolic name, just a reference
+#                    to a certain servo board
+#     . serial-number - serial number of the servo board this line pertains to
+#     . port-number - desired port number for servod for this board, can be
+#                     overridden by the command line switch --port or
+#                     environment variable setting SERVOD_PORT
+#                     NOTE: this is no longer in use, and will be ignored.
+#     . board-name - board configuration file to use, can be
+#                    overridden by the command line switch --board
+#     . model-name - model override to use, if applicable.
+#                    overridden by command line --model
+#
+# Example lines in the rc-file:
+# nocturne_micro, SNCQ00098, , nocturne # This is a nocturne without model
+# octopus_micro, SNCQ00098, , octopus, npcx # This an octopus that defines model
+#
+# As you can see, the port part is left out for now. This will be phased out
+# giving users time to adjust their rc files.
+#
+# Since the same parameters could be defined using different means, there is a
+# hierarchy of definitions (left being the highest priority):
+#   command line <- environment definition <- rc config file
+
+
 if os.getuid():
   DEFAULT_RC_FILE = '/home/%s/.servodrc' % os.getenv('USER', '')
 else:

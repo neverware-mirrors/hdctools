@@ -230,6 +230,22 @@ look at [`ftdi_common.py`][20] to see the exact name strings.
 
 # Servod Helpers
 
+## Servo Parsing
+
+There are two types of servod parsings: parsing for a client (e.g. dut-control)
+and parsing for servod itself. Additionally servod supports runtime
+configurations using a config file, to map serialname to symbolic name.
+
+`servod -b samus -s xxx-yyy -> servod -n my_samus //where servodrc has my_samus,
+xxx-yyy`
+
+With that, there are some helpers to make parsing easier and more unified.
+The purpose is for shared arguments and shared parsing logic
+(e.g. runtime configuration mappings) to live in one place, to ensure a
+consistent cmdline experience across servod tools, and to simplify and
+centralize future changes.
+Please see [this top comment][21] for an overview.
+
 ## Servodutil {#servod-util}
 
 [`servodutil`][18] is a cmdline tool (and library) to manage `servod` instances.
@@ -284,3 +300,4 @@ reinitalization phase will block until the interface is reinitialized.
 [18]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/servodutil.py
 [19]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/servod.py#69
 [20]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/ftdi_common.py#28
+[21]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/servo_parsing.py#16

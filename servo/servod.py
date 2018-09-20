@@ -40,33 +40,6 @@ MAX_ISERIAL_STR = 128
 # port numbers are 4 digits).
 DEFAULT_PORT_RANGE = (9990, 9999)
 
-# This text file holds servod configuration parameters. This is especially
-# handy for multi servo operation.
-#
-# The file format is pretty loose:
-#  - text starting with # is ignored til the end of the line
-#  - empty lines are ignored
-#  - configuration lines consist of up to 4 comma separated fields (all
-#    but the first field optional):
-#        servo-name, serial-number, port-number, board-name
-#
-#    where
-#     . servo-name - a user defined symbolic name, just a reference
-#                     to a certain servo board
-#     . serial-number - serial number of the servo board this line pertains to
-#     . port-number - desired port number for servod for this board, can be
-#                     overridden by the command line switch --port or
-#                     environment variable setting SERVOD_PORT
-#                     NOTE: this is no longer in use, and will be ignored.
-#     . board-name - board configuration file to use, can be
-#                     overridden by the command line switch --board
-#     . model-name - model override to use, if applicable.
-#                     overridden by command line --model
-#
-# Since the same parameters could be defined using different means, there is a
-# hierarchy of definitions:
-#   command line <- environment definition <- rc config file
-DEFAULT_RC_FILE = '/home/%s/.servodrc' % os.getenv('SUDO_USER', '')
 
 
 class ServoDeviceWatchdog(threading.Thread):
