@@ -345,8 +345,6 @@ class PowerMeasurement(object):
     self._setup_done.clear()
     self._stop_signal.clear()
     self._processing_done = False
-    # this is clean up unused files that might have been created
-    self.Cleanup()
 
   def MeasureTimedPower(self, sample_time=60, wait=0,
                         powerstate=UNKNOWN_POWERSTATE):
@@ -558,15 +556,3 @@ class PowerMeasurement(object):
   # TODO(coconutruben): make it possible to export graphs here
   # graphs should be output in SVG & some interactive HTML format,
   # since that'll make for nice scaling. Also nice to attach to bugs
-
-  def Cleanup(self):
-    """Go through _outdir and clean any empty folders."""
-    if self._outdir:
-      if os.path.exists(self._outdir):
-        if not os.listdir(self._outdir):
-          os.rmdir(self._outdir)
-          self._logger.debug('Removing unused directory: %s', self._outdir)
-        brd_dir = os.path.dirname(self._outdir)
-        if not os.listdir(brd_dir):
-          os.rmdir(brd_dir)
-          self._logger.debug('Removing unused directory: %s', brd_dir)
