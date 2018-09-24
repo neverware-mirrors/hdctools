@@ -8,7 +8,7 @@ import logging
 import hw_driver
 
 
-class gpioError(Exception):
+class gpioError(hw_driver.HwDriverError):
   """Error class for gpio class."""
 
 

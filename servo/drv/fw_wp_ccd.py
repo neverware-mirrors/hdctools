@@ -5,8 +5,9 @@
 import cr50
 import fw_wp_state
 
+import hw_driver
 
-class fwWpCcdError(Exception):
+class fwWpCcdError(hw_driver.HwDriverError):
   """Exception class for fwWpCcd."""
 
 

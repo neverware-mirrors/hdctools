@@ -15,7 +15,7 @@ import time
 import pty_driver
 
 
-class apError(Exception):
+class apError(pty_driver.ptyError):
   """Exception class for AP errors."""
 
 

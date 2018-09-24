@@ -17,7 +17,7 @@ import hw_driver
 import i2c_reg
 
 
-class Ina2xxError(Exception):
+class Ina2xxError(hw_driver.HwDriverError):
   """Error occurred accessing INA219."""
 
 

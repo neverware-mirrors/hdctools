@@ -8,7 +8,7 @@ import hw_driver
 CMD_MASK = 0xf
 
 
-class Pca9546Error(Exception):
+class Pca9546Error(hw_driver.HwDriverError):
   """Error class for PCA9546"""
 
 

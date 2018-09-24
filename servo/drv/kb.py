@@ -7,7 +7,7 @@
 import hw_driver
 
 
-class KbError(Exception):
+class KbError(hw_driver.HwDriverError):
   """Error class for kb class."""
 
 

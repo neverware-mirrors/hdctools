@@ -35,7 +35,7 @@ EEPROM_BYTES = 256
 PAGE_BYTES = 4
 
 
-class pca9500Error(Exception):
+class pca9500Error(hw_driver.HwDriverError):
   """Error class for pca9500 class."""
 
 

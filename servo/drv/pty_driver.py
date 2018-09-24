@@ -17,7 +17,7 @@ import servo.terminal_freezer
 DEFAULT_UART_TIMEOUT = 3  # 3 seconds is plenty even for slow platforms
 
 
-class ptyError(Exception):
+class ptyError(hw_driver.HwDriverError):
   """Exception class for pty errors."""
 
 

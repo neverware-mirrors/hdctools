@@ -64,7 +64,7 @@ LCD_DATA2_AS_INIT = 0x20
 lcm2004_devices = {}
 
 
-class LcmError(Exception):
+class LcmError(hw_driver.HwDriverError):
   """Error occurred accessing LCM2004."""
   pass
 

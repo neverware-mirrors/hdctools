@@ -78,7 +78,7 @@ SLEEP_MORE_TIME = 5 * MSEC
 tcs3414_devices = {}
 
 
-class Tcs3414Error(Exception):
+class Tcs3414Error(hw_driver.HwDriverError):
   """Error occurred accessing TCS3414."""
   pass
 

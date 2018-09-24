@@ -7,7 +7,7 @@ import hw_driver
 import i2c_reg
 
 
-class Ps8742Error(Exception):
+class Ps8742Error(hw_driver.HwDriverError):
   """Error occurred accessing ps8742."""
 
 

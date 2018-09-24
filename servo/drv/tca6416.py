@@ -7,7 +7,7 @@ import hw_driver
 import i2c_reg
 
 
-class Tca6416Error(Exception):
+class Tca6416Error(hw_driver.HwDriverError):
   """Error occurred accessing TCA6416."""
 
 

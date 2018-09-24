@@ -6,7 +6,7 @@
 import hw_driver
 
 
-class servoWatchdogError(Exception):
+class servoWatchdogError(hw_driver.HwDriverError):
   """Exception class for servo watchdog."""
 
 

@@ -17,7 +17,7 @@ import servo
 GPIO_STATE = {0: '0', 1: '1', 2: 'IN', 3: 'A', 4: 'ALT'}
 
 
-class ec3poGpioError(Exception):
+class ec3poGpioError(pty_driver.ptyError):
   """Exception class for ec."""
 
 

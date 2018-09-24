@@ -17,7 +17,7 @@ import re
 USBC_STATE = [None, None, None]
 
 
-class planktonError(Exception):
+class planktonError(pty_driver.ptyError):
   """Exception class for plankton."""
 
 

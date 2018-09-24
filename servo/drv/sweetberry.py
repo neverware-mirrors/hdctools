@@ -6,7 +6,9 @@
 import copy
 import ina231
 
-class sweetberryError(Exception):
+import hw_driver
+
+class sweetberryError(hw_driver.HwDriverError):
   pass
 
 class sweetberry(ina231.ina231):

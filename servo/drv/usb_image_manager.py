@@ -15,7 +15,7 @@ import hw_driver
 import servo.servodutil as util
 
 
-class UsbImageManagerError(Exception):
+class UsbImageManagerError(hw_driver.HwDriverError):
   """Error class for UsbImageManager errors."""
   pass
 

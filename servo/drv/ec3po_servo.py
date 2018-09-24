@@ -16,7 +16,7 @@ import servo_updater
 COMMAND_CHANNEL_MASK = 0x1
 
 
-class ec3poServoError(Exception):
+class ec3poServoError(pty_driver.ptyError):
   """Exception class."""
 
 

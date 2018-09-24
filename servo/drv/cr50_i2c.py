@@ -10,7 +10,7 @@ import hw_driver
 CMD_MASK=0xFF
 
 
-class cr50I2cError(Exception):
+class cr50I2cError(hw_driver.HwDriverError):
   """Error class for cr50I2c"""
 
 

@@ -7,11 +7,11 @@ Provides the following EC controlled function:
   rec_mode
 """
 import os
-import pty_driver
 import time
 
+import pty_driver
 
-class parrotEcError(Exception):
+class parrotEcError(pty_driver.ptyError):
   """Exception class for parrot ec."""
 
 

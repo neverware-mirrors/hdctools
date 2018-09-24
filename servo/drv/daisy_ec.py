@@ -14,7 +14,7 @@ GPIOC_BSRR_ADDR = 0x40011010
 GPIOC_PC13_MASK = 0x2000
 
 
-class daisyEcError(Exception):
+class daisyEcError(pty_driver.ptyError):
   """Exception class for daisy ec."""
 
 

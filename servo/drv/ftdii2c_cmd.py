@@ -11,7 +11,7 @@ import hw_driver
 
 
 # pylint: disable=C0103
-class ftdii2cCmdError(Exception):
+class ftdii2cCmdError(hw_driver.HwDriverError):
   """Exception class for ftdii2c_cmd."""
 
 

@@ -11,11 +11,11 @@ Provides the following Cr50 controlled function:
 
 import functools
 import logging
-import pty_driver
 import re
 
+import pty_driver
 
-class cr50Error(Exception):
+class cr50Error(pty_driver.ptyError):
   """Exception class for Cr50."""
 
 

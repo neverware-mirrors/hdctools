@@ -15,7 +15,7 @@ import hw_driver
 m24c02_devices = {}
 
 
-class EepromError(Exception):
+class EepromError(hw_driver.HwDriverError):
   """Error occurred accessing M24C02."""
   pass
 

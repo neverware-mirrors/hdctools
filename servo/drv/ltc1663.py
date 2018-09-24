@@ -29,7 +29,7 @@ CMD_MASK = 0x7  # 3bit command data
 DATA_MASK = 0x3ff  # 10-bit DAC data
 
 
-class Ltc1663Error(Exception):
+class Ltc1663Error(hw_driver.HwDriverError):
   """Error class for LTC1663"""
 
 

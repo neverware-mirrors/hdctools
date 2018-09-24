@@ -14,7 +14,7 @@ import pty_driver
 import servo
 
 
-class ec3poServoV4Error(Exception):
+class ec3poServoV4Error(pty_driver.ptyError):
   """Exception class."""
 
 

@@ -770,6 +770,12 @@ class Servod(object):
     except HwDriverError:
       self._logger.error('Getting %s' % (name))
       raise
+    # pylint: disable=broad-except
+    # This acts as a safety to inform the user of errors that should not
+    # be happening/require more investigation.
+    except Exception:
+      self._logger.error('Unknown issue getting %s. Please take a look.', name)
+      raise
 
   def get_all(self, verbose):
     """Get all controls values.
@@ -816,6 +822,13 @@ class Servod(object):
       drv.set(wr_val)
     except HwDriverError:
       self._logger.error('Setting %s -> %s' % (name, wr_val_str))
+      raise
+    # pylint: disable=broad-except
+    # This acts as a safety to inform the user of errors that should not
+    # be happening/require more investigation.
+    except Exception:
+      self._logger.error('Unknown issue setting %s -> %s. Please take a look.',
+                         name, wr_val_str)
       raise
     # TODO(crbug.com/841097) Figure out why despite allow_none=True for both
     # xmlrpc server & client I still have to return something to appease the

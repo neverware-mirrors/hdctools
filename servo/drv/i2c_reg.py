@@ -5,6 +5,8 @@
 """
 import logging
 
+import hw_driver
+
 # dictionary key'd off (interface, slv) with value == Ina219 instance such that
 # multiple controls that map to same physical IC on same I2C bus share one
 # object.  This caching allows object to keep track of stateful things about the
@@ -12,7 +14,7 @@ import logging
 _devices = {}
 
 
-class I2cRegError(Exception):
+class I2cRegError(hw_driver.HwDriverError):
   """Exception class for I2cRegError."""
 
 

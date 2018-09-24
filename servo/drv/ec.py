@@ -27,7 +27,7 @@ KEY_MATRIX = [[[(0, 4), (11, 4)], [(2, 4), None]], [[(0, 2), (11, 2)], [(2, 2),
 COMMAND_CHANNEL_MASK = 0x1
 
 
-class ecError(Exception):
+class ecError(pty_driver.ptyError):
   """Exception class for ec."""
 
 

@@ -37,7 +37,7 @@ FULL_RESISTANCE_SPEC = {
 }
 
 
-class Ad5248Error(Exception):
+class Ad5248Error(hw_driver.HwDriverError):
   """Error occurred accessing AD5248."""
 
 

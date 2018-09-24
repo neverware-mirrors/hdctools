@@ -8,7 +8,7 @@ import logging
 import pty_driver
 
 
-class uartError(Exception):
+class uartError(pty_driver.ptyError):
   """Error class for uart class."""
 
 

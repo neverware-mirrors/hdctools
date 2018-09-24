@@ -7,7 +7,7 @@ import hw_driver
 import i2c_reg
 
 
-class Sx1505Error(Exception):
+class Sx1505Error(hw_driver.HwDriverError):
   """Error occurred accessing Sx1505."""
 
 
