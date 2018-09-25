@@ -16,12 +16,14 @@ class TestSystemConfig(unittest.TestCase):
 
   def setUp(self):
     """Set up a SystemConfig object to use. Cache module values."""
+    super(TestSystemConfig, self).setUp()
     self.syscfg = system_config.SystemConfig()
     self.ALLOWABLE_INPUT_TYPES = system_config.ALLOWABLE_INPUT_TYPES
 
   def tearDown(self):
     """Restore module values."""
     system_config.ALLOWABLE_INPUT_TYPES = self.ALLOWABLE_INPUT_TYPES
+    super(TestSystemConfig, self).tearDown()
 
   def _AddMap(self, map_name, params):
     """Helper to add a map to the SystemConfig."""
@@ -100,8 +102,8 @@ class TestSystemConfig(unittest.TestCase):
     # need to include the map name.
     control_params = {'map': map_name}
     with self.assertRaisesRegexp(system_config.SystemConfigError,
-                                 "Map %s doesn't contain "
-                                 'key %s' % (map_name, fake_map_key)):
+                                 "Map %r doesn't contain "
+                                 'key %r' % (map_name, fake_map_key)):
       self.syscfg.resolve_val(control_params, fake_map_key)
 
   def test_ResolveValInputType(self):

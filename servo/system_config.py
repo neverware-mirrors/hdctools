@@ -12,6 +12,9 @@ SYSCFG_TAG_LIST = ['map', 'control']
 ALLOWABLE_INPUT_TYPES = {'float': float, 'int': int, 'str': str}
 
 
+# pylint: disable=g-bad-exception-name
+# TODO(coconutruben): figure out if it's worth it to rename this so that it
+# removes the 'stutter'
 class SystemConfigError(Exception):
   """Error class for SystemConfig."""
 
@@ -109,6 +112,8 @@ class SystemConfig(object):
     Args:
       filename: string of path to system file ( xml )
 
+    Returns:
+      string full path of |filename| if it exists, otherwise None
     """
     if os.path.isfile(filename):
       return filename
@@ -127,7 +132,7 @@ class SystemConfig(object):
     return self._board_cfg
 
   def add_cfg_file(self, filename, name_prefix=None, interface_increment=0):
-    """Add system config file to the system config object
+    """Add system config file to the system config object.
 
     Each design may rely on multiple system files so need to have the facility
     to parse them all.
@@ -315,7 +320,7 @@ class SystemConfig(object):
 
     Args:
       name: string of control name to lookup
-      isget: boolean of whether params should be for 'get' | 'set'
+      is_get: boolean of whether params should be for 'get' | 'set'
 
     Returns:
       control's parameter dictionary for approrpiate get or set
@@ -339,7 +344,8 @@ class SystemConfig(object):
     Args:
       name: string of control name to lookup
 
-    Returns boolean, True if name is control, False otherwise
+    Returns:
+      boolean, True if name is control, False otherwise
     """
     return name in self.syscfg_dict['control']
 
@@ -364,7 +370,7 @@ class SystemConfig(object):
     Returns:
       dictionary from syscfg_dict[tag][name_str] or None
     """
-    self._logger.debug('lookup of %s %s' % (tag, name_str))
+    self._logger.debug('lookup of %s %s', tag, name_str)
     return self.syscfg_dict[tag].get(name_str)
 
   def resolve_val(self, params, map_vstr):
@@ -395,7 +401,7 @@ class SystemConfig(object):
       if map_dict is None:
         raise SystemConfigError("Map %s isn't defined" % params['map'])
       try:
-          map_vstr = map_dict['map_params'][map_vstr]
+        map_vstr = map_dict['map_params'][map_vstr]
       except KeyError:
         # Do not raise error yet. This might just be that the input is not
         # using the map i.e. it's directly writing a raw mapped value.
@@ -409,7 +415,6 @@ class SystemConfig(object):
         except ValueError:
           err += "\n%s Input should be 'int' or 'float'." % ('Or' if 'Map' in
                                                              err else '')
-          pass
       else:
         self._logger.error('Unrecognized input type.')
     # TODO(tbroch): deprecate below once all controls have input_type params
@@ -423,6 +428,8 @@ class SystemConfig(object):
       # No we know that nothing worked, and there was an error.
       raise SystemConfigError(err)
 
+  # pylint: disable=invalid-name
+  # Naming convention to dynamically find methods based on config parameter
   def _Fmt_hex(self, int_val):
     """Format integer into hex.
 
@@ -476,11 +483,12 @@ class SystemConfig(object):
         raise SystemConfigError('Problem executing format %s' % fmt)
     return reformat_value
 
-  def display_config(self, tag=None):
+  def display_config(self, tag=None, prefix=None):
     """Display human-readable values of map, control, or sequence.
 
     Args:
       tag  : string of either 'map' | 'control' | 'sequence' or None for all
+      prefix: prefix string to print infront of control tags
 
     Returns:
       string to be displayed.
@@ -491,16 +499,18 @@ class SystemConfig(object):
     else:
       tag_list = [tag]
     for tag in sorted(tag_list):
-
+      prefix_str = ''
+      if tag == 'control' and prefix:
+        prefix_str = '%s.' % prefix
       rsp.append('*************')
       rsp.append('* ' + tag.upper())
       rsp.append('*************')
-      max_len = 0
       max_len = max(len(name) for name in self.syscfg_dict[tag].iterkeys())
+      max_len += len(prefix_str)
       dashes = '-' * max_len
       for name in sorted(self.syscfg_dict[tag].iterkeys()):
         item_dict = self.syscfg_dict[tag][name]
-        padded_name = '%-*s' % (max_len, name)
+        padded_name = '%-*s' % (max_len, '%s%s' % (prefix_str, name))
         rsp.append('%s DOC: %s' % (padded_name, item_dict['doc']))
         if tag == 'map':
           rsp.append('%s MAP: %s' % (dashes, str(item_dict['map_params'])))
@@ -516,9 +526,11 @@ def test():
 
   TODO(tbroch) Enhance integration test and add unittest (see mox)
   """
+  # pylint: disable=protected-access,raising-format-tuple,g-doc-exception
+  # Test method that's likely to be removed as more unit-tests roll out.
   logging.basicConfig(
       level=logging.DEBUG,
-      format='%(asctime)s - %(name)s - ' + '%(levelname)s - %(message)s')
+      format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
   scfg = SystemConfig()
   # TODO(tbroch) make this a comprenhensive test xml file
   scfg.add_cfg_file(os.path.join('data', 'servo.xml'))
