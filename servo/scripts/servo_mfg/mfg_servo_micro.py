@@ -13,6 +13,7 @@ each servo and for the full run.
 
 import argparse
 import re
+import time
 
 import mfg_servo_common as c
 
@@ -23,7 +24,8 @@ serialno = 'Uninitialized'
 LOGNAME = 'logfiles/mfg_servo_micro'
 TESTERLOGNAME = 'logfiles/mfg_servo_micro_run'
 
-RE_SERIALNO = re.compile('^S[MN](C[PDQ][0-9]{5}|N[PDQ][0-9]{5})$')
+RE_SERIALNO = re.compile('^(S[MN](C[PDQ][0-9]{5}|N[PDQ][0-9]{5})|'
+                         '(CMO653-00166-04[A-Z0-9]+))$')
 
 
 def main():
@@ -58,9 +60,16 @@ def main():
     c.log('\n\n************************************************\n')
     c.log('Plug in servo_micro via normal cable')
     c.wait_for_usb(STM_VIDPID)
+    # We need to wait after servo power on for initialization to complete,
+    # as well as to avoid a race condition with the kernel driver.
+    # See b/110045723
+    time.sleep(1)
 
     c.log('Programming sn:%s' % serialno)
     pty = c.setup_tinyservod(STM_VIDPID, 3)
+    # Wait for console to settle so that console spew doesn't interfere
+    # with our automated command parsing.
+    time.sleep(1)
     c.do_serialno(serialno, pty)
     c.log('Done programming serialno')
     c.log('')
