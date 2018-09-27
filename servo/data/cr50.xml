@@ -8,6 +8,14 @@
     <params cmd="get" subtype="pty" interface="1" drv="uart" clobber_ok=""
     ></params>
   </control>
+  <!-- This control must be available prior to accessing the cr50 console over
+       micro, so must be initialized prior to the cr50_version control (which
+       relies on cr50 console access during initialization).  -->
+  <control>
+    <name>usbpd_uart_routing</name>
+    <doc>enable pd uart routing</doc>
+    <params clobber_ok="" init="glados"></params>
+  </control>
   <!-- EC-3PO console interpreter for cr50 -->
   <control>
     <name>ec3po_cr50_uart</name>
@@ -144,10 +152,5 @@
     <alias>cr50_uart_en,usbpd_uart_en</alias>
     <doc>Enabled JTAG buffer on servo ... re-purposed to uart4.</doc>
     <params clobber_ok="" init="on"></params>
-  </control>
-  <control>
-    <name>usbpd_uart_routing</name>
-    <doc>enable pd uart routing</doc>
-    <params clobber_ok="" init="glados"></params>
   </control>
 </root>
