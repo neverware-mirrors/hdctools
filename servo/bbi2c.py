@@ -38,30 +38,6 @@ class BBi2c(i2c_base.BaseI2CBus):
     if bbmux_controller.use_omapmux():
       self._bus_num += 1
 
-  def open(self):
-    """Opens access to FTDI interface as a i2c (MPSSE mode) interface.
-
-    Raises:
-      BBi2cError: If open fails
-    """
-    pass
-
-  def close(self):
-    """Close connection to i2c through beaglebone and cleanup.
-
-    Raises:
-      BBi2cError: If close fails
-    """
-    pass
-
-  def setclock(self, speed=100000):
-    """Sets i2c clock speed.
-
-    Args:
-      speed: clock speed in hertz.  Default is 100kHz
-    """
-    pass
-
   def _write(self, slv, address, wlist):
     """Preform a single i2cset write command.
 

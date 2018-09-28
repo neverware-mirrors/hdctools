@@ -62,10 +62,6 @@ class Si2cBus(i2c_base.BaseI2CBus):
 
     self._logger.debug('Set up stm32 i2c')
 
-  def __del__(self):
-    """Si2c destructor."""
-    self._logger.debug('Close')
-
   def reinitialize(self):
     """Reinitialize the usb endpoint"""
     self._susb.reset_usb()
@@ -155,3 +151,4 @@ class Si2cBus(i2c_base.BaseI2CBus):
     """
     self._logger.info('Turning down STM32i2c interface.')
     del self._susb
+    super(Si2cBus, self).close()

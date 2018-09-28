@@ -86,8 +86,9 @@ class Fi2c(i2c_base.BaseI2CBus):
 
     Calls close to release device
     """
-    if not self._is_closed:
+    if not getattr(self, '_is_closed', True):
       self.close()
+    super(Fi2c, self).__del__()
 
   def open(self):
     """Opens access to FTDI interface as a i2c (MPSSE mode) interface.
@@ -111,6 +112,7 @@ class Fi2c(i2c_base.BaseI2CBus):
     if err:
       raise Fi2cError('fi2c_close', err)
     self._is_closed = True
+    super(Fi2c, self).close()
 
   def init(self):
     """Initialize i2c interface.
@@ -118,10 +120,10 @@ class Fi2c(i2c_base.BaseI2CBus):
     Raises:
       Fi2cError: If init fails
     """
+    super(Fi2c, self).init()
     err = self._flib.ftdi_init(ctypes.byref(self._fc))
     if err:
       raise Fi2cError('ftdi_init', err)
-
     err = self._lib.fi2c_init(ctypes.byref(self._fic), ctypes.byref(self._fc))
     if err:
       raise Fi2cError('fi2c_init', err)
@@ -148,6 +150,12 @@ class Fi2c(i2c_base.BaseI2CBus):
       list of c_ubyte's read from i2c device.
     """
     self._logger.debug('')
+
+    if wlist is None:
+      wlist = []
+    if rcnt is None:
+      rcnt = 0
+
     self._fic.slv = slv
     wcnt = len(wlist)
     wbuf_type = ctypes.c_ubyte * wcnt
