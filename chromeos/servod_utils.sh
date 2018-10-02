@@ -2,6 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+log_output() {
+  logger -t "${UPSTART_JOB}" $@
+  echo $@
+}
+
 update_config() {
   local config_file=$1
   local key=$2
@@ -28,31 +33,34 @@ cache_servov4_hub() {
     return
   fi
 
+  log_output "Probe for servo: ${serial}"
+
   # Find this servo if it is a servo_v4, check its serialno
   SERVOPATH=$(grep -l "^${serial}\$" /sys/bus/usb/devices/*/serial)
 
   if [ -n "${SERVOPATH}" ]; then
     SERVOV4=$(dirname "${SERVOPATH}")
 
-    logger -t "$UPSTART_JOB" "Servo: ${serial} found at: ${SERVOV4}"
+    log_output "Servo: ${serial} found at: ${SERVOV4}"
 
     # The hub is one level up.
     SERVOV4_HUB=$(echo "${SERVOV4}" | sed 's/..$//')
 
-    logger -t "$UPSTART_JOB" "Servo Hub is: ${SERVOV4_HUB}"
+    log_output "Servo Hub is: ${SERVOV4_HUB}"
 
     if [ -n "${SERVOV4_HUB}" ]; then
       if [ -f "${SERVOV4_HUB}"/authorized ]; then
         # If this hub actually exists, let's save the path for later.
+        log_output "Servo hub cached!"
         update_config "${config_file}" HUB "${SERVOV4_HUB}"
       else
-        logger -t "$UPSTART_JOB" "File not found: ${SERVOV4_HUB}/authorized"
+        log_output "File not found: ${SERVOV4_HUB}/authorized"
       fi
     else
-      logger -t "$UPSTART_JOB" "No hub detected for ${serial}"
+      log_output "No hub detected for ${serial}"
     fi
   else
-    logger -t "$UPSTART_JOB" "No servo detected for ${serial}"
+    log_output "No servo detected for ${serial}"
   fi
 }
 
@@ -60,15 +68,17 @@ slam_servov4_hub() {
   local hub=$1
 
   if [ -n "${hub}" ]; then
-    if [ -f "${hub}"/authorized ]; then
-      logger -t "$UPSTART_JOB" "Restarting USB interface on ${hub}"
-      echo 0 > "${hub}"/authorized
+    if [ -f "${hub}/authorized" ]; then
+      log_output "Restarting USB interface on ${hub}"
+      echo 0 > "${hub}/authorized"
       sleep 1
-      echo 1 > "${hub}"/authorized
+      echo 1 > "${hub}/authorized"
       sleep 3
     else
-      logger -t "$UPSTART_JOB" "Hub control ${hub}/authorized doesn't exist"
+      log_output "Hub control ${hub}/authorized doesn't exist"
     fi
+  else
+    log_output "Hub not specified"
   fi
 }
 
