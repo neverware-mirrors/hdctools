@@ -419,9 +419,9 @@ class ServodStarter(object):
     parser = servo_parsing.BaseServodParser(description=description,
                                             examples=examples,
                                             version='%(prog)s ' + VERSION)
-    parser.add_argument('--vendor', default=None, type=int,
+    parser.add_argument('--vendor', default=None, type=lambda x: int(x,0),
                         help='vendor id of device to interface to')
-    parser.add_argument('--product', default=None, type=int,
+    parser.add_argument('--product', default=None, type=lambda x: int(x,0),
                         help='USB product id of device to interface with')
     parser.add_argument('-s', '--serialname', default=None, type=str,
                         help='device serialname stored in eeprom')
