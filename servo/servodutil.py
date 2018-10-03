@@ -5,7 +5,6 @@
 """Collection of servod utilities."""
 
 import argparse
-import collections
 import json
 import logging
 import os
@@ -128,12 +127,16 @@ class UsbHierarchy(object):
     Returns:
       Dict of tuple (bus,dev) to sysfs path.
     """
-    usb_hierarchy = collections.defaultdict(lambda: (None, None))
+    usb_hierarchy = {}
     for usb_dir in os.listdir(self.USB_SYSFS_PATH):
       if self.CHILD_RE.match(usb_dir):
         usb_dir = os.path.join(self.USB_SYSFS_PATH, usb_dir)
         # Remove last element to get to parent hub's location
         parent = '.'.join(usb_dir.split('.')[:-1])
+        if not parent:
+          # If the device is directory attached to a root-hub it does not have
+          # a parent.
+          parent = None
         try:
           dev = UsbHierarchy.DevNumFromSysfs(usb_dir)
           bus = UsbHierarchy.BusNumFromSysfs(usb_dir)
@@ -155,8 +158,9 @@ class UsbHierarchy(object):
       SysFS path string of parent of the supplied usb device,
       or None if not found.
     """
-    return self._usb_hierarchy.get((int(usb_device.bus),
-                                    int(usb_device.address)))[0]
+    dev, _ = self._usb_hierarchy.get((int(usb_device.bus),
+                                      int(usb_device.address)), (None, None))
+    return dev
 
   def GetParentPath(self, usb_device):
     """Return the USB sysfs path of the supplied usb_device's parent.
@@ -168,8 +172,9 @@ class UsbHierarchy(object):
       SysFS path string of parent of the supplied usb device,
       or None if not found.
     """
-    return self._usb_hierarchy.get((int(usb_device.bus),
-                                    int(usb_device.address)))[1]
+    _, parent = self._usb_hierarchy.get((int(usb_device.bus),
+                                         int(usb_device.address)), (None, None))
+    return parent
 
   def ShareSameHub(self, usb_servo, usb_candidate):
     """Check if the given USB device shares the same hub with servo v4.
@@ -274,8 +279,8 @@ class ServoScratch(object):
       serialf = os.path.join(self._scratch, str(serial))
       if os.path.exists(serialf):
         # Add a symlink for each serial pointing back at the original file
-        msg = 'Adding entry in %s for serial already in use. Serial: %s.' % (
-               serialf, serial)
+        msg = ('Adding entry in %s for serial already in use. Serial: %s.'
+               % (serialf, serial))
         self._logger.error(msg)
         raise ServodUtilError(msg)
       serialfs.append(serialf)
