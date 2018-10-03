@@ -180,5 +180,5 @@ def get_env_options(logger, options):
         options.port = int(env_port)
       except ValueError:
         logger.warning('Ignoring environment port definition "%s"', env_port)
-  if not options.name:
+  if hasattr(options, 'name') and not options.name:
     options.name = os.getenv('SERVOD_NAME')
