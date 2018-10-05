@@ -269,6 +269,7 @@ for board in [
     'poppy',
     'rammus',
     'reef',
+    'sarien',
     'scarlet',
     'sentry',
     'soraka',
