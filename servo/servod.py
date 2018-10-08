@@ -80,7 +80,7 @@ class ServoDeviceWatchdog(threading.Thread):
   # Attempts based on REINIT_POLL_RATE that will be made to reconnect a device.
   REINIT_ATTEMPTS = 100
 
-  # Rate used to poll when attempting to reconnect a device.
+  # Rate in seconds used to poll when a reinit capable device is attached.
   REINIT_POLL_RATE = 0.1
 
   def __init__(self, servod, poll_rate=1.0):
@@ -114,6 +114,10 @@ class ServoDeviceWatchdog(threading.Thread):
                            'serial: %r. %s. Device will not be tracked.',
                            vid, pid, serial, e)
         devices_not_found.add((vid, pid, serial))
+      if (vid, pid) in self.REINIT_CAPABLE:
+        self._rate = self.REINIT_POLL_RATE
+        self._logger.info('Reinit capable device found. Polling rate set '
+                          'to %.2fs.', self._rate)
     # Only track devices that a sysfs path was successfully found for.
     self._devices -= devices_not_found
 
@@ -126,9 +130,8 @@ class ServoDeviceWatchdog(threading.Thread):
     # Tokens a reinit capable device has to attempt reinit. If these run out
     # the watchdog will turn down servod.
     reinit_tokens = collections.defaultdict(lambda: self.REINIT_ATTEMPTS)
-    rate = self._rate
     while not self.done.is_set():
-      self.done.wait(rate)
+      self.done.wait(self._rate)
       for vid, pid, serial in self._devices:
         sysfs_path = self._device_paths[(vid, pid, serial)]
         if os.path.exists(sysfs_path):
@@ -141,9 +144,6 @@ class ServoDeviceWatchdog(threading.Thread):
               # No device waiting for reinit anymore. Issue a servod interface
               # reinitialization.
               self._servod.reinitialize()
-              # Return to slower poll rate after no devices are in a reinit
-              # queue.
-              rate = self._rate
         else:
           # Device was not found.
           if (vid, pid) in self.REINIT_CAPABLE:
@@ -158,8 +158,6 @@ class ServoDeviceWatchdog(threading.Thread):
               # pylint: disable=protected-access
               # Indicate to servod that interfaces are unavailable.
               self._servod._ifaces_available.clear()
-              # Poll faster while there are devices that need to be reinit.
-              rate = self.REINIT_POLL_RATE
               continue
           # Device was not found, thus signaling to end servod.
           self._logger.error('Device - vid: 0x%02x pid: 0x%02x serial: %r - '

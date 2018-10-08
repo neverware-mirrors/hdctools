@@ -136,7 +136,7 @@ class PowerStateDriver(hw_driver.HwDriver):
     self._interface.set('cr50_reboot', 'on')
     # Wait long enough for cr50 to reboot and for usb to have dropped out,
     # and ServoWatchdog to have reinitialized cr50 interfaces.
-    time.sleep(1.5)
+    time.sleep(0.3)
     # Attempt to reinitialize the device in case the cr50 reenumerated quicker
     # than the polling resolution. By now, if the device did not reenumerate,
     # the Watchdog should be attempting to catch & reinitalize it.
