@@ -1,14 +1,15 @@
 # Copyright 2016 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+"""Accesses I2C buses through stm32 usb endpoint."""
 
 import array
 import errno
 import logging
 import usb
 
+import i2c_base
 import stm32usb
-"""Accesses I2C buses through stm32 usb endpoint."""
 
 
 class Si2cError(Exception):
@@ -26,7 +27,7 @@ class Si2cError(Exception):
     self.value = value
 
 
-class Si2cBus(object):
+class Si2cBus(i2c_base.BaseI2CBus):
   """I2C bus class to access devices on the bus.
 
   Usage:
@@ -44,6 +45,8 @@ class Si2cBus(object):
 
   def __init__(self, vendor=0x18d1, product=0x501a, interface=1, port=0,
                serialname=None):
+    i2c_base.BaseI2CBus.__init__(self)
+
     self._logger = logging.getLogger('Si2c')
     self._logger.debug('')
 
@@ -64,7 +67,7 @@ class Si2cBus(object):
     """Reinitialize the usb endpoint"""
     self._susb.reset_usb()
 
-  def wr_rd(self, slave_address, write_list, read_count=None):
+  def _raw_wr_rd(self, slave_address, write_list, read_count=None):
     """Implements hdctools wr_rd() interface.
 
     This function writes byte values list to I2C device, then reads
@@ -127,4 +130,3 @@ class Si2cBus(object):
     """
     self._logger.info('Turning down STM32i2c interface.')
     del self._susb
-

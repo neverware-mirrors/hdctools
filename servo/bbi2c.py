@@ -2,10 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Allows creation of i2c interface for beaglebone devices."""
+
 import logging
 import subprocess
 
 import bbmux_controller
+import i2c_base
 
 
 class BBi2cError(Exception):
@@ -23,10 +25,12 @@ class BBi2cError(Exception):
     self.value = value
 
 
-class BBi2c(object):
+class BBi2c(i2c_base.BaseI2CBus):
   """Provide interface to i2c through beaglebone"""
 
   def __init__(self, interface):
+    i2c_base.BaseI2CBus.__init__(self)
+
     self._logger = logging.getLogger('BBi2c')
     self._interface = interface
     self._bus_num = interface['bus_num']
@@ -167,7 +171,7 @@ class BBi2c(object):
     read_bytes.append(read_value_int >> 8)
     return read_bytes
 
-  def wr_rd(self, slv, wlist, rcnt):
+  def _raw_wr_rd(self, slv, wlist, rcnt):
     """Write and/or read a slave i2c device.
 
     Args:

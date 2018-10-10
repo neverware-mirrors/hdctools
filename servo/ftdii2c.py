@@ -3,11 +3,13 @@
 # found in the LICENSE file.
 """Allows creation of i2c interface via libftdii2c (C) library for FTDI devices.
 """
+
 import ctypes
 import logging
 
 import ftdi_common
 import ftdi_utils
+import i2c_base
 
 
 class Fi2cError(Exception):
@@ -42,7 +44,7 @@ class Fi2cContext(ctypes.Structure):
   ]
 
 
-class Fi2c(object):
+class Fi2c(i2c_base.BaseI2CBus):
   """Provide interface to libftdii2c c-library via python ctypes module.
   """
 
@@ -61,6 +63,8 @@ class Fi2c(object):
       serialname: string of device serialname/number as defined in FTDI eeprom.
 
     """
+    i2c_base.BaseI2CBus.__init__(self)
+
     self._logger = logging.getLogger('Fi2c')
     self._logger.debug('')
 
@@ -131,7 +135,7 @@ class Fi2c(object):
     if self._lib.fi2c_setclock(ctypes.byref(self._fic), speed):
       raise Fi2cError('fi2c_setclock')
 
-  def wr_rd(self, slv, wlist, rcnt):
+  def _raw_wr_rd(self, slv, wlist, rcnt):
     """Write and/or read a slave i2c device.
 
     Args:

@@ -6,8 +6,10 @@
 import fcntl
 import io
 
+import i2c_base
 
-class I2CBus(object):
+
+class I2CBus(i2c_base.BaseI2CBus):
   """I2C bus class to access devices on the bus.
 
   Usage:
@@ -20,9 +22,10 @@ class I2CBus(object):
   _I2C_SLAVE_FORCE = 0x0706
 
   def __init__(self, interface):
+    i2c_base.BaseI2CBus.__init__(self)
     self._interface = interface
 
-  def wr_rd(self, slave_address, write_list, read_count=None):
+  def _raw_wr_rd(self, slave_address, write_list, read_count=None):
     """Implements hdctools wr_rd() interface.
 
     This function writes byte values list to I2C device, then reads
