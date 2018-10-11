@@ -7,16 +7,26 @@ from __future__ import print_function
 
 # pylint: disable=cros-logging-import
 import ctypes
+import functools
 import logging
 import multiprocessing
 import os
 import pty
 import stat
 import termios
+import time
 import tty
 
 import ec3po
 import uart
+
+
+def _RunCallbacks(*callbacks):
+  """Run the provided callbacks.  Return the value from the last one."""
+  retval = None
+  for callback in callbacks:
+    retval = callback()
+  return retval
 
 
 class EC3PO(uart.Uart):
@@ -33,7 +43,7 @@ class EC3PO(uart.Uart):
       source_name: A user friendly name documenting the source of this PTY.
     """
     # Run Fuart init.
-    super(EC3PO, self).__init__()
+    uart.Uart.__init__(self)
     self._logger = logging.getLogger('EC3PO Interface')
     # Create the console and interpreter passing in the raw EC UART PTY.
     self._raw_ec_uart = raw_ec_uart
@@ -45,6 +55,28 @@ class EC3PO(uart.Uart):
     # The debug pipe is unidirectional from interpreter to console only.
     dbg_pipe_interactive, dbg_pipe_interp = multiprocessing.Pipe(duplex=False)
 
+    # Use a separate shutdown notification pipe for each subprocess or thread
+    # because there is no guarantee that multiple select()/poll()/epoll()
+    # pollers would be woken upon blocked->unblocked transition.
+    #
+    # So long as subprocesses are in use, it is important that the subprocesses
+    # close their write-side pipe files when they start, otherwise the closing
+    # of them from the main process will have no effect.
+    #
+    # It is also desirable for a subprocess to close the read-side pipe file of
+    # any pipe which it is not using, e.g. console subprocess should close the
+    # read-side of the interpreter shutdown pipe, in addition to closing its
+    # write side.  This is not truly necessary for correctness, but avoids
+    # unnecessarily holding open a file descriptor in a process that should
+    # never use it.
+    #
+    # This will become simpler after ec3po is updated to use threads instead of
+    # subprocesses, which is being done as part of http://crbug.com/79684405.
+    self._itpr_shutdown_pipe_rd, self._itpr_shutdown_pipe_wr = (
+        multiprocessing.Pipe(duplex=False))
+    self._c_shutdown_pipe_rd, self._c_shutdown_pipe_wr = (
+        multiprocessing.Pipe(duplex=False))
+
     # Create an interpreter instance.
     itpr = ec3po.interpreter.Interpreter(raw_ec_uart, cmd_pipe_interp,
                                          dbg_pipe_interp, logging.INFO)
@@ -52,8 +84,15 @@ class EC3PO(uart.Uart):
     itpr._logger = logging.getLogger('Interpreter')
 
     # Spawn an interpreter process.
-    itpr_process = multiprocessing.Process(target=ec3po.interpreter.StartLoop,
-                                           args=(itpr,))
+    itpr_process = multiprocessing.Process(
+        target=_RunCallbacks,
+        args=(
+            self._itpr_shutdown_pipe_wr.close,
+            self._c_shutdown_pipe_rd.close,
+            self._c_shutdown_pipe_wr.close,
+            functools.partial(
+                ec3po.interpreter.StartLoop, itpr,
+                shutdown_pipe=self._itpr_shutdown_pipe_rd)))
     # Make sure to kill the interpreter when we terminate.
     itpr_process.daemon = True
     # Start the interpreter.
@@ -102,8 +141,15 @@ class EC3PO(uart.Uart):
     # Spawn a console process.
     v = multiprocessing.Value(ctypes.c_bool, False)
     self._command_active = v
-    console_process = multiprocessing.Process(target=ec3po.console.StartLoop,
-                                              args=(c, v))
+    console_process = multiprocessing.Process(
+        target=_RunCallbacks,
+        args=(
+            self._itpr_shutdown_pipe_rd.close,
+            self._itpr_shutdown_pipe_wr.close,
+            self._c_shutdown_pipe_wr.close,
+            functools.partial(
+                ec3po.console.StartLoop, c, v,
+                shutdown_pipe=self._c_shutdown_pipe_rd)))
     # Make sure to kill the console when we terminate.
     console_process.daemon = True
     # Start the console.
@@ -164,7 +210,49 @@ class EC3PO(uart.Uart):
 
   def close(self):
     """Turn down the ec3po interface by terminating interpreter & console."""
-    for p in [self.itpr_process, self.console_process]:
-      p.terminate()
-      p.join(timeout=0.1)
+    # Notify subprocesses/threads of desire to shutdown.
+    #
+    # The write()s are necessary in addition to close() for the signal-activated
+    # shutdown cases.  Without the write()s, not all of the subprocesses do not
+    # get notified immediately, and the subprocess join timeout below is reached
+    # for some of them.  (No tracebacks or deadlocks though, all of servod still
+    # exits cleanly-ish after the join timeouts.)
+    #
+    # The author of this comment is unsure why the write()s are needed, and is
+    # uninterested in troubleshooting further since having the write()s appears
+    # to work without downsides, and the author of this comment is in the
+    # process of migrating ec3po from using subprocesses to using threads.  The
+    # use of shutdown notification pipes will remain with threads (it was added
+    # specifically for that migration), and the need for these write()s will be
+    # revisited then.
+    #
+    # TODO(b/79684405): When switching ec3po from subprocesses to threads, test
+    # whether these writes are still needed.  If so, consider troubleshooting
+    # further at that time.
+    os.write(self._itpr_shutdown_pipe_wr.fileno(), '.')
+    os.write(self._c_shutdown_pipe_wr.fileno(), '.')
+    self._itpr_shutdown_pipe_wr.close()
+    self._c_shutdown_pipe_wr.close()
+
+    total_timeout = 2
+    end_time = time.time() + total_timeout
+    self.itpr_process.join(timeout=total_timeout)
+    self.console_process.join(timeout=max(0, end_time - time.time()))
+
+    self._logger.info('ec3po interpreter process is_alive=%s after %s timeout' %
+                      (self.itpr_process.is_alive(), total_timeout))
+    self._logger.info('ec3po console process is_alive=%s after %s timeout' %
+                      (self.console_process.is_alive(), total_timeout))
     self._logger.info('Closing EC3PO console at %s' % self._pty)
+
+    # Since the console and interpreter might be in different subprocesses *or*
+    # simply in different threads, we delay closing our reference to the read
+    # pipes until after indicating shutdown by closing the write pipes.  If
+    # ec3po is using threads instead of subprocesses, this will cause close() to
+    # be called twice on these in the same process, but that is okay since these
+    # are file(-like) objects so redundant close() calls should be no-ops.
+    #
+    # TODO(b/79684405): When migrating ec3po from subprocesses to threads, stop
+    # closing the read side of these pipes here.
+    self._itpr_shutdown_pipe_rd.close()
+    self._c_shutdown_pipe_rd.close()
