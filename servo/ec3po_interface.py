@@ -9,7 +9,6 @@ from __future__ import print_function
 import ctypes
 import functools
 import logging
-import multiprocessing
 import os
 import pty
 import stat
@@ -17,7 +16,10 @@ import termios
 import time
 import tty
 
-import ec3po
+from ec3po import console
+from ec3po import interpreter
+from ec3po import threadproc_shim
+
 import uart
 
 
@@ -51,9 +53,9 @@ class EC3PO(uart.Uart):
 
     # Create some pipes to communicate between the interpreter and the console.
     # The command pipe is bidirectional.
-    cmd_pipe_interactive, cmd_pipe_interp = multiprocessing.Pipe()
+    cmd_pipe_interactive, cmd_pipe_interp = threadproc_shim.Pipe()
     # The debug pipe is unidirectional from interpreter to console only.
-    dbg_pipe_interactive, dbg_pipe_interp = multiprocessing.Pipe(duplex=False)
+    dbg_pipe_interactive, dbg_pipe_interp = threadproc_shim.Pipe(duplex=False)
 
     # Use a separate shutdown notification pipe for each subprocess or thread
     # because there is no guarantee that multiple select()/poll()/epoll()
@@ -73,25 +75,25 @@ class EC3PO(uart.Uart):
     # This will become simpler after ec3po is updated to use threads instead of
     # subprocesses, which is being done as part of http://crbug.com/79684405.
     self._itpr_shutdown_pipe_rd, self._itpr_shutdown_pipe_wr = (
-        multiprocessing.Pipe(duplex=False))
+        threadproc_shim.Pipe(duplex=False))
     self._c_shutdown_pipe_rd, self._c_shutdown_pipe_wr = (
-        multiprocessing.Pipe(duplex=False))
+        threadproc_shim.Pipe(duplex=False))
 
     # Create an interpreter instance.
-    itpr = ec3po.interpreter.Interpreter(raw_ec_uart, cmd_pipe_interp,
-                                         dbg_pipe_interp, logging.INFO)
+    itpr = interpreter.Interpreter(raw_ec_uart, cmd_pipe_interp,
+                                   dbg_pipe_interp, logging.INFO)
     self._itpr = itpr
     itpr._logger = logging.getLogger('Interpreter')
 
     # Spawn an interpreter process.
-    itpr_process = multiprocessing.Process(
+    itpr_process = threadproc_shim.ThreadOrProcess(
         target=_RunCallbacks,
         args=(
             self._itpr_shutdown_pipe_wr.close,
             self._c_shutdown_pipe_rd.close,
             self._c_shutdown_pipe_wr.close,
             functools.partial(
-                ec3po.interpreter.StartLoop, itpr,
+                interpreter.StartLoop, itpr,
                 shutdown_pipe=self._itpr_shutdown_pipe_rd)))
     # Make sure to kill the interpreter when we terminate.
     itpr_process.daemon = True
@@ -134,21 +136,21 @@ class EC3PO(uart.Uart):
     os.close(user_pty)
 
     # Create a console.
-    c = ec3po.console.Console(master_pty, user_pty_name, interface_pty,
-                              cmd_pipe_interactive, dbg_pipe_interactive)
+    c = console.Console(master_pty, user_pty_name, interface_pty,
+                        cmd_pipe_interactive, dbg_pipe_interactive)
     self._console = c
     c._logger = logging.getLogger('Console')
     # Spawn a console process.
-    v = multiprocessing.Value(ctypes.c_bool, False)
+    v = threadproc_shim.Value(ctypes.c_bool, False)
     self._command_active = v
-    console_process = multiprocessing.Process(
+    console_process = threadproc_shim.ThreadOrProcess(
         target=_RunCallbacks,
         args=(
             self._itpr_shutdown_pipe_rd.close,
             self._itpr_shutdown_pipe_wr.close,
             self._c_shutdown_pipe_wr.close,
             functools.partial(
-                ec3po.console.StartLoop, c, v,
+                console.StartLoop, c, v,
                 shutdown_pipe=self._c_shutdown_pipe_rd)))
     # Make sure to kill the console when we terminate.
     console_process.daemon = True
