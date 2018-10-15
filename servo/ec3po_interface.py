@@ -119,9 +119,9 @@ class EC3PO(uart.Uart):
     itpr_process = threadproc_shim.ThreadOrProcess(
         target=_RunCallbacks,
         args=(
-            self._itpr_shutdown_pipe_wr.close,
-            self._c_shutdown_pipe_rd.close,
-            self._c_shutdown_pipe_wr.close,
+            threadproc_shim.DoIf(subprocs=self._itpr_shutdown_pipe_wr.close),
+            threadproc_shim.DoIf(subprocs=self._c_shutdown_pipe_rd.close),
+            threadproc_shim.DoIf(subprocs=self._c_shutdown_pipe_wr.close),
             functools.partial(
                 interpreter.StartLoop, itpr,
                 shutdown_pipe=self._itpr_shutdown_pipe_rd)))
@@ -176,9 +176,9 @@ class EC3PO(uart.Uart):
     console_process = threadproc_shim.ThreadOrProcess(
         target=_RunCallbacks,
         args=(
-            self._itpr_shutdown_pipe_rd.close,
-            self._itpr_shutdown_pipe_wr.close,
-            self._c_shutdown_pipe_wr.close,
+            threadproc_shim.DoIf(subprocs=self._itpr_shutdown_pipe_rd.close),
+            threadproc_shim.DoIf(subprocs=self._itpr_shutdown_pipe_wr.close),
+            threadproc_shim.DoIf(subprocs=self._c_shutdown_pipe_wr.close),
             functools.partial(
                 console.StartLoop, c, v,
                 shutdown_pipe=self._c_shutdown_pipe_rd)))
@@ -277,14 +277,6 @@ class EC3PO(uart.Uart):
                       (self.console_process.is_alive(), total_timeout))
     self._logger.info('Closing EC3PO console at %s' % self._pty)
 
-    # Since the console and interpreter might be in different subprocesses *or*
-    # simply in different threads, we delay closing our reference to the read
-    # pipes until after indicating shutdown by closing the write pipes.  If
-    # ec3po is using threads instead of subprocesses, this will cause close() to
-    # be called twice on these in the same process, but that is okay since these
-    # are file(-like) objects so redundant close() calls should be no-ops.
-    #
-    # TODO(b/79684405): When migrating ec3po from subprocesses to threads, stop
-    # closing the read side of these pipes here.
-    self._itpr_shutdown_pipe_rd.close()
-    self._c_shutdown_pipe_rd.close()
+    if threadproc_shim.USING_SUBPROCS:
+      self._itpr_shutdown_pipe_rd.close()
+      self._c_shutdown_pipe_rd.close()
