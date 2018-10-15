@@ -12,6 +12,7 @@ import logging
 import os
 import pty
 import stat
+import sys
 import termios
 import time
 import tty
@@ -29,6 +30,37 @@ def _RunCallbacks(*callbacks):
   for callback in callbacks:
     retval = callback()
   return retval
+
+
+def _OsPipeFiles():
+  """Like os.pipe(), except returns file objects instead of file descriptors.
+
+  Returns: (read_file, write_file) - A two-item tuple of the read and write
+      sides of the pipe.
+  """
+  rd_fd, wr_fd = os.pipe()
+  try:
+    return os.fdopen(rd_fd, 'r'), os.fdopen(wr_fd, 'w')
+  # If anything went wrong with fdopen(), do our best to clean up.
+  except:
+    # Save original exception for re-raising, in case os.close() triggers an
+    # exception.  Note that saving exc_traceback here creates a circular
+    # reference.
+    exc_type, exc_value, exc_traceback = sys.exc_info()
+    try:
+      try:
+        os.close(rd_fd)
+      except:
+        pass
+      try:
+        os.close(wr_fd)
+      except:
+        pass
+      # Re-raise the original exception.
+      raise exc_type, exc_value, exc_traceback
+    finally:
+      # Break the exc_traceback circular reference.
+      del exc_type, exc_value, exc_traceback
 
 
 class EC3PO(uart.Uart):
@@ -74,10 +106,8 @@ class EC3PO(uart.Uart):
     #
     # This will become simpler after ec3po is updated to use threads instead of
     # subprocesses, which is being done as part of http://crbug.com/79684405.
-    self._itpr_shutdown_pipe_rd, self._itpr_shutdown_pipe_wr = (
-        threadproc_shim.Pipe(duplex=False))
-    self._c_shutdown_pipe_rd, self._c_shutdown_pipe_wr = (
-        threadproc_shim.Pipe(duplex=False))
+    self._itpr_shutdown_pipe_rd, self._itpr_shutdown_pipe_wr = _OsPipeFiles()
+    self._c_shutdown_pipe_rd, self._c_shutdown_pipe_wr = _OsPipeFiles()
 
     # Create an interpreter instance.
     itpr = interpreter.Interpreter(raw_ec_uart, cmd_pipe_interp,
