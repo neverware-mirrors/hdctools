@@ -139,7 +139,7 @@
     <alias>usb_mux_sel1,image_usbkey_mux</alias>
     <doc>USB3.0_TYPEA_MUX_SEL</doc>
     <params interface="23" drv="tca6416" slv="0x20" port="0"
-    offset="3" map="usbkey" init="dut_sees_usbkey"></params>
+    offset="3" map="usbkey" init="servo_sees_usbkey"></params>
   </control>
   <control>
     <name>usb3_mux_en</name>
