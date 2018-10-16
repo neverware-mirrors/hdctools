@@ -61,6 +61,19 @@ class usbImageManager(hw_driver.HwDriver):
     This function switches 'usb_mux_sel1' to provide electrical
     connection between the USB port J3 and either servo or DUT side.
 
+    Args:
+      mux_direction: map values of "servo_sees_usbkey" or "dut_sees_usbkey".
+    """
+    self._SafelySwitchMux(mux_direction)
+    if self._interface.get(self._IMAGE_MUX) == self._IMAGE_MUX_TO_SERVO:
+      # This will ensure that we make a best-effort attempt to only
+      # return when the block device of the attached usb stick fully
+      # enumerates.
+      self._interface.get(self._IMAGE_DEV)
+
+  def _SafelySwitchMux(self, mux_direction):
+    """Helper to switch the usb mux.
+
     Switching the usb mux is accompanied by powercycling
     of the USB stick, because it sometimes gets wedged if the mux
     is switched while the stick power is on.
@@ -73,10 +86,6 @@ class usbImageManager(hw_driver.HwDriver):
     self._interface.set(self._IMAGE_MUX, mux_direction)
     time.sleep(self._poweroff_delay)
     self._interface.set(self._IMAGE_MUX_PWR, 'on')
-    if self._interface.get(self._IMAGE_MUX) == self._IMAGE_MUX_TO_SERVO:
-      end = time.time() + self._WAIT_TIMEOUT
-      while not self._interface.get(self._IMAGE_DEV) and time.time() < end:
-        time.sleep(self._POLLING_DELAY)
 
   def _Get_image_usbkey_dev(self):
     """Probe the USB disk device plugged in the servo from the host side.
@@ -87,6 +96,10 @@ class usbImageManager(hw_driver.HwDriver):
     """
 
     servod = self._interface
+    # When the user is requesting the usb_dev they most likely intend for the
+    # usb to the facing the servo, and be powered. Enforce that.
+    if servod.get(self._IMAGE_MUX) != self._IMAGE_MUX_TO_SERVO:
+      self._SafelySwitchMux(self._IMAGE_MUX_TO_SERVO)
     usb_hierarchy = util.UsbHierarchy()
     # Look for own servod usb device
     # pylint: disable=protected-access
@@ -98,18 +111,25 @@ class usbImageManager(hw_driver.HwDriver):
     hub_on_servo = usb_hierarchy.GetParentPath(self_usb)
     # Image usb is at hub port |self._image_usbkey_hub_port|
     image_usbkey_sysfs = '%s.%s' % (hub_on_servo, self._image_usbkey_hub_port)
-    if not os.path.exists(image_usbkey_sysfs):
-      return ''
-    # Use /sys/block/ entries to see which block device really is just
-    # the self_usb
-    for candidate in os.listdir('/sys/block'):
-      # /sys/block is a link to a sys hw device file
-      devicepath = os.path.realpath(os.path.join('/sys/block', candidate))
-      # |image_usbkey_sysfs| is also a link to a sys hw device file
-      if devicepath.startswith(os.path.realpath(image_usbkey_sysfs)):
-        devpath = '/dev/%s' % candidate
-        if os.path.exists(devpath):
-          return devpath
+    self._logger.debug('usb image dev file should be at %s', image_usbkey_sysfs)
+    end = time.time() + self._WAIT_TIMEOUT
+    while True:
+      if os.path.exists(image_usbkey_sysfs):
+        # Use /sys/block/ entries to see which block device really is just
+        # the self_usb
+        for candidate in os.listdir('/sys/block'):
+          # /sys/block is a link to a sys hw device file
+          devicepath = os.path.realpath(os.path.join('/sys/block', candidate))
+          # |image_usbkey_sysfs| is also a link to a sys hw device file
+          if devicepath.startswith(os.path.realpath(image_usbkey_sysfs)):
+            devpath = '/dev/%s' % candidate
+            if os.path.exists(devpath):
+              return devpath
+      if time.time() >= end:
+        break
+      time.sleep(self._POLLING_DELAY)
+    self._logger.warn('usb image dev file found, but no block device. %s',
+                      image_usbkey_sysfs)
     return ''
 
   def _Get_download_to_usb_dev(self):
