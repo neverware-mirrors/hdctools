@@ -452,19 +452,18 @@ class ServoScratch(object):
 
   def _Sanitize(self):
     """Verify that all known servod ports are still in use, delete otherwise."""
-    testsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     for entry in self._GetAllEntries():
+      testsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
       port = entry['port']
       try:
         testsock.bind(('localhost', port))
         self._logger.warn('Port %r still registered but not bound to a '
                           'servod instance. Removing entry.', str(port))
         self.RemoveEntry(port)
+        testsock.close()
       except socket.error:
         # Expected to fail when binding to a valid servod instance socket.
         pass
-    testsock.close()
-
 
 # pylint: disable=invalid-name
 def _ConvertNameToMethod(name):

@@ -209,6 +209,18 @@ class TestServoScratch(unittest.TestCase):
     # this a stale entry and remove it.
     assert not os.listdir(self._scratchdir)
 
+  def test_SanitizeMultipleStaleEntry(self):
+    """Verify that stale entries in servoscratch are removed."""
+    self._manually_add_entry()
+    entry2 = {'pid': 12345,
+              'serials': ['this-is-not-a-serial'],
+              'port': 9888}
+    self._manually_add_entry(entry2)
+    self._scratch._Sanitize()
+    # The ports are  likely not connected to anything so Sanitize should
+    # consider these stale entries and remove them.
+    assert not os.listdir(self._scratchdir)
+
   def test_ConvertNameToMethodNoCamel(self):
     """Verify that strings without '-' only get capitalized."""
     name = 'hi'
