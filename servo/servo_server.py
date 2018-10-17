@@ -834,9 +834,9 @@ class Servod(object):
           self.set(control_name, value)
         if verbose:
           self._logger.info('Initialized %s to %s', control_name, value)
-      except Exception as e:
-        self._logger.error('Problem initializing %s -> %s :: %s', control_name,
-                           value, str(e))
+      except Exception:
+        self._logger.exception(
+            'Problem initializing %s -> %s', control_name, value)
 
     # Init keyboard after all the intefaces are up.
     self._keyboard = self._init_keyboard_handler(self, self._board)
