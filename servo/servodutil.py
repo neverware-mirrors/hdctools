@@ -27,7 +27,7 @@ class UsbHierarchy(object):
   """A helper class to analyze the sysfs hierarchy of USB devices."""
 
   USB_SYSFS_PATH = '/sys/bus/usb/devices'
-  CHILD_RE = re.compile(r'\d+-\d+(\.\d+){1,}\Z')
+  CHILD_RE = re.compile(r'\d+-\d+(\.\d+)*\Z')
   BUS_FILE = 'busnum'
   DEV_FILE = 'devnum'
 
