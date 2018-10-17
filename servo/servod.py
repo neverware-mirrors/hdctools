@@ -90,7 +90,7 @@ class ServoDeviceWatchdog(threading.Thread):
       servod: servod server the watchdog is watching over.
       poll_rate: poll rate in seconds
     """
-    super(ServoDeviceWatchdog, self).__init__()
+    threading.Thread.__init__(self)
     self._logger = logging.getLogger(type(self).__name__)
     self.done = threading.Event()
     self._servod = servod
@@ -108,11 +108,11 @@ class ServoDeviceWatchdog(threading.Thread):
           raise ServodError('No sysfs path found for device.')
         self._device_paths[(vid, pid, serial)] = dev_path
       # pylint: disable=broad-except
-      except Exception as e:
-        self._logger.error('Servod Watchdog ran into unexpected issue trying '
-                           'to find device with vid: 0x%02x pid: 0x%02x '
-                           'serial: %r. %s. Device will not be tracked.',
-                           vid, pid, serial, e)
+      except Exception:
+        self._logger.exception(
+            'Servod Watchdog ran into unexpected issue trying to find device '
+            'with vid: 0x%02x pid: 0x%02x serial: %r. Device will not be '
+            'tracked.', vid, pid, serial)
         devices_not_found.add((vid, pid, serial))
       if (vid, pid) in self.REINIT_CAPABLE:
         self._rate = self.REINIT_POLL_RATE
@@ -192,10 +192,10 @@ def usb_get_iserial(device):
     #   usb.USBError: error sending control message: Broken pipe
     # Need to investigate further
     pass
-  except Exception as e:
+  except Exception:
     # This was causing servod to fail to start in the presence of
     # a broken usb interface.
-    print 'usb_get_iserial failed in an unknown way: [%s]' % e
+    self._logger.exception('usb_get_iserial failed in an unknown way')
   return iserial
 
 
