@@ -78,4 +78,4 @@ class ec3poServo(pty_driver.ptyDriver):
       res = self._issue_cmd_get_results(cmd, rx)
     finally:
       self._restore_channel()
-      return res
+    return res
