@@ -151,12 +151,13 @@
     uart4.</doc>
     <params interface="2" servo_v3_interface="6" drv="pca95xx"
     subtype="gpio" slv="0x26" offset="3" map="onoff_i" init="on"
-    clobber_ok=""></params>
+    clobber_ok="" servo_micro_drv="na"></params>
   </control>
   <control>
     <name>jtag_buf_en</name>
     <alias>cr50_uart_en,usbpd_uart_en</alias>
     <doc>Enabled JTAG buffer on servo ... re-purposed to uart4.</doc>
-    <params clobber_ok="" init="on"></params>
+    <params ccd_cr50_drv="na" servo_micro_drv="na" clobber_ok=""
+    init="on"></params>
   </control>
 </root>

@@ -180,7 +180,7 @@ However, there are a couple special parameters that one should be aware of:
 
 - cmd
 
-  Either set or get. On controls with different params for get and set  method
+  Either set or get. On controls with different params for get and set method
   this needs to be defined to associate the right params dictionar to the right
   method.
 
@@ -203,6 +203,25 @@ However, there are a couple special parameters that one should be aware of:
 
   Index of the interface to use for this control. “servo” if the interface is
   intended to be the servod instance.
+
+- drv
+
+  String of the python module that contains the driver for this control.
+
+## Servo type specific behavior.
+
+There are two mechanism in servod to allow for controls to have different
+configurations depending on the type of servo device used: type specific drivers
+and interfaces in the control's configuration.
+
+A control can specify a more specific interface or drv instead of using
+the global 'interface' and 'drv' params its params dictionary for a specific
+servo type.
+This would look like `servo_micro_interface` and `servo_micro_drv`
+These params would be used in a servo_micro servod instance before the general
+'interface' and 'drv' params, but ignored in a non servo_micro instance.
+Take a look at [ftdi_common.py][20] to see the exact name strings.
+
 
 # Servod Helpers
 
@@ -259,3 +278,4 @@ reinitalization phase will block until the interface is reinitialized.
 [17]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/drv/ec.py
 [18]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/servodutil.py
 [19]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/servod.py#69
+[20]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/ftdi_common.py#28

@@ -386,13 +386,6 @@
     </params>
   </control>
   <control>
-    <name>jtag_buf_en</name>
-    <alias>fpmcu_uart_en,usbpd_uart_en</alias>
-    <doc>Dummy control. Controlled by usbpd_uart_routing
-    instead.</doc>
-    <params interface="9" drv="na" map="onoff" clobber_ok="" />
-  </control>
-  <control>
     <name>jtag_vref_sel0</name>
     <alias>jtag_vref_sel1</alias>
     <doc>Dummy control. No way to change it.</doc>

@@ -496,6 +496,38 @@ class Servod(object):
     """
     self._drv_dict = {}
 
+  def _get_servo_specific_param(self, params, param_key, control_name):
+    """Get |param_key| from params by looking for servo specific params first.
+
+    Find the candidate servos.  Using servo_v4 with a servo_micro connected as
+    example, the following shows the priority for selecting the interface.
+
+    1. The full name. (e.g. - 'servo_v4_with_servo_micro_interface')
+    2. servo_micro_interface
+    3. servo_v4_interface
+    4. Fallback to the default, interface.
+
+    Args:
+      params: params dictionary for a control
+      param_key: identifier in the params dictionary to look for
+      control_name: control name the params correspond to
+
+    Returns:
+      The best suited param value for param_key given the servo type or
+      None if even the default is not defined.
+    """
+    candidates = [self._version]
+    candidates.extend(reversed(self._version.split('_with_')))
+    candidates = ['%s_%s' % (c, param_key) for c in candidates]
+    candidates.append(param_key)
+    for c in candidates:
+      if c in params:
+        self._logger.debug('Using %s parameter.', c)
+        return params[c]
+    self._logger.error('Unable to determine %s for %s', param_key, control_name)
+    self._logger.error('params: %r', params)
+    return None
+
   def _get_param_drv(self, control_name, is_get=True):
     """Get access to driver for a given control.
 
@@ -524,36 +556,22 @@ class Servod(object):
         return self._drv_dict[control_name]['set']
 
     params = self._syscfg.lookup_control_params(control_name, is_get)
-    if 'drv' not in params:
-      self._logger.error('Unable to determine driver for %s' % control_name)
-      raise ServodError("'drv' key not found in params dict")
-    if 'interface' not in params:
-      self._logger.error('Unable to determine interface for %s' % control_name)
-      raise ServodError("'interface' key not found in params dict")
 
-    # Find the candidate servos.  Using servo_v4 with a servo_micro connected as
-    # an example, the following shows the priority for selecting the interface.
-    #
-    # 1. The full name. (e.g. - 'servo_v4_with_servo_micro_interface')
-    # 2. servo_micro_interface
-    # 3. servo_v4_interface
-    # 4. Fallback to the default, interface.
-    candidates = [self._version]
-    candidates.extend(reversed(self._version.split('_with_')))
-
-    interface_id = 'unknown'
-    for c in candidates:
-      interface_name = '%s_interface' % c
-      if interface_name in params:
-        interface_id = params[interface_name]
-        self._logger.debug('Using %s parameter.' % interface_name)
-        break
-
-    # Use the default interface value if we couldn't find a more specific
-    # interface.
-    if interface_id == 'unknown':
-      interface_id = params['interface']
-      self._logger.debug('Using default interface parameter.')
+    # Get the most suitable drv given the servo instance.
+    drv_name = self._get_servo_specific_param(params, 'drv', control_name)
+    if drv_name == 'na':
+      # 'na' drv can be used to selectively turn controls into noops for
+      # a given servo hardware. Ensure that there is an interface.
+      params.setdefault('interface', 'servo')
+      self._logger.debug('Setting interface to default to %r for %r unless '
+                         ' defined  in params, as drv is %r.', 'servo',
+                         control_name, 'na')
+      # Setting input_type to str allows all inputs through enabling a true noop
+      params.update({'input_type': 'str'})
+    interface_id = self._get_servo_specific_param(params, 'interface',
+                                                  control_name)
+    if None in [drv_name, interface_id]:
+      raise ServodError('No drv/interface for control %r found' % control_name)
 
     if interface_id == 'servo':
       interface = self
@@ -561,7 +579,6 @@ class Servod(object):
       index = int(interface_id)
       interface = self._interface_list[index]
 
-    drv_name = params['drv']
     drv_module = getattr(servo_drv, drv_name)
     drv_class = getattr(drv_module, self._camel_case(drv_name))
     drv = drv_class(interface, params)
