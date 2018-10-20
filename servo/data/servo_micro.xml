@@ -9,12 +9,11 @@
   <include>
     <name>uart_common.xml</name>
   </include>
-
   <!-- Console GPIO interface -->
   <map>
     <name>onoff_vref_sel</name>
-    <doc>Determine VREF between pp3300, pp1800 and off.
-    Default is off</doc>
+    <doc>Determine VREF between pp3300, pp1800 and off. Default is
+    off</doc>
     <params off="0" pp3300="1" pp1800="2"></params>
   </map>
   <map>
@@ -22,7 +21,6 @@
     <doc>Enable alternate uart3 routing for PD</doc>
     <params off="0" samus="1" glados="2"></params>
   </map>
-
   <control>
     <name>uart1_en</name>
     <alias>ec_uart_en</alias>
@@ -58,15 +56,17 @@
   <control>
     <name>spi1_vref</name>
     <doc>VREF applied to SPI1</doc>
-    <params interface="6" drv="ec3po_gpio" names="SPI1_VREF_33, SPI1_VREF_18"
-    subtype="multi" map="onoff_vref_sel" init="off"></params>
+    <params interface="6" drv="ec3po_gpio"
+    names="SPI1_VREF_33, SPI1_VREF_18" subtype="multi"
+    map="onoff_vref_sel" init="off"></params>
   </control>
   <control>
     <name>spi2_vref</name>
     <alias>fw_wp_vref</alias>
     <doc>VREF applied to SPI2 (coreboot)</doc>
-    <params interface="6" drv="ec3po_gpio" names="SPI2_VREF_33, SPI2_VREF_18"
-    subtype="multi" map="onoff_vref_sel" init="off"></params>
+    <params interface="6" drv="ec3po_gpio"
+    names="SPI2_VREF_33, SPI2_VREF_18" subtype="multi"
+    map="onoff_vref_sel" init="off"></params>
   </control>
   <control>
     <name>servo_jtag_trst_dir</name>
@@ -113,20 +113,23 @@
   <control>
     <name>UART3_TX_SERVO_JTAG_TCK</name>
     <doc>UART3_TX_SERVO_JTAG_TCK</doc>
-    <params interface="6" drv="ec3po_gpio" name="UART3_TX_SERVO_JTAG_TCK"
-    subtype="single" map="onoff" init="off"></params>
+    <params interface="6" drv="ec3po_gpio"
+    name="UART3_TX_SERVO_JTAG_TCK" subtype="single" map="onoff"
+    init="off"></params>
   </control>
   <control>
     <name>UART3_RX_JTAG_BUFFER_TO_SERVO_TDO</name>
     <doc>UART3_RX_JTAG_BUFFER_TO_SERVO_TDO</doc>
-    <params interface="6" drv="ec3po_gpio" name="UART3_RX_JTAG_BUFFER_TO_SERVO_TDO"
-    subtype="single" map="onoff" init="off"></params>
+    <params interface="6" drv="ec3po_gpio"
+    name="UART3_RX_JTAG_BUFFER_TO_SERVO_TDO" subtype="single"
+    map="onoff" init="off"></params>
   </control>
   <control>
     <name>SERVO_JTAG_TDO_BUFFER_EN</name>
     <doc>SERVO_JTAG_TDO_BUFFER_EN</doc>
-    <params interface="6" drv="ec3po_gpio" name="SERVO_JTAG_TDO_BUFFER_EN"
-    subtype="single" map="onoff" init="off"></params>
+    <params interface="6" drv="ec3po_gpio"
+    name="SERVO_JTAG_TDO_BUFFER_EN" subtype="single" map="onoff"
+    init="off"></params>
   </control>
   <control>
     <name>SERVO_JTAG_TDI</name>
@@ -152,7 +155,6 @@
     <params interface="6" drv="ec3po_gpio" name="JTAG_BUFIN_EN_L"
     subtype="single" map="onoff_i" init="off"></params>
   </control>
-
   <!-- GPIO on expander settings -->
   <control>
     <name>fw_wp_en</name>
@@ -165,11 +167,11 @@
     <name>fw_wp</name>
     <doc>Firmware write-protect GPIO</doc>
     <!-- DUT_MFG_MODE read only -->
-    <params cmd="get" interface="2" drv="tca6416" slv="0x20"
-    port="0" offset="2" map="onoff_i"></params>
+    <params cmd="get" interface="2" drv="tca6416" slv="0x20" port="0"
+    offset="2" map="onoff_i"></params>
     <!-- FTDI_MFG_MODE write only -->
-    <params cmd="set" interface="2" drv="tca6416" slv="0x20"
-    port="0" offset="1" map="onoff_i"></params>
+    <params cmd="set" interface="2" drv="tca6416" slv="0x20" port="0"
+    offset="1" map="onoff_i"></params>
   </control>
   <control>
     <name>tp1</name>
@@ -201,7 +203,6 @@
     <params interface="2" drv="tca6416" slv="0x20" od="PU" port="0"
     offset="7" map="onoff_i" init="off"></params>
   </control>
-
   <control>
     <name>rec_mode</name>
     <doc>Google recovery mode</doc>
@@ -251,14 +252,14 @@
     <name>fw_wp_state</name>
     <doc>Used to turn fw wp off and on</doc>
     <params interface="servo" drv="fw_wp_servoflex" input_type="str"
-    fw_wp_vref="pp1800"/>
+    fw_wp_vref="pp1800" />
   </control>
-
   <!-- UART and CONSOLE settings -->
   <control>
     <name>uart3_pty</name>
     <alias>raw_usbpd_uart_pty</alias>
-    <doc>Legacy (v1) uart console. USART4: PA0/PA1 - Servo UART3</doc>
+    <doc>Legacy (v1) uart console. USART4: PA0/PA1 - Servo
+    UART3</doc>
     <params cmd="get" subtype="pty" interface="1" drv="uart">
     </params>
   </control>
@@ -276,7 +277,6 @@
     <params drv="uart" subtype="props" line_prop="baudrate"
     interface="1"></params>
   </control>
-
   <control>
     <name>uart2_pty</name>
     <alias>cpu_uart_pty</alias>
@@ -298,7 +298,6 @@
     <params drv="uart" subtype="props" line_prop="baudrate"
     interface="8"></params>
   </control>
-
   <control>
     <name>uart1_pty</name>
     <alias>raw_ec_uart_pty</alias>
@@ -320,90 +319,101 @@
     <params drv="uart" subtype="props" line_prop="baudrate"
     interface="7"></params>
   </control>
-
   <control>
     <name>raw_servo_console_pty</name>
     <doc>Servo's stm32 console.</doc>
     <params cmd="get" subtype="pty" interface="3" drv="uart">
     </params>
   </control>
-
   <control>
     <name>servo_micro_version</name>
     <doc>current fw version</doc>
-    <params cmd="get" subtype="version" interface="6" drv="ec3po_servo_micro"
-        map="print" init="print" clobber_ok=""></params>
+    <params cmd="get" subtype="version" interface="6"
+    drv="ec3po_servo_micro" map="print" init="print" clobber_ok="">
+    </params>
   </control>
-
   <!-- EC-3PO console interpreter linkup -->
   <control>
     <name>ec3po_servo_console</name>
     <alias>servo_console_pty</alias>
-    <doc>Servo micro console provided via EC-3PO console interpreter.</doc>
-    <params cmd="get" subtype="pty" interface="6" drv="uart"></params>
+    <doc>Servo micro console provided via EC-3PO console
+    interpreter.</doc>
+    <params cmd="get" subtype="pty" interface="6" drv="uart">
+    </params>
   </control>
   <control>
     <name>servo_ec3po_interp_connect</name>
-    <doc>State indicating if interpreter is listening to the servo console.</doc>
+    <doc>State indicating if interpreter is listening to the servo
+    console.</doc>
     <params interface="6" drv="ec3po_driver" map="onoff" init="on"
     subtype="interp_connect"></params>
   </control>
   <control>
     <name>ec3po_ec_console</name>
     <alias>ec_uart_pty</alias>
-    <doc>EC UART console provided via EC-3PO console interpreter.</doc>
-    <params cmd="get" subtype="pty" interface="10" drv="uart"></params>
+    <doc>EC UART console provided via EC-3PO console
+    interpreter.</doc>
+    <params cmd="get" subtype="pty" interface="10" drv="uart">
+    </params>
   </control>
   <control>
     <name>ec_ec3po_interp_connect</name>
-    <doc>State indicating if interpreter is listening to the EC UART.</doc>
+    <doc>State indicating if interpreter is listening to the EC
+    UART.</doc>
     <params interface="10" drv="ec3po_driver" map="onoff" init="on"
     subtype="interp_connect"></params>
   </control>
   <control>
     <name>ec3po_usbpd_console</name>
     <alias>usbpd_uart_pty</alias>
-    <doc>USB PD UART console provided via EC-3PO console interpreter.</doc>
-    <params cmd="get" subtype="pty" interface="9" drv="uart"></params>
+    <doc>USB PD UART console provided via EC-3PO console
+    interpreter.</doc>
+    <params cmd="get" subtype="pty" interface="9" drv="uart">
+    </params>
   </control>
   <control>
     <name>usbpd_ec3po_interp_connect</name>
-    <doc>State indicating if interpreter is listening to the usb pd UART.</doc>
+    <doc>State indicating if interpreter is listening to the usb pd
+    UART.</doc>
     <params interface="9" drv="ec3po_driver" map="onoff" init="on"
     subtype="interp_connect"></params>
   </control>
-
   <control>
     <name>usbpd_uart_routing</name>
     <doc>enable pd uart routing</doc>
     <params interface="6" drv="ec3po_servo_micro"
-    subtype="usbpd_console" map="usbpd_uart_map" clobber_ok=""></params>
+    subtype="usbpd_console" map="usbpd_uart_map" clobber_ok="">
+    </params>
   </control>
-
   <control>
     <name>jtag_buf_en</name>
     <alias>fpmcu_uart_en,usbpd_uart_en</alias>
-    <doc>Dummy control. Controlled by usbpd_uart_routing instead.</doc>
-    <params interface="9" drv="na" subtype="not_applicable" map="onoff"
-    clobber_ok="" />
+    <doc>Dummy control. Controlled by usbpd_uart_routing
+    instead.</doc>
+    <params interface="9" drv="na" map="onoff" clobber_ok="" />
   </control>
   <control>
     <name>jtag_vref_sel0</name>
     <alias>jtag_vref_sel1</alias>
     <doc>Dummy control. No way to change it.</doc>
-    <params interface="9" drv="na" subtype="not_applicable" input_type="str"
-    clobber_ok="" />
+    <params interface="9" drv="na" input_type="str" clobber_ok="" />
   </control>
-
   <!-- ITE EC firmware flashing support -->
   <control>
     <name>enable_ite_dfu</name>
-    <doc>Enable direct firmware update (DFU) over I2C mode on ITE IT8320 EC chip by sending special non-I2C waveforms over the I2C bus wires.</doc>
-    <params cmd="get" subtype="enable_ite_dfu" interface="6" drv="ec3po_servo_micro" input_type="str" clobber_ok=""></params>
+    <doc>Enable direct firmware update (DFU) over I2C mode on ITE
+    IT8320 EC chip by sending special non-I2C waveforms over the I2C
+    bus wires.</doc>
+    <params cmd="get" subtype="enable_ite_dfu" interface="6"
+    drv="ec3po_servo_micro" input_type="str" clobber_ok=""></params>
   </control>
   <control>
     <name>get_ite_chipid</name>
-    <doc>Verify that ITE IT8320 EC chip direct firmware update (DFU) mode is enabled by querying the EC over I2C for its CHIPID1 and CHIPID2 registers.  It will only respond over I2C when in DFU mode.</doc>
-    <params cmd="get" subtype="get_ite_chipid" interface="6" drv="ec3po_servo_micro" input_type="str" clobber_ok=""></params>
+    <doc>Verify that ITE IT8320 EC chip direct firmware update (DFU)
+    mode is enabled by querying the EC over I2C for its CHIPID1 and
+    CHIPID2 registers. It will only respond over I2C when in DFU
+    mode.</doc>
+    <params cmd="get" subtype="get_ite_chipid" interface="6"
+    drv="ec3po_servo_micro" input_type="str" clobber_ok=""></params>
   </control>
 </root>

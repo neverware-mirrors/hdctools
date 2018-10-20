@@ -4,9 +4,10 @@
   <control>
     <name>uart4_pty</name>
     <alias>raw_cr50_uart_pty,raw_usbpd_uart_pty</alias>
-    <doc>Pseudo-terminal (pty) thats connnected to cr50 uart console</doc>
-    <params cmd="get" subtype="pty" interface="1" drv="uart" clobber_ok=""
-    ></params>
+    <doc>Pseudo-terminal (pty) thats connnected to cr50 uart
+    console</doc>
+    <params cmd="get" subtype="pty" interface="1" drv="uart"
+    clobber_ok=""></params>
   </control>
   <!-- This control must be available prior to accessing the cr50 console over
        micro, so must be initialized prior to the cr50_version control (which
@@ -20,13 +21,16 @@
   <control>
     <name>ec3po_cr50_uart</name>
     <alias>ec3po_usbpd_uart_pty,cr50_uart_pty,usbpd_uart_pty</alias>
-    <doc>cr50 UART console provided via EC-3PO console interpreter.</doc>
-    <params cmd="get" subtype="pty" interface="9" drv="uart"></params>
+    <doc>cr50 UART console provided via EC-3PO console
+    interpreter.</doc>
+    <params cmd="get" subtype="pty" interface="9" drv="uart">
+    </params>
   </control>
   <control>
     <name>cr50_ec3po_interp_connect</name>
     <alias>usbpd_ec3po_interp_connect</alias>
-    <doc>State indicating if interpreter is listening to the EC UART.</doc>
+    <doc>State indicating if interpreter is listening to the EC
+    UART.</doc>
     <params interface="9" drv="ec3po_driver" map="onoff" init="on"
     subtype="interp_connect" clobber_ok=""></params>
   </control>
@@ -34,22 +38,22 @@
     <name>uart4_baudrate</name>
     <alias>cr50_uart_baudrate,usbpd_console_baudrate</alias>
     <doc>Baudrate for cr50 uart console</doc>
-    <params drv="uart" subtype="props" line_prop="baudrate" clobber_ok=""
-    interface="1"></params>
+    <params drv="uart" subtype="props" line_prop="baudrate"
+    clobber_ok="" interface="1"></params>
   </control>
   <control>
     <name>uart4_parity</name>
     <alias>cr50_uart_parity,usbpd_console_parity</alias>
     <doc>Parity for cr50 uart console</doc>
-    <params drv="uart" subtype="props" line_prop="parity" clobber_ok=""
-    interface="1" map="uart_parity"></params>
+    <params drv="uart" subtype="props" line_prop="parity"
+    clobber_ok="" interface="1" map="uart_parity"></params>
   </control>
   <control>
     <name>uart4_sbits</name>
     <alias>cr50_uart_sbits,usbpd_console_sbits</alias>
     <doc>Number of stop bits for cr50 uart console</doc>
-    <params drv="uart" subtype="props" line_prop="sbits" clobber_ok=""
-    interface="1" map="uart_sbits"></params>
+    <params drv="uart" subtype="props" line_prop="sbits"
+    clobber_ok="" interface="1" map="uart_sbits"></params>
   </control>
   <control>
     <name>uart4_bits</name>
@@ -60,24 +64,24 @@
   </control>
   <control>
     <name>cr50_uart_timeout</name>
-    <doc>Timeout value for waiting cr50 console response of issuing an
-    EC command.</doc>
+    <doc>Timeout value for waiting cr50 console response of issuing
+    an EC command.</doc>
     <params subtype="uart_timeout" interface="9" drv="uart"
     input_type="float"></params>
   </control>
   <!-- Cr50 Console Automation Controls -->
   <control>
     <name>cr50_uart_cmd</name>
-    <doc>Set to send command to the Cr50 console. Get to obtain the matched
-    results with the regular expression of cr50_uart_regexp.</doc>
-    <params subtype="uart_cmd" interface="9" drv="uart" input_type="str"
-    clobber_ok=""></params>
+    <doc>Set to send command to the Cr50 console. Get to obtain the
+    matched results with the regular expression of
+    cr50_uart_regexp.</doc>
+    <params subtype="uart_cmd" interface="9" drv="uart"
+    input_type="str" clobber_ok=""></params>
   </control>
   <control>
     <name>cr50_uart_multicmd</name>
     <doc>Set to send multiple commands to the Cr50 console.</doc>
-    <params subtype="not_applicable" interface="9" drv="na"
-    map="na" cmd="get" clobber_ok=""></params>
+    <params interface="9" drv="na" cmd="get" clobber_ok=""></params>
     <params subtype="uart_multicmd" interface="9" drv="uart"
     input_type="str" cmd="set" clobber_ok=""></params>
   </control>
@@ -96,7 +100,8 @@
   </control>
   <control>
     <name>cr50_uart_stream</name>
-    <doc>Cr50 console stream collected while cr50_uart_capture on</doc>
+    <doc>Cr50 console stream collected while cr50_uart_capture
+    on</doc>
     <params cmd="get" subtype="uart_stream" interface="9" drv="uart"
     clobber_ok=""></params>
   </control>
@@ -104,8 +109,7 @@
   <control>
     <name>cr50_reboot</name>
     <doc>reboot cr50</doc>
-    <params cmd="get" subtype="not_applicable" interface="9" drv="na"
-    map="na" clobber_ok=""></params>
+    <params cmd="get" interface="9" drv="na" clobber_ok=""></params>
     <params cmd="set" subtype="cr50_reboot" interface="9" drv="cr50"
     map="onoff" clobber_ok=""></params>
   </control>
@@ -118,8 +122,8 @@
   <control>
     <name>cr50_testlab</name>
     <doc>Cr50 testlab state</doc>
-    <params subtype="ccd_testlab" interface="9" drv="cr50" input_type="str"
-    clobber_ok=""></params>
+    <params subtype="ccd_testlab" interface="9" drv="cr50"
+    input_type="str" clobber_ok=""></params>
   </control>
   <control>
     <name>cr50_reset_count</name>
@@ -143,9 +147,11 @@
   <control>
     <name>uart4_on_flex_en</name>
     <alias>cr50_uart_on_flex_en,usbpd_uart_on_flex_en</alias>
-    <doc>Enables JTAG buffer on servo flex ... repurposed to uart4.</doc>
-    <params interface="2" servo_v3_interface="6" drv="pca95xx" subtype="gpio"
-    slv="0x26" offset="3" map="onoff_i" init="on" clobber_ok=""></params>
+    <doc>Enables JTAG buffer on servo flex ... repurposed to
+    uart4.</doc>
+    <params interface="2" servo_v3_interface="6" drv="pca95xx"
+    subtype="gpio" slv="0x26" offset="3" map="onoff_i" init="on"
+    clobber_ok=""></params>
   </control>
   <control>
     <name>jtag_buf_en</name>

@@ -21,9 +21,11 @@ class na(hw_driver.HwDriver):
     """Constructor."""
     super(na, self).__init__(interface, params)
 
-  def _Get_not_applicable(self):
+  def get(self):
     """Return not_applicate"""
+    self._logger.debug('na drv called. returning 0.')
     return 0  # not_applicable
 
-  def _Set_not_applicable(self, value):
+  def set(self, value):
     """Do nothing"""
+    self._logger.debug('na drv called. setting nothing.')

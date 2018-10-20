@@ -10,13 +10,14 @@
   <control>
     <name>power_state</name>
     <doc>Used to turn the DUT off and on</doc>
-    <params drv="cros_ec_pd_softrec_power" clobber_ok="" reset_recovery="0.6"
-    shutdown_delay="11.0" boot_to_rec_screen_delay="5.0" />
+    <params drv="cros_ec_pd_softrec_power" clobber_ok=""
+    reset_recovery="0.6" shutdown_delay="11.0"
+    boot_to_rec_screen_delay="5.0" />
   </control>
   <control>
     <name>fw_wp_state</name>
     <doc>Used to turn fw wp off and on</doc>
-    <params clobber_ok="" fw_wp_vref="pp3300"/>
+    <params clobber_ok="" fw_wp_vref="pp3300" />
   </control>
   <control>
     <name>dev_mode</name>
@@ -44,21 +45,24 @@
   <control>
     <name>uart4_pty</name>
     <alias>raw_usbpd_uart_pty</alias>
-    <doc>Psuedo-terminal (pty) thats connnected to USB PD MCU's
-     uart console</doc>
-    <params cmd="get" subtype="pty" interface="1" drv="uart" clobber_ok=""
-    ></params>
+    <doc>Psuedo-terminal (pty) thats connnected to USB PD MCU's uart
+    console</doc>
+    <params cmd="get" subtype="pty" interface="1" drv="uart"
+    clobber_ok=""></params>
   </control>
   <!-- EC-3PO console interpreter for USB PD -->
   <control>
     <name>ec3po_usbpd_uart_pty</name>
     <alias>usbpd_uart_pty</alias>
-    <doc>USBPD UART console provided via EC-3PO console interpreter.</doc>
-    <params cmd="get" subtype="pty" interface="9" drv="uart"></params>
+    <doc>USBPD UART console provided via EC-3PO console
+    interpreter.</doc>
+    <params cmd="get" subtype="pty" interface="9" drv="uart">
+    </params>
   </control>
   <control>
     <name>usbpd_ec3po_interp_connect</name>
-    <doc>State indicating if interpreter is listening to the EC UART.</doc>
+    <doc>State indicating if interpreter is listening to the EC
+    UART.</doc>
     <params interface="9" drv="ec3po_driver" map="onoff" init="on"
     subtype="interp_connect" clobber_ok=""></params>
   </control>
@@ -66,22 +70,22 @@
     <name>uart4_baudrate</name>
     <alias>usbpd_uart_baudrate</alias>
     <doc>Baudrate for CPU's uart console</doc>
-    <params drv="uart" subtype="props" line_prop="baudrate" clobber_ok=""
-    interface="1"></params>
+    <params drv="uart" subtype="props" line_prop="baudrate"
+    clobber_ok="" interface="1"></params>
   </control>
   <control>
     <name>uart4_parity</name>
     <alias>usbpd_uart_parity</alias>
     <doc>Parity for CPU's uart console</doc>
-    <params drv="uart" subtype="props" line_prop="parity" clobber_ok=""
-    interface="1" map="uart_parity"></params>
+    <params drv="uart" subtype="props" line_prop="parity"
+    clobber_ok="" interface="1" map="uart_parity"></params>
   </control>
   <control>
     <name>uart4_sbits</name>
     <alias>usbpd_uart_sbits</alias>
     <doc>Number of stop bits for CPU's uart console</doc>
-    <params drv="uart" subtype="props" line_prop="sbits" clobber_ok=""
-    interface="1" map="uart_sbits"></params>
+    <params drv="uart" subtype="props" line_prop="sbits"
+    clobber_ok="" interface="1" map="uart_sbits"></params>
   </control>
   <control>
     <name>uart4_bits</name>
@@ -93,17 +97,15 @@
   <!-- USB PD UART Automation Controls -->
   <control>
     <name>usbpd_uart_cmd</name>
-    <doc>Set to send command to USBPD UART. Get to obtain the
-    matched results with the regular expression of
-    usbpd_uart_regexp.</doc>
+    <doc>Set to send command to USBPD UART. Get to obtain the matched
+    results with the regular expression of usbpd_uart_regexp.</doc>
     <params subtype="uart_cmd" interface="9" drv="uart"
     input_type="str"></params>
   </control>
   <control>
     <name>usbpd_uart_multicmd</name>
     <doc>Set to send multiple commands to USB PD UART.</doc>
-    <params subtype="not_applicable" interface="9" drv="na"
-    map="na" cmd="get"></params>
+    <params interface="9" drv="na" cmd="get"></params>
     <params subtype="uart_multicmd" interface="9" drv="uart"
     input_type="str" cmd="set"></params>
   </control>
@@ -132,8 +134,8 @@
     <name>usbpd_uart_stream</name>
     <doc>USB PD console stream captured while usbpd_uart_capture is
     set to 'on'</doc>
-    <params cmd="get" subtype="uart_stream" interface="9"
-    drv="uart"></params>
+    <params cmd="get" subtype="uart_stream" interface="9" drv="uart">
+    </params>
   </control>
   <!-- Overrides for jtag buffers on servo V2 & flex above -->
   <control>
@@ -145,20 +147,22 @@
   <control>
     <name>uart4_on_flex_en</name>
     <alias>usbpd_uart_on_flex_en</alias>
-    <doc>Enables JTAG buffer on servo flex ... repurposed to uart4.</doc>
-    <params interface="2" servo_v3_interface="6" drv="pca95xx" subtype="gpio"
-    slv="0x26" offset="3" map="onoff_i" init="on" clobber_ok=""></params>
+    <doc>Enables JTAG buffer on servo flex ... repurposed to
+    uart4.</doc>
+    <params interface="2" servo_v3_interface="6" drv="pca95xx"
+    subtype="gpio" slv="0x26" offset="3" map="onoff_i" init="on"
+    clobber_ok=""></params>
   </control>
   <control>
     <name>ec_chip</name>
     <doc>EC chip name (read-only)</doc>
     <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
-    drv="cros_chip" chip="mec1322"/>
+    drv="cros_chip" chip="mec1322" />
   </control>
   <control>
     <name>usbpd_chip</name>
     <doc>USB PD chip name (read-only)</doc>
     <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
-    drv="cros_chip" chip="stm32"/>
+    drv="cros_chip" chip="stm32" />
   </control>
 </root>

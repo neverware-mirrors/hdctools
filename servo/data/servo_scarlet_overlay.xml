@@ -18,12 +18,12 @@
     <name>power_state</name>
     <doc>Used to turn the DUT off and on</doc>
     <params clobber_ok="" shutdown_delay="3.0" reset_recovery="2.0"
-    warm_reset_can_hold_ap="yes" wait_ext_is_fake="yes"/>
+    warm_reset_can_hold_ap="yes" wait_ext_is_fake="yes" />
   </control>
   <control>
     <name>lid_open</name>
     <doc>fake lid for products without one</doc>
-    <params subtype="not_applicable" interface="servo" drv="na" map="na"
-    init="not_applicable" clobber_ok=""></params>
+    <params interface="servo" drv="na" init="not_applicable"
+    clobber_ok=""></params>
   </control>
 </root>

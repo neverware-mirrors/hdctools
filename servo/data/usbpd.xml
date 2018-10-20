@@ -2,21 +2,25 @@
   <!-- USB PD UART Controls -->
   <control>
     <name>raw_usbpd_uart_pty</name>
-    <doc>Psuedo-terminal (pty) thats connnected to USB PD MCU's
-    uart console</doc>
-    <params cmd="get" subtype="pty" interface="6" drv="uart" clobber_ok=""
-    servo_v4_interface="1" servo_micro_interface="1"></params>
+    <doc>Psuedo-terminal (pty) thats connnected to USB PD MCU's uart
+    console</doc>
+    <params cmd="get" subtype="pty" interface="6" drv="uart"
+    clobber_ok="" servo_v4_interface="1" servo_micro_interface="1">
+    </params>
   </control>
   <!-- EC-3PO console interpreter for USB PD -->
   <control>
     <name>ec3po_usbpd_uart_pty</name>
     <alias>usbpd_uart_pty</alias>
-    <doc>USBPD UART console provided via EC-3PO console interpreter.</doc>
-    <params cmd="get" subtype="pty" interface="9" drv="uart"></params>
+    <doc>USBPD UART console provided via EC-3PO console
+    interpreter.</doc>
+    <params cmd="get" subtype="pty" interface="9" drv="uart">
+    </params>
   </control>
   <control>
     <name>usbpd_ec3po_interp_connect</name>
-    <doc>State indicating if interpreter is listening to the EC UART.</doc>
+    <doc>State indicating if interpreter is listening to the EC
+    UART.</doc>
     <params interface="9" drv="ec3po_driver" map="onoff" init="on"
     subtype="interp_connect" clobber_ok=""></params>
   </control>
@@ -29,8 +33,8 @@
   <control>
     <name>usbpd_uart_parity</name>
     <doc>Parity for USB PD MCU's uart console</doc>
-    <params drv="uart" subtype="props" line_prop="parity" clobber_ok=""
-    interface="6" map="uart_parity"></params>
+    <params drv="uart" subtype="props" line_prop="parity"
+    clobber_ok="" interface="6" map="uart_parity"></params>
   </control>
   <control>
     <name>usbpd_uart_sbits</name>
@@ -41,23 +45,21 @@
   <control>
     <name>usbpd_uart_bits</name>
     <doc>Number of data bits for USB PD MCU's uart console</doc>
-    <params drv="uart" subtype="props" line_prop="bits"
-    interface="6" map="uart_bits"></params>
+    <params drv="uart" subtype="props" line_prop="bits" interface="6"
+    map="uart_bits"></params>
   </control>
   <!-- USB PD UART Automation Controls -->
   <control>
     <name>usbpd_uart_cmd</name>
-    <doc>Set to send command to USBPD UART. Get to obtain the
-    matched results with the regular expression of
-    usbpd_uart_regexp.</doc>
+    <doc>Set to send command to USBPD UART. Get to obtain the matched
+    results with the regular expression of usbpd_uart_regexp.</doc>
     <params subtype="uart_cmd" interface="9" drv="uart"
     input_type="str"></params>
   </control>
   <control>
     <name>usbpd_uart_multicmd</name>
     <doc>Set to send multiple commands to USB PD UART.</doc>
-    <params subtype="not_applicable" interface="9" drv="na"
-    map="na" cmd="get"></params>
+    <params interface="9" drv="na" cmd="get"></params>
     <params subtype="uart_multicmd" interface="9" drv="uart"
     input_type="str" cmd="set"></params>
   </control>
@@ -86,8 +88,8 @@
     <name>usbpd_uart_stream</name>
     <doc>USB PD console stream captured while usbpd_uart_capture is
     set to 'on'</doc>
-    <params cmd="get" subtype="uart_stream" interface="9"
-    drv="uart"></params>
+    <params cmd="get" subtype="uart_stream" interface="9" drv="uart">
+    </params>
   </control>
   <!-- USB PD UART Buffers & VREF Controls -->
   <control>

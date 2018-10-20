@@ -20,8 +20,7 @@
   <control>
     <name>ec_uart_multicmd</name>
     <doc>Set to send multiple commands to EC UART.</doc>
-    <params subtype="not_applicable" interface="3" drv="na"
-    map="na" cmd="get"></params>
+    <params interface="3" drv="na" cmd="get"></params>
     <params subtype="uart_multicmd" interface="3" drv="ec"
     input_type="str" cmd="set"></params>
   </control>
@@ -36,32 +35,34 @@
     <name>ec_uart_stream</name>
     <doc>Ec uart stream collected while ec_uart_capture is set to
     'on'</doc>
-    <params cmd="get" subtype="uart_stream" interface="3"
-    drv="uart"></params>
+    <params cmd="get" subtype="uart_stream" interface="3" drv="uart">
+    </params>
   </control>
   <control>
     <name>ec_uart_timeout</name>
-    <doc>Timeout value for waiting EC UART response of issuing an
-    EC command.</doc>
+    <doc>Timeout value for waiting EC UART response of issuing an EC
+    command.</doc>
     <params subtype="uart_timeout" interface="3" drv="ec"
     input_type="float"></params>
   </control>
   <control>
     <name>raw_ec_uart_pty</name>
-    <doc>Pseudo-terminal (pty) thats connected to uart
-    console</doc>
+    <doc>Pseudo-terminal (pty) thats connected to uart console</doc>
     <params cmd="get" interface="2" subtype="pty" drv="uart">
     </params>
   </control>
   <control>
     <name>ec3po_ec_console</name>
     <alias>ec_uart_pty</alias>
-    <doc>EC UART console provided via EC-3PO console interpreter.</doc>
-    <params cmd="get" subtype="pty" interface="3" drv="uart"></params>
+    <doc>EC UART console provided via EC-3PO console
+    interpreter.</doc>
+    <params cmd="get" subtype="pty" interface="3" drv="uart">
+    </params>
   </control>
   <control>
     <name>ec_ec3po_interp_connect</name>
-    <doc>State indicating if interpreter is listening to the EC UART.</doc>
+    <doc>State indicating if interpreter is listening to the EC
+    UART.</doc>
     <params interface="3" drv="ec3po_driver" map="onoff" init="on"
     subtype="interp_connect"></params>
   </control>
@@ -86,8 +87,8 @@
   <control>
     <name>ec_uart_bits</name>
     <doc>Number of data bits for CPU's uart console</doc>
-    <params drv="uart" subtype="props" line_prop="bits"
-    interface="2" map="uart_bits"></params>
+    <params drv="uart" subtype="props" line_prop="bits" interface="2"
+    map="uart_bits"></params>
   </control>
   <!-- GPIOS -->
   <control>
@@ -172,8 +173,7 @@
   <control>
     <name>pd_role</name>
     <doc>Plankton PD role</doc>
-    <params interface="3" drv="plankton" subtype="pd_role">
-    </params>
+    <params interface="3" drv="plankton" subtype="pd_role"></params>
   </control>
   <control>
     <name>pd_polarity</name>
@@ -184,21 +184,19 @@
   <control>
     <name>pd_flags</name>
     <doc>Plankton PD flags</doc>
-    <params interface="3" drv="plankton" subtype="pd_flags">
-    </params>
+    <params interface="3" drv="plankton" subtype="pd_flags"></params>
   </control>
   <control>
     <name>pd_state</name>
     <doc>Plankton PD state string</doc>
-    <params interface="3" drv="plankton" subtype="pd_state">
-    </params>
+    <params interface="3" drv="plankton" subtype="pd_state"></params>
   </control>
   <!-- IO expander -->
   <control>
     <name>io_expander_input</name>
     <doc>IO expander reg 0: input</doc>
-    <params interface="3" drv="plankton"
-    subtype="io_expander_input"></params>
+    <params interface="3" drv="plankton" subtype="io_expander_input">
+    </params>
   </control>
   <control>
     <name>io_expander_output</name>
@@ -209,8 +207,8 @@
   <control>
     <name>io_expander_mask</name>
     <doc>IO expander reg 3: input mask</doc>
-    <params interface="3" drv="plankton"
-    subtype="io_expander_mask"></params>
+    <params interface="3" drv="plankton" subtype="io_expander_mask">
+    </params>
   </control>
   <control>
     <name>usb_dn_pwren</name>

@@ -4,7 +4,7 @@
     <name>ec_uart_capture</name>
     <doc>ec_uart_capture</doc>
     <params subtype="uart_capture" interface="10" drv="uart"
-   map="onoff"></params>
+    map="onoff"></params>
   </control>
   <control>
     <name>ec_uart_cmd</name>
@@ -16,8 +16,7 @@
   <control>
     <name>ec_uart_multicmd</name>
     <doc>Set to send multiple commands to EC UART.</doc>
-    <params subtype="not_applicable" interface="10" drv="na"
-    map="na" cmd="get"></params>
+    <params interface="10" drv="na" cmd="get"></params>
     <params subtype="uart_multicmd" interface="10" drv="uart"
     input_type="str" cmd="set"></params>
   </control>
@@ -30,40 +29,42 @@
   </control>
   <control>
     <name>ec_uart_stream</name>
-    <doc>Ec uart stream collected while ec_uart_capture is set to 'on'</doc>
-    <params cmd="get" subtype="uart_stream" interface="10" drv="uart"></params>
+    <doc>Ec uart stream collected while ec_uart_capture is set to
+    'on'</doc>
+    <params cmd="get" subtype="uart_stream" interface="10"
+    drv="uart"></params>
   </control>
   <control>
     <name>ec_uart_timeout</name>
-    <doc>Timeout value for waiting EC UART response of issuing an
-    EC command.</doc>
+    <doc>Timeout value for waiting EC UART response of issuing an EC
+    command.</doc>
     <params subtype="uart_timeout" interface="10" drv="uart"
     input_type="float"></params>
   </control>
   <control>
     <name>login</name>
-    <doc>Query if AP UART session is logged in. Ask to login/logout of a session
-    by calling login:yes and login:no</doc>
+    <doc>Query if AP UART session is logged in. Ask to login/logout
+    of a session by calling login:yes and login:no</doc>
     <params map="yesno" subtype="login" interface="8" drv="ap">
     </params>
   </control>
   <control>
     <name>login_username</name>
     <doc>Username used to log into a session.</doc>
-    <params input_type="str" subtype="username" interface="8" drv="ap">
-    </params>
+    <params input_type="str" subtype="username" interface="8"
+    drv="ap"></params>
   </control>
   <control>
     <name>login_password</name>
     <doc>Password used to log into a session.</doc>
-    <params input_type="str" subtype="password" interface="8" drv="ap">
-    </params>
+    <params input_type="str" subtype="password" interface="8"
+    drv="ap"></params>
   </control>
   <control>
     <name>ec_system_powerstate</name>
     <doc>The current power state according to the EC.</doc>
-    <params cmd="get" subtype="system_powerstate" interface="10" drv="ec">
-    </params>
+    <params cmd="get" subtype="system_powerstate" interface="10"
+    drv="ec"></params>
   </control>
   <control>
     <name>ec_gpio</name>
@@ -83,12 +84,11 @@
     <params cmd="get" subtype="active_copy" interface="10" drv="ec"
     input_type="str"></params>
   </control>
-
   <control>
     <name>cpu_uart_capture</name>
     <doc>cpu_uart_capture</doc>
     <params subtype="uart_capture" interface="8" drv="uart"
-            map="onoff"></params>
+    map="onoff"></params>
   </control>
   <control>
     <name>cpu_uart_cmd</name>
@@ -106,13 +106,15 @@
   </control>
   <control>
     <name>cpu_uart_stream</name>
-    <doc>Cpu uart stream collected while cpu_uart_capture is set to 'on'</doc>
-    <params cmd="get" subtype="uart_stream" interface="8" drv="uart"></params>
+    <doc>Cpu uart stream collected while cpu_uart_capture is set to
+    'on'</doc>
+    <params cmd="get" subtype="uart_stream" interface="8" drv="uart">
+    </params>
   </control>
   <control>
     <name>cpu_uart_timeout</name>
-    <doc>Timeout value for waiting CPU UART response of issuing an
-    EC command.</doc>
+    <doc>Timeout value for waiting CPU UART response of issuing an EC
+    command.</doc>
     <params subtype="uart_timeout" interface="8" drv="uart"
     input_type="float"></params>
   </control>

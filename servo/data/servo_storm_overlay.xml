@@ -10,12 +10,12 @@
   <control>
     <name>lid_open</name>
     <doc>fake lid for products without one</doc>
-    <params subtype="not_applicable" interface="servo" drv="na" map="na"
-    clobber_ok=""></params>
+    <params interface="servo" drv="na" clobber_ok=""></params>
   </control>
   <control>
     <name>power_state</name>
     <doc>Used to turn the DUT off and on</doc>
-    <params cmd="set" interface="servo" drv="storm_power" input_type="str"/>
+    <params cmd="set" interface="servo" drv="storm_power"
+    input_type="str" />
   </control>
 </root>
