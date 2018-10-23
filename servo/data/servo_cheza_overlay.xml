@@ -30,10 +30,6 @@
   </control>
 
   <!--
-    Add a massive shutdown_delay because other similar boards have it, so we
-    probably need it too.  Speculation is that this is due to b/76229658,
-    AKA: 'Cr50 drops a bunch of characters from EC uart on "apshutdown"'.
-
     The 'reset_recovery="0.5"' seems redundant since it's already in
     ec_common.xml (which is included by arm_ec_common.xml), but for some reason
     everyone else likes to put it here so I guess we should too?
@@ -41,7 +37,7 @@
   <control>
     <name>power_state</name>
     <doc>Used to turn the DUT off and on</doc>
-    <params clobber_ok="" shutdown_delay="11.0" reset_recovery="0.5"/>
+    <params clobber_ok="" shutdown_delay="4.5" reset_recovery="0.5"/>
   </control>
 
   <!--
