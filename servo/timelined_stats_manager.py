@@ -67,7 +67,6 @@ class TimelinedStatsManager(stats_manager.StatsManager):
     In order to preserve the balanced timeline adding invidual samples is
     discouraged as it might result in uninteded behavior. If you find yourself
     in need of this function, please implement it/raise a bug.
-
     """
     raise stats_manager.StatsManagerError('TimelinedStatsManager does not '
                                           'support AddSample. Use AddSamples.')
@@ -103,12 +102,14 @@ class TimelinedStatsManager(stats_manager.StatsManager):
     for domain, sample in samples:
       super(TimelinedStatsManager, self).AddSample(domain, sample)
 
-  def TrimSamples(self, tstart=None, tend=None):
-    """Trim raw data to [tstart, tend].
+  def TrimSamples(self, tstart=None, tend=None, padding=0):
+    """Trim raw data to [tstart + padding, tend + padding].
 
     Args:
       tstart: first timestamp to include. Seconds since epoch
       tend: last timestamp to include. Seconds since epoch
+      padding: add padding to tstart and tend to manipulate which data points to
+               trim and which to keep. Seconds since epoch
     """
     if tstart is None and tend is None:
       # Avoid doing any work if there will be no trimming.
@@ -117,8 +118,10 @@ class TimelinedStatsManager(stats_manager.StatsManager):
     timeline = numpy.array(self._data[self._tkey])
     if tstart is None:
       tstart = timeline[0]
+    tstart += padding
     if tend is None:
       tend = timeline[-1]
+    tend += padding
     # pylint: disable=W0212
     for domain, samples in self._data.iteritems():
       sample_arr = numpy.array(samples)

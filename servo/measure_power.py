@@ -84,7 +84,10 @@ class ServodPowerTracker(threading.Thread):
       raise PowerTrackerError(msg)
 
   def run(self):
-    """run power collection thread by querying all |_ctrls| at |_rate| rate."""
+    """run power collection thread by querying all |_ctrls| at |_rate| rate.
+
+    Query all |_ctrls| and take timestamp once at the start of |_rate| interval.
+    """
     while not self._stop_signal.is_set():
       sample_tuples, duration = self._sample_ctrls(self._ctrls)
       self._stats.AddSamples(sample_tuples)
@@ -145,8 +148,9 @@ class HighResServodPowerTracker(ServodPowerTracker):
   def run(self):
     """run power collection thread.
 
-    Query all |_ctrls| as much as possible during |_rate| before reporting the
-    mean of those samples as one data point.
+    Query all |_ctrls| as much as possible during |_rate| interval before
+    reporting the mean of those samples as one data point. Timestamp is taken at
+    the end of |_rate| interval.
     """
     while not self._stop_signal.is_set():
       start = time.time()
@@ -167,6 +171,28 @@ class HighResServodPowerTracker(ServodPowerTracker):
       self._stats.AddSamples(samples)
       # Sleep until the end of the sample rate
       self._stop_signal.wait(max(0, end - time.time()))
+
+  def process_measurement(self, tstart=None, tend=None):
+    """Process the measurement by calculating stats.
+
+    Args:
+      tstart: first timestamp to include. Seconds since epoch
+      tend: last timestamp to include. Seconds since epoch
+
+    Returns:
+      StatsManager object containing info from the run
+    """
+    # Each data point is the mean of all samples taken during |_rate| interval,
+    # and the timestamp of the data point is taken at the end of the |_rate|
+    # interval. To ensure that we keep all the data points with at least half of
+    # their samples within [tstart, tend], add padding = |_rate| / 2.
+    # tstart: add the padding to discard data points with less than half samples
+    #         within [tstart, tend].
+    # tend: add the padding to avoid losing data points that have at least half
+    #       of samples within [tstart, tend].
+    self._stats.TrimSamples(tstart, tend, self._rate / 2)
+    self._stats.CalculateStats()
+    return self._stats
 
 
 class OnboardINAPowerTracker(HighResServodPowerTracker):

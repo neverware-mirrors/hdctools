@@ -105,5 +105,24 @@ class TestTimelinedStatsManager(unittest.TestCase):
       # Verify that all domains were not trimmed
       self.assertEqual(len(orig_samples), len(samples))
 
+  def test_TrimSamplesWithPadding(self):
+    """Ensure that trimming with padding works as expected."""
+    tstart = time.time()
+    time.sleep(0.01)
+    self.data.AddSamples([('A', 10)])
+    time.sleep(0.02)
+    self.data.AddSamples([('A', 23)])
+    time.sleep(0.01)
+    tend = time.time()
+    time.sleep(0.01)
+    self.data.AddSamples([('A', 20)])
+    self.data.TrimSamples(tstart=tstart, tend=tend, padding=0.02)
+    self.data.CalculateStats()
+    # Verify that only the samples between the timestamps are left
+    self.assertEqual([23, 20], self.data._data['A'])
+    for samples in self.data._data.itervalues():
+      # Verify that all domains were trimmed to size 2
+      self.assertEqual(2, len(samples))
+
 if __name__ == '__main__':
   unittest.main()
