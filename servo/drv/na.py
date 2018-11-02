@@ -23,8 +23,8 @@ class na(hw_driver.HwDriver):
 
   def get(self):
     """Return not_applicate"""
-    self._logger.debug('na drv called. returning 0.')
-    return 0  # not_applicable
+    self._logger.debug("na drv called. returning 'not_applicable'.")
+    return 'not_applicable'
 
   def set(self, value):
     """Do nothing"""
