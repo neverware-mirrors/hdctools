@@ -160,8 +160,7 @@ class PowerStateDriver(hw_driver.HwDriver):
       self._power_on(self.REC_ON_FORCE_MRC)
     else:
       raise ValueError("Invalid power_state setting: '%s'. Try one of "
-                       "'%s', '%s', '%s', '%s', '%s', '%s', or '%s'." %
+                       "'%s', '%s', '%s', '%s', '%s', or '%s'." %
                        (statename, self._STATE_ON, self._STATE_OFF,
                         self._STATE_REC_MODE, self._STATE_FASTBOOT,
-                        self._STATE_RESET_CYCLE, self._STATE_CCD_RESET,
-                        self._STATE_REC_FORCE_MRC))
+                        self._STATE_RESET_CYCLE, self._STATE_REC_FORCE_MRC))
