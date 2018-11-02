@@ -137,12 +137,6 @@
     <params cmd="get" subtype="devid" interface="9" drv="cr50"
     input_type="str" clobber_ok=""></params>
   </control>
-  <control>
-    <name>cr50_version</name>
-    <doc>current cr50 version</doc>
-    <params cmd="get" subtype="version" interface="9" drv="cr50"
-    map="print" init="print" clobber_ok=""></params>
-  </control>
   <!-- cr50 UART Buffers & VREF Controls -->
   <control>
     <name>uart4_on_flex_en</name>
@@ -159,5 +153,11 @@
     <doc>Enabled JTAG buffer on servo ... re-purposed to uart4.</doc>
     <params ccd_cr50_drv="na" servo_micro_drv="na" clobber_ok=""
     init="on"></params>
+  </control>
+  <control>
+    <name>cr50_version</name>
+    <doc>current cr50 version</doc>
+    <params cmd="get" subtype="version" interface="9" drv="cr50"
+    map="print" init="print" clobber_ok=""></params>
   </control>
 </root>
