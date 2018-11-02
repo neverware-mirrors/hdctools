@@ -33,7 +33,7 @@ class crosEcHardrecPower(cros_ec_power.CrosECPower):
   def _power_on_rec_force_mrc(self):
     """Power on with recovery mode, forcing memory training."""
     self._interface.set('rec_mode', self.REC_ON)
-    self._interface.power_key(secs=self._HW_REINIT_SECS)
+    self._interface.set('power_key', self._HW_REINIT_SECS)
     self._interface.set('rec_mode', self.REC_OFF)
 
   def _power_on(self, rec_mode):
