@@ -305,7 +305,7 @@
     <doc>2to1 mux select for USB port (vert TYPE A/J3). Set either
     'dut_sees_usbkey' or 'servo_sees_usbkey'</doc>
     <params interface="1" drv="gpio" chip="0" offset="11"
-    map="usbkey" init="servo_sees_usbkey"></params>
+    map="usbkey" init="dut_sees_usbkey"></params>
   </control>
   <control>
     <name>prtctl2_pwren</name>
