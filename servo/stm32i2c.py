@@ -118,17 +118,17 @@ class Si2cBus(i2c_base.BaseI2CBus):
       raise
 
     # Read back response if necessary.
-    bytes = self._susb._read_ep.read(read_count + 4, self._susb.TIMEOUT_MS)
+    data = self._susb._read_ep.read(read_count + 4, self._susb.TIMEOUT_MS)
 
-    if len(bytes) < (read_count + 4):
+    if len(data) < (read_count + 4):
       raise Si2cError('Read status failed.')
 
-    if bytes[0] != 0 or bytes[1] != 0:
-      raise Si2cError('Read status failed: 0x%02x%02x' % (bytes[1], bytes[0]))
+    if data[0] != 0 or data[1] != 0:
+      raise Si2cError('Read status failed: 0x%02x%02x' % (data[1], data[0]))
 
     self._logger.debug('Si2c.wr_rd result 0x%02x%02x, read %s' %
-                       (bytes[1], bytes[0], bytes[4:]))
-    return bytes[4:]
+                       (data[1], data[0], data[4:]))
+    return data[4:]
 
   def close(self):
     """Stm32i2c wind down logic.
