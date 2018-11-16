@@ -11,7 +11,8 @@ import usb
 import i2c_base
 import stm32usb
 
-_WRITE_SIZE_LIMIT = 1<<12
+_MAX_WRITE_SIZE = (1 << 12) - 1
+_MAX_READ_SIZE = (1 << 15) - 1
 
 
 class Si2cError(Exception):
@@ -99,16 +100,32 @@ class Si2cBus(i2c_base.BaseI2CBus):
     if not write_list:
       write_list = []
     write_length = len(write_list)
-    if write_length >= _WRITE_SIZE_LIMIT:
+    if write_length > _MAX_WRITE_SIZE:
       raise Si2cError(
-          'requested write size %d meets or exceeds the %d limit supported by '
-          'this I2C-over-USB protocol' % (write_length, _WRITE_SIZE_LIMIT))
-    read_count = max(0, read_count)
+          'requested write size %d exceeds the %d maximum supported by this '
+          'I2C-over-USB protocol' % (write_length, _MAX_WRITE_SIZE))
 
-    # Send wr_rd command to stm32.
+    read_count = max(0, read_count)
+    if read_count > _MAX_READ_SIZE:
+      raise Si2cError(
+          'requested read size %d exceeds the %d maximum supported by this '
+          'I2C-over-USB protocol' % (read_count, _MAX_READ_SIZE))
+
+    # Encode the full write count across the multiple fields involved.
     port_field = self._port | ((write_length >> 4) & 0xF0)
     write_field = write_length & 0xFF
-    cmd = [port_field, slave_address, write_field, read_count] + write_list
+    cmd = [port_field, slave_address, write_field]
+
+    # Encode the full read count across the multiple fields involved.
+    if read_count <= 0x7F:
+      cmd.append(read_count)
+    else:
+      cmd.append((read_count & 0x7F) | 0x80)
+      cmd.append((read_count >> 7) & 0xFF)
+      cmd.append(0)  # reserved field
+
+    # Send wr_rd command to stm32.
+    cmd.extend(write_list)
     try:
       ret = self._susb._write_ep.write(cmd, self._susb.TIMEOUT_MS)
     except IOError as e:
