@@ -3,77 +3,76 @@
 # found in the LICENSE file.
 """Driver to expose power measurement tools in servod."""
 
-import hw_driver
+import collections
 import logging
-import re
+
+import hw_driver
+
+
+class PowerToolsError(hw_driver.HwDriverError):
+  """Exceptions for power tools module."""
 
 
 class powerTools(hw_driver.HwDriver):
-  """Implement commands that pertain to power measurement.
-
-  Attributes:
-    _rails: dictionary to cache rail information
-    _rails_init: flag to indicate if cache is initialized
-  """
-
-  _rails = {}
-  _rails_init = False
+  """Implement commands that pertain to power measurement."""
 
   def __init__(self, interface, params):
-    """Init powerTools by storing suffix and reg_type info for command.
+    """Init powerTools by storing suffix and rail_type info for command.
 
     Since each command gets their own drv instance, store the suffix (e.g. _mv)
-    for the command, and the reg_type (e.g. 'calib') in the class for later
+    for the command, and the rail_type (e.g. 'calib') in the class for later
     retrieval.
+
+    Args:
+      interface: servo device interface
+      params: params for the control
     """
     super(powerTools, self).__init__(interface, params)
     self._logger = logging.getLogger('')
     self._interface = interface
     self._params = params
-    self._reg_type = params['reg_type']
+    self._rail_type = params['rail_type']
     self._suffix = params.get('suffix', '')
 
-  def _InitRails(self):
-    """Helper function to parse out INA power measurement rails."""
-    all_ctrls = self._interface.doc_all()
-    shuntmv_ctrls = re.findall(r"'control_name': '([\w.]*_shuntmv)'", all_ctrls)
-    shuntmv_rails = set(
-        [ctrl.replace('_shuntmv', '') for ctrl in shuntmv_ctrls])
-    mw_ctrls = re.findall(r"'control_name': '([\w.]*_mw)'", all_ctrls)
-    mw_rails = set([ctrl.replace('_mw', '') for ctrl in mw_ctrls])
-    # Take the union of mw rails and shuntmv rails to remove _mw ec controls,
-    # like ppvar_vbat_mw, and also INA rails that are marked as non-calib.
-    mw_rails = mw_rails & shuntmv_rails
-    powerTools._rails['all'] = list(shuntmv_rails)
-    powerTools._rails['calib'] = list(mw_rails)
-    powerTools._rails_init = True
-
-  def _RetrieveRails(self, reg_type, suffix=''):
-    """Retrieve rails by checking cache and on miss populating it.
-
-    Note: _RetrieveRails does not check if the suffix makes for a valid
-          servod control. That is on the caller.
+  def _ParseRails(self, rail_type):
+    """Helper function to parse out INA power measurement rails.
 
     Args:
-      reg_type: 'calib' to get rails marked as calib or 'all' for all rails
-      suffix: suffix to append to each rail to make them into servo controls
+      rail_type: one of 'calib' or 'all' to indicate set of desired rails
 
     Returns:
-      list of all rails under |reg_type| with _|suffix| appended to each
-      name, making it a list of servod controls.
+      list of rail prefixes for the desired rail type
+
+    Raises:
+      PowerToolsError: if |rail_type| not 'all' or 'calib'
     """
-    if not powerTools._rails_init:
-      self._InitRails()
-    rails = powerTools._rails[reg_type]
-    if suffix:
-      rails = ['%s_%s' % (rail, suffix) for rail in rails]
-    return rails
+    if rail_type not in ['calib', 'all']:
+      # No valid rail_type was supplied - raise an error.
+      raise PowerToolsError('rail type %r unknown.' % rail_type)
+    ctrl_dict = collections.defaultdict(set)
+    for ctrl in self._interface._syscfg.syscfg_dict['control']:
+      for suffix in ['_mw', '_shuntmv']:
+        if ctrl.endswith(suffix):
+          ctrl_dict[suffix].add(ctrl[:-len(suffix)])
+    if rail_type == 'all':
+      return list(ctrl_dict['_shuntmv'])
+    if rail_type == 'calib':
+      # Take the intersection of mw rails and shuntmv rails to remove _mw ec
+      # controls like ppvar_vbat_mw, and also INA rails that are marked as
+      # non-calib.
+      return list(ctrl_dict['_shuntmv'].intersection(ctrl_dict['_mw']))
 
   def _Get_rails(self):
-    """Prints a list of rails according to reg_type and suffix param.
+    """Retrieve rails then make them into desired controls.
 
-    A valid suffix makes the return a string of valid servod commands,
-    while an empty suffix simply returns a list of stubs showing what
-    rails are configured on the servod instance.
+    Note: _Get_Rails does not check if the suffix makes for a valid
+          servod control. That is on the config writer/caller.
+
+    Returns:
+      list of all rails under |rail_type| with _|self._suffix| appended to each
+      name, making it a list of servod controls.
     """
-    return self._RetrieveRails(self._reg_type, self._suffix)
+    rails = self._ParseRails(self._rail_type)
+    if self._suffix:
+      rails = ['%s_%s' % (rail, self._suffix) for rail in rails]
+    return rails

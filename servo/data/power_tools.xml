@@ -76,34 +76,34 @@
     <name>current_rails</name>
     <doc>List of available rail controls to measure current.</doc>
     <params drv="power_tools" subtype="rails" interface="servo"
-    reg_type="calib" suffix="ma" />
+    rail_type="calib" suffix="ma" />
   </control>
   <control>
     <name>shunt_voltage_rails</name>
     <doc>List of available rail controls to measure shunt
     voltage.</doc>
     <params drv="power_tools" subtype="rails" interface="servo"
-    reg_type="calib" suffix="shuntmv" />
+    rail_type="calib" suffix="shuntmv" />
   </control>
   <control>
     <name>bus_voltage_rails</name>
     <doc>List of available rail controls to measure bus
     voltage.</doc>
     <params drv="power_tools" subtype="rails" interface="servo"
-    reg_type="all" suffix="mv" />
+    rail_type="all" suffix="mv" />
   </control>
   <control>
     <name>power_rails</name>
     <doc>List of available rail controls to measure power.</doc>
     <params drv="power_tools" subtype="rails" interface="servo"
-    reg_type="calib" suffix="mw" />
+    rail_type="calib" suffix="mw" />
   </control>
   <control>
     <name>raw_rails</name>
     <doc>List of all available rails. Names need suffixes attached
     to be valid controls.</doc>
     <params drv="power_tools" subtype="rails" interface="servo"
-    reg_type="all" />
+    rail_type="all" />
   </control>
   <control>
     <name>raw_calib_rails</name>
@@ -111,6 +111,6 @@
     calibrateable. Names need suffixes attached to be valid
     controls.</doc>
     <params drv="power_tools" subtype="rails" interface="servo"
-    reg_type="calib" />
+    rail_type="calib" />
   </control>
 </root>
