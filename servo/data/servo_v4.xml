@@ -205,7 +205,7 @@
     <name>servo_v4_version</name>
     <doc>current fw version</doc>
     <params cmd="get" subtype="version" interface="26" drv="ec3po_servo_v4"
-        map="print" init="print" clobber_ok=""></params>
+        map="print" init="print"></params>
   </control>
 
   <!-- UART and CONSOLE settings -->
@@ -266,13 +266,13 @@
     <name>servo_v4_dts_mode</name>
     <doc>Enable/disable DTS mode on servo_v4</doc>
     <params subtype="servo_v4_dts_mode" interface="26" drv="ec3po_servo_v4"
-    input_type="str" clobber_ok="" init="on"></params>
+    input_type="str" init="on"></params>
   </control>
   <control>
     <name>servo_v4_role</name>
     <doc>Power role for DUT port on servo_v4</doc>
     <params subtype="servo_v4_power_role" interface="26" drv="ec3po_servo_v4"
-    input_type="str" clobber_ok="" init="src"></params>
+    input_type="str"></params>
   </control>
   <control>
     <name>servo_v4_ccd_keepalive</name>
