@@ -243,6 +243,12 @@
     <params interface="26" drv="ec3po_driver" map="onoff" init="on"
     subtype="interp_connect"></params>
   </control>
+  <control>
+    <name>servo_v4_loglevel</name>
+    <doc>servo v4 console loglevel</doc>
+    <params interface="26" drv="ec3po_driver" input_type="str"
+    subtype="loglevel"></params>
+  </control>
   <!-- DTS mode control -->
   <control>
     <name>servo_v4_dts_mode</name>

@@ -641,6 +641,12 @@
     subtype="interp_connect"></params>
   </control>
   <control>
+    <name>ec_loglevel</name>
+    <doc>EC console loglevel</doc>
+    <params interface="10" drv="ec3po_driver" input_type="str"
+    subtype="loglevel"></params>
+  </control>
+  <control>
     <name>fw_wp_state</name>
     <doc>Used to turn fw wp off and on</doc>
     <params interface="servo" drv="fw_wp_servoflex" input_type="str"

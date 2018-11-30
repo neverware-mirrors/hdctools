@@ -133,6 +133,9 @@ class EC3PO(uart.Uart):
     # The interpreter starts up in the connected state.
     self._interp_connected = 'on'
 
+    # The original console loglevel will match the logger level.
+    self._console_loglevel = self._logger.getEffectiveLevel()
+
     # Open a new pseudo-terminal pair.
     (master_pty, user_pty) = pty.openpty()
     (interface_pty, control_pty) = pty.openpty()
@@ -239,6 +242,23 @@ class EC3PO(uart.Uart):
   def get_interp_connect(self):
     """Get the state of the interpreter connection to the UART."""
     return self._interp_connected
+
+  def set_loglevel(self, value):
+    """'Setter' of the console loglevel.
+
+    Args:
+      level: a logging level string 'debug', 'info', 'warning', 'error',
+             'critical'
+    """
+    level = logging.getLevelName(value.upper())
+    if not isinstance(level, int):
+        raise Exception('invalid loglevel %r' % value)
+    self._console_loglevel = level
+    self._console.oobm_queue.put('loglevel %d' % level)
+
+  def get_loglevel(self):
+    """Returns the current loglevel."""
+    return logging.getLevelName(self._console_loglevel).lower()
 
   def close(self):
     """Turn down the ec3po interface by terminating interpreter & console."""

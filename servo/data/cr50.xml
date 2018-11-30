@@ -19,6 +19,12 @@
   </control>
   <!-- EC-3PO console interpreter for cr50 -->
   <control>
+    <name>cr50_loglevel</name>
+    <doc>cr50 console loglevel</doc>
+    <params interface="9" drv="ec3po_driver" input_type="str"
+    subtype="loglevel"></params>
+  </control>
+  <control>
     <name>ec3po_cr50_uart</name>
     <alias>ec3po_usbpd_uart_pty,cr50_uart_pty,usbpd_uart_pty</alias>
     <doc>cr50 UART console provided via EC-3PO console

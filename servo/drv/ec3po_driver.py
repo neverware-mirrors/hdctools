@@ -53,3 +53,35 @@ class ec3poDriver(hw_driver.HwDriver):
       # we can really do.
       self._logger.debug('There is no UART on this servo for this '
                          'specific interface.')
+
+  def _Set_loglevel(self, level):
+    """Set the interpreter's loglevel.
+
+    Args:
+      loglevel: a logging level string 'debug', 'info', 'warning', 'error',
+                'critical'
+    """
+    if self._interface is not None:
+      self._interface.set_loglevel(level)
+    else:
+      # Fail silently for now.  A NoneType interface indicates that this
+      # interface is not supported on the current servo host.  There's not much
+      # we can really do.
+      self._logger.debug('There is no UART on this servo for this '
+                         'specific interface.')
+
+  def _Get_loglevel(self):
+    """Get the interpreter's loglevel.
+
+    Returns:
+      loglevel: a logging level string 'debug', 'info', 'warning', 'error',
+                'critical'
+    """
+    if self._interface is not None:
+      return self._interface.get_loglevel()
+    else:
+      # Fail silently for now.  A NoneType interface indicates that this
+      # interface is not supported on the current servo host.  There's not much
+      # we can really do.
+      self._logger.debug('There is no UART on this servo for this '
+                         'specific interface.')

@@ -58,7 +58,7 @@ class loglevel(hw_driver.HwDriver):
       # Set EC-3PO's logging level.
       for interface in self._interface._interface_list:
         if type(interface) is servo.ec3po_interface.EC3PO:
-          interface._console.oobm_queue.put('loglevel ' + str(level))
+          interface.set_loglevel(new_level)
 
     except KeyError:
       raise hw_driver.HwDriverError('Unknown logging level. '
