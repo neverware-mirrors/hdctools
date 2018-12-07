@@ -249,6 +249,18 @@
     <params interface="26" drv="ec3po_driver" input_type="str"
     subtype="loglevel"></params>
   </control>
+  <control>
+    <name>servo_v4_uart_capture</name>
+    <doc>enable servo v4 console capture</doc>
+    <params subtype="uart_capture" interface="26" drv="uart"
+    map="onoff" clobber_ok=""></params>
+  </control>
+  <control>
+    <name>servo_v4_uart_stream</name>
+    <doc>servo v4 console stream collected while servo_v4_uart_capture on</doc>
+    <params cmd="get" subtype="uart_stream" interface="26" drv="uart"
+    clobber_ok=""></params>
+  </control>
   <!-- DTS mode control -->
   <control>
     <name>servo_v4_dts_mode</name>
