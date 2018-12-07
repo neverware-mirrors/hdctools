@@ -320,8 +320,8 @@
     interface="7"></params>
   </control>
   <control>
-    <name>raw_servo_console_pty</name>
-    <doc>Servo's stm32 console.</doc>
+    <name>raw_servo_micro_uart_pty</name>
+    <doc>Servo micro's stm32 console.</doc>
     <params cmd="get" subtype="pty" interface="3" drv="uart">
     </params>
   </control>
@@ -334,8 +334,8 @@
   </control>
   <!-- EC-3PO console interpreter linkup -->
   <control>
-    <name>ec3po_servo_console</name>
-    <alias>servo_console_pty</alias>
+    <name>ec3po_servo_micro_uart</name>
+    <alias>servo_micro_uart_pty</alias>
     <doc>Servo micro console provided via EC-3PO console
     interpreter.</doc>
     <params cmd="get" subtype="pty" interface="6" drv="uart">

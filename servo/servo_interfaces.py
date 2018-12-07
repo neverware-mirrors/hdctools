@@ -125,7 +125,7 @@ for vid, pid in SERVO_MICRO_DEFAULTS:
      'dummy',                                # 4: dummy
      'dummy',                                # 5: dummy
      {'name': 'ec3po_uart',                  # 6: servo console
-      'raw_pty': 'raw_servo_console_pty', 'source': 'servo_micro'},
+      'raw_pty': 'raw_servo_micro_uart_pty', 'source': 'servo_micro'},
      {'name': 'stm32_uart', 'interface': 6}, # 7: uart1/EC console
      {'name': 'stm32_uart', 'interface': 5}, # 8: uart2/AP console
      {'name': 'ec3po_uart',                  # 9: EC3PO for PD/Cr50
