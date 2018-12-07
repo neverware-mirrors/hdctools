@@ -355,6 +355,18 @@
     subtype="loglevel"></params>
   </control>
   <control>
+    <name>servo_micro_uart_capture</name>
+    <doc>enable servo micro console capture</doc>
+    <params subtype="uart_capture" interface="6" drv="uart"
+    map="onoff" clobber_ok=""></params>
+  </control>
+  <control>
+    <name>servo_micro_uart_stream</name>
+    <doc>servo micro stream collected while servo_micro_uart_capture on</doc>
+    <params cmd="get" subtype="uart_stream" interface="6" drv="uart"
+    clobber_ok=""></params>
+  </control>
+  <control>
     <name>ec3po_ec_console</name>
     <alias>ec_uart_pty</alias>
     <doc>EC UART console provided via EC-3PO console
