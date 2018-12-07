@@ -161,7 +161,7 @@ for vid, pid in SERVO_V4_DEFAULTS:
      {'name': 'stm32_uart', 'interface': 3}, #24: dut sbu uart
      {'name': 'stm32_uart', 'interface': 4}, #25: atmega uart
      {'name': 'ec3po_uart',                  #26: servo v4 console
-      'raw_pty': 'raw_servo_v4_console_pty', 'source': 'servo_v4'},
+      'raw_pty': 'raw_servo_v4_uart_pty', 'source': 'servo_v4'},
     ]
 
   # Buffer slots for servo v4 (interface #27-40).

@@ -262,7 +262,7 @@
   </control>
   <!-- UART and CONSOLE settings -->
   <control>
-    <name>raw_servo_v4_console_pty</name>
+    <name>raw_servo_v4_uart_pty</name>
     <doc>Servo V4's stm32 console.</doc>
     <params cmd="get" subtype="pty" interface="22" drv="uart">
     </params>
@@ -281,8 +281,8 @@
   </control>
   <!-- EC-3PO console interpreter linkup -->
   <control>
-    <name>ec3po_servo_v4_console</name>
-    <alias>servo_v4_console_pty</alias>
+    <name>ec3po_servo_v4_uart</name>
+    <alias>servo_v4_uart_pty</alias>
     <doc>Servo v4 console provided via EC-3PO console
     interpreter.</doc>
     <params cmd="get" subtype="pty" interface="26" drv="uart">
