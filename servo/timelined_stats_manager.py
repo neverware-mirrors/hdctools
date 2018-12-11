@@ -55,9 +55,11 @@ class TimelinedStatsManager(stats_manager.StatsManager):
 
   def CalculateStats(self):
     """Generate relative timeline before calling StatsManager CalculateStats."""
-    timeline = self._data[self._tkey]
-    timeline = [entry - timeline[0] for entry in timeline]
-    self._data[self._tlkey] = timeline
+    if self._tkey in self._data:
+      # |tkey| might have been removed during trimming.
+      timeline = self._data[self._tkey]
+      timeline = [entry - timeline[0] for entry in timeline]
+      self._data[self._tlkey] = timeline
     super(TimelinedStatsManager, self).CalculateStats()
 
   def AddSample(self, domain, sample):
@@ -123,8 +125,18 @@ class TimelinedStatsManager(stats_manager.StatsManager):
       tend = timeline[-1]
     tend += padding
     # pylint: disable=W0212
+    domains_to_remove = set()
     for domain, samples in self._data.iteritems():
       sample_arr = numpy.array(samples)
       trimmed_samples = sample_arr[numpy.bitwise_and(tstart <= timeline,
-                                                     timeline <= tend)]
-      self._data[domain] = trimmed_samples.tolist()
+                                                     timeline <= tend)].tolist()
+      if trimmed_samples:
+        self._data[domain] = trimmed_samples
+      else:
+        self._logger.warn('Trimming to start ts: %.2f end ts: %.2f padding: %d'
+                          ' has caused domain %r to become empty. Removing it '
+                          'from the TimelinedStatsManager.', tstart, tend,
+                          padding, domain)
+        domains_to_remove.add(domain)
+    for domain in domains_to_remove:
+      del self._data[domain]

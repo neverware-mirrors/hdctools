@@ -19,12 +19,14 @@ class TestTimelinedStatsManager(unittest.TestCase):
 
   def setUp(self):
     """Set up data and create a temporary directory to save data and stats."""
+    unittest.TestCase.setUp(self)
     self.tempdir = tempfile.mkdtemp()
     self.data = timelined_stats_manager.TimelinedStatsManager()
 
   def tearDown(self):
     """Delete the temporary directory and its content."""
     shutil.rmtree(self.tempdir)
+    unittest.TestCase.tearDown(self)
 
   def assertColumnHeight(self):
     """Helper to assert that all domains have the same number of samples."""
@@ -104,6 +106,16 @@ class TestTimelinedStatsManager(unittest.TestCase):
     for samples in self.data._data.itervalues():
       # Verify that all domains were not trimmed
       self.assertEqual(len(orig_samples), len(samples))
+
+  def test_TrimSamplesDomainEmpty(self):
+    """Ensure that the domain is removed if it becomes empty post trimming."""
+    self.data.AddSamples([('A', 10)])
+    time.sleep(0.01)
+    tstart = time.time()
+    self.data.TrimSamples(tstart=tstart)
+    self.data.CalculateStats()
+    # Verify that 'A' has been removed
+    self.assertNotIn('A', self.data._data)
 
   def test_TrimSamplesWithPadding(self):
     """Ensure that trimming with padding works as expected."""
