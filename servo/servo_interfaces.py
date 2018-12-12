@@ -255,6 +255,7 @@ for board in [
     'fizz',
     'glados',
     'grunt',
+    'hatch',
     'kalista',
     'kukui',
     'kunimitsu',
