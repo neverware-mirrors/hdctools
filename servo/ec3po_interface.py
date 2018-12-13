@@ -78,7 +78,7 @@ class EC3PO(uart.Uart):
     """
     # Run Fuart init.
     uart.Uart.__init__(self)
-    self._logger = logging.getLogger('EC3PO Interface')
+    self._logger = logging.getLogger('%s - EC3PO Interface' % source_name)
     # Create the console and interpreter passing in the raw EC UART PTY.
     self._raw_ec_uart = raw_ec_uart
     self._source = source_name
@@ -111,7 +111,7 @@ class EC3PO(uart.Uart):
 
     # Create an interpreter instance.
     itpr = interpreter.Interpreter(raw_ec_uart, cmd_pipe_interp,
-                                   dbg_pipe_interp, logging.INFO)
+                                   dbg_pipe_interp, logging.INFO, self._source)
     self._itpr = itpr
     itpr._logger = logging.getLogger('Interpreter')
 
@@ -170,7 +170,8 @@ class EC3PO(uart.Uart):
 
     # Create a console.
     c = console.Console(master_pty, user_pty_name, interface_pty,
-                        cmd_pipe_interactive, dbg_pipe_interactive)
+                        cmd_pipe_interactive, dbg_pipe_interactive,
+                        self._source)
     self._console = c
     c._logger = logging.getLogger('Console')
     # Spawn a console process.
