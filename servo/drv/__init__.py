@@ -57,6 +57,7 @@ import plankton
 import power_tools
 import ps8742
 import pty_driver
+import sarien_power
 import servo_metadata
 import sleep
 import storm_power
