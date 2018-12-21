@@ -35,6 +35,7 @@ For Servo V2/V3, connect AVR to usb:
 Verify on the DUT that the avr is visible:
 lsusb should show "LUFA Keyboard"
 
+To test by sending a "space" key (inside chroot):
 cd ~/trunk/src/third_party/hdctools/usbkm232
 USBKM232_UART_DEVICE=/dev/pts/31 python ./space.py
 
@@ -43,6 +44,9 @@ USBKM232_UART_DEVICE=/dev/pts/31 python ./space.py
 To build:
 Install the AVR toolchain (outside chroot):
 sudo apt-get install gcc-avr binutils-avr gdb-avr avr-libc avrdude
+
+Install the dfu-programmer utility (outside chroot):
+sudo apt-get install dfu-programmer
 
 Unzip LUFA, downloaded from
 http://www.github.com/abcminiuser/lufa/archive/LUFA-140928.zip
@@ -71,7 +75,7 @@ At this point you will see an Atmel DFU device in lsusb.
 
 Flash:
 sudo dfu-programmer atmega32u4 erase
-sudo dfu-programmer atmega32u4 flash main.hex
+sudo dfu-programmer atmega32u4 flash Keyboard.hex
 
 Reboot:
 dut-control at_hwb:off
