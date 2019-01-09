@@ -249,6 +249,36 @@
     <params interface="26" drv="ec3po_driver" input_type="str"
     subtype="loglevel"></params>
   </control>
+  <!-- Servo V4 Console Automation Controls -->
+  <control>
+    <name>servo_v4_uart_cmd</name>
+    <doc>Set to send command to the servo v4 console. Get to obtain the
+    matched results with the regular expression of
+    servo_v4_uart_regexp.</doc>
+    <params subtype="uart_cmd" interface="26" drv="uart" input_type="str"
+    clobber_ok=""></params>
+  </control>
+  <control>
+    <name>servo_v4_uart_timeout</name>
+    <doc>Timeout value for waiting servo v4 console response of issuing
+    an EC command.</doc>
+    <params subtype="uart_timeout" interface="26" drv="uart"
+    input_type="float"></params>
+  </control>
+  <control>
+    <name>servo_v4_uart_multicmd</name>
+    <doc>Set to send multiple commands to the servo v4 console.</doc>
+    <params interface="26" drv="na" cmd="get" clobber_ok=""></params>
+    <params subtype="uart_multicmd" interface="26" drv="uart" input_type="str"
+    cmd="set" clobber_ok=""></params>
+  </control>
+  <control>
+    <name>servo_v4_uart_regexp</name>
+    <doc>List of regular expressions to match the response of
+    servo_v4_uart_cmd.</doc>
+    <params subtype="uart_regexp" interface="6" drv="uart"
+    input_type="str" cmd="set" clobber_ok=""></params>
+  </control>
   <control>
     <name>servo_v4_uart_capture</name>
     <doc>enable servo v4 console capture</doc>
