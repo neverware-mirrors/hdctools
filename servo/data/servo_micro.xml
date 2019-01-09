@@ -354,6 +354,36 @@
     <params interface="6" drv="ec3po_driver" input_type="str"
     subtype="loglevel"></params>
   </control>
+  <!-- Servo Micro Console Automation Controls -->
+  <control>
+    <name>servo_micro_uart_cmd</name>
+    <doc>Set to send command to the servo micro console. Get to obtain the
+    matched results with the regular expression of
+    servo_micro_uart_regexp.</doc>
+    <params subtype="uart_cmd" interface="6" drv="uart" input_type="str"
+    clobber_ok=""></params>
+  </control>
+  <control>
+    <name>servo_micro_uart_timeout</name>
+    <doc>Timeout value for waiting servo micro console response of issuing
+    an EC command.</doc>
+    <params subtype="uart_timeout" interface="6" drv="uart"
+    input_type="float"></params>
+  </control>
+  <control>
+    <name>servo_micro_uart_multicmd</name>
+    <doc>Set to send multiple commands to the servo micro console.</doc>
+    <params interface="6" drv="na" cmd="get" clobber_ok=""></params>
+    <params subtype="uart_multicmd" interface="6" drv="uart" input_type="str"
+    cmd="set" clobber_ok=""></params>
+  </control>
+  <control>
+    <name>servo_micro_uart_regexp</name>
+    <doc>List of regular expressions to match the response of
+    servo_micro_uart_cmd.</doc>
+    <params subtype="uart_regexp" interface="6" drv="uart"
+    input_type="str" cmd="set" clobber_ok=""></params>
+  </control>
   <control>
     <name>servo_micro_uart_capture</name>
     <doc>enable servo micro console capture</doc>
