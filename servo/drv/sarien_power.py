@@ -15,6 +15,8 @@ class sarienPower(power_state.PowerStateDriver):
   def _reset_cycle(self):
     """Force a power cycle using cold reset."""
     self._cold_reset()
+    time.sleep(3.0)
+    self._interface.power_short_press()
 
   def _power_on_rec(self):
     """Power on with recovery mode."""
@@ -37,9 +39,5 @@ class sarienPower(power_state.PowerStateDriver):
 
   def _power_off(self):
     """Force power off, even if already off."""
-    # Need to ensure _power_off() can be called twice and the system will
-    # remain off, so first do a cold reset then a power button override.
     self._cold_reset()
-    time.sleep(5.0)
-    self._interface.power_long_press()
-    time.sleep(1.0)
+    time.sleep(3.0)

@@ -30,6 +30,6 @@
   <map>
     <name>keypress_duration</name>
     <doc>short hand configs for keypress durations</doc>
-    <params tab="0.1" short_press="0.3" press="1.2" long_press="6"></params>
+    <params tab="0.1" short_press="1.2" press="1.2" long_press="6"></params>
   </map>
 </root>
