@@ -218,9 +218,9 @@ class Servod(object):
     elif board == 'stout':
       return keyboard_handlers.StoutHandler(servo)
     elif board in ('buddy', 'cranky', 'guado', 'jecht', 'mccloud', 'monroe',
-                   'ninja', 'nyan_kitty', 'panther', 'rikku', 'stumpy', 'sumo',
-                   'tidus', 'tricky', 'veyron_fievel', 'veyron_mickey',
-                   'veyron_rialto', 'veyron_tiger', 'zako'):
+                   'ninja', 'nyan_kitty', 'panther', 'rikku', 'sarien',
+                   'stumpy', 'sumo', 'tidus', 'tricky', 'veyron_fievel',
+                   'veyron_mickey', 'veyron_rialto', 'veyron_tiger', 'zako'):
       if self._usbkm232 is None:
         logging.info('No device path specified for usbkm232 handler. Use '
                      'the servo atmega chip to handle.')
