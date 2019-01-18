@@ -253,6 +253,7 @@ for board in [
     'dragonegg',
     'eve',
     'fizz',
+    'flapjack',
     'glados',
     'grunt',
     'hatch',
