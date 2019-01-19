@@ -419,6 +419,28 @@ class ec(pty_driver.ptyDriver):
     """Retrieves battery design full capacity in mAh for the battery."""
     return self._get_battery_values()['design_mah']
 
+  def _Get_battery_charging(self):
+    """Retrieves whether the battery is charging from chargestate cmd."""
+    self._limit_channel()
+    cmd = 'chgstate'
+    rgx = 'batt_is_charging = (\d)[\r\n]+'
+    try:
+      results = self._issue_cmd_get_results(cmd, [rgx])
+    finally:
+      self._restore_channel()
+    return bool(int(results[0][1]))
+
+  def _Get_ac_attached(self):
+    """Retrieve whether an AC charger is attached."""
+    self._limit_channel()
+    cmd = 'chgstate'
+    rgx = 'ac = (\d)[\r\n]+'
+    try:
+      results = self._issue_cmd_get_results(cmd, [rgx])
+    finally:
+      self._restore_channel()
+    return bool(int(results[0][1]))
+
   def _get_pwr_avg(self):
     """Uses ec pwr_avg command to retrieve battery power average.
 

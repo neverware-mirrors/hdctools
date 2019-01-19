@@ -73,6 +73,12 @@
     </params>
   </control>
   <control>
+    <name>charger_attached</name>
+    <doc>whether an AC charger is attached</doc>
+    <params cmd="get" subtype="ac_attached" interface="10"
+    drv="ec"></params>
+  </control>
+  <control>
     <name>battery_tempc</name>
     <doc>battery temperature in degrees Celsius</doc>
     <params cmd="get" subtype="battery_tempc" interface="10"
@@ -101,6 +107,12 @@
     <doc>battery design full capacity in mAh</doc>
     <params cmd="get" subtype="battery_full_design_mah"
     interface="10" drv="ec"></params>
+  </control>
+  <control>
+    <name>battery_is_charging</name>
+    <doc>Whether the battery is charging.</doc>
+    <params cmd="get" subtype="battery_charging" interface="10"
+    drv="ec"></params>
   </control>
   <control>
     <name>pwr_button_hold</name>
