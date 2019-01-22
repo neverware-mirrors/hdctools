@@ -289,37 +289,25 @@ class ec(pty_driver.ptyDriver):
     """
     self._issue_cmd('btnpress voldown %d' % int(value))
 
-  def _Set_volume_up_hold(self, value):
-    """Setter of Vup for tablets/ detachables
+  def _Set_button_hold(self, value):
+    """Setter for a button hold on the ec.
+
+    'pwrbtn' or button for tablets/detachables.
 
     Args:
-      value: number of ms to hold the volume button
+      value: number of ms to hold the volume button. Has to be at least 1.
     """
-    self._issue_cmd('button vup %d' % value)
-
-  def _Set_volume_down_hold(self, value):
-    """Setter of Vdown for tablets/ detachables
-
-    Args:
-      value: number of ms to hold the volume button
-    """
-    self._issue_cmd('button vdown %d' % value)
-
-  def _Set_volume_up_down_hold(self, value):
-    """Setter of Vup and vdown for tablets/ detachables
-
-    Args:
-      value: number of ms to hold the volume buttons
-    """
-    self._issue_cmd('button vup vdown %d' % value)
-
-  def _Set_pwr_button_hold(self, value):
-    """Setter of pwr_button_hold.
-
-    Args:
-      value: hold interval, unit: msec.
-    """
-    self._issue_cmd('powerbtn %d' % value)
+    if value < 1:
+      self._logger.error('Trying to set ec button press to %d ms. Overwriting '
+                         'the value to be 1ms.', value)
+      value = 1
+    # One of 'button' or 'powerbtn'
+    cmd = self._params.get('ec_cmd')
+    # 'button' cmd requires vup|vdown or both while 'powerbtn' requires
+    # no args.
+    argline = self._params.get('ec_args', '')
+    ec_cmd = '%s %s %d' % (cmd, argline, value)
+    self._issue_cmd(ec_cmd)
 
   def _Get_cpu_temp(self):
     """Getter of cpu_temp.

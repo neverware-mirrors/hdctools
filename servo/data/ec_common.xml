@@ -106,8 +106,8 @@
     <name>pwr_button_hold</name>
     <doc>milliseconds to hold the power button</doc>
     <params cmd="get" interface="10" drv="na" />
-    <params cmd="set" subtype='pwr_button_hold' interface="10"
-    drv="ec" input_type="int" />
+    <params cmd="set" subtype='button_hold' interface="10"
+    drv="ec" input_type="int" ec_cmd="powerbtn"/>
   </control>
   <control>
     <name>power_state</name>

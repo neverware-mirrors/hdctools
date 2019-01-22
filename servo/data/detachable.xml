@@ -2,23 +2,24 @@
   <!-- ******** Controls ******** -->
   <control>
     <name>volume_up_hold</name>
-    <doc>Emulated volume up on ec</doc>
+    <doc>Emulated volume up on ec. Unit in ms.</doc>
     <params cmd="get" interface="10" drv="na" />
-    <params cmd="set" subtype="volume_up_hold" interface="10"
-    drv="ec" input_type="int" />
+    <params cmd="set" subtype="button_hold" interface="10" drv="ec"
+    input_type="int" ec_cmd="button" ec_args="vup" />
   </control>
   <control>
     <name>volume_down_hold</name>
-    <doc>Emulated volume down on ec</doc>
+    <doc>Emulated volume down on ec. Unit in ms.</doc>
     <params cmd="get" interface="10" drv="na" />
-    <params cmd="set" subtype="volume_down_hold" interface="10"
-    drv="ec" input_type="int" />
+    <params cmd="set" subtype="button_hold" interface="10" drv="ec"
+    input_type="int" ec_cmd="button" ec_args="vdown" />
   </control>
   <control>
     <name>volume_up_down_hold</name>
-    <doc>Emulated both volume up and down buttons pressed on ec</doc>
+    <doc>Emulated both volume up and down buttons pressed on ec. Unit in
+    ms.</doc>
     <params cmd="get" interface="10" drv="na" />
-    <params cmd="set" subtype="volume_up_down_hold" interface="10"
-    drv="ec" input_type="int" />
+    <params cmd="set" subtype="button_hold" interface="10" drv="ec"
+    input_type="int" ec_cmd="button" ec_args="vup vdown" />
   </control>
 </root>
