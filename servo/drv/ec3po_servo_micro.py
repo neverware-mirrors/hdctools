@@ -9,6 +9,7 @@ Provides the following console controlled function subtypes:
 
 import re
 import logging
+import time
 
 import ec3po_servo
 import pty_driver
@@ -27,7 +28,9 @@ usbpd_uart_config = {
     'SERVO_JTAG_TDO_BUFFER_EN': ('0', '0', '1'),
     'SERVO_JTAG_TDO_SEL': ('0', '0', '1'),
 }
-
+# Time in seconds to wait for console readiness after a UART routing switch.
+# This value was determined experimentally.
+CONSOLE_READINESS_DELAY = 0.5
 
 class ec3poServoMicroError(Exception):
   """Exception class for ec."""
@@ -132,6 +135,9 @@ class ec3poServoMicro(ec3po_servo.ec3poServo):
       value: An integer value, 0: none, 1:samus, 2:glados
     """
     self.batch_set(usbpd_uart_config, value)
+    # Add a short delay, so the console will be accessible immediately after the
+    # control is set.
+    time.sleep(CONSOLE_READINESS_DELAY)
 
   def _Get_usbpd_console(self):
     """Set or unset PD console routing
