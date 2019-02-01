@@ -7,6 +7,7 @@ from __future__ import print_function
 
 # pylint: disable=cros-logging-import
 import ctypes
+import errno
 import functools
 import logging
 import os
@@ -61,6 +62,26 @@ def _OsPipeFiles():
     finally:
       # Break the exc_traceback circular reference.
       del exc_type, exc_value, exc_traceback
+
+
+def _SendShutdown(pipe_wr):
+  """Indicate shutdown by unblocking reads on a pipe.
+
+  Args:
+    pipe_wr: file object wrapping write side of a pipe; must support .fileno()
+        and .close()
+
+  EPIPE from os.write() to the fd will be suppressed.  Any other exceptions will
+  be allowed to propagate.  pipe_wr.close() will always be attempted, even if
+  os.write() to the fd raised an exception.
+  """
+  try:
+    os.write(pipe_wr.fileno(), '.')
+  except (OSError, IOError) as error:
+    if error.errno != errno.EPIPE:
+      raise
+  finally:
+    pipe_wr.close()
 
 
 class EC3PO(uart.Uart):
@@ -282,10 +303,10 @@ class EC3PO(uart.Uart):
     # TODO(b/79684405): When switching ec3po from subprocesses to threads, test
     # whether these writes are still needed.  If so, consider troubleshooting
     # further at that time.
-    os.write(self._itpr_shutdown_pipe_wr.fileno(), '.')
-    os.write(self._c_shutdown_pipe_wr.fileno(), '.')
-    self._itpr_shutdown_pipe_wr.close()
-    self._c_shutdown_pipe_wr.close()
+    try:
+      _SendShutdown(self._itpr_shutdown_pipe_wr)
+    finally:
+      _SendShutdown(self._c_shutdown_pipe_wr)
 
     total_timeout = 2
     end_time = time.time() + total_timeout
