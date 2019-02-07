@@ -14,4 +14,5 @@ inas = [
     ('sweetberry', (16,18), 'pp3300_a_soc',   3.3, 0.100, 'j3', True), # R410
     ('sweetberry', (17,19), 'pp3300_a_wlan',  3.3, 0.020, 'j3', True), # R409
     ('sweetberry', (21,23), 'pp3300_a_ssd',   3.3, 0.020, 'j3', True), # R411
+    ('sweetberry', (22,24), 'ppvar_bat',      7.6, 0.010, 'j3', True), # PRB11
 ]
