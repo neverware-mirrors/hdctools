@@ -9,6 +9,7 @@
 import collections
 import errno
 import logging
+import logging.handlers
 import os
 import pkg_resources
 import select
@@ -16,12 +17,14 @@ import signal
 import SimpleXMLRPCServer
 import socket
 import sys
+import tarfile
 import threading
 import time
 
 import drv.loglevel
 import ftdi_common
 import servo_interfaces
+import servo_logging
 import servo_parsing
 import servo_server
 import servodutil
@@ -65,7 +68,6 @@ DEFAULT_PORT_RANGE = (9990, 9999)
 # hierarchy of definitions:
 #   command line <- environment definition <- rc config file
 DEFAULT_RC_FILE = '/home/%s/.servodrc' % os.getenv('SUDO_USER', '')
-
 
 class ServoDeviceWatchdog(threading.Thread):
   """Watchdog to ensure servod stops when a servo device gets lost.
@@ -244,13 +246,57 @@ class ServodStarter(object):
       ServodError: if automatic config cannot be found
     """
     options = self._parse_args(cmdline)
+    self._host = options.host
+    if options.port:
+      start_port = options.port
+      end_port = options.port
+    else:
+      end_port, start_port = DEFAULT_PORT_RANGE
+    for self._servo_port in xrange(start_port, end_port - 1, -1):
+      try:
+        self._server = SimpleXMLRPCServer.SimpleXMLRPCServer((self._host,
+                                                              self._servo_port),
+                                                             logRequests=False)
+        break
+      except socket.error as e:
+        if e.errno == errno.EADDRINUSE:
+          continue  # Port taken, see if there is another one next to it.
+        self._logger.fatal("Problem opening Server's socket: %s", e)
+        sys.exit(-1)
+    else:
+      if options.port:
+        err_msg = ('Port %d is busy' % options.port)
+      else:
+        err_msg = ('Could not find a free port in %d..%d range' % (end_port,
+                                                                   start_port))
+
+      self._logger.fatal(err_msg)
+      sys.exit(-1)
+    root_logger = logging.getLogger()
+    # Let the root logger process every log message, while the different
+    # handlers chose which ones to put out.
+    root_logger.setLevel(logging.DEBUG)
     if options.debug:
       level = 'debug'
     else:
       level = drv.loglevel.DEFAULT_LOGLEVEL
 
     loglevel, fmt = drv.loglevel.LOGLEVEL_MAP[level]
-    logging.basicConfig(level=loglevel, format=fmt)
+    stdout_handler = logging.StreamHandler(sys.stdout)
+    stdout_handler.setLevel(loglevel)
+    stdout_handler.formatter = logging.Formatter(fmt=fmt)
+    root_logger.addHandler(stdout_handler)
+    # Add file logging if requested.
+    if options.log_dir:
+      # |log_dir| is None iff it's not in the cmdline. Otherwise it contains
+      # a directory path to store the servod logs in.
+      # Start debug file logger.
+      fh_level, fh_fmt = drv.loglevel.LOGLEVEL_MAP['debug']
+      fh = servo_logging.ServodRotatingFileHandler(logdir=options.log_dir,
+                                                   port=self._servo_port)
+      fh.setLevel(fh_level)
+      fh.formatter = logging.Formatter(fmt=fh_fmt)
+      root_logger.addHandler(fh)
 
     # Servod needs to be running in the chroot without PID namespaces in order
     # to freeze terminals when reading from the UARTs.
@@ -275,7 +321,6 @@ class ServodStarter(object):
     if not servo_device:
       sys.exit(-1)
 
-    self._host = options.host
     lot_id = self.get_lot_id(servo_device)
     board_version = self.get_board_version(lot_id, servo_device.idProduct)
     self._logger.debug('board_version = %s', board_version)
@@ -331,31 +376,6 @@ class ServodStarter(object):
                        servo_device.idVendor, servo_device.idProduct,
                        usb_get_iserial(servo_device))
 
-    if options.port:
-      start_port = options.port
-      end_port = options.port
-    else:
-      end_port, start_port = DEFAULT_PORT_RANGE
-    for self._servo_port in xrange(start_port, end_port - 1, -1):
-      try:
-        self._server = SimpleXMLRPCServer.SimpleXMLRPCServer((self._host,
-                                                              self._servo_port),
-                                                             logRequests=False)
-        break
-      except socket.error as e:
-        if e.errno == errno.EADDRINUSE:
-          continue  # Port taken, see if there is another one next to it.
-        self._logger.fatal("Problem opening Server's socket: %s", e)
-        sys.exit(-1)
-    else:
-      if options.port:
-        err_msg = ('Port %d is busy' % options.port)
-      else:
-        err_msg = ('Could not find a free port in %d..%d range' % (end_port,
-                                                                   start_port))
-
-      self._logger.fatal(err_msg)
-      sys.exit(-1)
 
     self._servod = servo_server.Servod(
         scfg, vendor=servo_device.idVendor, product=servo_device.idProduct,
@@ -438,6 +458,11 @@ class ServodStarter(object):
                         'sending keyboard commands to DUTs that do not '
                         'have built in keyboards. Used in FAFT tests. '
                         '(Optional), e.g. /dev/ttyUSB0')
+    parser.add_argument('--log-dir', type=str, default=None, const='/var/log/',
+                        nargs='?',
+                        help='path where to dump servod debug logs as a file.'
+                        'If flag omitted in command line, no logs will be '
+                        'dumped to a file.')
     servo_parsing.add_servo_parsing_rc_options(parser)
     return parser.parse_args(cmdline)
 

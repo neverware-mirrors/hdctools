@@ -14,6 +14,11 @@
     <params on="0" off="1"></params>
   </map>
   <map>
+    <name>yes</name>
+    <doc>singular yes map</doc>
+    <params yes="1"></params>
+  </map>
+  <map>
     <name>yesno</name>
     <doc>assertive high map for yes/no</doc>
     <params yes="1" no="0"></params>
@@ -58,6 +63,12 @@
     <name>loglevel</name>
     <doc>The current log level of the root logger.</doc>
     <params drv="loglevel" interface="servo" input_type="str" />
+  </control>
+  <control>
+    <name>rotate_servod_logs</name>
+    <doc>Trigger a forced servod log rotation.</doc>
+    <params drv="servo_metadata" interface="servo" map="yes"
+      subtype="rotate_logs"/>
   </control>
   <control>
     <name>servod_pid</name>

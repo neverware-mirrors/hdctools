@@ -48,12 +48,13 @@ class loglevel(hw_driver.HwDriver):
 
     try:
       level, fmt_string = LOGLEVEL_MAP[new_level]
-      # Set servod's logging level.
-      root_logger.setLevel(level)
-
-      # Set the appropriate format string for each logging handler.
+      # Set servod's stdout logging level.
       for handler in root_logger.handlers:
-        handler.formatter = logging.Formatter(fmt=fmt_string)
+        # Set the appropriate format string for each logging handler.
+        if type(handler) != servo.servod.ServodRotatingFileHandler:
+          # The file logger is always DEBUG and cannot be changed.
+          handler.setLevel(level)
+          handler.formatter = logging.Formatter(fmt=fmt_string)
 
       # Set EC-3PO's logging level.
       for interface in self._interface._interface_list:
@@ -67,7 +68,17 @@ class loglevel(hw_driver.HwDriver):
 
   def get(self):
     """Gets the current loglevel of the root logger."""
-    cur_level = logging.getLogger().level
+    for handler in logging.getLogger().handlers:
+      # The loglevel is the level of any handler that is not the Servod
+      # handler as that one is always on debug.
+      if type(handler) != servo.servod.ServodRotatingFileHandler:
+        # The file logger is always DEBUG and cannot be changed.
+        cur_level = handler.level
+        break
+    else:
+      raise hw_driver.HwDriverError('Root logger has no output handlers '
+                                    'besides potentially the '
+                                    'ServodRotatingFileHandler')
 
     if cur_level == logging.CRITICAL:
       return 'critical'

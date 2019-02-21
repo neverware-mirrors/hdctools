@@ -7,6 +7,7 @@ import logging
 import os
 
 import hw_driver
+import servo.servo_logging
 
 class servoMetadata(hw_driver.HwDriver):
   """Class to access loglevel controls."""
@@ -41,3 +42,13 @@ class servoMetadata(hw_driver.HwDriver):
     xml_files = self._interface._syscfg._loaded_xml_files
     # See system_config.py for schema, but entry[0] is the file name
     return [entry[0] for entry in xml_files]
+
+  def _Set_rotate_logs(self, _):
+    """Force a servo log rotation."""
+    handlers = [h for h in logging.getLogger().handlers if
+                isinstance(h, servo.servo_logging.ServodRotatingFileHandler)]
+    self._logger.info('Rotating out the log file per user request.')
+    if not handlers:
+      self._logger.warn('No ServodRotatingFileHandlers on this instance. noop.')
+    for h in handlers:
+      h.doRollover()
