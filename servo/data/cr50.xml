@@ -1,5 +1,18 @@
 <?xml version="1.0"?>
 <root>
+  <!-- ******** Map ******** -->
+  <map>
+    <name>cr50_i2c_cmds</name>
+    <doc>Special i2c commands to CR50</doc>
+    <!-- NAME               : VALUE : DESCRIPTION
+         .................................................................
+         ite_debugger_mode: :     0 : For ITE ECs only.
+                                      This requests CR50 to send a special
+                                      waveform to ITE EC, which triggers
+                                      'DEBUGGER' mode.
+         .................................................................-->
+    <params clobber_ok="" ite_debugger_mode="0"/>
+  </map>
   <!-- cr50 is also named 'usbpd' for compatibility with previous scripts -->
   <control>
     <name>uart4_pty</name>
@@ -165,5 +178,12 @@
     <doc>current cr50 version</doc>
     <params cmd="get" subtype="version" interface="9" drv="cr50"
     map="print" init="print" clobber_ok=""></params>
+  </control>
+  <!-- cr50 I2C controls -->
+  <control>
+    <name>cr50_i2c_ctrl</name>
+    <doc>Send a special command to CR50 (write-only)</doc>
+    <params clobber_ok="" interface="2" drv="cr50_i2c" slv="0x78" cmd="set"
+    map="cr50_i2c_cmds"/>
   </control>
 </root>
