@@ -23,7 +23,7 @@
     <name>ec_chip</name>
     <doc>EC chip name (read-only)</doc>
     <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
-    drv="cros_chip" chip="npcx_int_spi"/>
+    drv="cros_chip" chip="npcx_int_spi" chip_for_ccd="npcx_uut"/>
   </control>
   <control>
     <name>power_state</name>

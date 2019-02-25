@@ -16,8 +16,14 @@ class crosChip(hw_driver.HwDriver):
       params: dictionary of params
     """
     super(crosChip, self).__init__(interface, params)
+    self._interface = interface
     self._chip = self._params.get('chip', 'unknown')
+    self._chip_for_ccd = self._params.get('chip_for_ccd', 'unknown')
 
   def _Get_chip(self):
     """Get the EC chip name."""
+    if ('ccd_cr50' in self._interface._version.lower() and
+        self._chip_for_ccd != 'unknown'):
+      return self._chip_for_ccd
+
     return self._chip
