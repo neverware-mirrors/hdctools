@@ -47,7 +47,7 @@ class INAConfigGenerator(object):
       board = re.sub(r'_.*', '', module_name)
       for rev in ina_pkg.revs:
         try:
-          self._configs_to_generate.append('%s_rev_%d' % (board, int(rev)))
+          self._configs_to_generate.append('%s_rev%d' % (board, int(rev)))
         except ValueError:
           raise INAConfigGeneratorError('Rev: %s has to be an integer.'
                                         % str(rev))

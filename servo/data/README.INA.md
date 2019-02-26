@@ -62,16 +62,17 @@ The filename of the .py configuration template should be board\_[suffix].py.
 If |revs| (see above) is defined, then the output configuration files after
 building hdctools will be named
 
-**board\_rev\_[rev].[filetype]**
+**board\_rev[rev].[filetype]**
 
 - filetype is either .xml or .board/.scenario depending on the configuration
   being for servod or powerlog usage.
 - rev being the revision numbers specified in the |revs| variable
+- rev[rev] also matches the output from `mosys platform version` in AP console
 
 Each rev in |revs| produces the same configuration. For example if revs = [0,1]
 then the ina generation will create
-- board\_rev\_0.[filetype]
-- board\_rev\_1.[filetype]
+- board\_rev0.[filetype]
+- board\_rev1.[filetype]
 
 If |revs| is not defined, then the output configuration file after building
 hdctools will be named idential to its .py template:
