@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 """Allows creation of an interface via stm32 usb."""
 
-import logging
 import usb
 
 
@@ -89,6 +88,11 @@ class Susb():
     else:
       dev = dev_list[0]
 
+    # Detatch raiden.ko if it is loaded.
+    if dev.is_kernel_driver_active(self._interface):
+      dev.detach_kernel_driver(self._interface)
+    usb.util.claim_interface(dev, self._interface)
+
     serial = '(%s)' % self._serialname if self._serialname else ''
     self._logger.debug('Found stm32%s: %04x:%04x' % (serial, self._vendor,
                                                      self._product))
@@ -113,9 +117,6 @@ class Susb():
     intf = usb.util.find_descriptor(cfg, bInterfaceNumber=self._interface)
     self._intf = intf
 
-    # Detatch raiden.ko if it is loaded.
-    if dev.is_kernel_driver_active(intf.bInterfaceNumber) is True:
-      dev.detach_kernel_driver(intf.bInterfaceNumber)
     self._logger.debug('InterfaceNumber: %s' % intf.bInterfaceNumber)
 
     read_ep_number = intf.bInterfaceNumber + self.READ_ENDPOINT
