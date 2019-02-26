@@ -4,6 +4,8 @@
 
 config_type='sweetberry'
 
+revs = [3, 4]
+
 inas = [
     ('sweetberry', '0x40:3', 'pp975_io',           7.7, 0.100, 'j2', True), # R111
     ('sweetberry', '0x40:1', 'pp850_prim_core',    7.7, 0.100, 'j2', True), # R164
