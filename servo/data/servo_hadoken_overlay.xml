@@ -23,4 +23,10 @@
     <alias>ec_power</alias>
     <params clobber_ok="" init="off"></params>
   </control>
+  <control>
+    <name>ec_chip</name>
+    <doc>EC chip name (read-only)</doc>
+    <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
+    drv="cros_chip" chip="nrf51"/>
+  </control>
 </root>
