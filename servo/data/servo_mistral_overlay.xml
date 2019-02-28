@@ -1,2 +1,40 @@
 <root>
+  <include>
+    <name>servoflex_cosmos.xml</name>
+  </include>
+  <control>
+    <name>lid_open</name>
+    <doc>fake lid for products without one</doc>
+    <params interface="servo" drv="na" init="not_applicable"
+    clobber_ok=""></params>
+  </control>
+  <control>
+    <name>power_state</name>
+    <doc>Used to turn the DUT off and on</doc>
+    <params cmd="set" interface="servo" drv="storm_power"
+    input_type="str"/>
+  </control>
+  <!-- TODO(rbhosagi) Currently there is no warm_reset available for P1 mistral
+       device.Modify the definition of cold_reset and warm_reset
+       once mappings are available on flex cable for mistral.
+  -->
+  <control>
+    <name>cold_reset</name>
+    <alias>warm_reset</alias>
+    <doc>warm_reset not connected on Mistral flex cable. Connect it to
+    cold_reset.</doc>
+    <params clobber_ok="" />
+  </control>
+  <control>
+    <name>ec_board</name>
+    <doc>The board name of the EC image</doc>
+    <params interface="servo" drv="na" init="not_applicable"
+    clobber_ok=""></params>
+  </control>
+  <control>
+    <name>dev_mode</name>
+    <doc>dev switch is not supported on Mistral</doc>
+    <params interface="servo" drv="na" init="not_applicable"
+    clobber_ok=""></params>
+</control>
 </root>
