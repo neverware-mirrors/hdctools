@@ -127,4 +127,10 @@
     <params cmd="get" subtype="chip" interface="servo"
     drv="cros_chip" chip="unknown" />
   </control>
+  <control>
+    <name>fpmcu_chip</name>
+    <doc>Fingerprint MCU chip name (read-only)</doc>
+    <params cmd="get" subtype="chip" interface="servo"
+    drv="cros_chip" chip="unknown" />
+  </control>
 </root>

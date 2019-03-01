@@ -40,7 +40,6 @@
   </control>
   <control>
     <name>fpmcu_chip</name>
-    <alias>usbpd_chip</alias>
     <doc>FP MCU chip name (read-only)</doc>
     <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
     drv="cros_chip" chip="stm32"/>
