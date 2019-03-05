@@ -31,6 +31,12 @@
     <name>jtag_vref_sel1</name>
     <params clobber_ok="" init="pp3300"></params>
   </control>
+  <control>
+    <name>ec_chip</name>
+    <doc>EC chip name (read-only)</doc>
+    <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
+    drv="cros_chip" chip="stm32"/>
+  </control>
   <!-- FP MCU is also named 'usbpd' for compatibility with previous scripts -->
   <!-- FP MCU UART Controls -->
   <control>
