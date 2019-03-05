@@ -81,6 +81,56 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
 
     self._issue_cmd(cmds)
 
+  def servo_adc(self):
+    """Get adc state info from servo V4.
+
+    returns:
+      (chg_cc1, chg_cc2, dut_cc1, dut_cc2, sbu1, sbu2) tuple of float in mv.
+
+    > adc
+    CHG_CC1_PD = 1648
+    CHG_CC2_PD = 34
+    DUT_CC1_PD = 1694
+    DUT_CC2_PD = 991
+    SBU1_DET = 2731
+    SBU2_DET = 92
+    SUB_C_REF = 565
+    """
+    rx = ['(CHG_CC1_PD) = (\d+)',
+          '(CHG_CC2_PD) = (\d+)',
+          '(DUT_CC1_PD) = (\d+)',
+          '(DUT_CC2_PD) = (\d+)',
+          '(SBU1_DET) = (\d+)',
+          '(SBU2_DET) = (\d+)']
+
+    res = self._issue_safe_cmd_get_results('adc', rx)
+
+    if len(res) != 6:
+      raise ec3poServoV4Error("Can't receive cc info: [%s]" % results)
+
+    vals = {entry[1] : entry[2] for entry in res}
+
+    return vals
+
+  def _Get_adc(self):
+    """Get adc value.
+
+    Args:
+      name: adc name.
+    """
+    if 'adc_name' in self._params:
+      name = self._params['adc_name']
+    else:
+      raise ec3poServoV4Error("'adc_name' not in _params")
+
+    vals = self.servo_adc()
+
+    if name not in vals:
+      raise ec3poServoV4Error(
+          "adc_name '%s' not in adc set %s" % (name, vals.keys()))
+
+    return vals[name]
+
   def servo_cc_modes(self):
     """Get cc line state info from servo V4.
 
