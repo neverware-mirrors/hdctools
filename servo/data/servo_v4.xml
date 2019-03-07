@@ -48,6 +48,11 @@
     <params usbsnk="0" ccd="1" rpusb="2" rpchg="3" disconnect="4"
      usbchg="5"></params>
   </map>
+  <map>
+    <name>servo_v4_type_map</name>
+    <doc>Identify type-A and type-C servos</doc>
+    <params type-a="0" type-c="1"></params>
+  </map>
 
   <!-- GPIO on chip settings -->
   <control>
@@ -108,10 +113,10 @@
      name="USB_FAULT_L" map="onoff_i"></params>
   </control>
   <control>
-    <name>dongle_detect</name>
+    <name>servo_v4_type</name>
     <doc>DONGLE_DET</doc>
     <params interface="26" drv="ec3po_gpio" subtype="single"
-     name="DONGLE_DET" map="onoff"></params>
+     name="DONGLE_DET" map="servo_v4_type_map"></params>
   </control>
 
   <!-- GPIO on expander settings -->
