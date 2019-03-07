@@ -251,6 +251,11 @@ class ServoV4PostInit(BasePostInit):
     if self.servod._board:
       self._logger.error('No servo micro or CCD detected for board %s',
           self.servod._board)
+      # TODO(guocb): remove below tip when DUTs directionality is stable.
+      self._logger.error('Try flipping the USB type C cable if you were using '
+                         'servo v4 type C.')
+      self._logger.error('If flipping the cable allows CCD, please file a bug '
+                         'against the DUT platform with reproducing details.')
       raise ServoPostInitError('No device interface '
                                '(servo micro or CCD) connected.')
     else:
