@@ -124,7 +124,7 @@ class Servod(object):
         self._interface_list[i] = result
 
   def __init__(self, config, vendor, product, serialname=None, interfaces=None,
-               board='', version=None, usbkm232=None):
+               board='', model='', version=None, usbkm232=None):
     """Servod constructor.
 
     Args:
@@ -134,6 +134,8 @@ class Servod(object):
       product: usb product id of FTDI device
       serialname: string of device serialname/number as defined in FTDI eeprom.
       interfaces: list of strings of interface types the server will instantiate
+      board: board name. e.g. octopus, coral, or scarlet.
+      model: model name of a given board. e.g. fleex, ampton, or apel.
       version: String. Servo board version. Examples: servo_v1, servo_v2,
           servo_v2_r0, servo_v3
       usbkm232: String. Optional. Path to USB-KM232 device which allow for
@@ -160,8 +162,11 @@ class Servod(object):
     # Dict of Dict to map control name, function name to to tuple (params, drv)
     # Ex) _drv_dict[name]['get'] = (params, drv)
     self._drv_dict = {}
-    self._board = board
     self._base_board = ''
+    self._board = board
+    if model:
+      self._board += '_' + model
+    self._model = model
     self._version = version
     self._usbkm232 = usbkm232
     if not interfaces:

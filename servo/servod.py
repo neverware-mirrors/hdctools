@@ -357,14 +357,11 @@ class ServodStarter(object):
       self._logger.fatal(err_msg)
       sys.exit(-1)
 
-    board_model = options.board
-    if options.model:
-      board_model += '_' + options.model
     self._servod = servo_server.Servod(
         scfg, vendor=servo_device.idVendor, product=servo_device.idProduct,
         serialname=usb_get_iserial(servo_device),
-        interfaces=options.interfaces.split(), board=board_model,
-        version=board_version, usbkm232=options.usbkm232)
+        interfaces=options.interfaces.split(), board=options.board,
+        model=options.model, version=board_version, usbkm232=options.usbkm232)
 
     # Small timeout to allow interface threads to initialize.
     time.sleep(0.5)
