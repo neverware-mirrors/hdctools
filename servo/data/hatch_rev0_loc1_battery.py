@@ -5,6 +5,7 @@
 config_type='sweetberry'
 
 inas = [
+    ('sweetberry', (1,3),   'battery',        7.6, 0.050, 'j3', True),
     ('sweetberry', (1,3),   'pp3300_g',       3.3, 0.100, 'j4', True), # PR17, original 0.005ohm
     ('sweetberry', (2,4),   'pp3300_h1',      3.3, 0.500, 'j4', True), # R423
     ('sweetberry', (6,8),   'pp3300_ec',      3.3, 0.500, 'j4', True), # R415
