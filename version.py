@@ -24,4 +24,4 @@ def get_ghash():
   return ghash
 
 
-__version__ = '0.0.1-' + get_ghash()
+__version__ = '0.0.1+' + get_ghash()
