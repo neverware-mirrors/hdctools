@@ -325,6 +325,7 @@
     <params cmd="get" subtype="pty" interface="3" drv="uart">
     </params>
   </control>
+
   <control>
     <name>servo_micro_version</name>
     <doc>current fw version</doc>
@@ -332,6 +333,14 @@
     drv="ec3po_servo_micro" map="print" init="print" clobber_ok="">
     </params>
   </control>
+  <control>
+    <name>servo_micro_latest_version</name>
+    <doc>servo-firmware available fw version</doc>
+    <params cmd="get" subtype="latest_version" interface="6"
+    drv="ec3po_servo_micro">
+    </params>
+  </control>
+
   <!-- EC-3PO console interpreter linkup -->
   <control>
     <name>ec3po_servo_micro_uart</name>

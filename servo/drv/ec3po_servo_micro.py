@@ -87,32 +87,10 @@ class ec3poServoMicro(ec3po_servo.ec3poServo):
     Raises:
       ec3poServoMicroError: on init failure
     """
-    super(ec3poServoMicro, self).__init__(interface, params)
+    ec3po_servo.ec3poServo.__init__(
+        self, interface, params, board='servo_micro')
 
     self._logger.debug('')
-
-  def _Get_version(self):
-    """Getter of version.
-
-    Returns:
-        The version string
-    """
-    result = self._issue_safe_cmd_get_results('version', [
-        r'(?:^|\n)Build:\s+(\S+)\s'])[0]
-    if result is None:
-      raise ec3poServoMicroError('Cannot retrieve the version.')
-    return result[1]
-
-  def _Set_version(self, value):
-    """'Setter' of version.
-
-    Args:
-        value: should equal print/0
-    Prints:
-        The version string
-    """
-    version = self._Get_version()
-    self._logger.info('------------- servo micro version: %s', version)
 
   def batch_set(self, batch, index):
     """Set a batch of values on servo micro.

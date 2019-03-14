@@ -8,6 +8,7 @@ import logging
 import os
 import re
 import subprocess
+import time
 import usb
 
 import servo_interfaces
@@ -249,6 +250,10 @@ class ServoV4PostInit(BasePostInit):
 
     # Fail if we requested board control but don't have an interface for this.
     if self.servod._board:
+      if self.servod.get('servo_v4_type') == 'type-c':
+        self.diagnose_ccd()
+
+
       self._logger.error('No servo micro or CCD detected for board %s',
           self.servod._board)
       # TODO(guocb): remove below tip when DUTs directionality is stable.
@@ -260,6 +265,87 @@ class ServoV4PostInit(BasePostInit):
                                '(servo micro or CCD) connected.')
     else:
       self._logger.info('No servo micro and CCD detected.')
+
+  def diagnose_ccd(self):
+    # Voltage levels indicating ~0V or ~3.3V
+    NC_LOW = 300
+    NC_HIGH = 2800
+
+    # Check ADC values for SBU lines
+    sbu1 = int(self.servod.get('servo_v4_sbu1_mv'))
+    sbu2 = int(self.servod.get('servo_v4_sbu2_mv'))
+    # Check ADC values for CC lines
+    dut_cc1 = int(self.servod.get('servo_v4_dut_cc1_mv'))
+    dut_cc2 = int(self.servod.get('servo_v4_dut_cc2_mv'))
+    chg_cc1 = int(self.servod.get('servo_v4_chg_cc1_mv'))
+    chg_cc2 = int(self.servod.get('servo_v4_chg_cc2_mv'))
+
+    # Check SuzyQ routing settings.
+    sbu_en = self.servod.get('sbu_mux_enable') == 'on'  # SuzyQ plugged
+    sbu_flip = self.servod.get('sbu_flip_sel') == 'on'  # SuzyQ flipped
+    # Check servo info.
+    servo_v4_type = self.servod.get('servo_v4_type')
+    servo_v4_fw = self.servod.get('servo_v4_version')
+    servo_v4_latest_fw = self.servod.get('servo_v4_latest_version')
+
+    self._logger.error('')
+    self._logger.error('CCD diagnosis info:')
+    self._logger.error('servo_v4_type is %s' % servo_v4_type)
+    self._logger.error('servo_v4 version is %s' % servo_v4_fw)
+    self._logger.error('')
+
+    # Check for obsolete firmware.
+    if servo_v4_fw != servo_v4_latest_fw:
+      self._logger.error("Servo v4 fw version doesn't match latest.")
+      self._logger.error("servo-firmware supplies %s" % servo_v4_latest_fw)
+      self._logger.error("  Run 'sudo servo_updater -b servo_v4' to correct.")
+      self._logger.error('')
+
+    # Check if chargethrough is plugged in.
+    if chg_cc1 < NC_LOW and chg_cc2 < NC_LOW:
+      self._logger.error('No charger connected to servo')
+      self._logger.error('')
+
+    # Check if servo v4 is plugged to a DUT.
+    if dut_cc1 < NC_LOW and dut_cc2 < NC_LOW:
+      self._logger.error('No DUT plugged into servo')
+      self._logger.error('')
+    if dut_cc1 > NC_HIGH and dut_cc2 > NC_HIGH:
+      self._logger.error('No DUT plugged into servo')
+      self._logger.error('')
+
+    # Check if Cr50 USB is present on SBU.
+    if sbu1 < NC_LOW and sbu2 < NC_LOW:
+      self._logger.error('No USB exported from DUT Cr50')
+      self._logger.error('')
+
+    cr50_orientation = None
+    if sbu1 > NC_HIGH and sbu2 < NC_LOW:
+      cr50_orientation = 'flip'
+    if sbu1 < NC_LOW and sbu2 > NC_HIGH:
+      cr50_orientation = 'direct'
+
+    suzyq_orientation = 'flip' if sbu_flip else 'direct'
+
+    # Check if Cr50 orientation seems flipped from SuzyQ.
+    if cr50_orientation:
+      self._logger.error('Cr50 USB detected in '
+          '%s orientation' % cr50_orientation)
+      self._logger.error('SuzyQ in %s orientation' % suzyq_orientation)
+      self._logger.error('')
+
+    # Check if SuzyQ routed to DUT.
+    if not sbu_en:
+      self._logger.error('SuzyQ disabled in software')
+      self._logger.error('')
+
+    # Dump raw voltages and settings.
+    self._logger.error('DUT CC: %4dmV %4dmV' % (dut_cc1, dut_cc2))
+    self._logger.error('CHG CC: %4dmV %4dmV' % (chg_cc1, chg_cc2))
+    self._logger.error('SBU:    %4dmV %4dmV' % (sbu1, sbu2))
+    self._logger.error('SuzyQ enabled: '
+        '%s, SuzyQ orientation: %s' % (sbu_en, suzyq_orientation))
+    self._logger.error('')
 
 
 # Add in servo v4 post init method.

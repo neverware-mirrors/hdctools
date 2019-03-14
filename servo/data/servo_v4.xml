@@ -254,6 +254,12 @@
     <params cmd="get" subtype="version" interface="26" drv="ec3po_servo_v4"
         map="print" init="print"></params>
   </control>
+  <control>
+    <name>servo_v4_latest_version</name>
+    <doc>latest released fw version</doc>
+    <params cmd="get" subtype="latest_version" interface="26"
+      drv="ec3po_servo_v4"></params>
+  </control>
 
   <!-- UART and CONSOLE settings -->
   <control>
