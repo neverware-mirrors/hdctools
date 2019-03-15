@@ -139,6 +139,12 @@
     input_type="str" clobber_ok=""></params>
   </control>
   <control>
+    <name>ccd_i2c_en</name>
+    <doc>Query CCD I2C capability (read-only)</doc>
+    <params cmd="get" subtype="ccd_cap_i2c" interface="9" drv="cr50"
+    input_type="str" clobber_ok=""></params>
+  </control>
+  <control>
     <name>cr50_testlab</name>
     <doc>Cr50 testlab state</doc>
     <params subtype="ccd_testlab" interface="9" drv="cr50"

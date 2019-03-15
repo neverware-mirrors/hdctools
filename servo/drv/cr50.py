@@ -269,6 +269,30 @@ class cr50(pty_driver.ptyDriver):
     rdd = self._get_ccd_cap_state('Rdd')
     return 'on' if 'keepalive' in rdd else 'off'
 
+  def _Get_ccd_cap(self, cap_name):
+    """Getter of CCD capability state for the given capability name.
+
+    Returns:
+      'Default': Default value.
+      'Always': Enabled always.
+      'UnlessLocked': Enabled unless CCD is locked.
+      'IfOpened': Enabled if CCD is opened.
+    """
+    cap_state = self._issue_cmd_get_results('ccd', ['\s+' + cap_name +
+        '\s+[YN]\s+[0-3]=(Default|Always|UnlessLocked|IfOpened)'])[0][1]
+    return cap_state
+
+  def _Get_ccd_cap_i2c(self):
+    """Getter of CCD I2C capability flag.
+
+    Returns:
+      'Default': Default value.
+      'Always': Enabled always.
+      'UnlessLocked': Enabled unless CCD is locked.
+      'IfOpened': Enabled if CCD is opened.
+    """
+    return self._Get_ccd_cap('I2C')
+
   def _Set_ccd_keepalive_en(self, value):
     """Setter of ccd_keepalive_en.
 
