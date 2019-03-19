@@ -244,33 +244,3 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
     else:
       raise ValueError("Invalid power role setting: '%s'. Try one of "
                        "'src' or 'snk'." % value)
-
-  def _Get_servo_v4_ccd_keepalive(self):
-    """Get keepalive status.
-
-    Returns:
-       1 if keepalive is enabled, 0 if it's not.
-    """
-    _, status = self._issue_safe_cmd_get_results('keepalive',
-         ['ccd_keepalive: ([a-zA-Z]+)'])[0]
-    if status == 'enabled':
-      return 1
-
-    return 0
-
-  def _Set_servo_v4_ccd_keepalive(self, enable):
-    """Set servo_v4_ccd_keepalive.
-
-    Note: When keepalive is enabled, it will remain enabled until explicitly
-    disabled.
-
-    Args:
-      enable: An integer indicating if keepalive should be enabled (non-zero),
-              otherwise disabled.
-    """
-    if enable:
-      val = 'enable'
-    else:
-      val = 'disable'
-
-    self._issue_cmd('keepalive %s' % val)
