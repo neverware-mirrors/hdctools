@@ -34,11 +34,12 @@
     <params interface="servo" drv="na" init="not_applicable"
     clobber_ok=""></params>
   </control>
+  <!-- FORCE_USB_BOOT on Y-flex cable is mapped to hpd on pin 39, so remap
+       dev_mode to hpd
+  -->
   <control>
-    <name>dev_mode</name>
-    <doc>dev switch is not supported on Mistral</doc>
-    <params interface="servo" drv="na" init="not_applicable"
-    clobber_ok=""></params>
+    <name>hpd</name>
+    <remap>dev_mode</remap>
   </control>
   <!-- To avoid disabling atmega Keyboard on servo_v4 as part of servo_repair.
        Init atmega_rst to off
