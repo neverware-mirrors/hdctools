@@ -36,5 +36,13 @@
     <doc>dev switch is not supported on Mistral</doc>
     <params interface="servo" drv="na" init="not_applicable"
     clobber_ok=""></params>
-</control>
+  </control>
+  <!-- To avoid disabling atmega Keyboard on servo_v4 as part of servo_repair.
+       Init atmega_rst to off
+  -->
+  <control>
+    <name>atmega_rst</name>
+    <doc>ATMEL_RESET_L: reset atmega</doc>
+    <params clobber_ok="" init="off"></params>
+  </control>
 </root>
