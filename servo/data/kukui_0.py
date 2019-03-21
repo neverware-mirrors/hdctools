@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# generates kukui_rev_0, kukui_rev_1
-revs = [0, 1]
+# generates kukui_rev0, kukui_rev1, kukui_rev2
+revs = [0, 1, 2]
 
 inas = [
         ('ina3221', '0x40:0', 'ppvar_c0_vbus',  5.0, 0.020, 'rem', True),
