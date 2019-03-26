@@ -130,7 +130,7 @@
     <name>atmega_rst</name>
     <doc>ATMEL_RESET_L: reset atmega</doc>
     <params interface="23" drv="tca6416" slv="0x20" port="0"
-    offset="1" map="onoff_i" init="on"></params>
+    offset="1" map="onoff_i" init="off"></params>
   </control>
   <control>
     <name>sbu_flip_sel</name>
