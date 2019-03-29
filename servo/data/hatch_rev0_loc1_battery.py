@@ -17,7 +17,7 @@ inas = [
     ('sweetberry', (21,23), 'pp3300_a_ssd',   3.3, 0.020, 'j4', True), # R411
     ('sweetberry', (22,24), 'ppvar_bat',      7.6, 0.010, 'j4', True), # PRB11
     ('sweetberry', (26,28), 'pp3300_g_in',    7.6, 0.100, 'j4', True), # PR10, original 0.020ohm
-    ('sweetberry', (27,29), 'pp3300_dx_wwan', 3.3, 0.010, 'j4', True), # R418
+    ('sweetberry', (27,29), 'pp3300_dx_wwan', 3.3, 0.500, 'j4', True), # R418, original 0.010ohm
     ('sweetberry', (31,33), 'ppvar_gt',       7.6, 0.020, 'j4', True), # PRZ78, original 0.001ohm
     ('sweetberry', (32,34), 'ppvar_sa',       7.6, 0.020, 'j4', True), # PRZ79, original 0.010ohm
     ('sweetberry', (36,38), 'ppvar_vcc',      7.6, 0.020, 'j4', True), # PRZ77, original 0.001ohm
