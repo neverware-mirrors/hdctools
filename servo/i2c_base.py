@@ -5,6 +5,7 @@
 
 import logging
 import os
+import subprocess
 import threading
 import weakref
 
@@ -53,6 +54,14 @@ class BaseI2CBus(object):
     with self.__lock:
       if self.__pseudo_adap is not None:
         self.__do_close()
+
+      # While the I2C pseudo adapter controller itself does not need i2c-dev, it
+      # is intended to be available for userspace processes, so for convenience
+      # we make sure i2c-dev is loaded if available.
+      self.__modprobe('i2c-dev', True)
+      # The I2C pseudo adapter controller very much needs i2c-pseudo!
+      self.__modprobe('i2c-pseudo', True)
+
       pseudo_ctrlr_path = i2c_pseudo.default_controller_path()
       if not os.path.exists(pseudo_ctrlr_path):
         self.__logger.info('path %r not found, not starting I2C pseudo adapter'
@@ -164,3 +173,28 @@ class BaseI2CBus(object):
     # TODO(b/79684405): This circular reference is less than ideal.  Find a
     # better way to fit i2c_pseudo.I2cPseudoAdapter into servod.
     self.__pseudo_adap = None
+
+  def __modprobe(self, module, quiet):
+    """Run modprobe for a given module name.
+
+    Args:
+      module: str - The module name to attempt to load.
+      quiet: bool - Whether or not to ask modprobe to suppress error output.
+        Regardless of the value of this setting, modprobe stdout and stderr will
+        be inherited from servod.
+
+    The modprobe attempt and its exit status will be logged at INFO level
+    regardless of the quiet setting.
+    """
+    # Escape the CrOS development chroot to find modules for the host system.
+    # Servod should be running as root anyways, should have permission for this.
+    args = ['chroot', '--', '/proc/1/root', 'modprobe']
+    if quiet:
+      args.append('--quiet')
+    args.append('--')
+    args.append(module)
+    logging.info('Executing command: %r' % (args,))
+    ret = subprocess.call(args)
+    logging.debug('Exit status was %d (negative is killed by signal) for '
+                  'command: %r' % (ret, args))
+    return ret

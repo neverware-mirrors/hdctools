@@ -13,6 +13,7 @@ import logging
 import os
 import select
 import threading
+import os
 
 _CONTROLLER_DEVICE_PATH = b'/dev/i2c-pseudo-controller'
 _CMD_END_CHAR = b'\n'
