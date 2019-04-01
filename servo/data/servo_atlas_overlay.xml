@@ -7,6 +7,9 @@
     <name>x86_ec_common.xml</name>
   </include>
   <include>
+    <name>cr50.xml</name>
+  </include>
+  <include>
     <name>warm_reset_reconf.xml</name>
   </include>
   <!-- ******** Controls ******** -->
