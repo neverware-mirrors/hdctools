@@ -141,12 +141,12 @@ class _BaseHandler(object):
     """Simulate Ctrl-u simultaneous button presses."""
     NotImplementedError()
 
-  def ctrl_enter(self, press_secs=''):
-    """Simulate Ctrl-enter simultaneous button presses."""
+  def ctrl_s(self, press_secs=''):
+    """Simulate Ctrl-s simultaneous button presses."""
     NotImplementedError()
 
-  def d_key(self, press_secs=''):
-    """Simulate Enter key button press."""
+  def ctrl_enter(self, press_secs=''):
+    """Simulate Ctrl-enter simultaneous button presses."""
     NotImplementedError()
 
   def ctrl_key(self, press_secs=''):
@@ -182,6 +182,15 @@ class _BaseHandler(object):
         """
     NotImplementedError()
 
+  def arb_key(self, press_secs=''):
+    """Simulate an arbitrary key press.
+        """
+    NotImplementedError()
+
+  def arb_key_config(self, key):
+    """Set key for an arbitrary key press.
+        """
+    self._arb_key = key
 
 class MatrixKeyboardHandler(_BaseHandler):
   """Matrix keyboard handler for DUT with internal keyboards.
@@ -237,11 +246,6 @@ class MatrixKeyboardHandler(_BaseHandler):
   def ctrl_enter(self, press_secs=''):
     """Simulate Ctrl-enter simultaneous button presses."""
     self._press_and_release_keys('ctrl_enter', press_secs)
-
-  def d_key(self, press_secs=''):
-    """Simulate Enter key button press."""
-    self._press_and_release_keys('d', press_secs)
-    return True
 
   def ctrl_key(self, press_secs=''):
     """Simulate Enter key button press."""
@@ -459,13 +463,13 @@ class ChromeECHandler(_BaseHandler):
     """Simulate Ctrl-u simultaneous button presses."""
     self._press_and_release_keys(['<ctrl_l>', 'u'], press_secs)
 
+  def ctrl_s(self, press_secs=''):
+    """Simulate Ctrl-s simultaneous button presses."""
+    self._press_and_release_keys(['<ctrl_l>', 's'], press_secs)
+
   def ctrl_enter(self, press_secs=''):
     """Simulate Ctrl-enter simultaneous button presses."""
     self._press_and_release_keys(['<enter>'], press_secs)
-
-  def d_key(self, press_secs=''):
-    """Simulate Enter key button press."""
-    self._press_and_release_keys(['d'], press_secs)
 
   def ctrl_key(self, press_secs=''):
     """Simulate Enter key button press."""
@@ -492,6 +496,10 @@ class ChromeECHandler(_BaseHandler):
         This key combination is the kernel system request (sysrq) x.
         """
     self._press_and_release_keys(['<alt_l>', '<f10>', 'x'], press_secs)
+
+  def arb_key(self, press_secs=''):
+    """Simulate an arbitrary key press."""
+    self._press_and_release_keys([self._arb_key], press_secs)
 
 
 class USBkm232Handler(_BaseHandler):
@@ -757,9 +765,9 @@ class USBkm232Handler(_BaseHandler):
     """Press and release ctrl-u sequence."""
     self._write([self._press('<lctrl>'), self._press('u')])
 
-  def d_key(self, press_secs=''):
-    """Simulate Enter key button press."""
-    self._write([self._press('d')])
+  def ctrl_s(self, press_secs=''):
+    """Press and release ctrl-s sequence."""
+    self._write([self._press('<lctrl>'), self._press('s')])
 
   def enter_key(self, press_secs=''):
     """Press and release enter"""
@@ -793,6 +801,10 @@ class USBkm232Handler(_BaseHandler):
         This key combination is the kernel system request (sysrq) x.
         """
     self._write([self._press('<lalt>'), self._press('<f10>'), self._press('x')])
+
+  def arb_key(self, press_secs=''):
+    """Simulate an arbitrary key press."""
+    self._write([self._press(self._arb_key)])
 
   def tab(self):
     """Press and release tab"""

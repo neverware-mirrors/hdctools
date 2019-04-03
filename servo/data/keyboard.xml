@@ -8,79 +8,91 @@
   <control>
     <name>power_key</name>
     <doc>Send power key either by servoflex or USB KB emulation</doc>
-    <params cmd="set" key="power_key" interface="servo" drv="kb"
+    <params cmd="set" subtype="key" key="power_key" interface="servo" drv="kb"
     input_type="float" map="keypress_duration" clobber_ok=""></params>
   </control>
   <control>
     <name>imaginary_key</name>
     <doc>Send non existant key either by servoflex or USB KB
     emulation</doc>
-    <params cmd="set" key="imaginary_key" interface="servo"
+    <params cmd="set" subtype="key" key="imaginary_key" interface="servo"
     drv="kb" input_type="float" map="keypress_duration" clobber_ok=""></params>
-  </control>
-  <control>
-    <name>d_key</name>
-    <doc>Send d key either by servoflex or USB KB emulation</doc>
-    <params cmd="set" key="d_key" interface="servo" drv="kb"
-    input_type="float" map="keypress_duration" clobber_ok=""></params>
   </control>
   <control>
     <name>ctrl_key</name>
     <doc>Send ctrl either by servoflex or USB KB emulation</doc>
-    <params cmd="set" key="ctrl_key" interface="servo" drv="kb"
+    <params cmd="set" subtype="key" key="ctrl_key" interface="servo" drv="kb"
     input_type="float" map="keypress_duration" clobber_ok=""></params>
   </control>
   <control>
     <name>ctrl_d</name>
     <doc>Send ctrl d either by servoflex or USB KB emulation</doc>
-    <params cmd="set" key="ctrl_d" interface="servo" drv="kb"
+    <params cmd="set" subtype="key" key="ctrl_d" interface="servo" drv="kb"
     input_type="float" map="keypress_duration" clobber_ok=""></params>
   </control>
   <control>
     <name>ctrl_u</name>
     <doc>Send ctrl u either by servoflex or USB KB emulation</doc>
-    <params cmd="set" key="ctrl_u" interface="servo" drv="kb"
+    <params cmd="set" subtype="key" key="ctrl_u" interface="servo" drv="kb"
+    input_type="float" map="keypress_duration" clobber_ok=""></params>
+  </control>
+  <control>
+    <name>ctrl_s</name>
+    <doc>Send ctrl s either by servoflex or USB KB emulation</doc>
+    <params cmd="set" subtype="key" key="ctrl_s" interface="servo" drv="kb"
     input_type="float" map="keypress_duration" clobber_ok=""></params>
   </control>
   <control>
     <name>ctrl_enter</name>
     <doc>Send ctrl enter either by servoflex or USB KB
     emulation</doc>
-    <params cmd="set" key="ctrl_enter" interface="servo" drv="kb"
+    <params cmd="set" subtype="key" key="ctrl_enter" interface="servo" drv="kb"
     input_type="float" map="keypress_duration" clobber_ok=""></params>
   </control>
   <control>
     <name>enter_key</name>
     <doc>Send enter key either by servoflex or USB KB
     emulation</doc>
-    <params cmd="set" key="enter_key" interface="servo" drv="kb"
+    <params cmd="set" subtype="key" key="enter_key" interface="servo" drv="kb"
     input_type="float" map="keypress_duration" clobber_ok=""></params>
   </control>
   <control>
     <name>refresh_key</name>
     <doc>Send refresh key either by servoflex or USB KB
     emulation</doc>
-    <params cmd="set" key="refresh_key" interface="servo" drv="kb"
+    <params cmd="set" subtype="key" key="refresh_key" interface="servo" drv="kb"
     input_type="float" map="keypress_duration" clobber_ok=""></params>
   </control>
   <control>
     <name>ctrl_refresh_key</name>
     <doc>Send ctrl refresh key either by servoflex or USB KB
     emulation</doc>
-    <params cmd="set" key="ctrl_refresh_key" interface="servo"
+    <params cmd="set" subtype="key" key="ctrl_refresh_key" interface="servo"
     drv="kb" input_type="float" map="keypress_duration" clobber_ok=""></params>
   </control>
   <control>
     <name>sysrq_x</name>
     <doc>Send sysrq x either by servoflex or USB KB emulation</doc>
-    <params cmd="set" key="sysrq_x" interface="servo" drv="kb"
+    <params cmd="set" subtype="key" key="sysrq_x" interface="servo" drv="kb"
     input_type="float" map="keypress_duration" clobber_ok=""></params>
   </control>
   <control>
     <name>usb_keyboard_enter_key</name>
     <doc>Send enter key via USB KB emulation</doc>
-    <params cmd="set" key="enter_key" interface="servo" drv="kb"
+    <params cmd="set" subtype="key" key="enter_key" interface="servo" drv="kb"
       input_type="float" handler="usb" map="keypress_duration" clobber_ok="">
     </params>
+  </control>
+  <control>
+    <name>arb_key</name>
+    <doc>Send an arbitrary key either by servoflex or USB KB emulation</doc>
+    <params cmd="set" subtype="key" key="arb_key" interface="servo" drv="kb"
+    input_type="float" map="keypress_duration" clobber_ok=""></params>
+  </control>
+  <control>
+    <name>arb_key_config</name>
+    <doc>Send an arbitrary key either by servoflex or USB KB emulation</doc>
+    <params cmd="set" subtype="arb_key_config" interface="servo" drv="kb"
+    input_type="str" clobber_ok="" key=""></params>
   </control>
 </root>

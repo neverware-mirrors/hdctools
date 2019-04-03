@@ -39,7 +39,7 @@ class kb(hw_driver.HwDriver):
       interface.set('init_usb_keyboard', 'on')
     self._key = params['key']
 
-  def set(self, duration):
+  def _Set_key(self, duration):
     """Press key combo for |duration| seconds.
 
     Note: the key to press is defined in the params of the control under
@@ -61,3 +61,11 @@ class kb(hw_driver.HwDriver):
     except AttributeError:
       raise KbError('Key %s not found.' % self._key)
     func(press_secs=duration)
+
+  def _Set_arb_key_config(self, key):
+    """Set the key to be pressed when arb_key control is called
+
+    Args:
+      key: the key to press when arb_key is called
+    """
+    self._keyboard.arb_key_config(key)

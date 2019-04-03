@@ -875,10 +875,6 @@ class Servod(object):
     """Simulate Ctrl-enter simultaneous button presses."""
     return self.set('ctrl_enter', 'tab' if press_secs is '' else press_secs)
 
-  def d_key(self, press_secs=''):
-    """Simulate Enter key button press."""
-    return self.set('d_key', 'tab' if press_secs is '' else press_secs)
-
   def ctrl_key(self, press_secs=''):
     """Simulate Enter key button press."""
     return self.set('ctrl_key', 'tab' if press_secs is '' else press_secs)
