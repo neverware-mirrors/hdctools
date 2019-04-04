@@ -7,8 +7,11 @@ Presently tested for:
   INA219
   INA231
 """
+import errno
 import logging
 import numpy
+import servo.stm32i2c
+import time
 
 import hw_driver
 import i2c_reg
@@ -157,9 +160,29 @@ class ina2xx(hw_driver.HwDriver):
   def _has_reg(self, reg):
     return reg in self.REG_IDX
 
-  def _read_reg(self, name):
+  def _read_reg(self, name, timeout_retries=10):
     """Read architected register and return value."""
-    return self._i2c_obj._read_reg(self._get_reg_idx(name))
+    last_exception = None
+    for i in range(0, timeout_retries):
+      if i > 0:
+        sleep_ms = i ** 2
+        self._logger.warning('Read timed out, trying again in %d ms', sleep_ms)
+        time.sleep(sleep_ms / 1000.0)
+
+      try:
+        return self._i2c_obj._read_reg(self._get_reg_idx(name))
+      except IOError as e:
+        if e.errno == errno.ETIMEDOUT:
+          last_exception = e
+        else:
+          raise
+      except servo.stm32i2c.Si2cError as e:
+        last_exception = e
+
+    if last_exception:
+      raise last_exception
+    else:
+      raise ValueError('timeout_retries must be > 0')
 
   def _write_reg(self, name, value):
     """Write architected register."""
