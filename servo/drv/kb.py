@@ -35,10 +35,8 @@ class kb(hw_driver.HwDriver):
     # anyways.
     if handler == 'default':
       interface.set('init_keyboard', 'on')
-      self._keyboard = interface._keyboard
     if handler == 'usb':
       interface.set('init_usb_keyboard', 'on')
-      self._keyboard = interface._usb_keyboard
     self._key = params['key']
 
   def set(self, duration):
@@ -53,10 +51,13 @@ class kb(hw_driver.HwDriver):
     Raises:
       KbError: if key is not a member of kb_precanned map.
     """
-    if not self._keyboard:
+    keyboard = self._interface._keyboard
+    if  self._params.get('handler', 'default') == 'usb':
+      keyboard = self._interface._usb_keyboard
+    if not keyboard:
       raise KbError('Keyboard handler not setup.')
     try:
-      func = getattr(self._keyboard, self._key)
+      func = getattr(keyboard, self._key)
     except AttributeError:
-      raise KbError('Key %s not found' % self._key)
+      raise KbError('Key %s not found.' % self._key)
     func(press_secs=duration)

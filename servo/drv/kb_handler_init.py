@@ -72,6 +72,10 @@ class kbHandlerInit(hw_driver.HwDriver):
       usb_kb =  servo.keyboard_handlers.USBkm232Handler(self._servo,
                                                         self._servo._usbkm232)
       self._servo._usb_keyboard = usb_kb
+    elif not value:
+      # set the atmega to reset to turn off the usb keyboard.
+      self._servo.set('atmega_rst', 'on')
+      self._servo._usbkm232 = self._servo._usb_keyboard = None
 
   def _Get_init_default_keyboard(self):
     """Return whether the keyboard on the servo instance is initialized."""
@@ -90,3 +94,11 @@ class kbHandlerInit(hw_driver.HwDriver):
         handler_class_name = '%sHandler' % self._handler_type
         handler_class = getattr(servo.keyboard_handlers, handler_class_name)
         self._servo._keyboard = handler_class(self._servo)
+    else:
+      # Here, we want to turn off the kb handler. This is only really
+      # relevant for usb keyboard but for completeness we'll do it for
+      # both.
+      if self._handler_type == 'usb':
+        # properly turn off the usb keyboard.
+        self._servo.set('init_usb_keyboard', value)
+      self._servo._keyboard = None
