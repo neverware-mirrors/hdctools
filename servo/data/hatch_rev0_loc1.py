@@ -5,6 +5,7 @@
 config_type='sweetberry'
 
 inas = [
+    ('sweetberry', (1,3),   'ppvar_kb_bl',    7.6, 0.100, 'j2', True), # D36
     ('sweetberry', (1,3),   'pp3300_g',       3.3, 0.100, 'j4', True), # PR17, original 0.005ohm
     ('sweetberry', (2,4),   'pp3300_h1',      3.3, 0.500, 'j4', True), # R423
     ('sweetberry', (6,8),   'pp3300_ec',      3.3, 0.500, 'j4', True), # R415
@@ -20,4 +21,5 @@ inas = [
     ('sweetberry', (31,33), 'ppvar_gt',       7.6, 0.020, 'j4', True), # PRZ78, original 0.001ohm
     ('sweetberry', (32,34), 'ppvar_sa',       7.6, 0.020, 'j4', True), # PRZ79, original 0.010ohm
     ('sweetberry', (36,38), 'ppvar_vcc',      7.6, 0.020, 'j4', True), # PRZ77, original 0.001ohm
+    ('sweetberry', (37,39), 'ppvar_bl_pwr',   7.6, 0.050, 'j4', True), # F1
 ]
