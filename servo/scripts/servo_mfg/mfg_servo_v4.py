@@ -77,34 +77,39 @@ def do_macaddr(macaddr, usemodule=False):
   c.log('Set macaddr')
 
 
+def rd_atmega_reg(pty):
+  """Read ioexpander output register (2 for port 0) to determine current value
+  of atmega_rst.
+  """
+  cmdrd = 'i2cxfer r 1 0x40 2'
+  regex = '^(.+)$'
+  regex_atm = '(0x[0-9a-f][0-9a-f])'
+
+  results = pty._issue_cmd_get_results(cmdrd, [regex, regex_atm])[1]
+  rd = results[1].strip().strip('\n\r')
+  return int(rd, 16)
+
+
 def do_enable_atmega(pty):
   """Enable the atmega by deasserting reset on the servo v4's ioexpander
   via ec console 'pty'.
   """
-  cmdrd = 'i2cxfer r 1 0x40 2'
-  cmdwr = 'i2cxfer w 1 0x40 2 0x82'
-  regex = '^(.+)$'
-  regex_atm = '(0x8[02] .1[23][80].)'
+  rdmsk = 0x2
 
-  results = pty._issue_cmd_get_results(cmdrd, [regex_atm])[0]
-  rd = results[1].strip().strip('\n\r')
-  if rd == '0x82 [130]':
+  rdreg = rd_atmega_reg(pty)
+  if rdreg & rdmsk == rdmsk:
     c.log('Atmega already enabled')
     return True
 
-  if rd != '0x80 [128]':
-    c.log('Check atmega enabled failed: [%s]' % rd)
-    raise Exception('Atmega', 'Check atmega enabled failed: [%s]' % rd)
-
   # Issue i2c write to enable atmega
-  pty._issue_cmd(cmdwr)
+  pty._issue_cmd('i2cxfer w 1 0x40 2 0x%02x' % (rdreg | rdmsk))
 
   # Check if it stuck
-  results = pty._issue_cmd_get_results(cmdrd, [regex_atm])[0]
-  rd = results[1].strip().strip('\n\r')
-  if rd != '0x82 [130]':
-    c.log('Enable atmega failed: %s' % rd)
-    raise Exception('Atmega', 'Enable atmega failed: [%s]' % rd)
+  rdreg = rd_atmega_reg(pty)
+  if rdreg & rdmsk != rdmsk:
+    err = 'Enable atmega failed: 0x%02x' % rdreg
+    c.log(err)
+    raise Exception('Atmega', err)
 
   return True
 
