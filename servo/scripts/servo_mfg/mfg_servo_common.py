@@ -132,7 +132,7 @@ def do_atmega(bin_name):
     raise Exception('Flash', 'Failed to flash atmega: %s' % bin_name)
 
 
-def do_serialno(serialno, pty):
+def do_serialno(serialno, pty, check_only=False):
   """Set serialnumber 'serialno' via ec console 'pty'.
 
   Commands are:
@@ -140,7 +140,9 @@ def do_serialno(serialno, pty):
   # Saving serial number
   # Serial number: 1234
   """
-  cmd = 'serialno set %s' % serialno
+  cmd = 'serialno '
+  if not check_only:
+    cmd += 'set %s' % serialno
   regex = 'Serial number: (.*)$'
 
   results = pty._issue_cmd_get_results(cmd, [regex])[0]

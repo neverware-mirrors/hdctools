@@ -34,7 +34,7 @@ RE_MACADDR = re.compile('^([0-9A-Fa-f]{2}[:-]){5}([0-9A-F]{2})$')
 RE_SERIALNO = re.compile('^(C[0-9]{10}|N[PDQ][0-9]{5})$')
 
 
-def do_macaddr(macaddr, usemodule=False):
+def do_macaddr(macaddr, usemodule=False, check_only=False):
   """Provision macaddr to Realtek r8152 chip.
 
   Process is as follows for rtk programming kernel module:
@@ -58,6 +58,8 @@ def do_macaddr(macaddr, usemodule=False):
                          shell=True):
     c.log('Macaddr already set to %s' % macaddr)
     return
+  elif check_only:
+    raise Exception('Enet', 'mac addr not set correctly')
 
   if not subprocess.call('lsmod | grep mii | grep r815x', shell=True):
     if subprocess.call('rmmod r815x cdc_ether', shell=True):
@@ -121,6 +123,8 @@ def main():
   parser.add_argument('-m', '--macaddr', type=str, help='macaddr to program',
                       default=None)
   parser.add_argument('--no_flash', action='store_true', help='Skip DFU step')
+  parser.add_argument('--check_only', action='store_true',
+                      help='Only check programming')
 
   args = parser.parse_args()
 
@@ -151,6 +155,11 @@ def main():
     c.log('Scanned sn %s' % serialno)
     c.log('Scanned mac %s' % macaddr)
 
+    action = 'programming'
+    if args.check_only:
+      args.no_flash = True
+      action = 'checking'
+
     if not args.no_flash:
       c.log('\n\n************************************************\n')
       c.log('Plug in servo_v4 via OTG adapter')
@@ -167,33 +176,36 @@ def main():
     # Wait for cypress USB hub
     c.wait_for_usb(CYPRESS_DUT_VIDPID)
 
-    c.log('Programming sn:%s mac:%s' % (serialno, macaddr))
+    c.log('%s sn:%s mac:%s' % (action, serialno, macaddr))
 
-    c.log('Programming sn:%s' % serialno)
+    c.log('%s sn:%s' % (action, serialno))
     pty = c.setup_tinyservod(STM_VIDPID, 0)
-    c.do_serialno(serialno, pty)
-    c.log('Done programming serialno')
+    c.do_serialno(serialno, pty, check_only=args.check_only)
+    c.log('Done %s serialno' % action)
     c.log('')
 
     # Wait for atmega dfu, if not already programmed
-    c.log('Programming Atmega')
+    c.log('%s Atmega' % action)
     do_enable_atmega(pty)
     # Wait for atmega boot.
     time.sleep(1)
     if not c.check_usb(ATM_LUFA_VIDPID):
+      if args.check_only:
+        raise Exception('Atmega', 'Atmega keyboard not flashed')
+
       c.wait_for_usb(ATM_DFU_VIDPID)
       c.do_atmega(ATM_BIN)
-      c.log('Done programming Atmega')
+      c.log('Done %s Atmega' % action)
     else:
       c.log('Atmega already programmed')
     c.log('')
 
-    c.log('Programming mac:%s' % macaddr)
-    do_macaddr(macaddr)
-    c.log('Done programming mac')
+    c.log('%s mac:%s' % (action, macaddr))
+    do_macaddr(macaddr, usemodule=False, check_only=args.check_only)
+    c.log('Done %s mac' % action)
     c.log('')
 
-    c.log('Finished programming.')
+    c.log('Finished %s.' % action)
     c.log('\n\n************************************************\n')
     c.log('PASS')
     c.log('ServoV4, %s, %s, PASS' % (serialno, macaddr))
