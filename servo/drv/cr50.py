@@ -202,6 +202,15 @@ class cr50(pty_driver.ptyDriver):
     version = self._Get_version()
     self._logger.info('------------- cr50 version: %s', version)
 
+  def _Get_brdprop(self):
+    """Getter of cr50 board properties.
+
+    Returns:
+        The cr50 board property setting string
+    """
+    return self._issue_cmd_get_results('brdprop',
+                                       ['properties = (\S+)\s'])[0][1]
+
   def _Set_cr50_reboot(self, value):
     """Reboot cr50 ignoring the value."""
     self._issue_cmd('reboot')

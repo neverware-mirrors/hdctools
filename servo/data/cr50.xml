@@ -185,6 +185,12 @@
     <params cmd="get" subtype="version" interface="9" drv="cr50"
     map="print" init="print" clobber_ok=""></params>
   </control>
+  <control>
+    <name>cr50_brdprop</name>
+    <doc>current cr50 board properties</doc>
+    <params cmd="get" subtype="brdprop" interface="9" drv="cr50"
+    clobber_ok=""></params>
+  </control>
   <!-- cr50 I2C controls -->
   <control>
     <name>cr50_i2c_ctrl</name>
