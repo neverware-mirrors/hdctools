@@ -88,7 +88,9 @@ class Fi2c(i2c_base.BaseI2CBus):
     """
     if not getattr(self, '_is_closed', True):
       self.close()
-    super(Fi2c, self).__del__()
+    parent_del = getattr(super(Fi2c, self), '__del__', None)
+    if parent_del is not None:
+      parent_del()
 
   def open(self):
     """Opens access to FTDI interface as a i2c (MPSSE mode) interface.
