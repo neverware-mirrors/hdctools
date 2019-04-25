@@ -10,7 +10,7 @@ import threading
 import time
 import tty
 
-MAX_BUFFER_SIZE = 20000  # Do not keep more than this number of bytes
+MAX_BUFFER_SIZE = 500000  # Do not keep more than this number of bytes
 
 # when capturing.
 
