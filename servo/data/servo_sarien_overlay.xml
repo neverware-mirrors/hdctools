@@ -6,6 +6,9 @@
   <include>
     <name>cr50.xml</name>
   </include>
+  <include>
+    <name>usb_kb_main_kb.xml</name>
+  </include>
   <!-- ******** Controls ******** -->
   <control>
     <name>fw_wp_state</name>
@@ -26,11 +29,6 @@
     <doc>Used to turn the DUT off and on</doc>
     <params clobber_ok="" cmd="set" interface="servo" drv="sarien_power"
             input_type="str" reset_hold="0.1" reset_recovery="0.0"/>
-  </control>
-  <control>
-    <name>init_keyboard</name>
-    <doc>initialize keyboard handler</doc>
-    <params handler_type="usb" clobber_ok=""></params>
   </control>
   <map>
     <name>keypress_duration</name>

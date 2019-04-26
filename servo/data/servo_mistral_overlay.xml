@@ -2,6 +2,9 @@
   <include>
     <name>servoflex_cosmos.xml</name>
   </include>
+  <include>
+    <name>usb_kb_main_kb.xml</name>
+  </include>
   <control>
     <name>lid_open</name>
     <doc>fake lid for products without one</doc>
@@ -44,10 +47,5 @@
     <name>atmega_rst</name>
     <doc>ATMEL_RESET_L: reset atmega</doc>
     <params clobber_ok="" init="off"></params>
-  </control>
-  <control>
-    <name>init_keyboard</name>
-    <doc>initialize keyboard handler</doc>
-    <params handler_type="usb" clobber_ok=""></params>
   </control>
 </root>

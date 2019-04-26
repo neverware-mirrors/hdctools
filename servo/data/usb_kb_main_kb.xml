@@ -1,0 +1,17 @@
+<root>
+  <!-- The keyboard on these devices is the external USB KB. -->
+  <control>
+    <name>init_keyboard</name>
+    <doc>initialize keyboard handler</doc>
+    <params handler_type="usb" clobber_ok=""></params>
+  </control>
+  <!-- Unlike other devices the usb kb init here should be on by default.
+       Not doing so risks that the default turning off of the usb keyboard
+       will compete with the default on for the main keyboard (which for
+       these devices is the the usb keyboard) and the keyboard might be off
+       when the goal was to have servod come up with the keyboard.-->
+  <control>
+    <name>init_usb_keyboard</name>
+    <params clobber_ok="" init="on"/>
+  </control>
+</root>

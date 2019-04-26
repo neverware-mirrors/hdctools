@@ -2,15 +2,13 @@
   <include>
     <name>servo_auron_overlay.xml</name>
   </include>
+  <include>
+    <name>usb_kb_main_kb.xml</name>
+  </include>
   <!-- ******** Controls ******** -->
   <control>
     <name>lid_open</name>
     <doc>fake lid for products without one</doc>
     <params interface="servo" drv="na" clobber_ok=""></params>
-  </control>
-  <control>
-    <name>init_keyboard</name>
-    <doc>initialize keyboard handler</doc>
-    <params handler_type="usb" clobber_ok=""></params>
   </control>
 </root>
