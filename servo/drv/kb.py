@@ -68,4 +68,4 @@ class kb(hw_driver.HwDriver):
     Args:
       key: the key to press when arb_key is called
     """
-    self._keyboard.arb_key_config(key)
+    self._interface._keyboard.arb_key_config(key)
