@@ -41,7 +41,8 @@ for vid, pid in SERVO_V2_DEFAULTS:
       'raw_pty': 'raw_usbpd_uart_pty', 'source': 'PD/Cr50'},
      {'name': 'ec3po_uart',             #10: EC3PO(EC)
       'raw_pty': 'raw_ec_uart_pty', 'source': 'EC'},
-     'dummy',                           #11
+     {'name': 'ec3po_uart',             #11: EC3PO(AP)
+      'raw_pty': 'raw_cpu_uart_pty', 'source': 'CPU'},
     ]
 
 # servo v3
@@ -62,7 +63,8 @@ for vid, pid in SERVO_V3_DEFAULTS:
      'dummy',                            # 9
      {'name': 'ec3po_uart',              #10: EC3PO(EC)
       'raw_pty': 'raw_ec_uart_pty', 'source': 'EC'},
-     'dummy',                            #11
+     {'name': 'ec3po_uart',              #11: EC3PO(AP)
+      'raw_pty': 'raw_cpu_uart_pty', 'source': 'CPU'},
     ]
 
 INTERFACE_DEFAULTS[0x0403][0x6014] = INTERFACE_DEFAULTS[0x18d1][0x5004]
@@ -103,7 +105,8 @@ for vid, pid in CCD_DEFAULTS:
       'raw_pty': 'raw_cr50_uart_pty', 'source': 'Cr50'},
      {'name': 'ec3po_uart',                  #10: EC3PO(EC)
       'raw_pty': 'raw_ec_uart_pty', 'source': 'EC'},
-     'dummy',                                #11
+     {'name': 'ec3po_uart',                  #11: EC3PO(AP)
+      'raw_pty': 'raw_cpu_uart_pty', 'source': 'CPU'},
     ]
 
 # Sweetberry
@@ -136,7 +139,8 @@ for vid, pid in SERVO_MICRO_DEFAULTS:
       'raw_pty': 'raw_usbpd_uart_pty', 'source': 'PD/Cr50'},
      {'name': 'ec3po_uart',                  #10: EC3PO for EC
       'raw_pty': 'raw_ec_uart_pty', 'source': 'EC'},
-     'dummy',                                #11
+     {'name': 'ec3po_uart',                  #11: EC3PO for CPU
+      'raw_pty': 'raw_cpu_uart_pty', 'source': 'CPU'},
     ]
 
 # Servo v4

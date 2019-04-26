@@ -279,7 +279,7 @@
   </control>
   <control>
     <name>uart2_pty</name>
-    <alias>cpu_uart_pty</alias>
+    <alias>raw_cpu_uart_pty</alias>
     <doc>UART console. USART3: PB10/PB11 - Servo header UART2</doc>
     <params cmd="get" subtype="pty" interface="8" drv="uart">
     </params>

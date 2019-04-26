@@ -562,7 +562,7 @@
   </control>
   <control>
     <name>uart2_pty</name>
-    <alias>cpu_uart_pty</alias>
+    <alias>raw_cpu_uart_pty</alias>
     <doc>Psuedo-terminal (pty) thats connnected to CPU's uart
     console</doc>
     <params cmd="get" subtype="pty" interface="8" drv="uart">
