@@ -41,6 +41,7 @@ for vid, pid in SERVO_V2_DEFAULTS:
       'raw_pty': 'raw_usbpd_uart_pty', 'source': 'PD/Cr50'},
      {'name': 'ec3po_uart',             #10: EC3PO(EC)
       'raw_pty': 'raw_ec_uart_pty', 'source': 'EC'},
+     'dummy',                           #11
     ]
 
 # servo v3
@@ -61,6 +62,7 @@ for vid, pid in SERVO_V3_DEFAULTS:
      'dummy',                            # 9
      {'name': 'ec3po_uart',              #10: EC3PO(EC)
       'raw_pty': 'raw_ec_uart_pty', 'source': 'EC'},
+     'dummy',                            #11
     ]
 
 INTERFACE_DEFAULTS[0x0403][0x6014] = INTERFACE_DEFAULTS[0x18d1][0x5004]
@@ -81,6 +83,7 @@ for vid, pid in RAIDEN_DEFAULTS:
      'dummy',                                # 9
      {'name': 'ec3po_uart',                  #10: dut ec console
       'raw_pty': 'raw_ec_uart_pty', 'source': 'EC'},
+     'dummy',                                #11
     ]
 
 # cr50 CCD
@@ -100,6 +103,7 @@ for vid, pid in CCD_DEFAULTS:
       'raw_pty': 'raw_cr50_uart_pty', 'source': 'Cr50'},
      {'name': 'ec3po_uart',                  #10: EC3PO(EC)
       'raw_pty': 'raw_ec_uart_pty', 'source': 'EC'},
+     'dummy',                                #11
     ]
 
 # Sweetberry
@@ -132,6 +136,7 @@ for vid, pid in SERVO_MICRO_DEFAULTS:
       'raw_pty': 'raw_usbpd_uart_pty', 'source': 'PD/Cr50'},
      {'name': 'ec3po_uart',                  #10: EC3PO for EC
       'raw_pty': 'raw_ec_uart_pty', 'source': 'EC'},
+     'dummy',                                #11
     ]
 
 # Servo v4
