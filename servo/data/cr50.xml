@@ -38,6 +38,12 @@
     subtype="loglevel"></params>
   </control>
   <control>
+    <name>cr50_uart_timestamp</name>
+    <doc>Add timestamps to the Cr50 console messages</doc>
+    <params interface="9" drv="ec3po_driver" map="onoff" init="on"
+    subtype="timestamp"></params>
+  </control>
+  <control>
     <name>ec3po_cr50_uart</name>
     <alias>ec3po_usbpd_uart_pty,cr50_uart_pty,usbpd_uart_pty</alias>
     <doc>cr50 UART console provided via EC-3PO console

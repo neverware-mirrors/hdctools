@@ -85,3 +85,34 @@ class ec3poDriver(hw_driver.HwDriver):
       # we can really do.
       self._logger.debug('There is no UART on this servo for this '
                          'specific interface.')
+
+  def _Set_timestamp(self, state):
+    """Enable timestamps on the console
+
+    Args:
+      state: A boolean indicating whether to add timestamps to the console
+        output.
+    """
+    if self._interface is not None:
+      self._interface.set_timestamp(state)
+    else:
+      # Fail silently for now.  A NoneType interface indicates that this
+      # interface is not supported on the current servo host.  There's not much
+      # we can really do.
+      self._logger.debug('There is no UART on this servo for this '
+                         'specific interface.')
+
+  def _Get_timestamp(self):
+    """Get whether timestamps are enabled on the console.
+
+    Returns:
+      A string, either 'on' or 'off', indicating if timestamps are enabled.
+    """
+    if self._interface is not None:
+      return self._interface.get_timestamp()
+    else:
+      # Fail silently for now.  A NoneType interface indicates that this
+      # interface is not supported on the current servo host.  There's not much
+      # we can really do.
+      self._logger.debug('There is no UART on this servo for this '
+                         'specific interface.')

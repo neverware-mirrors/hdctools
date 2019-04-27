@@ -282,6 +282,20 @@ class EC3PO(uart.Uart):
     """Returns the current loglevel."""
     return logging.getLevelName(self._console_loglevel).lower()
 
+  def set_timestamp(self, state):
+    """Enable timestamps.
+
+    Args:
+      1 to enable 0 to disable timestamps on the console
+    """
+    mode = 'on' if state else 'off'
+    self._logger.debug('EC3PO turn %s timestamp', mode)
+    self._console.oobm_queue.put('timestamp ' + mode)
+
+  def get_timestamp(self):
+    """Returns the current timestamp setting."""
+    return 'on' if self._console.timestamp_enabled else 'off'
+
   def close(self):
     """Turn down the ec3po interface by terminating interpreter & console."""
     # Notify subprocesses/threads of desire to shutdown.

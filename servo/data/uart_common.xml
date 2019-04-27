@@ -21,6 +21,12 @@
     <params interface="11" drv="ec3po_driver" input_type="str"
     subtype="loglevel"></params>
   </control>
+  <control>
+    <name>cpu_uart_timestamp</name>
+    <doc>Add timestamps to CPU console messages</doc>
+    <params interface="11" drv="ec3po_driver" map="onoff" init="off"
+    subtype="timestamp"></params>
+  </control>
   <!-- EC-3PO console interpreter for main EC -->
   <control>
     <name>ec3po_ec_console</name>
@@ -42,6 +48,12 @@
     <doc>EC console loglevel</doc>
     <params interface="10" drv="ec3po_driver" input_type="str"
     subtype="loglevel"></params>
+  </control>
+  <control>
+    <name>ec_uart_timestamp</name>
+    <doc>Add timestamps to the EC console messages</doc>
+    <params interface="10" drv="ec3po_driver" map="onoff" init="on"
+    subtype="timestamp"></params>
   </control>
   <!-- UART Command Controls -->
   <control>
