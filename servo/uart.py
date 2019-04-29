@@ -201,7 +201,7 @@ class Uart(object):
       Current capture mode expressed as an integer (0 or 1)
     """
     self._logger.debug('')
-    return self._capture_active
+    return int(self._capture_active)
 
   def set_capture_active(self, activate):
     """Enable/disable the capture mode on this interface.
