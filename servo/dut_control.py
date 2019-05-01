@@ -62,7 +62,7 @@ def _parse_args(cmdline):
                'loc_0x4[0|1]_mv control for 2 seconds with gnuplot style'),
               ('-z 100 -t 2 loc_0x40_mv', 'gets value for loc_0x40_mv control '
                'for 2 seconds sampling every 100ms'),
-              ('-v i2c_mux', 'gets value for i2c_mux control verbosely'),
+              ('--verbose i2c_mux', 'gets value for i2c_mux control verbosely'),
               ('i2c_mux:remote_adcs', 'sets i2c_mux to value remote_adcs')]
   parser = servo_parsing.BaseServodParser(description=description,
                                           examples=examples,
@@ -74,21 +74,23 @@ def _parse_args(cmdline):
                       'state', action='store_true', default=False)
   info_g.add_argument('-o', '--value_only', help='show the value only',
                       action='store_true', default=False)
+
   print_g = parser.add_mutually_exclusive_group()
-  print_g.add_argument('--verbose', help='show verbose info about controls',
-                       action='store_true', default=False)
   print_g.add_argument('-g', '--gnuplot', help='gnuplot style to stdout. '
                        'Implies print_time', action='store_true', default=False)
+  print_g.add_argument('--verbose', help='show verbose info about controls',
+                       action='store_true', default=False)
+
   parser.add_argument('-r', '--repeat', type=int,
                       help='repeat requested command multiple times', default=1)
   parser.add_argument('-t', '--time_in_secs',
                       help='repeat requested command for this many seconds',
                       type=float, default=0.0)
-  parser.add_argument('-z', '--sleep_msecs', type=float, default=0.0,
-                      help='sleep for this many milliseconds between queries')
   parser.add_argument('-y', '--print_time',
                       help='print time in seconds with queries to stdout',
                       action='store_true', default=False)
+  parser.add_argument('-z', '--sleep_msecs', type=float, default=0.0,
+                      help='sleep for this many milliseconds between queries')
 
   servo_parsing.add_servo_parsing_rc_options(parser)
   return parser.parse_known_args(cmdline)
