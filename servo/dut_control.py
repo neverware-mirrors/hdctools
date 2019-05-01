@@ -72,6 +72,8 @@ def _parse_args(cmdline):
                       action='store_true', default=False)
   info_g.add_argument('--hwinit', help='Initialize controls to their POR/safe '
                       'state', action='store_true', default=False)
+  info_g.add_argument('-o', '--value_only', help='show the value only',
+                      action='store_true', default=False)
   print_g = parser.add_mutually_exclusive_group()
   print_g.add_argument('--verbose', help='show verbose info about controls',
                        action='store_true', default=False)
@@ -268,7 +270,10 @@ def do_iteration(requests, options, sclient, stats):
       if options.gnuplot:
         out_list.append('%s%s' % (time_str, result))
       else:
-        out_list.append('%s%s:%s' % (time_str, control, result))
+        if options.value_only:
+          out_list.append(str(result))
+        else:
+          out_list.append('%s%s:%s' % (time_str, control, result))
 
   # format of gnuplot is <seconds_val1> <val1> <seconds_val2> <val2> ... such
   # that plotting can then be done with time on x-axis, value on y-axis.  For
