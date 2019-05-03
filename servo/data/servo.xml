@@ -286,6 +286,7 @@
   </control>
   <control>
     <name>dut_hub1_rst1</name>
+    <alias>dut_hub_usb_reset</alias>
     <doc>Reset DUT's USB hub with ethernet (RJ45/I79) and USB port
     (Vert TYPE A/J19)</doc>
     <params interface="2" drv="tca6416" slv="0x21" port="0"

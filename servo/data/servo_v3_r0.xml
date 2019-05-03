@@ -240,6 +240,7 @@
   </control>
   <control>
     <name>dut_hub1_rst1</name>
+    <alias>dut_hub_usb_reset</alias>
     <doc>Reset DUT's USB hub with ethernet (RJ45/I54) and USB port
     (TYPE A/J3, TYPE A/J8, TYPE A/J10)</doc>
     <params interface="1" drv="gpio" chip="2" offset="17"

@@ -78,6 +78,7 @@
   </control>
   <control>
     <name>dut_hub_usb_reset</name>
+    <alias>dut_hub1_rst1</alias>
     <doc>DUT_HUB_USB_RESET_L: reset dut's usb hub</doc>
     <params interface="26" drv="ec3po_gpio" subtype="single"
      name="DUT_HUB_USB_RESET_L" map="onoff_i" init="off"></params>
