@@ -46,7 +46,8 @@ class UsbHierarchy(object):
     """
     all_devices = []
     for vid, pid in vid_pid_list:
-      devs = usb.core.find(idVendor=vid, idProduct=pid, find_all=True)
+      dev_gen = usb.core.find(idVendor=vid, idProduct=pid, find_all=True)
+      devs = list(dev_gen)
       if devs:
         all_devices.extend(devs)
     return all_devices
@@ -69,7 +70,7 @@ class UsbHierarchy(object):
     devices = UsbHierarchy.GetAllUsbDevices([(vid, pid)])
     devs = []
     for device in devices:
-      d_serial = usb.util.get_string(device, 256, device.iSerialNumber)
+      d_serial = usb.util.get_string(device, device.iSerialNumber)
       if d_serial == serial:
         devs.append(device)
     if len(devs) > 1:

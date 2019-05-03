@@ -71,8 +71,9 @@ class Susb():
   def _find_device(self):
     """Set up the usb endpoint"""
     # Find the stm32.
-    dev_list = usb.core.find(idVendor=self._vendor, idProduct=self._product,
+    dev_gen = usb.core.find(idVendor=self._vendor, idProduct=self._product,
                              find_all=True)
+    dev_list = list(dev_gen)
     if dev_list is None or len(dev_list) is 0:
       raise SusbError('USB device not found')
 
@@ -80,7 +81,7 @@ class Susb():
     dev = None
     if len(dev_list) > 1 and self._serialname is not None:
       for d in dev_list:
-        if usb.util.get_string(d, 256, d.iSerialNumber) == self._serialname:
+        if usb.util.get_string(d, d.iSerialNumber) == self._serialname:
           dev = d
           break
       if dev is None:
