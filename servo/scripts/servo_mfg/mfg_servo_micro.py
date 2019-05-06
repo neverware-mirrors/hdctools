@@ -17,7 +17,7 @@ import time
 
 import mfg_servo_common as c
 
-BIN_NAME = 'binfiles/servo_micro.bin'
+SERVO_MICRO_BIN = 'binfiles/servo_micro.bin'
 STM_DFU_VIDPID = '0483:df11'
 STM_VIDPID = '18d1:501a'
 serialno = 'Uninitialized'
@@ -55,7 +55,7 @@ def main():
     c.log('Plug in servo_micro via OTG adapter')
     c.wait_for_usb(STM_DFU_VIDPID)
     c.log('Found DFU target')
-    c.do_dfu(BIN_NAME)
+    c.do_dfu(c.full_bin_path(SERVO_MICRO_BIN))
 
     c.log('\n\n************************************************\n')
     c.log('Plug in servo_micro via normal cable')

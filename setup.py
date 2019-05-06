@@ -90,3 +90,24 @@ setup(
     ]
   }
 )
+
+setup(
+  name = "servo_mfg",
+  version = __version__,
+  package_dir = {'' : 'servo/scripts'},
+  py_modules=['servo_mfg' ],
+  packages=['servo_mfg'],
+  package_data={'servo_mfg': ['binfiles/*.hex',
+                              'binfiles/*.bin']},
+  url = "http://www.chromium.org",
+  maintainer='chromium os',
+  maintainer_email='chromium-os-dev@chromium.org',
+  license = "Chromium",
+  description = "Tools to program and validate servo devices.",
+  entry_points={
+    'console_scripts': [
+        'mfg_servo_v4 = servo_mfg.mfg_servo_v4:main',
+        'mfg_servo_micro = servo_mfg.mfg_servo_micro:main',
+    ]
+  }
+)

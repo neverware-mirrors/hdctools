@@ -20,6 +20,9 @@ logfile = None
 testerlogfile = None
 
 
+def full_bin_path(binfile):
+  return os.path.join(os.path.dirname(os.path.realpath(__file__)), binfile)
+
 def open_logfile(filename):
   """Open a file and create directory structure if needed."""
   if not os.path.exists(os.path.dirname(filename)):
@@ -143,7 +146,8 @@ def do_serialno(serialno, pty, check_only=False):
   cmd = 'serialno '
   if not check_only:
     cmd += 'set %s' % serialno
-  regex = 'Serial number: (.*)$'
+  # Anchor the regex at the EOL character to be safe.
+  regex = 'Serial number: (.*)[\n\r]'
 
   results = pty._issue_cmd_get_results(cmd, [regex])[0]
   sn = results[1].strip().strip('\n\r')
