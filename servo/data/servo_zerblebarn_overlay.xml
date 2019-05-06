@@ -1,5 +1,10 @@
 <?xml version="1.0"?>
 <root>
+  <map>
+    <name>alwaysoff</name>
+    <doc>only valid map is "off". Dont allow enabling cpu ec3po</doc>
+    <params off="0"></params>
+  </map>
   <!--
   Zoombini Fingerprint daughter-board
 
@@ -63,6 +68,11 @@
     UART.</doc>
     <params interface="9" drv="ec3po_driver" map="onoff" init="on"
     subtype="interp_connect" clobber_ok=""></params>
+  </control>
+  <control>
+    <name>cpu_ec3po_interp_connect</name>
+    <doc>Turn off the cpu ec3po interpreter </doc>
+    <params map="alwaysoff" init="off" clobber_ok=""></params>
   </control>
   <control>
     <name>uart2_baudrate</name>
