@@ -4,6 +4,8 @@
 
 config_type='servod'
 
+revs = [0, 1]
+
 inas = [('ina3221', '0x40:0', 'pp3300_g',             3.30, 0.005, 'rem', True), # PR17,Global power rail
         ('ina3221', '0x40:1', 'pp3300_a_wlan',        3.30, 0.020, 'rem', True), # R409
         ('ina3221', '0x40:2', 'pp2500_dram',          2.50, 0.200, 'rem', True), # PRM9,Memory power rail
