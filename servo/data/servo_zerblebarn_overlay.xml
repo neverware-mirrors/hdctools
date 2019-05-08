@@ -6,7 +6,12 @@
     <params off="0"></params>
   </map>
   <!--
-  Zoombini Fingerprint daughter-board
+  Fingerprint daughter-board overlay
+
+  Compatible with the following daughterboards:
+    * zerblebarn: http://go/zerblebarn
+    * dragontalon: http://go/dragontalon-care
+    * dragonclaw: http://go/dragonclaw-care
 
   It has a single UART going to the FP MCU,
   it's connected to servo 'uart2' (on interface 8) but it should behave
