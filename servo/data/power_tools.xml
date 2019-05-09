@@ -83,7 +83,7 @@
     <doc>List of available rail controls to measure shunt
     voltage.</doc>
     <params drv="power_tools" subtype="rails" interface="servo"
-    reg_type="calib" suffix="shunt_mv" />
+    reg_type="calib" suffix="shuntmv" />
   </control>
   <control>
     <name>bus_voltage_rails</name>
