@@ -70,8 +70,17 @@ class cr50(pty_driver.ptyDriver):
 
   def _issue_cmd_get_results(self, cmds, regex_list,
                              timeout=pty_driver.DEFAULT_UART_TIMEOUT):
-    """Send \n to cr50 to make sure it is awake before sending cmds"""
-    super(cr50, self)._issue_cmd_get_results('\n', [])
+    """Send \n to make sure cr50 is awake before sending cmds
+
+    Make sure we get some sort of response before considering cr50 up. If it's
+    already up, we should see '>' almost immediately. If cr50 is in deep
+    sleep, wait for console enabled.
+    """
+    try:
+        super(cr50, self)._issue_cmd_get_results('\n\n',
+                                                 ['(>|Console is enabled)'])
+    except pty_driver.ptyError, e:
+        raise cr50Error('cr50 uart is unresponsive')
     return super(cr50, self)._issue_cmd_get_results(cmds, regex_list, timeout)
 
   def _Get_cold_reset(self):
