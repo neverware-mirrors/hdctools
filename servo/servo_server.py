@@ -667,7 +667,7 @@ class Servod(object):
     rv = []
     for cmd in cmds:
       if ':' in cmd:
-        (control, value) = cmd.split(':')
+        (control, value) = cmd.split(':', 1)
         rv.append(self.set(control, value))
       else:
         rv.append(self.get(cmd))
