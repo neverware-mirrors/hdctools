@@ -103,7 +103,7 @@ class ServodPowerTracker(threading.Thread):
       tuple (sample_tuples, duration)
              sample_tuples: a list of (ctrl-name, value) tuples
                             value is a power reading on success, NaN on failure
-             duration: the time it took to collect the sample
+             duration: the time it took to collect the sample, in milliseconds
     """
     start = time.time()
     try:
@@ -112,7 +112,7 @@ class ServodPowerTracker(threading.Thread):
       self._logger.warn('Attempt to get commands: %s failed. Recording them'
                         ' all as NaN.', ', '.join(ctrls))
       samples = [float('nan')]*len(ctrls)
-    duration = time.time() - start
+    duration = (time.time() - start) * 1000
     sample_tuples = zip(ctrls, samples)
     sample_tuples.append((SAMPLE_TIME_KEY, duration))
     return (sample_tuples, duration)
