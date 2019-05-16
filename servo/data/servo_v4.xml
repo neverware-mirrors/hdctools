@@ -336,8 +336,8 @@
     <name>servo_v4_uart_regexp</name>
     <doc>List of regular expressions to match the response of
     servo_v4_uart_cmd.</doc>
-    <params subtype="uart_regexp" interface="6" drv="uart"
-    input_type="str" cmd="set" clobber_ok=""></params>
+    <params subtype="uart_regexp" interface="26" drv="uart"
+    input_type="str" clobber_ok=""></params>
   </control>
   <control>
     <name>servo_v4_uart_capture</name>
