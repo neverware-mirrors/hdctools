@@ -453,14 +453,16 @@ class PowerMeasurement(object):
     self._setup_done.set()
     # Wait on the stop signal for |wait| seconds. Preemptible.
     self._stop_signal.wait(wait)
-    for power_tracker in self._power_trackers:
-      power_tracker.start()
+    if not self._stop_signal.is_set():
+      for power_tracker in self._power_trackers:
+        power_tracker.start()
 
   def FinishMeasurement(self):
     """Signal to stop collection to Trackers before joining their threads."""
     self._stop_signal.set()
     for tracker in self._power_trackers:
-      tracker.join()
+      if tracker.isAlive():
+        tracker.join()
 
   def ProcessMeasurement(self, tstart=None, tend=None):
     """Trim data to [tstart, tend] before calculating stats.
