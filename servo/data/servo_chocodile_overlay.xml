@@ -24,7 +24,7 @@
     <name>bec_en</name>
     <doc>BEC_EN</doc>
     <params clobber_ok="" interface="2" drv="tca6416" slv="0x20" od="PP"
-      port="0" offset="5" map="onoff" init="on"></params>
+      port="0" offset="7" map="onoff" init="on"></params>
   </control>
   <!-- Move warm_reset to tp2 since we can't delete it. -->
   <control>
