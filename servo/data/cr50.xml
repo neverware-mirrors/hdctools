@@ -54,7 +54,7 @@
   <control>
     <name>cr50_ec3po_interp_connect</name>
     <alias>usbpd_ec3po_interp_connect</alias>
-    <doc>State indicating if interpreter is listening to the EC
+    <doc>State indicating if interpreter is listening to the Cr50
     UART.</doc>
     <params interface="9" drv="ec3po_driver" map="onoff" init="on"
     subtype="interp_connect" clobber_ok=""></params>
