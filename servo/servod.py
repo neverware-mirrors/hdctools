@@ -150,11 +150,11 @@ class ServoDeviceWatchdog(threading.Thread):
             if reinit_tokens[(vid, pid, serial)]:
               # The device still has reinit tokens. Remove one.
               reinit_tokens[(vid, pid, serial)] -= 1
-              self._logger.warn('Device - vid: 0x%02x pid: 0x%02x serial: %r '
-                                'not found when polling. Device is marked as '
-                                'reinit capable. %d more reinit attempts '
-                                'before giving up.', vid, pid, serial,
-                                reinit_tokens[(vid, pid, serial)])
+              self._logger.debug('Device - vid: 0x%02x pid: 0x%02x serial: %r '
+                                 'not found when polling. Device is marked as '
+                                 'reinit capable. %d more reinit attempts '
+                                 'before giving up.', vid, pid, serial,
+                                 reinit_tokens[(vid, pid, serial)])
               # pylint: disable=protected-access
               # Indicate to servod that interfaces are unavailable.
               self._servod._ifaces_available.clear()
