@@ -370,4 +370,17 @@
     <doc>Used to turn fw wp off and on</doc>
     <params clobber_ok="" init="force_off"></params>
   </control>
+  <!-- Controls used by PD FAFT -->
+  <control>
+    <name>ppdut5_mv</name>
+    <remap>vbus_voltage</remap>
+  </control>
+  <control>
+    <name>ppdut5_ma</name>
+    <remap>vbus_current</remap>
+  </control>
+  <control>
+    <name>ppdut5_mw</name>
+    <remap>vbus_power</remap>
+  </control>
 </root>
