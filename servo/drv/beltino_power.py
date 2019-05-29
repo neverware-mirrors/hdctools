@@ -17,7 +17,7 @@ class beltinoPower(power_state.PowerStateDriver):
     """Force a power cycle using cold reset."""
     self._cold_reset()
     # AP isn't powered on after cold reset, so power it on.
-    self._interface.power_short_press()
+    self._interface.set('power_key', 'short_press')
 
   def _power_on_rec(self):
     """Power on with recovery mode."""
@@ -29,7 +29,7 @@ class beltinoPower(power_state.PowerStateDriver):
 
   def _power_on_normal(self):
     """Power on with in normal mode, i.e., no recovery."""
-    self._interface.power_short_press()
+    self._interface.set('power_key', 'short_press')
 
   def _power_on(self, rec_mode):
     if rec_mode == self.REC_ON:
@@ -38,4 +38,4 @@ class beltinoPower(power_state.PowerStateDriver):
       self._power_on_normal()
 
   def _power_off(self):
-    self._interface.power_long_press()
+    self._interface.set('power_key', 'long_press')

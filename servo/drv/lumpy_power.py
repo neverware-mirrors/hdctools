@@ -24,7 +24,7 @@ class lumpyPower(alex_power.alexPower):
   #     of OS bug), repair will never succeed.
 
   def _power_off(self):
-    self._interface.power_long_press()
+    self._interface.set('power_key', 'long_press')
 
   def _reset_cycle(self):
     raise NotImplementedError('lumpy reset_cycle can\'t work')

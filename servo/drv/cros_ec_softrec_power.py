@@ -62,7 +62,7 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
 
   def _power_on_ap(self):
     """Power on the AP after initializing recovery state."""
-    self._interface.power_short_press()
+    self._interface.set('power_key', 'short_press')
 
   def _power_on_bytype(self, rec_mode, rec_type=_REC_TYPE_REC_ON):
     self._interface.set('ec_uart_cmd', '\r')

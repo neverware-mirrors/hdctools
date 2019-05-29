@@ -28,7 +28,7 @@ class crosEcHardrecPower(cros_ec_power.CrosECPower):
 
   def _power_on_normal(self):
     """Power on with in normal mode, i.e., no recovery."""
-    self._interface.power_short_press()
+    self._interface.set('power_key', 'short_press')
 
   def _power_on_rec_force_mrc(self):
     """Power on with recovery mode, forcing memory training."""

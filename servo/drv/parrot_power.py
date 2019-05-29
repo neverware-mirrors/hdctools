@@ -53,10 +53,10 @@ class parrotPower(power_state.PowerStateDriver):
   def _power_off(self):
     self._cold_reset()
     time.sleep(self._PWR_BUTTON_READY_TIME)
-    self._interface.power_short_press()
+    self._interface.set('power_key', 'short_press')
 
   def _power_on(self, rec_mode):
-    self._interface.power_short_press()
+    self._interface.set('power_key', 'short_press')
     time.sleep(self._REC_MODE_READY_TIME)
     self._interface.set('rec_mode', rec_mode)
     self._cold_reset()
