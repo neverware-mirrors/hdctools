@@ -710,11 +710,13 @@ class ServodStarter(object):
   def serve(self):
     """Add signal handlers, start servod on its own thread & wait for signal.
 
-    Intercepts and handles SIGINT and SIGTERM.
+    Intercepts and handles stop signals so shutdown is handled.
     """
     handler = lambda signal, unused, starter=self: starter.handle_sig(signal)
-    signal.signal(signal.SIGINT, handler)
-    signal.signal(signal.SIGTERM, handler)
+    stop_signals = [signal.SIGHUP, signal.SIGINT, signal.SIGQUIT,
+                    signal.SIGTERM, signal.SIGTSTP]
+    for ss in stop_signals:
+      signal.signal(ss, handler)
     # pylint: disable=protected-access, invalid-name, unused-variable
     # current method of retrieving device information requires this
     serials = [serial for _vid, _pid, serial in self._servod._devices]
