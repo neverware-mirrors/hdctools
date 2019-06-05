@@ -28,10 +28,11 @@
     <params clobber_ok="" shutdown_delay="3.0" reset_recovery="2.0"
     warm_reset_can_hold_ap="no" wait_ext_is_fake="yes" />
   </control>
+  <!-- lid open has to go through the EC always on kukui irrespective of
+       servo type. -->
   <control>
     <name>lid_open</name>
-    <doc>fake lid for products without one</doc>
-    <params interface="servo" drv="na" init="not_applicable"
+    <params interface="10" drv="ec" map="yesno" subtype="lid_open"
     clobber_ok=""></params>
   </control>
   <!-- The keyboard on these devices is the external USB KB. -->
