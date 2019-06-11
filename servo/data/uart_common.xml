@@ -91,6 +91,12 @@
     drv="uart"></params>
   </control>
   <control>
+    <name>ec_uart_flush</name>
+    <doc>Enable flushing the console before sending an EC command.</doc>
+    <params subtype="uart_flush" interface="10" drv="uart"
+    map="onoff" init="on"></params>
+  </control>
+  <control>
     <name>ec_uart_timeout</name>
     <doc>Timeout value for waiting EC UART response of issuing an EC
     command.</doc>

@@ -23,6 +23,7 @@ class ptyError(Exception):
 
 UART_PARAMS = {
     'uart_cmd': None,
+    'uart_flush': True,
     'uart_multicmd': None,
     'uart_regexp': None,
     'uart_timeout': DEFAULT_UART_TIMEOUT
@@ -147,7 +148,7 @@ class ptyDriver(hw_driver.HwDriver):
     """
     self._issue_cmd_get_results(cmds, [])
 
-  def _issue_cmd_get_results(self, cmds, regex_list,
+  def _issue_cmd_get_results(self, cmds, regex_list, flush=True,
                              timeout=DEFAULT_UART_TIMEOUT):
     """Send command to the device and wait for response.
 
@@ -159,6 +160,8 @@ class ptyDriver(hw_driver.HwDriver):
       regex_list: List of Regular expressions used to match response message.
         Note1, list must be ordered.
         Note2, empty list sends and returns.
+      flush:  Flag to decide to flush console (send newline) before cmd.
+      timeout: Timeout value in second.
 
     Returns:
       List of tuples, each of which contains the entire matched string and
@@ -184,7 +187,7 @@ class ptyDriver(hw_driver.HwDriver):
       if not self._cmd_iface:
         self._interface.pause_capture()
       try:
-        self._send(cmds)
+        self._send(cmds, flush=flush)
         self._logger.debug('Sent cmds: %s' % cmds)
         if regex_list:
           for regex in regex_list:
@@ -221,7 +224,7 @@ class ptyDriver(hw_driver.HwDriver):
     """
     result_list = []
     with self._open():
-      self._send(cmd)
+      self._send(cmd, flush=flush)
       self._logger.debug('Sending cmd: %s' % cmd)
       if regex:
         while True:
@@ -237,6 +240,22 @@ class ptyDriver(hw_driver.HwDriver):
           except pexpect.TIMEOUT:
             break
     return result_list
+
+  def _Set_uart_flush(self, value):
+    """Set the flag to enable flushing before sending a command.
+
+    Args:
+      value: 0=off, 1=on.
+    """
+    self._interface._uart_state['uart_flush'] = bool(value)
+
+  def _Get_uart_flush(self):
+    """Get the flag if enabling flush before sending a command.
+
+    Returns:
+      1 if enable; otherwise 0.
+    """
+    return 1 if self._interface._uart_state['uart_flush'] else 0
 
   def _Set_uart_timeout(self, timeout):
     """Set timeout value for waiting for the device response.
@@ -290,6 +309,7 @@ class ptyDriver(hw_driver.HwDriver):
       self._interface._uart_state['uart_cmd'] = self._issue_cmd_get_results(
           cmd,
           self._interface._uart_state['uart_regexp'],
+          self._interface._uart_state['uart_flush'],
           self._interface._uart_state['uart_timeout'])
     else:
       self._interface._uart_state['uart_cmd'] = None
