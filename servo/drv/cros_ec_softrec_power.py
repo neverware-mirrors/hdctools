@@ -92,6 +92,10 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
         # For devices whose warm_reset can't hold AP, AP may boot faster that
         # the original recovery reason is overwritten.
         self._cold_reset()
+        # The following "reboot ap-off" command should be sent instantly.
+        # During boot-up, EC dumps massive messages. Flushing the incoming
+        # messages will delay the command. Should disable flushing.
+        self._interface.set('ec_uart_flush', 'off')
         # Send reboot command to EC with only the ap-off argument.
         # This will still prevent a race condition between the
         # EC and AP when rebooting. However, the reboot will be triggered
@@ -100,6 +104,7 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
         self._interface.set('ec_uart_cmd', 'reboot ap-off')
       finally:
         self._interface.set('ec_uart_regexp', 'None')
+        self._interface.set('ec_uart_flush', 'on')
 
       self._logger.debug('Reset recovery wait: %s', self._reset_recovery_time)
       time.sleep(self._reset_recovery_time)
