@@ -22,7 +22,7 @@ class ServodUtilError(Exception):
   pass
 
 
-def diagnose_ccd(servod):
+def diagnose_ccd(servo_dev):
   logger = logging.getLogger('CCD-Diagnosis')
   # Voltage levels indicating ~0V or ~3.3V
   NC_LOW = 300

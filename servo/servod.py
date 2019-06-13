@@ -195,7 +195,7 @@ def usb_get_iserial(device):
   except Exception:
     # This was causing servod to fail to start in the presence of
     # a broken usb interface.
-    self._logger.exception('usb_get_iserial failed in an unknown way')
+    logging.exception('usb_get_iserial failed in an unknown way')
   return iserial
 
 
