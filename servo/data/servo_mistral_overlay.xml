@@ -49,4 +49,10 @@
     <doc>ATMEL_RESET_L: reset atmega</doc>
     <params clobber_ok="" init="off"></params>
   </control>
+  <control>
+    <name>chassis_open</name>
+    <doc>chassis_open</doc>
+    <params interface="2" drv="tca6416" slv="0x20" od="PP" port="1"
+    offset="4" map="yesno" init="no"></params>
+  </control>
 </root>
