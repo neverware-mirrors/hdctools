@@ -88,23 +88,23 @@ class Servod(object):
         name = interface['name']
         # Store interface index for those that care about it.
         interface['index'] = i
-      elif type(interface) is str and interface != 'dummy':
+      elif type(interface) is str:
+        if interface == 'dummy':
+          # 'dummy' reserves the interface for future use.  Typically the
+          # interface will be managed by external third-party tools like
+          # openOCD for JTAG or flashrom for SPI.  In the case of servo V4,
+          # it serves as a placeholder for servo micro interfaces.
+          continue
         name = interface
-        # It's a FTDI related interface. #0 is reserved for no use.
-        interface = ((i - 1) % ftdi_common.MAX_FTDI_INTERFACES_PER_DEVICE) + 1
-        is_ftdi_interface = True
-      elif type(interface) is str and interface == 'dummy':
-        # 'dummy' reserves the interface for future use.  Typically the
-        # interface will be managed by external third-party tools like
-        # openOCD for JTAG or flashrom for SPI.  In the case of servo V4,
-        # it serves as a placeholder for servo micro interfaces.
-        continue
+        is_ftdi_interface = interface.startswith('ftdi')
       else:
         raise ServodError('Illegal interface type %s' % type(interface))
 
       # servos with multiple FTDI are guaranteed to have contiguous USB PIDs
       product_increment = 0
       if is_ftdi_interface:
+        # The interface argument in ftdi initialization is the interface number.
+        interface = ((i - 1) % ftdi_common.MAX_FTDI_INTERFACES_PER_DEVICE) + 1
         product_increment = (i - 1) / ftdi_common.MAX_FTDI_INTERFACES_PER_DEVICE
         if product_increment:
           self._logger.info('Use the next FTDI part @ pid = 0x%04x',
