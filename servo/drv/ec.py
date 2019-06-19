@@ -13,6 +13,7 @@ Provides the following EC controlled function:
   dev_mode (Temporary. See crosbug.com/p/9341)
 """
 import logging
+import time
 
 import pty_driver
 
@@ -320,6 +321,8 @@ class ec(pty_driver.ptyDriver):
       value: hold interval, unit: msec.
     """
     self._issue_cmd('powerbtn %d' % value)
+    # Issuing a console command is async. Wait the button release.
+    time.sleep(value/1000.0)
 
   def _Get_cpu_temp(self):
     """Getter of cpu_temp.
