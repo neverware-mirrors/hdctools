@@ -598,36 +598,31 @@
     map="uart_bits"></params>
   </control>
   <control>
-    <name>uart4_pty</name>
-    <alias>atmega_pty</alias>
+    <name>atmega_pty</name>
     <doc>USB Keyboard Emulator</doc>
     <params cmd="get" subtype="pty" interface="4" drv="uart">
     </params>
   </control>
   <control>
-    <name>uart4_baudrate</name>
-    <alias>atmega_baudrate</alias>
+    <name>atmega_baudrate</name>
     <doc>Baudrate for atmega uart</doc>
     <params drv="uart" subtype="props" line_prop="baudrate"
     interface="4"></params>
   </control>
   <control>
-    <name>uart4_parity</name>
-    <alias>atmega_parity</alias>
+    <name>atmega_parity</name>
     <doc>Parity for atmega uart</doc>
     <params drv="uart" subtype="props" line_prop="parity"
     interface="4" map="uart_parity"></params>
   </control>
   <control>
-    <name>uart4_sbits</name>
-    <alias>atmega_sbits</alias>
+    <name>atmega_sbits</name>
     <doc>Number of stop bits for atmega uart</doc>
     <params drv="uart" subtype="props" line_prop="sbits"
     interface="4" map="uart_sbits"></params>
   </control>
   <control>
-    <name>uart4_bits</name>
-    <alias>atmega_bits</alias>
+    <name>atmega_bits</name>
     <doc>Number of data bits for atmega uart</doc>
     <params drv="uart" subtype="props" line_prop="bits" interface="4"
     map="uart_bits"></params>
