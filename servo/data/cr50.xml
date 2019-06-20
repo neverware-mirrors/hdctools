@@ -1,4 +1,8 @@
 <?xml version="1.0"?>
+<!-- Throughout this configuration all controls are labeled as na if used on
+     servo v3. This is because v3 does not have a cr50 uart. However, if a user
+     or the lab has a compelling reason to still use v3 on a cr50 enabled device
+     then it should not break as long as those controls aren't used. -->
 <root>
   <!-- ******** Map ******** -->
   <map>
@@ -11,16 +15,15 @@
                                       waveform to ITE EC, which triggers
                                       'DEBUGGER' mode.
          .................................................................-->
-    <params clobber_ok="" ite_debugger_mode="0"/>
+    <params clobber_ok="" ite_debugger_mode="0" />
   </map>
   <!-- cr50 is also named 'usbpd' for compatibility with previous scripts -->
   <control>
     <name>uart4_pty</name>
     <alias>raw_cr50_uart_pty,raw_usbpd_uart_pty</alias>
-    <doc>Pseudo-terminal (pty) thats connnected to cr50 uart
-    console</doc>
-    <params cmd="get" subtype="pty" interface="1" drv="uart"
-    clobber_ok=""></params>
+    <doc>Pseudo-terminal (pty) thats connnected to cr50 uart console</doc>
+    <params cmd="get" subtype="pty" interface="1" drv="uart" clobber_ok=""
+    servo_v3_drv="na"></params>
   </control>
   <!-- This control must be available prior to accessing the cr50 console over
        micro, so must be initialized prior to the cr50_version control (which
@@ -35,100 +38,97 @@
     <name>cr50_loglevel</name>
     <doc>cr50 console loglevel</doc>
     <params interface="9" drv="ec3po_driver" input_type="str"
-    subtype="loglevel"></params>
+    subtype="loglevel" servo_v3_drv="na"></params>
   </control>
   <control>
     <name>cr50_uart_timestamp</name>
     <doc>Add timestamps to the Cr50 console messages</doc>
     <params interface="9" drv="ec3po_driver" map="onoff" init="on"
-    subtype="timestamp"></params>
+    subtype="timestamp" servo_v3_drv="na"></params>
   </control>
   <control>
     <name>ec3po_cr50_uart</name>
     <alias>ec3po_usbpd_uart_pty,cr50_uart_pty,usbpd_uart_pty</alias>
-    <doc>cr50 UART console provided via EC-3PO console
-    interpreter.</doc>
-    <params cmd="get" subtype="pty" interface="9" drv="uart">
+    <doc>cr50 UART console provided via EC-3PO console interpreter.</doc>
+    <params cmd="get" subtype="pty" interface="9" drv="uart" servo_v3_drv="na">
     </params>
   </control>
   <control>
     <name>cr50_ec3po_interp_connect</name>
     <alias>usbpd_ec3po_interp_connect</alias>
-    <doc>State indicating if interpreter is listening to the Cr50
-    UART.</doc>
+    <doc>State indicating if interpreter is listening to the Cr50 UART.</doc>
     <params interface="9" drv="ec3po_driver" map="onoff" init="on"
-    subtype="interp_connect" clobber_ok=""></params>
+    subtype="interp_connect" clobber_ok="" servo_v3_drv="na"></params>
   </control>
   <control>
     <name>uart4_baudrate</name>
     <alias>cr50_uart_baudrate,usbpd_console_baudrate</alias>
     <doc>Baudrate for cr50 uart console</doc>
-    <params drv="uart" subtype="props" line_prop="baudrate"
-    clobber_ok="" interface="1"></params>
+    <params drv="uart" subtype="props" line_prop="baudrate" clobber_ok=""
+    interface="1" servo_v3_drv="na"></params>
   </control>
   <control>
     <name>uart4_parity</name>
     <alias>cr50_uart_parity,usbpd_console_parity</alias>
     <doc>Parity for cr50 uart console</doc>
-    <params drv="uart" subtype="props" line_prop="parity"
-    clobber_ok="" interface="1" map="uart_parity"></params>
+    <params drv="uart" subtype="props" line_prop="parity" clobber_ok=""
+    interface="1" map="uart_parity" servo_v3_drv="na"></params>
   </control>
   <control>
     <name>uart4_sbits</name>
     <alias>cr50_uart_sbits,usbpd_console_sbits</alias>
     <doc>Number of stop bits for cr50 uart console</doc>
-    <params drv="uart" subtype="props" line_prop="sbits"
-    clobber_ok="" interface="1" map="uart_sbits"></params>
+    <params drv="uart" subtype="props" line_prop="sbits" clobber_ok=""
+    interface="1" map="uart_sbits" servo_v3_drv="na"></params>
   </control>
   <control>
     <name>uart4_bits</name>
     <alias>cr50_uart_bits,usbpd_console_bits</alias>
     <doc>Number of data bits for cr50 uart console</doc>
     <params drv="uart" subtype="props" line_prop="bits" clobber_ok=""
-    interface="1" map="uart_bits"></params>
+    interface="1" map="uart_bits" servo_v3_drv="na"></params>
   </control>
   <control>
     <name>cr50_uart_timeout</name>
-    <doc>Timeout value for waiting cr50 console response of issuing
-    an EC command.</doc>
-    <params subtype="uart_timeout" interface="9" drv="uart"
-    input_type="float"></params>
+    <doc>Timeout value for waiting cr50 console response of issuing an EC
+    command.</doc>
+    <params subtype="uart_timeout" interface="9" drv="uart" input_type="float"
+    servo_v3_drv="na"></params>
   </control>
   <!-- Cr50 Console Automation Controls -->
   <control>
     <name>cr50_uart_cmd</name>
-    <doc>Set to send command to the Cr50 console. Get to obtain the
-    matched results with the regular expression of
-    cr50_uart_regexp.</doc>
-    <params subtype="uart_cmd" interface="9" drv="uart"
-    input_type="str" clobber_ok=""></params>
+    <doc>Set to send command to the Cr50 console. Get to obtain the matched
+    results with the regular expression of cr50_uart_regexp.</doc>
+    <params subtype="uart_cmd" interface="9" drv="uart" input_type="str"
+    clobber_ok="" servo_v3_drv="na"></params>
   </control>
   <control>
     <name>cr50_uart_multicmd</name>
     <doc>Set to send multiple commands to the Cr50 console.</doc>
-    <params interface="9" drv="na" cmd="get" clobber_ok=""></params>
-    <params subtype="uart_multicmd" interface="9" drv="uart"
-    input_type="str" cmd="set" clobber_ok=""></params>
+    <params interface="9" drv="na" cmd="get" clobber_ok="" servo_v3_drv="na">
+    </params>
+    <params subtype="uart_multicmd" interface="9" drv="uart" input_type="str"
+    cmd="set" clobber_ok="" servo_v3_drv="na"></params>
   </control>
   <control>
     <name>cr50_uart_regexp</name>
     <doc>List of regular expressions to match the response of
     cr50_uart_cmd.</doc>
-    <params subtype="uart_regexp" interface="9" drv="uart"
-    input_type="str" cmd="set" clobber_ok=""></params>
+    <params subtype="uart_regexp" interface="9" drv="uart" input_type="str"
+    cmd="set" clobber_ok="" servo_v3_drv="na"></params>
   </control>
   <control>
     <name>cr50_uart_capture</name>
     <doc>cr50_uart_capture</doc>
-    <params subtype="uart_capture" interface="9" drv="uart"
-    map="onoff" clobber_ok=""></params>
+    <params subtype="uart_capture" interface="9" drv="uart" map="onoff"
+    clobber_ok="" servo_v3_drv="na"></params>
   </control>
   <control>
     <name>cr50_uart_stream</name>
-    <doc>Cr50 console stream collected while cr50_uart_capture
-    on</doc>
+    <doc>Cr50 console stream collected while cr50_uart_capture on</doc>
     <params cmd="get" subtype="uart_stream" interface="9" drv="uart"
-    clobber_ok=""></params>
+    clobber_ok="" servo_v3_drv="na"></params>
   </control>
   <!-- cr50 controls -->
   <control>
@@ -136,72 +136,71 @@
     <doc>reboot cr50</doc>
     <params cmd="get" interface="9" drv="na" clobber_ok=""></params>
     <params cmd="set" subtype="cr50_reboot" interface="9" drv="cr50"
-    map="onoff" clobber_ok=""></params>
+    map="onoff" clobber_ok="" servo_v3_drv="na"></params>
   </control>
   <control>
     <name>cr50_ccd_level</name>
     <doc>State of CCD</doc>
     <params cmd="get" subtype="ccd_level" interface="9" drv="cr50"
-    input_type="str" clobber_ok=""></params>
+    input_type="str" clobber_ok="" servo_v3_drv="na"></params>
   </control>
   <control>
     <name>ccd_i2c_en</name>
     <doc>Query CCD I2C capability (read-only)</doc>
     <params cmd="get" subtype="ccd_cap_i2c" interface="9" drv="cr50"
-    input_type="str" clobber_ok=""></params>
+    input_type="str" clobber_ok="" servo_v3_drv="na"></params>
   </control>
   <control>
     <name>cr50_testlab</name>
     <doc>Cr50 testlab state</doc>
-    <params subtype="ccd_testlab" interface="9" drv="cr50"
-    input_type="str" clobber_ok=""></params>
+    <params subtype="ccd_testlab" interface="9" drv="cr50" input_type="str"
+    clobber_ok="" servo_v3_drv="na"></params>
   </control>
   <control>
     <name>cr50_reset_count</name>
     <doc>Cr50 reset count</doc>
     <params cmd="get" subtype="reset_count" interface="9" drv="cr50"
-    input_type="str" clobber_ok=""></params>
+    input_type="str" clobber_ok="" servo_v3_drv="na"></params>
   </control>
   <control>
     <name>cr50_devid</name>
     <doc>current cr50 devid</doc>
-    <params cmd="get" subtype="devid" interface="9" drv="cr50"
-    input_type="str" clobber_ok=""></params>
+    <params cmd="get" subtype="devid" interface="9" drv="cr50" input_type="str"
+    clobber_ok="" servo_v3_drv="na"></params>
   </control>
   <!-- cr50 UART Buffers & VREF Controls -->
   <control>
     <name>uart4_on_flex_en</name>
     <alias>cr50_uart_on_flex_en,usbpd_uart_on_flex_en</alias>
-    <doc>Enables JTAG buffer on servo flex ... repurposed to
-    uart4.</doc>
-    <params interface="2" servo_v3_interface="6" drv="pca95xx"
-    subtype="gpio" slv="0x26" offset="3" map="onoff_i" init="on"
-    clobber_ok="" servo_micro_drv="na"></params>
+    <doc>Enables JTAG buffer on servo flex ... repurposed to uart4.</doc>
+    <params interface="2" servo_v3_interface="6" drv="pca95xx" subtype="gpio"
+    slv="0x26" offset="3" map="onoff_i" init="on" clobber_ok=""
+    servo_micro_drv="na"></params>
   </control>
   <control>
     <name>jtag_buf_en</name>
     <alias>cr50_uart_en,usbpd_uart_en</alias>
     <doc>Enabled JTAG buffer on servo ... re-purposed to uart4.</doc>
-    <params ccd_cr50_drv="na" servo_micro_drv="na" clobber_ok=""
-    init="on"></params>
+    <params ccd_cr50_drv="na" servo_micro_drv="na" clobber_ok="" init="on">
+    </params>
   </control>
   <control>
     <name>cr50_version</name>
     <doc>current cr50 version</doc>
-    <params cmd="get" subtype="version" interface="9" drv="cr50"
-    map="print" init="print" clobber_ok=""></params>
+    <params cmd="get" subtype="version" interface="9" drv="cr50" map="print"
+    init="print" clobber_ok="" servo_v3_drv="na"></params>
   </control>
   <control>
     <name>cr50_brdprop</name>
     <doc>current cr50 board properties</doc>
-    <params cmd="get" subtype="brdprop" interface="9" drv="cr50"
-    clobber_ok=""></params>
+    <params cmd="get" subtype="brdprop" interface="9" drv="cr50" clobber_ok=""
+    servo_v3_drv="na"></params>
   </control>
   <!-- cr50 I2C controls -->
   <control>
     <name>cr50_i2c_ctrl</name>
     <doc>Send a special command to CR50 (write-only)</doc>
     <params clobber_ok="" interface="2" drv="cr50_i2c" slv="0x78" cmd="set"
-    map="cr50_i2c_cmds"/>
+    map="cr50_i2c_cmds" servo_v3_drv="na" />
   </control>
 </root>
