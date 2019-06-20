@@ -807,9 +807,13 @@ class Servod(object):
           self.set(control_name, value)
         if verbose:
           self._logger.info('Initialized %s to %s', control_name, value)
-      except Exception:
-        self._logger.exception(
+      except Exception as e:
+        self._logger.error(
             'Problem initializing %s -> %s', control_name, value)
+        self._logger.error(str(e))
+        self._logger.error('Please consider verifying the logs and if the '
+                           'error is not just a setup issue, consider filing '
+                           'a bug. Also checkout go/servo-ki.')
 
     return True
 

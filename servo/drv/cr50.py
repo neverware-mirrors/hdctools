@@ -80,6 +80,8 @@ class cr50(pty_driver.ptyDriver):
         super(cr50, self)._issue_cmd_get_results('\n\n',
                                                  ['(>|Console is enabled)'])
     except pty_driver.ptyError, e:
+        self._logger.warn('Consider checking whether the servo device has '
+                          'read/write access to the Cr50 UART console.')
         raise cr50Error('cr50 uart is unresponsive')
     return super(cr50, self)._issue_cmd_get_results(cmds, regex_list, timeout)
 
@@ -195,9 +197,12 @@ class cr50(pty_driver.ptyDriver):
     Returns:
         The cr50 version string
     """
-    result = self._issue_cmd_get_results('ver', ['RW_(A|B):\s+\*\s+(\S+)\s'])[0]
-    if result is None:
-      raise cr50Error('Cannot retrieve the version result on cr50 console.')
+    try:
+      result = self._issue_cmd_get_results('ver',
+                                           ['RW_(A|B):\s+\*\s+(\S+)\s'])[0]
+    except (pty_driver.ptyError, cr50Error) as e:
+      raise cr50Error('Cannot retrieve the version result on cr50 console. %s'
+                      % str(e))
     return result[2]
 
   def _Set_version(self, value):
