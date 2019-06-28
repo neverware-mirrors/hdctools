@@ -30,4 +30,10 @@
     <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
     drv="cros_chip" chip="npcx_int_spi"/>
   </control>
+  <control>
+    <name>pch_disable</name>
+    <alias>cr50_reset_odl</alias>
+    <doc>Force cr50 power-on reset</doc>
+    <params clobber_ok=""></params>
+  </control>
 </root>
