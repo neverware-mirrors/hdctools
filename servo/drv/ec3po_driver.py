@@ -8,6 +8,8 @@ import logging
 import hw_driver
 
 
+NO_UART_ERR = 'There is no UART on this servo for this specific interface.'
+
 class ec3poDriver(hw_driver.HwDriver):
 
   def __init__(self, interface, params):
@@ -35,8 +37,7 @@ class ec3poDriver(hw_driver.HwDriver):
       # Fail silently for now.  A NoneType interface indicates that this
       # interface is not supported on the current servo host.  There's not much
       # we can really do.
-      self._logger.debug('There is no UART on this servo for this '
-                         'specific interface.')
+      self._logger.debug(NO_UART_ERR)
 
   def _Get_interp_connect(self):
     """Get the state of the interpreter connection to the UART.
@@ -51,8 +52,7 @@ class ec3poDriver(hw_driver.HwDriver):
       # Fail silently for now.  A NoneType interface indicates that this
       # interface is not supported on the current servo host.  There's not much
       # we can really do.
-      self._logger.debug('There is no UART on this servo for this '
-                         'specific interface.')
+      self._logger.debug(NO_UART_ERR)
 
   def _Set_loglevel(self, level):
     """Set the interpreter's loglevel.
@@ -67,8 +67,7 @@ class ec3poDriver(hw_driver.HwDriver):
       # Fail silently for now.  A NoneType interface indicates that this
       # interface is not supported on the current servo host.  There's not much
       # we can really do.
-      self._logger.debug('There is no UART on this servo for this '
-                         'specific interface.')
+      self._logger.debug(NO_UART_ERR)
 
   def _Get_loglevel(self):
     """Get the interpreter's loglevel.
@@ -83,8 +82,7 @@ class ec3poDriver(hw_driver.HwDriver):
       # Fail silently for now.  A NoneType interface indicates that this
       # interface is not supported on the current servo host.  There's not much
       # we can really do.
-      self._logger.debug('There is no UART on this servo for this '
-                         'specific interface.')
+      self._logger.debug(NO_UART_ERR)
 
   def _Set_timestamp(self, state):
     """Enable timestamps on the console
@@ -99,8 +97,7 @@ class ec3poDriver(hw_driver.HwDriver):
       # Fail silently for now.  A NoneType interface indicates that this
       # interface is not supported on the current servo host.  There's not much
       # we can really do.
-      self._logger.debug('There is no UART on this servo for this '
-                         'specific interface.')
+      self._logger.debug(NO_UART_ERR)
 
   def _Get_timestamp(self):
     """Get whether timestamps are enabled on the console.
@@ -114,5 +111,34 @@ class ec3poDriver(hw_driver.HwDriver):
       # Fail silently for now.  A NoneType interface indicates that this
       # interface is not supported on the current servo host.  There's not much
       # we can really do.
-      self._logger.debug('There is no UART on this servo for this '
-                         'specific interface.')
+      self._logger.debug(NO_UART_ERR)
+
+  def _Set_raw_debug(self, state):
+    """Enable raw_debug on the console
+
+    Args:
+      state: A boolean indicating whether to turn on raw debug on the console.
+    """
+    if self._interface is not None:
+      mode = 'on' if state else 'off'
+      self._logger.debug('EC3PO turn %s raw debug.', mode)
+      self._interface._console.oobm_queue.put('rawdebug %s' % mode)
+    else:
+      # Fail silently for now.  A NoneType interface indicates that this
+      # interface is not supported on the current servo host.  There's not much
+      # we can really do.
+      self._logger.debug(NO_UART_ERR)
+
+  def _Get_raw_debug(self):
+    """Get whether raw debug is enabled on the console.
+
+    Returns:
+      A string, either 'on' or 'off', indicating if raw debug enabled.
+    """
+    if self._interface is not None:
+      return int(self._interface._console.raw_debug)
+    else:
+      # Fail silently for now.  A NoneType interface indicates that this
+      # interface is not supported on the current servo host.  There's not much
+      # we can really do.
+      self._logger.debug(NO_UART_ERR)

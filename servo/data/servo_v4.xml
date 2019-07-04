@@ -305,6 +305,19 @@
     subtype="interp_connect"></params>
   </control>
   <control>
+    <name>servo_v4_uart_raw_debug</name>
+    <doc>Turn on per-message-received logs to the servo v4 console
+      messages.</doc>
+    <params interface="6" drv="ec3po_driver" map="onoff" init="off"
+    subtype="raw_debug"></params>
+  </control>
+  <control>
+    <name>servo_v4_uart_timestamp</name>
+    <doc>Add timestamps to the servo v4 console messages</doc>
+    <params interface="6" drv="ec3po_driver" map="onoff" init="on"
+    subtype="timestamp"></params>
+  </control>
+  <control>
     <name>servo_v4_loglevel</name>
     <doc>servo v4 console loglevel</doc>
     <params interface="26" drv="ec3po_driver" input_type="str"

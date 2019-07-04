@@ -41,6 +41,12 @@
     subtype="loglevel" servo_v3_drv="na"></params>
   </control>
   <control>
+    <name>cr50_uart_raw_debug</name>
+    <doc>Turn on per-message-received logs to the Cr50 console messages.</doc>
+    <params interface="9" drv="ec3po_driver" map="onoff" init="off"
+    subtype="raw_debug"></params>
+  </control>
+  <control>
     <name>cr50_uart_timestamp</name>
     <doc>Add timestamps to the Cr50 console messages</doc>
     <params interface="9" drv="ec3po_driver" map="onoff" init="on"

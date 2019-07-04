@@ -406,6 +406,19 @@
     clobber_ok=""></params>
   </control>
   <control>
+    <name>servo_micro_uart_raw_debug</name>
+    <doc>Turn on per-message-received logs to the servo micro console
+      messages.</doc>
+    <params interface="6" drv="ec3po_driver" map="onoff" init="off"
+    subtype="raw_debug"></params>
+  </control>
+  <control>
+    <name>servo_micro_uart_timestamp</name>
+    <doc>Add timestamps to the servo micro console messages</doc>
+    <params interface="6" drv="ec3po_driver" map="onoff" init="on"
+    subtype="timestamp"></params>
+  </control>
+  <control>
     <name>ec3po_usbpd_console</name>
     <alias>usbpd_uart_pty</alias>
     <doc>USB PD UART console provided via EC-3PO console

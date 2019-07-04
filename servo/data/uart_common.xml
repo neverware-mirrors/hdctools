@@ -22,6 +22,12 @@
     subtype="loglevel"></params>
   </control>
   <control>
+    <name>cpu_uart_raw_debug</name>
+    <doc>Turn on per-message-received logs to the AP console messages.</doc>
+    <params interface="11" drv="ec3po_driver" map="onoff" init="off"
+    subtype="raw_debug"></params>
+  </control>
+  <control>
     <name>cpu_uart_timestamp</name>
     <doc>Add timestamps to CPU console messages</doc>
     <params interface="11" drv="ec3po_driver" map="onoff" init="off"
@@ -48,6 +54,12 @@
     <doc>EC console loglevel</doc>
     <params interface="10" drv="ec3po_driver" input_type="str"
     subtype="loglevel"></params>
+  </control>
+  <control>
+    <name>ec_uart_raw_debug</name>
+    <doc>Turn on per-message-received logs to the EC console messages.</doc>
+    <params interface="10" drv="ec3po_driver" map="onoff" init="off"
+    subtype="raw_debug"></params>
   </control>
   <control>
     <name>ec_uart_timestamp</name>
