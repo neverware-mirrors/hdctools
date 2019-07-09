@@ -20,6 +20,12 @@
   <control>
     <name>fw_wp_state</name>
     <doc>Used to turn fw wp off and on</doc>
-    <params clobber_ok="" fw_wp_vref="pp3300"/>
+    <!-- The WP signal on the board is 3.3V however, the servo device uses the
+    same voltage rail for the SPI VREF as is does for the WP signal, and the SPI
+    is on the 1.8V rail. For most transitors a 1.8V signal will be more than the
+    Vgs threshold on the transitor, so it will be considered a logic high. All
+    of the transistors for WP circuitry need to work with 1.8V signal for logic
+    high. -->
+    <params clobber_ok="" fw_wp_vref="pp1800"/>
   </control>
 </root>
