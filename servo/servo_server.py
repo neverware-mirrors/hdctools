@@ -483,7 +483,22 @@ class Servod(object):
       None if even the default is not defined.
     """
     candidates = [self._version]
-    candidates.extend(reversed(self._version.split('_with_')))
+    if '_with_' in self._version:
+      v4, raw_dut_device = self._version.split('_with_')
+      dut_devices = raw_dut_device.split('_and_')
+      # NOTE(coconutruben): all of this nonsense is going away with the new
+      # servod and is to bridge the time until then. Please forgive the below
+      # until then.
+      if '.' in control_name:
+        # In the current implementation, the only case where a '.' (a prefix)
+        # is in the control name is when there is a dual instance with micro and
+        # ccd on a v4.
+        dut_device = dut_devices[1]
+      else:
+        # In the normal control name, we need to make sure the version used
+        # does not include the potential _and_ portion from a dual instance.
+        dut_device = dut_devices[0]
+      candidates.extend([dut_device, v4])
     candidates = ['%s_%s' % (c, param_key) for c in candidates]
     candidates.append(param_key)
     for c in candidates:
