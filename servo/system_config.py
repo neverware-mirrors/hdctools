@@ -176,7 +176,7 @@ class SystemConfig(object):
         try:
           name = element.find('name').text
           if tag == 'control' and name_prefix:
-            name = name_prefix + '_' + name
+            name = name_prefix + name
         except AttributeError:
           # TODO(tbroch) would rather have lineno but dumping element seems
           # better than nothing.  Utimately a DTD/XSD for the XML schema will
@@ -294,7 +294,7 @@ class SystemConfig(object):
         if alias:
           for aliasname in (elem.strip() for elem in alias.split(',')):
             if name_prefix:
-              aliasname = name_prefix + '_' + aliasname
+              aliasname = name_prefix + aliasname
             self.syscfg_dict[tag][aliasname] = self.syscfg_dict[tag][name]
 
   def lookup_control_params(self, name, is_get=True):
