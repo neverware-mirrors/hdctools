@@ -7,7 +7,6 @@ Provides the following console controlled function subtypes:
   servo_v4_ccd_mode
 """
 
-import logging
 import time
 
 import ec3po_servo
@@ -28,6 +27,10 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
   """
   SWAP_DELAY = 1
   DUT_PORT = 1
+
+  USBC_ACTION_ROLE = ['dev', '5v', '12v', '20v']
+
+  CC_POLARITY = ['cc1', 'cc2']
 
   def __init__(self, interface, params):
     """Constructor.
@@ -83,8 +86,8 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
 
     res = self._issue_safe_cmd_get_results('adc', rx)
 
-    if len(res) != 6:
-      raise ec3poServoV4Error("Can't receive cc info: [%s]" % results)
+    if len(res) != len(rx):
+      raise ec3poServoV4Error("Can't receive adc info: [%s]" % res)
 
     vals = {entry[1] : entry[2] for entry in res}
 
@@ -113,26 +116,40 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
     """Get cc line state info from servo V4.
 
     returns:
-      (dts, charging, charge_enabled) tuple of on/off.
+      (dts, charging, charge_enabled, polarity) tuple of on/off.
 
     > cc
+    cc: on
     dts mode: on
     chg mode: off
     chg allowed: off
+    drp enabled: off
+    cc polarity: cc1
     """
     rx = ['dts mode:\s*(off|on)', 'chg mode:\s*(off|on)',
           'chg allowed:\s*(off|on)']
-
     res = self._issue_safe_cmd_get_results('cc', rx)
 
-    if len(res) != 3:
-      raise ec3poServoV4Error("Can't receive cc info: [%s]" % results)
+    if len(res) != len(rx):
+      raise ec3poServoV4Error("Can't receive cc info: [%s]" % res)
 
     dts = res[0][1]
     chg = res[1][1]
     mode = res[2][1]
+    # Old firmware can't change CC polarity, i.e. always cc1.
+    pol = 'cc1'
 
-    return (dts, chg, mode)
+    # TODO(waihong): Move the optional match to mandatory when the old
+    # firmware is phased out.
+    try:
+      optional_rx = ['cc polarity:\s*(cc1|cc2)']
+      optional_res = self._issue_safe_cmd_get_results('cc', optional_rx)
+      pol = optional_res[0][1]
+    except pty_driver.ptyError:
+      self._logger.warn("CC polarity not supported. Update the servo v4 fw.")
+      pass
+
+    return (dts, chg, mode, pol)
 
   def lookup_cc_setting(self, mode, dts):
     """Composite settings into cc commandline arg.
@@ -151,6 +168,20 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
 
     return newcc
 
+  def max_req_voltage(self):
+    """Get max request voltage from servo V4.
+
+    Returns:
+      string of voltage, like '20v'
+    """
+    rx = ['max req:\s*(\d+)000mV']
+    res = self._issue_safe_cmd_get_results('pd 1 dev', rx);
+
+    if len(res) != len(rx):
+      raise ec3poServoV4Error("Can't receive voltage info: [%s]" % res)
+
+    return res[0][1] + 'v'
+
   def _Get_servo_v4_dts_mode(self):
     """Getter of servo_v4_dts_mode.
 
@@ -158,7 +189,7 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
       "off": DTS mode is disabled.
       "on": DTS mode is enabled.
     """
-    dts, chg, mode = self.servo_cc_modes()
+    dts, _, _, _ = self.servo_cc_modes()
 
     return dts
 
@@ -169,7 +200,7 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
       value: "off", "on"
     """
     if value == 'off' or value == 'on':
-      dts, chg, mode = self.servo_cc_modes()
+      _, _, mode, _ = self.servo_cc_modes()
       newcc = self.lookup_cc_setting(mode, value)
 
       self._issue_cmd('cc %s' % newcc)
@@ -199,11 +230,12 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
     return info
 
   def _Get_servo_v4_power_role(self):
-    """Setter of servo_v4_role.
+    """Getter of servo_v4_role.
 
-    @returns: Current power role
+    Returns:
+      Current power role, like "src", "snk"
     """
-    dts, chg, mode = self.servo_cc_modes()
+    _, chg, _, _ = self.servo_cc_modes()
 
     return 'src' if (chg == 'on') else 'snk'
 
@@ -214,7 +246,7 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
       role: "src", "snk"
     """
     if role == 'src' or role == 'snk':
-      dts, chg, mode = self.servo_cc_modes()
+      dts, _, _, _ = self.servo_cc_modes()
       newrole = 'on' if role == 'src' else 'off'
       newcc = self.lookup_cc_setting(newrole, dts)
 
@@ -222,3 +254,48 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
     else:
       raise ValueError("Invalid power role setting: '%s'. Try one of "
                        "'src' or 'snk'." % value)
+
+  def _Set_usbc_role(self, value):
+    """Setter of usbc_role.
+
+    Args:
+      value: 0 for dev, 1 for 5v, 2 for 12v, 3 for 20v
+    """
+    self._issue_cmd('usbc_action %s' % self.USBC_ACTION_ROLE[value])
+
+  def _Get_usbc_role(self):
+    """Getter of usbc_role.
+
+    Returns:
+      0 for dev, 1 for 5v, 2 for 12v, 3 for 20v
+    """
+    _, _, mode, _ = self.servo_cc_modes()
+
+    # Sink mode, return 0 for dev.
+    if mode == 'off':
+      return 0
+
+    vol = self.max_req_voltage()
+    if vol in self.USBC_ACTION_ROLE:
+      return self.USBC_ACTION_ROLE.index(vol)
+
+    raise ValueError("Invalid voltage: '%s'" % vol)
+
+  def _Set_usbc_polarity(self, value):
+    """Setter of usbc_polarity.
+
+    Args:
+      value: 0 for CC1, 1 for CC2
+    """
+    dts, _, mode, _ = self.servo_cc_modes()
+    cc = self.lookup_cc_setting(mode, dts)
+    self._issue_cmd('cc %s %s' % (cc, self.CC_POLARITY[value]))
+
+  def _Get_usbc_polarity(self):
+    """Getter of usbc_polarity.
+
+    Returns:
+      0 for CC1, 1 for CC2
+    """
+    _, _, _, pol = self.servo_cc_modes()
+    return self.CC_POLARITY.index(pol)
