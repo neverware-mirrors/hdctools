@@ -102,20 +102,21 @@ class ServoDeviceWatchdog(threading.Thread):
     self._device_paths = {}
     usbmap = servodutil.UsbHierarchy()
     devices_not_found = set()
-    for vid, pid, serial in self._devices:
+    for device in self._devices:
+      vid, pid, serial = device
       try:
         dev = servodutil.UsbHierarchy.GetUsbDevice(vid, pid, serial)
         dev_path = usbmap.GetPath(dev)
         if not dev_path:
           raise ServodError('No sysfs path found for device.')
-        self._device_paths[(vid, pid, serial)] = dev_path
+        self._device_paths[device] = dev_path
       # pylint: disable=broad-except
       except Exception:
         self._logger.exception(
             'Servod Watchdog ran into unexpected issue trying to find device '
             'with vid: 0x%02x pid: 0x%02x serial: %r. Device will not be '
             'tracked.', vid, pid, serial)
-        devices_not_found.add((vid, pid, serial))
+        devices_not_found.add(device)
       if (vid, pid) in self.REINIT_CAPABLE:
         self._rate = self.REINIT_POLL_RATE
         self._logger.info('Reinit capable device found. Polling rate set '
@@ -134,14 +135,15 @@ class ServoDeviceWatchdog(threading.Thread):
     reinit_tokens = collections.defaultdict(lambda: self.REINIT_ATTEMPTS)
     while not self.done.is_set():
       self.done.wait(self._rate)
-      for vid, pid, serial in self._devices:
-        sysfs_path = self._device_paths[(vid, pid, serial)]
+      for device in self._devices:
+        vid, pid, serial = device
+        sysfs_path = self._device_paths[device]
         if os.path.exists(sysfs_path):
           # Device was found. Make sure it's not currently being considered
           # for reinit.
-          if (vid, pid, serial) in reinit_tokens:
+          if device in reinit_tokens:
             # Device was waiting to be reinit. Remove from token tracker.
-            del reinit_tokens[(vid, pid, serial)]
+            del reinit_tokens[device]
             if not reinit_tokens:
               # No device waiting for reinit anymore. Issue a servod interface
               # reinitialization.
@@ -149,14 +151,14 @@ class ServoDeviceWatchdog(threading.Thread):
         else:
           # Device was not found.
           if (vid, pid) in self.REINIT_CAPABLE:
-            if reinit_tokens[(vid, pid, serial)]:
+            if reinit_tokens[device]:
               # The device still has reinit tokens. Remove one.
-              reinit_tokens[(vid, pid, serial)] -= 1
+              reinit_tokens[device] -= 1
               self._logger.debug('Device - vid: 0x%02x pid: 0x%02x serial: %r '
                                  'not found when polling. Device is marked as '
                                  'reinit capable. %d more reinit attempts '
                                  'before giving up.', vid, pid, serial,
-                                 reinit_tokens[(vid, pid, serial)])
+                                 reinit_tokens[device])
               # pylint: disable=protected-access
               # Indicate to servod that interfaces are unavailable.
               self._servod._ifaces_available.clear()
