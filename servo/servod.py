@@ -98,11 +98,10 @@ class ServoDeviceWatchdog(threading.Thread):
     self._servod = servod
     self._rate = poll_rate
     # pylint: disable=protected-access
-    self._devices = set(self._servod._devices)
+    self._devices = set()
     self._device_paths = {}
     usbmap = servodutil.UsbHierarchy()
-    devices_not_found = set()
-    for device in self._devices:
+    for device in self._servod._devices:
       vid, pid, serial = device
       try:
         dev = servodutil.UsbHierarchy.GetUsbDevice(vid, pid, serial)
@@ -110,19 +109,17 @@ class ServoDeviceWatchdog(threading.Thread):
         if not dev_path:
           raise ServodError('No sysfs path found for device.')
         self._device_paths[device] = dev_path
+        self._devices.add(device)
       # pylint: disable=broad-except
       except Exception:
         self._logger.exception(
             'Servod Watchdog ran into unexpected issue trying to find device '
             'with vid: 0x%02x pid: 0x%02x serial: %r. Device will not be '
             'tracked.', vid, pid, serial)
-        devices_not_found.add(device)
       if (vid, pid) in self.REINIT_CAPABLE:
         self._rate = self.REINIT_POLL_RATE
         self._logger.info('Reinit capable device found. Polling rate set '
                           'to %.2fs.', self._rate)
-    # Only track devices that a sysfs path was successfully found for.
-    self._devices -= devices_not_found
 
     # TODO(coconutruben): Here and below in addition to VID/PID also print out
     # the device type i.e. servo_micro.
