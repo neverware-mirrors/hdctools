@@ -673,6 +673,17 @@ class Servod(object):
         rv.append(self.get(cmd))
     return rv
 
+  def add_serial_number(self, name, serial_number):
+    """Adds the serial number to the _serialnames dictionary.
+
+    Args:
+      name: A string which is the key into the _serialnames dictionary.
+      serial_number: A string which is the key into the _serialnames dictionary.
+    """
+    self._serialnames[name] = serial_number
+    self._logger.debug('Added %s %s to serialnames %r', name, serial_number,
+                       self._serialnames)
+
   def get_serial_number(self, name):
     """Returns the desired serial number from the serialnames dict.
 

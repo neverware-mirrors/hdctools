@@ -33,9 +33,7 @@ class servoMetadata(hw_driver.HwDriver):
 
   def _Get_serial(self):
     """Gets the current servo serial."""
-    if self._interface._serialnames[self._interface.MAIN_SERIAL]:
-      return self._interface._serialnames[self._interface.MAIN_SERIAL]
-    return 'unknown'
+    return self._interface.get_serial_number(self._interface.MAIN_SERIAL)
 
   def _Get_config_files(self):
     """Gets the configuration files used for this servo server invocation"""

@@ -57,8 +57,8 @@ class ServoV4PostInit(BasePostInit):
         servo_interfaces.SERVO_V4_DEFAULTS)
     for d in servo_v4_candidates:
       d_serial = usb.util.get_string(d, d.iSerialNumber)
-      if (not self.servod._serialnames[self.servod.MAIN_SERIAL] or
-          d_serial == self.servod._serialnames[self.servod.MAIN_SERIAL]):
+      if (not self.servod.get_serial_number(self.servod.MAIN_SERIAL) or
+          d_serial == self.servod.get_serial_number(self.servod.MAIN_SERIAL)):
         return d
     return None
 
@@ -114,8 +114,7 @@ class ServoV4PostInit(BasePostInit):
       servo_serial_key: Key to the servo serial dict.
     """
     serial = usb.util.get_string(servo_usb, servo_usb.iSerialNumber)
-    self.servod._serialnames[servo_serial_key] = serial
-    self._logger.debug('servod.serialnames = %r', self.servod._serialnames)
+    self.servod.add_serial_number(servo_serial_key, serial)
 
   def init_servo_interfaces(self, servo_usb):
     """Initialize the new servo interfaces.
