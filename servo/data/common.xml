@@ -94,6 +94,28 @@
     <params drv="servo_metadata" subtype="type" interface="servo" />
   </control>
   <control>
+    <name>watchdog</name>
+    <doc>The connection state of all devices.</doc>
+    <params drv="servo_watchdog" subtype="watchdog" interface="servo"
+    input_type="str"/>
+  </control>
+  <control>
+    <name>watchdog_add</name>
+    <doc>Servod will eventually shutdown if the device is disconnected.</doc>
+    <params subtype="watchdog_add" interface="servo" drv="servo_watchdog"
+    input_type="str" cmd="set"></params>
+    <params drv="servo_watchdog" subtype="watchdog" interface="servo"
+    input_type="str" cmd="get"/>
+  </control>
+  <control>
+    <name>watchdog_remove</name>
+    <doc>Servod won't shutdown if the device is disconnected.</doc>
+    <params subtype="watchdog_remove" interface="servo" drv="servo_watchdog"
+    input_type="str" cmd="set"></params>
+    <params drv="servo_watchdog" subtype="watchdog" interface="servo"
+    input_type="str" cmd="get"/>
+  </control>
+  <control>
     <name>init_keyboard</name>
     <doc>initialize keyboard handler</doc>
     <params  map="onoff" init="on" drv="kb_handler_init" interface="servo"
