@@ -12,6 +12,7 @@ import re
 import signal
 import socket
 import sys
+import time
 
 import client
 import usb
@@ -103,6 +104,7 @@ def diagnose_ccd(servo_dev):
   logger.error('SuzyQ enabled: '
       '%s, SuzyQ orientation: %s' % (sbu_en, suzyq_orientation))
   logger.error('')
+
 
 class UsbHierarchy(object):
   """A helper class to analyze the sysfs hierarchy of USB devices."""
@@ -316,6 +318,12 @@ class ServoScratch(object):
 
   _NO_FOUND_WARNING = 'No servod scratch entry found under id: %r.'
 
+  # Minimum time in s to wait on a servod process to turn down gracefully before
+  # attempting to send a SIGKILL instead.
+  _SIGTERM_RETRY_TIMEOUT_S = 5
+  # Wait period in s to when to wait before polling the servod process again.
+  _SIGTERM_RETRY_WAIT_S = .1
+
   def __init__(self, scratch=SERVO_SCRATCH_DIR):
     """Initialize utility by creating |scratch| if necessary.
 
@@ -468,11 +476,29 @@ class ServoScratch(object):
     """
     try:
       entry = self.FindById(args.id)
-      os.kill(entry['pid'], signal.SIGTERM)
-      self._logger.info('SIGTERM sent to servod instance associated with %r.',
-                        args.id)
+      pid = entry['pid']
     except ServodUtilError:
       self._logger.info(self._NO_FOUND_WARNING, args.id)
+      return
+    os.kill(pid, signal.SIGTERM)
+    self._logger.info('SIGTERM sent to servod instance associated with id %r.',
+                      args.id)
+    end = time.time() + self._SIGTERM_RETRY_TIMEOUT_S
+    while time.time() < end:
+      try:
+        os.kill(pid, 0)
+      except OSError:
+        # This indicates the process has died and the job here is done
+        self._logger.info('Servod instance associated with id %r turned down.',
+                          args.id)
+        return
+      time.sleep(self._SIGTERM_RETRY_WAIT_S)
+    # Getting here indicates the process did not die within the timeout. Bring
+    # out a bigger hammer.
+    self._logger.info('Servod instance associated with %r (pid %r) did not '
+                      'turn down after SIGTERM. Sending SIGKILL.', args.id,
+                      str(pid))
+    os.kill(pid, signal.SIGKILL)
 
   def _GenerateEntryFromPort(self, port):
     """Given a port number, try to generate an entry from it.
@@ -547,6 +573,7 @@ class ServoScratch(object):
       except socket.error:
         # Expected to fail when binding to a valid servod instance socket.
         pass
+
 
 # pylint: disable=invalid-name
 def _ConvertNameToMethod(name):
