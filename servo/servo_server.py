@@ -25,6 +25,7 @@ import ftdi_common
 import ftdiuart
 import i2cbus
 import keyboard_handlers
+import servo_dev
 import servo_interfaces
 import servo_postinit
 import stm32gpio
@@ -76,8 +77,7 @@ class Servod(object):
     """
     # If it is a new device add it to the list
     device = (vendor, product, serialname)
-    if device not in self._devices:
-      self._devices.append(device)
+    self.add_device(device)
 
     # Extend the interface list if we need to.
     interfaces_len = len(interfaces)
@@ -156,7 +156,7 @@ class Servod(object):
     self._ifaces_available.set()
     self._vendor = vendor
     self._product = product
-    self._devices = []
+    self._devices = {}
     self._serialnames = {self.MAIN_SERIAL: serialname}
     self._syscfg = config
     # list of objects (Fi2c, Fgpio) to physical interfaces (gpio, i2c) that ftdi
@@ -192,7 +192,8 @@ class Servod(object):
       else:
         self._logger.debug('interface %d has no reset functionality', i)
     # Indicate interfaces are safe to use again.
-    self._ifaces_available.set()
+    for device in self._devices.values():
+        device.connect()
 
   def get_servo_interfaces(self, position, size):
     """Get the list of servo interfaces.
@@ -219,6 +220,16 @@ class Servod(object):
       self._logger.info('Turning down interface %d' % i)
       if hasattr(interface, 'close'):
         interface.close()
+
+  def get_devices(self):
+    return self._devices.values()
+
+  def add_device(self, device):
+    if device not in self._devices:
+      vid, pid, serial = device
+      servod_device = servo_dev.ServoDevice(vid, pid, serial,
+                                            self._ifaces_available)
+      self._devices[device] = servod_device
 
   def _init_ftdi_dummy(self, vendor, product, serialname, interface):
     """Dummy interface for ftdi devices.

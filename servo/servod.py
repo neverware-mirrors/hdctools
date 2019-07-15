@@ -77,11 +77,6 @@ class ServoDeviceWatchdog(threading.Thread):
 
   """
 
-  REINIT_CAPABLE = set(servo_interfaces.CCD_DEFAULTS)
-
-  # Attempts based on REINIT_POLL_RATE that will be made to reconnect a device.
-  REINIT_ATTEMPTS = 100
-
   # Rate in seconds used to poll when a reinit capable device is attached.
   REINIT_POLL_RATE = 0.1
 
@@ -97,77 +92,46 @@ class ServoDeviceWatchdog(threading.Thread):
     self.done = threading.Event()
     self._servod = servod
     self._rate = poll_rate
-    # pylint: disable=protected-access
-    self._devices = set()
-    self._device_paths = {}
-    usbmap = servodutil.UsbHierarchy()
-    for device in self._servod._devices:
-      vid, pid, serial = device
-      try:
-        dev = servodutil.UsbHierarchy.GetUsbDevice(vid, pid, serial)
-        dev_path = usbmap.GetPath(dev)
-        if not dev_path:
-          raise ServodError('No sysfs path found for device.')
-        self._device_paths[device] = dev_path
-        self._devices.add(device)
-      # pylint: disable=broad-except
-      except Exception:
-        self._logger.exception(
-            'Servod Watchdog ran into unexpected issue trying to find device '
-            'with vid: 0x%02x pid: 0x%02x serial: %r. Device will not be '
-            'tracked.', vid, pid, serial)
-      if (vid, pid) in self.REINIT_CAPABLE:
+    self._devices = []
+
+    for device in self._servod.get_devices():
+      self._devices.append(device)
+      if device.reinit_ok():
         self._rate = self.REINIT_POLL_RATE
         self._logger.info('Reinit capable device found. Polling rate set '
                           'to %.2fs.', self._rate)
 
     # TODO(coconutruben): Here and below in addition to VID/PID also print out
     # the device type i.e. servo_micro.
-    self._logger.info('Watchdog setup for devices: %s', str(self._devices))
+    self._logger.info('Watchdog setup for devices: %s', self._devices)
 
   def run(self):
     """Poll |_devices| every |_rate| seconds. Send SIGTERM if device lost."""
-    # Tokens a reinit capable device has to attempt reinit. If these run out
-    # the watchdog will turn down servod.
-    reinit_tokens = collections.defaultdict(lambda: self.REINIT_ATTEMPTS)
+    # Devices that need to be reinitialized
+    disconnected_devices = {}
     while not self.done.is_set():
       self.done.wait(self._rate)
       for device in self._devices:
-        vid, pid, serial = device
-        sysfs_path = self._device_paths[device]
-        if os.path.exists(sysfs_path):
-          # Device was found. Make sure it's not currently being considered
-          # for reinit.
-          if device in reinit_tokens:
-            # Device was waiting to be reinit. Remove from token tracker.
-            del reinit_tokens[device]
-            if not reinit_tokens:
-              # No device waiting for reinit anymore. Issue a servod interface
-              # reinitialization.
+        dev_id = device.get_id()
+        if device.is_connected():
+          # Device was found. If it is in the disconnected devices, then it
+          # needs to be reinitialized. If no devices are disconnected,
+          # reinitialize all devices.
+          reinit_needed = disconnected_devices.pop(dev_id, None)
+          if reinit_needed and not disconnected_devices:
               self._servod.reinitialize()
         else:
           # Device was not found.
-          if (vid, pid) in self.REINIT_CAPABLE:
-            if reinit_tokens[device]:
-              # The device still has reinit tokens. Remove one.
-              reinit_tokens[device] -= 1
-              self._logger.debug('Device - vid: 0x%02x pid: 0x%02x serial: %r '
-                                 'not found when polling. Device is marked as '
-                                 'reinit capable. %d more reinit attempts '
-                                 'before giving up.', vid, pid, serial,
-                                 reinit_tokens[device])
-              # pylint: disable=protected-access
-              # Indicate to servod that interfaces are unavailable.
-              self._servod._ifaces_available.clear()
-              continue
-          # Device was not found, thus signaling to end servod.
-          self._logger.error('Device - vid: 0x%02x pid: 0x%02x serial: %r - '
-                             'not found when polling. Turning down servod.',
-                             vid, pid, serial)
-          # Watchdog should run in the same process as servod thread.
-          os.kill(os.getpid(), signal.SIGTERM)
-          self.done.set()
-          break
+          self._logger.debug('Device - %s not found when polling.', device)
+          if not device.reinit_ok():
+            # Device was not found and we can't reinitialize it. End servod.
+            self._logger.error('Device - %s - Turning down servod.', device)
+            # Watchdog should run in the same process as servod thread.
+            os.kill(os.getpid(), signal.SIGTERM)
+            self.done.set()
+            break
+          disconnected_devices[dev_id] = 1
+          device.disconnect()
 
 
 def usb_get_iserial(device):
