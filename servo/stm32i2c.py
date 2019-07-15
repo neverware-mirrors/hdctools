@@ -66,6 +66,10 @@ class Si2cBus(i2c_base.BaseI2CBus):
     """Reinitialize the usb endpoint"""
     self._susb.reset_usb()
 
+  def get_device_info(self):
+    """The usb device information."""
+    return self._susb.get_device_info()
+
   def _raw_wr_rd(self, slave_address, write_list, read_count=None):
     """Implements hdctools wr_rd() interface.
 

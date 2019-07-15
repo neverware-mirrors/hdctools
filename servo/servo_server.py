@@ -9,7 +9,6 @@ import logging
 import os
 import re
 import SimpleXMLRPCServer
-import threading
 import time
 import usb
 
@@ -151,9 +150,6 @@ class Servod(object):
     """
     self._logger = logging.getLogger('Servod')
     self._logger.debug('')
-    self._ifaces_available = threading.Event()
-    # Initially interfaces should be available.
-    self._ifaces_available.set()
     self._vendor = vendor
     self._product = product
     self._devices = {}
@@ -227,8 +223,7 @@ class Servod(object):
   def add_device(self, device):
     if device not in self._devices:
       vid, pid, serial = device
-      servod_device = servo_dev.ServoDevice(vid, pid, serial,
-                                            self._ifaces_available)
+      servod_device = servo_dev.ServoDevice(vid, pid, serial)
       self._devices[device] = servod_device
 
   def _init_ftdi_dummy(self, vendor, product, serialname, interface):
@@ -435,11 +430,12 @@ class Servod(object):
       An EC3PO object representing the EC-3PO interface or None if there's no
       interface for the USB PD UART.
     """
+    device = (vendor, product, serialname)
     raw_uart_name = interface['raw_pty']
     raw_uart_source = interface['source']
     if self._syscfg.is_control(raw_uart_name):
       raw_ec_uart = self.get(raw_uart_name)
-      return ec3po_interface.EC3PO(raw_ec_uart, raw_uart_source)
+      return ec3po_interface.EC3PO(raw_ec_uart, raw_uart_source, device)
     else:
       # The overlay doesn't have the raw PTY defined, therefore we can skip
       # initializing this interface since no control relies on it.
@@ -549,16 +545,19 @@ class Servod(object):
       index = int(interface_id)
       interface = self._interface_list[index]
 
+    device_info = None
+    if hasattr(interface, 'get_device_info'):
+      device_info = interface.get_device_info()
     drv_module = getattr(servo_drv, drv_name)
     drv_class = getattr(drv_module, self._camel_case(drv_name))
     drv = drv_class(interface, params)
     if control_name not in self._drv_dict:
       self._drv_dict[control_name] = {}
     if is_get:
-      self._drv_dict[control_name]['get'] = (params, drv)
+      self._drv_dict[control_name]['get'] = (params, drv, device_info)
     else:
-      self._drv_dict[control_name]['set'] = (params, drv)
-    return (params, drv)
+      self._drv_dict[control_name]['set'] = (params, drv, device_info)
+    return (params, drv, device_info)
 
   def doc_all(self):
     """Return all documenation for controls.
@@ -730,8 +729,6 @@ class Servod(object):
       HwDriverError: Error occurred while using drv
       ServodError: if interfaces are not available within timeout period
     """
-    if not self._ifaces_available.wait(self.INTERFACE_AVAILABILITY_TIMEOUT):
-      raise ServodError('Timed out waiting for interfaces to become available.')
     self._logger.debug('name(%s)' % (name))
     # This route is to retrieve serialnames on servo v4, which
     # connects to multiple servo-micros or CCD, like the controls,
@@ -740,7 +737,9 @@ class Servod(object):
     if 'serialname' in name:
       return self.get_serial_number(name.split('serialname')[0].strip('_'))
 
-    (param, drv) = self._get_param_drv(name)
+    (param, drv, device) = self._get_param_drv(name)
+    if device in self._devices:
+      self._devices[device].wait(self.INTERFACE_AVAILABILITY_TIMEOUT)
     try:
       val = drv.get()
       rd_val = self._syscfg.reformat_val(param, val)
@@ -789,10 +788,10 @@ class Servod(object):
       HwDriverError: Error occurred while using driver
       ServodError: if interfaces are not available within timeout period
     """
-    if not self._ifaces_available.wait(self.INTERFACE_AVAILABILITY_TIMEOUT):
-      raise ServodError('Timed out waiting for interfaces to become available.')
     self._logger.debug('name(%s) wr_val(%s)' % (name, wr_val_str))
-    (params, drv) = self._get_param_drv(name, False)
+    (params, drv, device) = self._get_param_drv(name, False)
+    if device in self._devices:
+      self._devices[device].wait(self.INTERFACE_AVAILABILITY_TIMEOUT)
     wr_val = self._syscfg.resolve_val(params, wr_val_str)
     try:
       drv.set(wr_val)

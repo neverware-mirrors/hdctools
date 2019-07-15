@@ -81,6 +81,10 @@ class Suart(uart.Uart):
     """Reinitialize the usb endpoint"""
     self._susb.reset_usb()
 
+  def get_device_info(self):
+    """The usb device information."""
+    return self._susb.get_device_info()
+
   def run_rx_thread(self):
     self._logger.debug('rx thread started on %s' % self.get_pty())
 

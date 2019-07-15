@@ -68,6 +68,10 @@ class Susb():
       self._logger.info('device not found: %04x:%04x %s' %
                         (self._vendor, self._product, self._serialname))
 
+  def get_device_info(self):
+    """Returns a tuple (vid, pid, serialname)."""
+    return (self._vendor, self._product, self._serialname)
+
   def _find_device(self):
     """Set up the usb endpoint"""
     # Find the stm32.

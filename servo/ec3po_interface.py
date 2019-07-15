@@ -90,12 +90,13 @@ class EC3PO(uart.Uart):
   This includes both the interpreter and the console objects for one UART.
   """
 
-  def __init__(self, raw_ec_uart, source_name):
+  def __init__(self, raw_ec_uart, source_name, device):
     """Provides the interface to the EC-3PO console interpreter.
 
     Args:
       raw_ec_uart: A string representing the actual PTY of the EC UART.
       source_name: A user friendly name documenting the source of this PTY.
+      device: A tuple of the USB device info (vid, pid, serialname)
     """
     # Run Fuart init.
     uart.Uart.__init__(self)
@@ -103,6 +104,7 @@ class EC3PO(uart.Uart):
     # Create the console and interpreter passing in the raw EC UART PTY.
     self._raw_ec_uart = raw_ec_uart
     self._source = source_name
+    self._device = device
 
     # Create some pipes to communicate between the interpreter and the console.
     # The command pipe is bidirectional.
@@ -224,6 +226,10 @@ class EC3PO(uart.Uart):
 
     self._logger.info('-------------------- %s console on: %s', self._source,
                       user_pty_name)
+
+  def get_device_info(self):
+    """Get the usb device information."""
+    return self._device
 
   def get_pty(self):
     """Gets the path of the served PTY."""

@@ -6,6 +6,7 @@
 
 import logging
 import os
+import threading
 
 import servo_interfaces
 import servodutil
@@ -25,15 +26,13 @@ class ServoDevice(object):
   # Available attempts to reconnect a device
   REINIT_ATTEMPTS = 100
 
-  def __init__(self, vid, pid, serialname, ifaces_available):
+  def __init__(self, vid, pid, serialname):
     """Servod device constructor.
 
     Args:
       vid: usb vendor id of FTDI device
       pid: usb product id of FTDI device
       serialname: string of device serialname/number as defined in FTDI eeprom.
-      ifaces_available: Event object. This will be cleared is if any device is
-                        disconnected.
 
     Raises:
       ServoDeviceError the usb device path isn't found.
@@ -43,7 +42,7 @@ class ServoDevice(object):
     self._vendor = vid
     self._product = pid
     self._serialname = serialname
-    self._ifaces_available = ifaces_available
+    self._ifaces_available = threading.Event()
     self._reinit_capable = (vid, pid) in self.REINIT_CAPABLE
     self._reinit_attempts = self.REINIT_ATTEMPTS
     usbmap = servodutil.UsbHierarchy()
@@ -59,6 +58,19 @@ class ServoDevice(object):
 
   def __str__(self):
     return '%04x:%04x %s' % (self._vendor, self._product, self._serialname)
+
+  def wait(self, wait_time):
+    """Wait for the device to reconnect and the interfaces to become available.
+
+    Args:
+        wait_time: time to wait in seconds
+
+    Raises:
+      ServoDeviceError: if the interfaces aren't available within timeout period
+    """
+    if not self._ifaces_available.wait(wait_time):
+      raise ServoDeviceError('Timed out waiting for interfaces to become '
+                             'available.')
 
   def connect(self):
     """The device connected."""

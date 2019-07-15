@@ -114,6 +114,10 @@ class Sgpio(gpio_interface.GpioInterface):
     self._logger.debug('Read value: 0x%x' % readvalue)
     return readvalue
 
+  def get_device_info(self):
+    """The usb device information."""
+    return self._susb.get_device_info()
+
   def close(self):
     """Stm32gpio wind down logic.
 
