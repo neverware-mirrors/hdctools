@@ -49,8 +49,11 @@ class Servod(object):
   CCD_SERIAL = 'ccd'
 
   # Timeout to wait for interfaces to become available again if reinitialization
-  # is taking place. In seconds.
-  INTERFACE_AVAILABILITY_TIMEOUT = 60
+  # is taking place. In seconds. This is supposed to recover from brief resets.
+  # If the interface disappears for more than 5 seconds, then someone probably
+  # intentionally disconnected the device. Servod shouldn't be responsible for
+  # waiting for the device during an intentional disconnect.
+  INTERFACE_AVAILABILITY_TIMEOUT = 5
 
   def init_servo_interfaces(self, vendor, product, serialname, interfaces):
     """Init the servo interfaces with the given interfaces.
