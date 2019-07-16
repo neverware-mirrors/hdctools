@@ -741,9 +741,7 @@ class ServodStarter(object):
                     signal.SIGTERM, signal.SIGTSTP]
     for ss in stop_signals:
       signal.signal(ss, handler)
-    # pylint: disable=protected-access, invalid-name, unused-variable
-    # current method of retrieving device information requires this
-    serials = [serial for _vid, _pid, serial in self._servod._devices]
+    serials = set(self._servod.get_servo_serials().values())
     try:
       self._scratchutil.AddEntry(self._servo_port, serials, os.getpid())
     except servodutil.ServodUtilError:
