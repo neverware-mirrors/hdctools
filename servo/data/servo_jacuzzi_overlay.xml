@@ -2,7 +2,4 @@
   <include>
     <name>servo_kukui_common_overlay.xml</name>
   </include>
-  <include>
-    <name>detachable.xml</name>
-  </include>
 </root>

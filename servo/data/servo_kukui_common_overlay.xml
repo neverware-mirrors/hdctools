@@ -1,0 +1,41 @@
+<root>
+  <include>
+    <name>servoflex_v2_r0_p50.xml</name>
+  </include>
+  <include>
+    <name>arm_ec_common.xml</name>
+  </include>
+  <include>
+    <name>cr50.xml</name>
+  </include>
+  <control>
+    <name>ec_chip</name>
+    <doc>EC chip name (read-only)</doc>
+    <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
+    drv="cros_chip" chip="stm32" />
+  </control>
+  <control>
+    <name>cold_reset</name>
+    <doc>cold reset used for warm reset</doc>
+    <remap>warm_reset</remap>
+  </control>
+  <control>
+    <name>power_state</name>
+    <doc>Used to turn the DUT off and on</doc>
+    <params clobber_ok="" shutdown_delay="3.0" reset_recovery="0.6"
+    warm_reset_can_hold_ap="no" />
+  </control>
+  <!-- lid open has to go through the EC always on kukui irrespective of
+       servo type. -->
+  <control>
+    <name>lid_open</name>
+    <params interface="10" drv="ec" map="yesno" subtype="lid_open"
+    clobber_ok=""></params>
+  </control>
+  <!-- The keyboard on these devices is the external USB KB. -->
+  <control>
+    <name>init_keyboard</name>
+    <doc>initialize keyboard handler</doc>
+    <params handler_type="usb" clobber_ok=""></params>
+  </control>
+</root>
