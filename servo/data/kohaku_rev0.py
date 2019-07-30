@@ -4,7 +4,7 @@
 
 config_type='servod'
 
-revs = [0]
+revs = [0, 1]
 
 inas = [
     ('ina3221', '0x40:0', 'pp3300_g',           3.30, 0.010, 'rem', True), # R458

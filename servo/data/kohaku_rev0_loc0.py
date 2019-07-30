@@ -9,7 +9,7 @@ inas = [
     ('sweetberry', '0x40:1', 'pp1200_dram_u',      1.20, 0.010, 'j2', True), # R463
     ('sweetberry', '0x40:2', 'pp1800_a',           1.80, 0.010, 'j2', True), # R556, SOC + audio
     ('sweetberry', '0x40:0', 'pp3300_a',           3.30, 0.050, 'j2', True), # R478, originally 0.01 Ohm
-    ('sweetberry', '0x41:3', 'pp3300_ec',          3.30, 0.500, 'j2', True), # R474, originally 0.01 Ohm
+    # ('sweetberry', '0x41:3', 'pp3300_ec',          3.30, 0.500, 'j2', True), # R474, originally 0.01 Ohm
     ('sweetberry', '0x41:1', 'pp3300_g',           3.30, 0.050, 'j2', True), # R458, originally 0.01 Ohm
     ('sweetberry', '0x41:2', 'pp3300_h1_g',        3.30, 0.500, 'j2', True), # R473, originally 0.01 Ohm
     ('sweetberry', '0x41:0', 'pp3300_hp_vbat',     3.30, 0.500, 'j2', True), # R260, originally 0 Ohm
@@ -35,4 +35,5 @@ inas = [
     ('sweetberry', '0x46:0', 'ppvar_elvdd',        4.60, 0.010, 'j3', True), # L12, originally 0 Ohm
     # ('sweetberry', '0x47:3', 'ppvar_elvss',        -3.10, 0.010, 'j3', True), # rework
     ('sweetberry', '0x47:1', 'ppvar_elv_in',       7.70, 0.010, 'j3', True), # ELVDD + ELVSS
+    ('sweetberry', '0x47:2', 'pp3300_ec',          3.30, 0.500, 'j3', True), # R474, originally 0.01 Ohm
 ]
