@@ -4,7 +4,6 @@
 """Specific Servo PostInit functions."""
 
 import collections
-import copy
 import logging
 import os
 import re
@@ -18,8 +17,6 @@ import system_config
 
 POST_INIT = collections.defaultdict(dict)
 
-DUAL_V4_VAR = 'DUAL_V4'
-DUAL_V4_VAR_DUMMY = 'dummy'
 
 class ServoPostInitError(Exception):
   """Exception class for ServoPostInit."""
@@ -119,20 +116,17 @@ class ServoV4PostInit(BasePostInit):
     serial = usb.util.get_string(servo_usb, servo_usb.iSerialNumber)
     self.servod.add_serial_number(servo_serial_key, serial)
 
-  def init_servo_interfaces(self, servo_usb, servo_interface=None):
+  def init_servo_interfaces(self, servo_usb):
     """Initialize the new servo interfaces.
 
     Args:
       servo_usb: usb.core.Device object that represents the new detected
           servo we should be checking against.
-      servo_interface: list of interfaces to init. If not provided, the default
-                       for vid/pid will be used.
     """
     vendor = servo_usb.idVendor
     product = servo_usb.idProduct
     serial = usb.util.get_string(servo_usb, servo_usb.iSerialNumber)
-    if not servo_interface:
-      servo_interface = servo_interfaces.INTERFACE_DEFAULTS[vendor][product]
+    servo_interface = servo_interfaces.INTERFACE_DEFAULTS[vendor][product]
 
     self.servod.init_servo_interfaces(vendor, product, serial, servo_interface)
 
@@ -216,7 +210,7 @@ class ServoV4PostInit(BasePostInit):
 
           # Load the config with modified control names and interface ids.
           self.prepend_config(servo_interfaces.SERVO_V4_CONFIGS[board], True,
-                              '%s_' % board, new_slot - 1)
+                              board, new_slot - 1)
 
           # Add its serial for record.
           self.add_servo_serial(
@@ -238,7 +232,7 @@ class ServoV4PostInit(BasePostInit):
                 self.servod.SERVO_MICRO_SERIAL + '_for_' + self.servod._model)
           main_micro_found = True
 
-    if main_micro_found and not DUAL_V4_VAR in os.environ:
+    if main_micro_found:
       return
 
     # Try to enable CCD iff no main servo-micro is detected.
@@ -246,34 +240,11 @@ class ServoV4PostInit(BasePostInit):
     for ccd in ccd_candidates:
       # Pick the proper CCD endpoint behind the servo v4.
       if usb_hierarchy.ShareSameHub(servo_v4, ccd):
-        if not main_micro_found:
-          self.prepend_config(self.CCD_CFG)
-          self.init_servo_interfaces(ccd)
-          self.servod._version += '_with_ccd_cr50'
-        else:
-          ccd_prefix = 'ccd_cr50.'
-          ccd_pos = servo_interfaces.SERVO_V4_SLOT_POSITIONS['secondary_ccd']
-          ccd_shift = ccd_pos - 1
-          # Cache the previous hwinit as the ccd controls should not be hwinit.
-          cached_hwinit = copy.copy(self.servod._syscfg.hwinit)
-          self.servod._syscfg.add_cfg_file(self.CCD_CFG,
-                                           interface_increment=ccd_shift,
-                                           name_prefix=ccd_prefix)
-          self.servod._syscfg.hwinit = cached_hwinit
-          vid, pid = (ccd.idVendor, ccd.idProduct)
-          interfaces = servo_interfaces.INTERFACE_DEFAULTS[vid][pid]
-          for interface in interfaces:
-            # Rewrite the ec3po interfaces to use the prefix for the raw uart.
-            if isinstance(interface, dict) and 'raw_pty' in interface:
-              interface['raw_pty'] = ccd_prefix + interface['raw_pty']
-          # Need to shift the interfaces properly.
-          interfaces = ['dummy'] * ccd_shift + interfaces
-          self.servod._version += '_and_ccd_cr50'
-          self.init_servo_interfaces(ccd, interfaces)
+        self.prepend_config(self.CCD_CFG)
         self.add_servo_serial(ccd, self.servod.CCD_SERIAL)
-
-    if main_micro_found:
-      return
+        self.init_servo_interfaces(ccd)
+        self.servod._version += '_with_ccd_cr50'
+        return
 
     # Fail if we requested board control but don't have an interface for this.
     if self.servod._board:

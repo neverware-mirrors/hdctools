@@ -150,7 +150,6 @@ SERVO_V4_SLOT_POSITIONS = {
     'default': 1,
     'hammer': 41,
     'staff': 41,
-    'secondary_ccd': 61,
 }
 SERVO_V4_CONFIGS = {
     'hammer': 'servo_micro_for_hammer.xml',

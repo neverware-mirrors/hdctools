@@ -26,7 +26,6 @@ import ftdi_common
 import servo_interfaces
 import servo_logging
 import servo_parsing
-import servo_postinit
 import servo_server
 import servodutil
 import system_config
@@ -262,11 +261,6 @@ class ServodStarter(object):
       fh.formatter = logging.Formatter(fmt=fh_fmt)
       root_logger.addHandler(fh)
 
-    if options.dual_v4:
-      # Leave the right breadcrumbs for servo_postinit to know whether to setup
-      # a dual instance or not.
-      os.environ[servo_postinit.DUAL_V4_VAR] = servo_postinit.DUAL_V4_VAR_DUMMY
-
     # Servod needs to be running in the chroot without PID namespaces in order
     # to freeze terminals when reading from the UARTs.
     terminal_freezer.CheckForPIDNamespace()
@@ -432,9 +426,6 @@ class ServodStarter(object):
                         help='path where to dump servod debug logs as a file.'
                         'If flag omitted in command line, no logs will be '
                         'dumped to a file.')
-    parser.add_argument('--allow-dual-v4', dest='dual_v4', default=False,
-                        action='store_true',
-                        help='Allow dual micro and ccd on servo v4.')
     servo_parsing.add_servo_parsing_rc_options(parser)
     return parser.parse_args(cmdline)
 
