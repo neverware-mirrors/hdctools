@@ -3,6 +3,8 @@
 This is intended to give a brief overview of how the servo code works, enabling
 developers to quickly make additions, and improve the servo framework.
 
+[TOC]
+
 ## Terminology
 
 - config file
@@ -63,7 +65,7 @@ and configure how to execute them.
 
 The following graphic shows how a call to dut-control ec_board works.
 
-![control flow](control_flow.png)
+![control flow](./images/control_flow.png)
 
 1. The dut-control control issues a request to the servo server, asking it to
 get the control ‘ec_board’.

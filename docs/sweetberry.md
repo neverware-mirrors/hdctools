@@ -1,5 +1,7 @@
 # Sweetberry Configuration
 
+[TOC]
+
 ## Requirements
 
 Sweetberry with firmware version sweetberry\_v1.1.8453-11bd4c0f4 or higher
@@ -15,7 +17,7 @@ Sweetberry with firmware version sweetberry\_v1.1.8453-11bd4c0f4 or higher
 
 ## Intro
 
-As explained in the README.INA.md file, sweetberry configuration using raw i2c
+As explained in the [INA docs], sweetberry configuration using raw i2c
 addresses and ports is difficult. Each physical bank on the sweetberry board is
 wired to INAs on different i2c lines (thus using different ports) while some of
 those INAs have the same i2c slave address.
@@ -35,7 +37,7 @@ can be used to write a sweetberry config template.
 
 ## Sweetberry device layout
 
-![sweetberry layout](sweetberry.png)
+![sweetberry layout](./images/sweetberry.png)
 
 ## Layout of sweetberry configuration
 
@@ -118,3 +120,5 @@ android pin map:
 | (112, 118)  | 0x4b 1    |
 | (113, 119)  | 0x4b 2    |
 | (114, 120)  | 0x4b 0    |
+
+[INA docs]: ./ina.md

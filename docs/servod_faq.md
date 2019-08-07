@@ -1,5 +1,7 @@
 # Servod FAQ
 
+[TOC]
+
 ## How do I turn off servod?
 
 ### tl;dr:

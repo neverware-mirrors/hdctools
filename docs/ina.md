@@ -1,5 +1,7 @@
 # INA Configuration Files
 
+[TOC]
+
 ## Overview
 
 To measure power on a board, the power measurement sources (be it on-board ADCs,

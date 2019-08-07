@@ -4,6 +4,8 @@ This document details how developers can use hardware tools like Servo and
 Sweetberry and software tools within [`dev-util/hdctools`][8] and other repos to
 measure power on a Chrome OS device (DUT, device under test).
 
+[TOC]
+
 ## Hardware to measure power
 
 - Servo
@@ -13,7 +15,7 @@ measure power on a Chrome OS device (DUT, device under test).
   (ADCs) on the board. For simplicity, this doc refers to them as
   just "Servo" devices.
 
-  See [chromium.org Servo][5] for more information on Servo.
+  See [Servo][5] for more information on Servo.
 
 - Sweetberry
 
@@ -188,11 +190,11 @@ File format: `.xml` for servod, `.board` and `.scenario` for powerlog.
 
   See [Sweetberry USB power monitoring][7].
 
-[1]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/data/README.INA.md
+[1]: ./ina.md
 [2]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/data/nami_rev1_inas.py
 [3]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/data/servo_sweetberry_rails_addr.py
 [4]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/data/servo_sweetberry_rails_pins.py
-[5]: https://www.chromium.org/chromium-os/servo
-[6]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/data/README.sweetberry.md
+[5]: ./servo.md
+[6]: ./sweetberry.md
 [7]: https://chromium.googlesource.com/chromiumos/platform/ec/+/master/extra/usb_power/powerlog.README.md
 [8]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master
