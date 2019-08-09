@@ -89,9 +89,9 @@ class ServodPowerTracker(threading.Thread):
     Query all |_ctrls| and take timestamp once at the start of |_rate| interval.
     """
     while not self._stop_signal.is_set():
-      sample_tuples, duration = self._sample_ctrls(self._ctrls)
+      sample_tuples, duration_ms = self._sample_ctrls(self._ctrls)
       self._stats.AddSamples(sample_tuples)
-      self._stop_signal.wait(max(self._rate - duration, 0))
+      self._stop_signal.wait(max(self._rate - (duration_ms / 1000), 0))
 
   def _sample_ctrls(self, ctrls):
     """Helper to query all servod ctrls, and create (name, value) tuples.
@@ -100,10 +100,10 @@ class ServodPowerTracker(threading.Thread):
       ctrls: list of servod ctrls to sample
 
     Returns:
-      tuple (sample_tuples, duration)
+      tuple (sample_tuples, duration_ms)
              sample_tuples: a list of (ctrl-name, value) tuples
                             value is a power reading on success, NaN on failure
-             duration: the time it took to collect the sample, in milliseconds
+             duration_ms: time it took to collect the sample, in milliseconds
     """
     start = time.time()
     try:
@@ -112,10 +112,10 @@ class ServodPowerTracker(threading.Thread):
       self._logger.warn('Attempt to get commands: %s failed. Recording them'
                         ' all as NaN.', ', '.join(ctrls))
       samples = [float('nan')]*len(ctrls)
-    duration = (time.time() - start) * 1000
+    duration_ms = (time.time() - start) * 1000
     sample_tuples = zip(ctrls, samples)
-    sample_tuples.append((SAMPLE_TIME_KEY, duration))
-    return (sample_tuples, duration)
+    sample_tuples.append((SAMPLE_TIME_KEY, duration_ms))
+    return (sample_tuples, duration_ms)
 
   def process_measurement(self, tstart=None, tend=None):
     """Process the measurement by calculating stats.
@@ -264,7 +264,7 @@ class ECPowerTracker(ServodPowerTracker):
 
   def run(self):
     """EC vbat 'run' to ensure the first reading does not use averaging."""
-    sample_tuples, duration = self._sample_ctrls([self._ec_cmd])
+    sample_tuples, duration_ms = self._sample_ctrls([self._ec_cmd])
     # Rewrite the name to be whatever actual control is being used: avg &
     # regular. This is required so that the output is not split into two
     # domains that are really the same: regular & avg.
@@ -274,7 +274,7 @@ class ECPowerTracker(ServodPowerTracker):
         name = self._ctrls[0]
       adjusted_sample_tuples.append((name, sample))
     self._stats.AddSamples(adjusted_sample_tuples)
-    self._stop_signal.wait(max(self._rate - duration, 0))
+    self._stop_signal.wait(max(self._rate - (duration_ms / 1000), 0))
     super(ECPowerTracker, self).run()
 
 
