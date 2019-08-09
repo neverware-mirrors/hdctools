@@ -148,7 +148,7 @@ class ptyDriver(hw_driver.HwDriver):
     """
     self._issue_cmd_get_results(cmds, [])
 
-  def _issue_cmd_get_results(self, cmds, regex_list, flush=True,
+  def _issue_cmd_get_results(self, cmds, regex_list, flush=None,
                              timeout=DEFAULT_UART_TIMEOUT):
     """Send command to the device and wait for response.
 
@@ -160,7 +160,8 @@ class ptyDriver(hw_driver.HwDriver):
       regex_list: List of Regular expressions used to match response message.
         Note1, list must be ordered.
         Note2, empty list sends and returns.
-      flush:  Flag to decide to flush console (send newline) before cmd.
+      flush:  Flag to decide to flush console (send newline) before cmd. Use
+              the uart setting if flush isn't given.
       timeout: Timeout value in second.
 
     Returns:
@@ -179,6 +180,7 @@ class ptyDriver(hw_driver.HwDriver):
       ptyError: If timed out waiting for a response
     """
     result_list = []
+    flush = flush if flush is not None else self._Get_uart_flush()
 
     with self._open():
       # If there is no command interface, make sure console capture isn't active
