@@ -39,6 +39,7 @@ class PowerStateDriver(hw_driver.HwDriver):
   _STATE_RESET_CYCLE = 'reset'
   _STATE_CR50_RESET = 'cr50_reset'
   _STATE_REC_FORCE_MRC = 'rec_force_mrc'
+  _STATE_WARM_RESET = 'warm_reset'
 
   REC_ON = 'on'
   REC_OFF = 'off'
@@ -156,11 +157,14 @@ class PowerStateDriver(hw_driver.HwDriver):
       self._reset_cycle()
     elif statename == self._STATE_CR50_RESET:
       self._reset_cr50()
+    elif statename == self._STATE_WARM_RESET:
+      self._warm_reset()
     elif statename == self._STATE_REC_FORCE_MRC:
       self._power_on(self.REC_ON_FORCE_MRC)
     else:
-      raise ValueError("Invalid power_state setting: '%s'. Try one of "
-                       "'%s', '%s', '%s', '%s', '%s', or '%s'." %
+      raise ValueError("Invalid power_state setting: %r. Try one of "
+                       "%r, %r, %r, %r, %r, %r, or %r." %
                        (statename, self._STATE_ON, self._STATE_OFF,
                         self._STATE_REC_MODE, self._STATE_FASTBOOT,
-                        self._STATE_RESET_CYCLE, self._STATE_REC_FORCE_MRC))
+                        self._STATE_RESET_CYCLE, self._STATE_REC_FORCE_MRC,
+                        self._STATE_WARM_RESET))
