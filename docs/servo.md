@@ -168,7 +168,7 @@ Servo v4 is the latest test and debug board to work with Google hardware. It
 combines Case Closed Debug (CCD) with numerous different methods to download
 data to the DUT and other testing and debug functionality.
 
-*   [Schematics][servo_v4_schematic]
+See the detailed documentation in [Servo v4].
 
 [FAFT]: https://www.chromium.org/for-testers/faft
 [Servo V2 block diagram, BOM, schematic and layout]: https://www.chromium.org/chromium-os/servo/chromium_os_servo_v2.tar.gz
@@ -182,4 +182,4 @@ data to the DUT and other testing and debug functionality.
 [servo_v2_diagram_layout]: https://commondatastorage.googleapis.com/chromeos-localmirror/distfiles/chromium_os_servo_v2.tar.gz
 [servo_micro_schematics]: https://docs.google.com/viewer?a=v&pid=sites&srcid=Y2hyb21pdW0ub3JnfGRldnxneDo2Njk1MGFiOTRkY2E5MGM5
 [servo_micro_ccd]: https://chromium.googlesource.com/chromiumos/platform/ec/+/master/board/servo_micro/ccd.md
-[servo_v4_schematic]: https://docs.google.com/a/chromium.org/viewer?a=v&pid=sites&srcid=Y2hyb21pdW0ub3JnfGRldnxneDo1ZmQ5NjFmMGZlZjFiYjk5
+[Servo v4]: ./servo_v4.md

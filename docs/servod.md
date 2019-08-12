@@ -45,7 +45,7 @@ developers to quickly make additions, and improve the servo framework.
 - map
 
   In the servod world a `<map>` is used to map a human readable name to a
-  numerial value. E.g. the "onoff" map defines on = 1 and off = 0.
+  numerical value. E.g. the "onoff" map defines on = 1 and off = 0.
 
 ## System overview
 

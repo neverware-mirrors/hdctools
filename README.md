@@ -8,6 +8,7 @@ boards.
 ## Servo
 
 *   [Servo: Debug Board](./docs/servo.md)
+    *   [Servo v4](./docs/servo_v4.md)
 
 ## servod
 
@@ -19,3 +20,8 @@ boards.
 *   [Power Measurement](./docs/power_measurement.md)
 *   [Sweetberry Power Monitoring Board](./docs/sweetberry.md)
 *   [INA: Instrumentation Amplifier](./docs/ina.md)
+
+## Resources
+
+*   [File a Bug](https://bugs.chromium.org/p/chromium/issues/entry?components=Tools%3EChromeOSDebugBoards)
+*   [Contact](https://chromium.googlesource.com/chromiumos/docs/+/master/contact.md)
