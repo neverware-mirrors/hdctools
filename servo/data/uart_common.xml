@@ -159,6 +159,12 @@
     input_type="str"></params>
   </control>
   <control>
+    <name>ec_flash_size</name>
+    <doc>The usable size of the EC flash memory in Kbytes</doc>
+    <params cmd="get" subtype="flash_size" interface="10" drv="ec"
+    input_type="str"></params>
+  </control>
+  <control>
     <name>cpu_uart_capture</name>
     <doc>cpu_uart_capture</doc>
     <params subtype="uart_capture" interface="11" drv="uart"

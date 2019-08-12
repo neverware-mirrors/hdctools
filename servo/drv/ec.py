@@ -518,3 +518,17 @@ class ec(pty_driver.ptyDriver):
     else:
       # "-1" is treated as max fan RPM in EC, so we don't need to handle that
       self._issue_cmd('fanset %d' % value)
+
+  def _Get_flash_size(self):
+    """Getter of usable EC flash size in Kbytes.
+
+    Returns:
+        The flash memory size in Kbytes.
+    """
+    self._limit_channel()
+    result = self._issue_cmd_get_results('flashinfo',
+                                         ['(?i)Usable:\s*(\d+)\sKB'])[0]
+    self._restore_channel()
+    if result is None:
+      raise ecError('Cannot retrieve the flash memory size of EC.')
+    return result[1]
