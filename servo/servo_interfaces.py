@@ -262,6 +262,7 @@ for board in [
     'chell',
     'cheza',
     'dragonegg',
+    'drallion',
     'eve',
     'fizz',
     'flapjack',
