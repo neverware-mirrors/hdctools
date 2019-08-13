@@ -151,16 +151,15 @@ the one relevant to your board.
 
 ### Servo Micro
 
-Servo Micro is a self contained replacement for yoshi servo flex. It is meant to
-be compatible with servo v2/v3 via `servod`. The general design theory was to
-use case closed debug software on an STM32 MCU to provide a CCD interface into
-systems with a yoshi debug port.
+Servo Micro is a self-contained replacement for yoshi servo flex. It is meant
+to be compatible with servo v2/v3 via `servod`. The design uses case closed
+debug software on an STM32 MCU to provide a CCD interface into systems with a
+yoshi debug port.
 
-Servo Micro is usually paired with a Servo v4 type-a, which provides ethernet,
+Servo Micro is usually paired with a Servo v4 Type-A, which provides ethernet,
 dut hub, and muxed usb storage.
 
-*   [Schematics][servo_micro_schematics]
-*   [Case-Closed Debug with Servo Micro][servo_micro_ccd]
+See the detailed documentation in [Servo Micro].
 
 ### Servo v4
 
@@ -180,6 +179,5 @@ See the detailed documentation in [Servo v4].
 [Chromium OS autotest repo]: https://chromium.googlesource.com/chromiumos/third_party/autotest
 [servo_v2_schematic]: https://www.chromium.org/chromium-os/servo/810-10010-03_20120227_servo_SCH_0.pdf
 [servo_v2_diagram_layout]: https://commondatastorage.googleapis.com/chromeos-localmirror/distfiles/chromium_os_servo_v2.tar.gz
-[servo_micro_schematics]: https://docs.google.com/viewer?a=v&pid=sites&srcid=Y2hyb21pdW0ub3JnfGRldnxneDo2Njk1MGFiOTRkY2E5MGM5
-[servo_micro_ccd]: https://chromium.googlesource.com/chromiumos/platform/ec/+/master/board/servo_micro/ccd.md
 [Servo v4]: ./servo_v4.md
+[Servo Micro]: ./servo_micro.md

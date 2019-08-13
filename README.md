@@ -8,6 +8,7 @@ boards.
 ## Servo
 
 *   [Servo: Debug Board](./docs/servo.md)
+    *   [Servo Micro](./docs/servo_micro.md)
     *   [Servo v4](./docs/servo_v4.md)
 
 ## servod
