@@ -261,7 +261,12 @@
     <params cmd="get" subtype="latest_version" interface="26"
       drv="ec3po_servo_v4"></params>
   </control>
-
+  <control>
+    <name>active_v4_device</name>
+    <doc>shows the active servo device servo_micro or ccd_cr50</doc>
+    <params drv="active_v4_device" interface="servo" input_type="str"
+      subtype="device"></params>
+  </control>
   <control>
     <name>init_usb_keyboard</name>
     <doc>initialize usb keyboard handler</doc>

@@ -6,6 +6,7 @@
 
 Details of the drivers can be found in hw_driver.py
 """
+import active_v4_device
 import ad5248
 import alex_power
 import beltino_power
