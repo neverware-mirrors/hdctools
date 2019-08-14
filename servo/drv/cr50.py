@@ -407,3 +407,15 @@ class cr50(pty_driver.ptyDriver):
 
   def _Set_uut_boot_mode(self, value):
     self._issue_cmd('gpioset EC_TX_CR50_RX_OUT %s' % value)
+
+  def _Get_servo_state(self):
+    """Getter of servo_state.
+
+    Returns:
+      The cr50 servo state string: 'undetectable', 'disconnected', or
+      'connected'
+    """
+    result = self._issue_cmd_get_results('ccdstate', ['Servo:\s+(\S+)\s'])[0][1]
+    if result is None:
+      raise cr50Error('Cannot retrieve the ccdstate result on cr50 console.')
+    return result

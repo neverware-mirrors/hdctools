@@ -174,6 +174,12 @@
     <params cmd="get" subtype="devid" interface="9" drv="cr50" input_type="str"
     clobber_ok="" servo_v3_drv="na"></params>
   </control>
+  <control>
+    <name>cr50_servo</name>
+    <doc>get the servo state from cr50 ccdstate</doc>
+    <params cmd="get" subtype="servo_state" interface="9" drv="cr50"
+    input_type="str" clobber_ok="" servo_v3_drv="na"></params>
+  </control>
   <!-- cr50 UART Buffers & VREF Controls -->
   <control>
     <name>uart4_on_flex_en</name>
