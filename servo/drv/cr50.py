@@ -68,7 +68,7 @@ class cr50(pty_driver.ptyDriver):
           'baudrate': None
       }
 
-  def _issue_cmd_get_results(self, cmds, regex_list,
+  def _issue_cmd_get_results(self, cmds, regex_list, flush=None,
                              timeout=pty_driver.DEFAULT_UART_TIMEOUT):
     """Send \n to make sure cr50 is awake before sending cmds
 
@@ -77,13 +77,15 @@ class cr50(pty_driver.ptyDriver):
     sleep, wait for console enabled.
     """
     try:
-        super(cr50, self)._issue_cmd_get_results('\n\n',
-                                                 ['(>|Console is enabled)'])
+      super(cr50, self)._issue_cmd_get_results('\n\n',
+                                               ['(>|Console is enabled)'])
     except pty_driver.ptyError, e:
-        self._logger.warn('Consider checking whether the servo device has '
-                          'read/write access to the Cr50 UART console.')
-        raise cr50Error('cr50 uart is unresponsive')
-    return super(cr50, self)._issue_cmd_get_results(cmds, regex_list, timeout)
+      self._logger.warn('Consider checking whether the servo device has '
+                        'read/write access to the Cr50 UART console.')
+      raise cr50Error('cr50 uart is unresponsive')
+    return super(cr50, self)._issue_cmd_get_results(cmds, regex_list,
+                                                    flush=flush,
+                                                    timeout=timeout)
 
   def _Get_cold_reset(self):
     """Getter of cold_reset (active low).
