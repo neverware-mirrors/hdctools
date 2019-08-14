@@ -419,3 +419,30 @@ class cr50(pty_driver.ptyDriver):
     if result is None:
       raise cr50Error('Cannot retrieve the ccdstate result on cr50 console.')
     return result
+
+  def _Set_detect_servo(self, val):
+    """Setter of the servo detection state.
+
+    ccdblock can be configured to enable servo detection even if ccd is enabled.
+    Cr50 uses EC uart to detect servo. If cr50 drives that signal, it can't
+    detect servo pulling it up. ccdblock servo will disable uart, so we can
+    detect servo.
+    """
+    if val:
+      self._issue_cmd('ccdblock servo enable')
+      # make sure we aren't ignoring servo. That will interfere with detection.
+      self._issue_cmd('ccdblock IGNORE_SERVO disable')
+    else:
+      self._issue_cmd('ccdblock servo disable')
+
+  def _Get_detect_servo(self):
+    """Getter of the servo detection state.
+
+    Returns:
+      1 if cr50 can detect servo even with ccd enabled.
+    """
+    result = self._issue_cmd_get_results(
+        'ccdstate', ['CCD ports blocked:([\S ]+)[\n\r]'])[0][1]
+    if result is None:
+      raise cr50Error('Cannot retrieve the ccdblock result on cr50 console.')
+    return 1 if ' SERVO' in result else 0

@@ -180,6 +180,12 @@
     <params cmd="get" subtype="servo_state" interface="9" drv="cr50"
     input_type="str" clobber_ok="" servo_v3_drv="na"></params>
   </control>
+  <control>
+    <name>cr50_force_servo_detect</name>
+    <doc>Control ccdblock to control detecting servo.</doc>
+    <params subtype="detect_servo" interface="9" drv="cr50" map="onoff"
+    clobber_ok="" servo_v3_drv="na"></params>
+  </control>
   <!-- cr50 UART Buffers & VREF Controls -->
   <control>
     <name>uart4_on_flex_en</name>
