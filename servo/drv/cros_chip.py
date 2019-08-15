@@ -17,9 +17,21 @@ class crosChip(hw_driver.HwDriver):
     """
     super(crosChip, self).__init__(interface, params)
     default_chip = self._params.get('chip', 'unknown')
-    flashing_device = interface._version.split('with_')[-1].lower()
-    self._chip = self._params.get('chip_for_' + flashing_device, default_chip)
+    servo_type = interface._version
+    devices = servo_type.split('with_')[-1].lower().split('_and_')
+    default_device = devices[0]
+    self._chips = {}
+    for device in devices:
+        self._chips[device] = self._params.get('chip_for_' + device,
+                                               default_chip)
+    self._chip = self._chips[default_device]
+    self._check_active_device = ('servo_v4' in servo_type and
+                                 len(devices) > 1)
 
   def _Get_chip(self):
     """Get the EC chip name."""
-    return self._chip
+    if self._check_active_device:
+        device = self._interface.get('active_v4_device')
+        return self._chips[device]
+    else:
+        return self._chip
