@@ -721,9 +721,13 @@ class Servod(object):
     Returns:
        A string containing the serial number or "unknown".
     """
+    # Remove the prefix from the serialname control. Serialnames are
+    # universal. It doesn't matter what the prefix is.
+    # The prefix is separated from the main control with '.'
+    name = name.split('.', 1)[-1]
+
     if not name:
       name = 'main'
-
     try:
       return self._serialnames[name]
     except KeyError:
