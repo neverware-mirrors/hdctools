@@ -20,9 +20,8 @@ import mfg_servo_common as c
 SERVO_MICRO_BIN = 'binfiles/servo_micro.bin'
 STM_DFU_VIDPID = '0483:df11'
 STM_VIDPID = '18d1:501a'
-serialno = 'Uninitialized'
-LOGNAME = 'logfiles/mfg_servo_micro'
-TESTERLOGNAME = 'logfiles/mfg_servo_micro_run'
+LOGNAME = '/var/log/mfg_servo_micro'
+TESTERLOGNAME = '/var/log/mfg_servo_micro_run'
 
 RE_SERIALNO = re.compile('^(S[MN](C[PDQ][0-9]{5}|N[PDQ][0-9]{5})|'
                          '(CMO653-00166-04[A-Z0-9]+))$')
@@ -38,7 +37,7 @@ def main():
 
   c.setup_tester_logfile(TESTERLOGNAME)
 
-  while (True):
+  while True:
     # Fetch barcode values
     if not serialno:
       done = False
