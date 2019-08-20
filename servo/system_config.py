@@ -94,6 +94,7 @@ class SystemConfig(object):
     self.syscfg_dict = collections.defaultdict(dict)
     self.hwinit = []
     self._loaded_xml_files = []
+    self._board_cfg = None
 
   def find_cfg_file(self, filename):
     """Find the filename for a system XML config file.
@@ -116,6 +117,14 @@ class SystemConfig(object):
     if os.path.isfile(fullname):
       return fullname
     return None
+
+  def set_board_cfg(self, filename):
+    """Save the filename for the board config."""
+    self._board_cfg = filename
+
+  def get_board_cfg(self):
+    """Return the board filename."""
+    return self._board_cfg
 
   def add_cfg_file(self, filename, name_prefix=None, interface_increment=0):
     """Add system config file to the system config object

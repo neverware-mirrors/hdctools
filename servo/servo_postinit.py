@@ -179,6 +179,8 @@ class ServoV4PostInit(BasePostInit):
     # this servo v4 and if so, initialize it and add it to the servod instance.
     servo_v4 = self.get_servo_v4_usb_device()
     servo_micro_candidates = self.get_servo_micro_devices()
+    # Save the board config in case we need to readd it with a prefix.
+    board_config = self.servod._syscfg.get_board_cfg()
     for servo_micro in servo_micro_candidates:
       # The servo_micro and the STM chip of servo v4 share the same internal hub
       # on servo v4 board. Check the USB hierarchy to find the servo_micro
@@ -263,6 +265,11 @@ class ServoV4PostInit(BasePostInit):
           self.servod._syscfg.add_cfg_file(self.CCD_CFG,
                                            interface_increment=ccd_shift,
                                            name_prefix=ccd_prefix)
+          if board_config:
+            self.servod._syscfg.add_cfg_file(board_config,
+                                             interface_increment=ccd_shift,
+                                             name_prefix=ccd_prefix)
+
           self.servod._syscfg.hwinit = cached_hwinit
           vid, pid = (ccd.idVendor, ccd.idProduct)
           interfaces = servo_interfaces.INTERFACE_DEFAULTS[vid][pid]

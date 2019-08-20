@@ -340,6 +340,7 @@ class ServodStarter(object):
         self._logger.info('Found XML overlay for board %s', options.board)
 
       all_configs.append(board_config)
+      scfg.set_board_cfg(board_config)
 
     for cfg_file in all_configs:
       scfg.add_cfg_file(cfg_file)
