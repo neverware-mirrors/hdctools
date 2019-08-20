@@ -22,4 +22,5 @@ inas = [
     ('sweetberry', '0x43:3', 'ppvar_sa',        1.0, 0.005, 'j2', True), # L12
     ('sweetberry', '0x43:1', 'ppvar_gt',        1.0, 0.003, 'j2', True), # L31
     ('sweetberry', '0x43:2', 'ppvar_bl',        7.7, 0.050, 'j2', True), # U89
+    ('sweetberry', '0x43:0', 'ppvar_vbus_in',  15.0, 0.020, 'j2', True), # R213
 ]
