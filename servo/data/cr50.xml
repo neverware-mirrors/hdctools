@@ -44,7 +44,7 @@
     <name>cr50_uart_raw_debug</name>
     <doc>Turn on per-message-received logs to the Cr50 console messages.</doc>
     <params interface="9" drv="ec3po_driver" map="onoff" init="off"
-    subtype="raw_debug"></params>
+    subtype="raw_debug" servo_v3_drv="na"></params>
   </control>
   <control>
     <name>cr50_uart_timestamp</name>
@@ -199,7 +199,8 @@
     <name>jtag_buf_en</name>
     <alias>cr50_uart_en,usbpd_uart_en</alias>
     <doc>Enabled JTAG buffer on servo ... re-purposed to uart4.</doc>
-    <params ccd_cr50_drv="na" servo_micro_drv="na" clobber_ok="" init="on">
+    <params servo_v3_drv="na" ccd_cr50_drv="na" servo_micro_drv="na"
+    clobber_ok="" init="on">
     </params>
   </control>
   <control>
