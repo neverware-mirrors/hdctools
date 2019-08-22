@@ -66,6 +66,15 @@ On your workstation, servod must also be running to communicate with servo:
 ```bash
 (chroot) $ sudo servod -b $BOARD &
 ```
+*** note
+WARNING: `servod` must be run inside a chroot that was launched with the
+`--no-ns-pid` flag. [It is annoying to always specify this (or
+forget)][servod_no_nspid], so you may want to add this to your `$HOME/.bashrc`:
+
+```bash
+alias cros_sdk='cros_sdk --no-ns-pid'
+```
+***
 
 With `servod` running, `dut-control` commands can be used to probe and change
 various controls. For a list of commands, run `dut-control` with no parameters:
@@ -74,8 +83,9 @@ various controls. For a list of commands, run `dut-control` with no parameters:
 (chroot) $ dut-control
 ```
 
-You can toggle GPIOs by specifying the control and the state. For example, to
-perform a DUT cold reset:
+You can toggle GPIOs by specifying the control and the state.
+
+Perform a DUT cold reset:
 
 ```bash
 (chroot) $ dut-control cold_reset:on
@@ -83,20 +93,41 @@ perform a DUT cold reset:
 (chroot) $ dut-control cold_reset:off
 ```
 
-Higher-level controls may set several sub-controls in sequence. For example, to
-transition a DUT to recovery mode:
+Power-cycle a DUT:
+
+```bash
+(chroot) $ dut-control power_state:off
+(chroot) $ dut-control power_state:on
+```
+
+Higher-level controls may set several sub-controls in sequence.
+
+For example, to transition a DUT to recovery mode:
 
 ```bash
 (chroot) $ dut-control power_state:rec
 ```
 
-To access the CPU or EC UARTs, first check the port mapping with `dut-control`,
-then attach a terminal emulator program to the port:
+To read the value of a `dut-control` property, just specify the name of the
+property:
+
+```bash
+(chroot) $ dut-control <name_of_property>
+```
+
+For example, to access the CPU or EC UARTs, first check the port mapping with
+`dut-control`, then attach a terminal emulator program to the port:
 
 ```bash
 (chroot) $ dut-control cpu_uart_pty
 (chroot) $ dut-control ec_uart_pty
 (chroot) $ sudo minicom -D /dev/pts/$PORT
+```
+
+To see all the available `dut-control` commands, you can do:
+
+```bash
+(chroot) $ dut-control --info
 ```
 
 Servo can also be used for flashing firmware. To flash EC firmware:
@@ -121,6 +152,60 @@ device to the network via Ethernet, and load a Chromium OS image onto USB memory
 stick. The networking and build image steps are not described here; see [FAFT]
 for details on configuring servo to run automated tests. For information on
 writing tests, see the [servo library code] in the [Chromium OS autotest repo].
+
+## Using multiple servos on the same machine
+
+It's possible to connect multiple servos at once, which is especially useful
+for testing/developing against multiple devices. Servo v4 will charge the DUT
+if a charger is attached to it and also provides an ethernet jack so SSH is
+always available.
+
+To use multiple servos, you need to run multiple instances of `servod`, each
+running on a different port. You also need to specify the servo's serial name.
+
+To find the serialname of connected servos:
+
+```bash
+(chroot) $ sudo servod
+```
+
+Look for `sid`:
+
+```bash
+2019-05-16 13:28:40,301 - servod - INFO - Start
+2019-05-16 13:28:40,384 - servod - INFO - Found servo, vid: 0x18d1 pid: 0x5002 sid: 911416-00789
+2019-05-16 13:28:40,386 - servod - INFO - Found servo, vid: 0x18d1 pid: 0x5002 sid: 911416-00927
+2019-05-16 13:28:40,389 - servod - INFO - Found servo, vid: 0x18d1 pid: 0x5014 sid: 0601002A-922A4826
+2019-05-16 13:28:40,389 - servod - INFO - Found servo, vid: 0x18d1 pid: 0x501b sid: C1804020116
+2019-05-16 13:28:40,389 - servod - INFO -
+2019-05-16 13:28:40,391 - servod - INFO - Press '0' for servo, vid: 0x18d1 pid: 0x5002 sid: 911416-00789
+2019-05-16 13:28:40,393 - servod - INFO - Press '1' for servo, vid: 0x18d1 pid: 0x5002 sid: 911416-00927
+2019-05-16 13:28:40,396 - servod - INFO - Press '2' for servo, vid: 0x18d1 pid: 0x5014 sid: 0601002A-922A4826
+2019-05-16 13:28:40,396 - servod - INFO - Press '3' for servo, vid: 0x18d1 pid: 0x501b sid: C1804020116
+```
+
+### Example
+
+```bash
+# servo v4
+(chroot) $ sudo servod --board=nocturne  --port 9999 --serialname C1804020116
+
+# servo v2
+(chroot) $ sudo servod --board=zerblebarn  --serialname 911416-00789 --port 9998
+
+# servo micro
+(chroot) $ sudo servod --board=hatch --serialname CMO653-00166-040489J03624 --port 9997
+```
+
+*** note
+NOTE: By default `dut-control` will use port 9999 (the default `servod` port).
+You can specify the `--port` flag to `dut-control` to target a specific
+`servod`:
+
+```bash
+(chroot)$ dut-control --port 9998 power_state:off
+```
+***
 
 ## Hardware Versions
 
@@ -181,3 +266,4 @@ See the detailed documentation in [Servo v4].
 [servo_v2_diagram_layout]: https://commondatastorage.googleapis.com/chromeos-localmirror/distfiles/chromium_os_servo_v2.tar.gz
 [Servo v4]: ./servo_v4.md
 [Servo Micro]: ./servo_micro.md
+[servod_no_nspid]: https://groups.google.com/a/google.com/d/msg/chromeos-chatty-firmware/mDexO8T1TyM/rFONCSifAAAJ
