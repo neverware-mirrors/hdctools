@@ -28,15 +28,9 @@ class kb(hw_driver.HwDriver):
     """
     super(kb, self).__init__(interface, params.copy())
     # pylint: disable=protected-access
-    handler = self._params.get('handler', 'default')
-    if handler not in ['default', 'usb']:
-      raise KbError('Unknown keyboard handler requested: %s' % handler)
-    # As the user is intending to use the keyboard handler, initialize it
-    # anyways.
-    if handler == 'default':
-      interface.set('init_keyboard', 'on')
-    if handler == 'usb':
-      interface.set('init_usb_keyboard', 'on')
+    self._handler = self._params.get('handler', 'default')
+    if self._handler not in ['default', 'usb']:
+      raise KbError('Unknown keyboard handler requested: %s' % self._handler)
     self._key = params['key']
 
   def _Set_key(self, duration):
@@ -51,16 +45,25 @@ class kb(hw_driver.HwDriver):
     Raises:
       KbError: if key is not a member of kb_precanned map.
     """
+    turn_off_needed = False
     keyboard = self._interface._keyboard
-    if  self._params.get('handler', 'default') == 'usb':
+    if self._handler == 'usb':
       keyboard = self._interface._usb_keyboard
     if not keyboard:
       raise KbError('Keyboard handler not setup.')
+    if not keyboard.is_open():
+      turn_off_needed = True
+      self._logger.info('Keyboard %s handler not setup. Turning on now.',
+                        self._handler)
+      keyboard.open()
     try:
       func = getattr(keyboard, self._key)
     except AttributeError:
       raise KbError('Key %s not found.' % self._key)
     func(press_secs=duration)
+    if turn_off_needed:
+      self._logger.info('Keyboard was not on for call. Turning it off again.')
+      keyboard.close()
 
   def _Set_arb_key_config(self, key):
     """Set the key to be pressed when arb_key control is called

@@ -15,6 +15,9 @@ import hw_driver
 import servo.keyboard_handlers
 
 
+class kbHandlerInitError(hw_driver.HwDriverError):
+  """Error class for keyboard initialization issues."""
+
 # pylint: disable=invalid-name
 # Servod requires camel-case class names
 class kbHandlerInit(hw_driver.HwDriver):
@@ -36,61 +39,50 @@ class kbHandlerInit(hw_driver.HwDriver):
 
   def _Get_init_usb_keyboard(self):
     """Return whether the usb keyboard on the servo instance is initialized."""
-    return int(self._servo._usb_keyboard != None)
+    if not self._servo._usb_keyboard:
+      # Setup the keyboard handler and turn it off.
+      self._servo.set('init_usb_keyboard', 'off')
+    return int(self._servo._usb_keyboard.is_open())
+
+  def _setup_usb_keyboard(self, value):
+    """Setup the usb keyboard on the servo instance."""
+    # Avoid reinitializing the same usb keyboard handler.
+    if self._servo._usbkm232:
+      usb_kb = servo.keyboard_handlers.USBkm232Handler(self._servo,
+                                                       self._servo_usbkm232)
+    else:
+      self._logger.debug('No device path specified for usbkm232 handler. Use '
+                         'the servo atmega chip to handle.')
+      # Use servo onboard keyboard emulator.
+      if not self._servo._syscfg.is_control('atmega_rst'):
+        msg = 'No atmega in servo board. So no keyboard support.'
+        self._logger.warn(msg)
+        raise kbHandlerInitError(msg)
+      # This flag is used in servo v2/v3 to setup the atmega chip properly.
+      legacy_atmega = 'init_atmega_uart' in self._params
+      usb_kb = servo.keyboard_handlers.ServoUSBkm232Handler(self._servo,
+                                                            legacy_atmega)
+    self._servo._usb_keyboard = usb_kb
 
   def _Set_init_usb_keyboard(self, value):
-    """Initialize the usb keyboard on the servo instance."""
-    # Avoid reinitializing the same usb keyboard handler.
-    if value and not self._servo._usb_keyboard:
-      usbkm232 = self._servo._usbkm232
-      if usbkm232 is None:
-        self._logger.info('No device path specified for usbkm232 handler. Use '
-                          'the servo atmega chip to handle.')
-
-        # Use servo onboard keyboard emulator.
-        if not self._servo._syscfg.is_control('atmega_rst'):
-          self._logger.warn('No atmega in servo board. So no keyboard support.')
-          self._servo._usb_keyboard = None
-          return
-
-        self._servo.set('atmega_rst', 'on')
-        self._servo.set('at_hwb', 'off')
-        self._servo.set('atmega_rst', 'off')
-        usbkm232 = self._servo.get('atmega_pty')
-
-        # We don't need to set the atmega uart settings if we're a servo v4.
-        if 'init_atmega_uart' in self._params:
-          self._servo.set('atmega_baudrate', '9600')
-          self._servo.set('atmega_bits', 'eight')
-          self._servo.set('atmega_parity', 'none')
-          self._servo.set('atmega_sbits', 'one')
-          self._servo.set('usb_mux_sel4', 'on')
-          self._servo.set('usb_mux_oe4', 'on')
-        # Allow atmega bootup time.
-        time.sleep(1.0)
-
-      self._logger.info('USBKM232: %s', usbkm232)
-      usb_kb =  servo.keyboard_handlers.USBkm232Handler(self._servo,
-                                                        usbkm232)
-      self._servo._usb_keyboard = usb_kb
-    elif not value:
-      # set the atmega to reset to turn off the usb keyboard.
-      self._servo.set('atmega_rst', 'on')
-      if self._servo._usb_keyboard:
-        self._servo._usb_keyboard.close()
-      if self._servo._usb_keyboard == self._servo._keyboard:
-        # Ensure that these two remain in sync if the default keyboard
-        # is actually the servo keyboard.
-        self._servo._keyboard = None
-      self._servo._usb_keyboard = None
+    if not self._servo._usb_keyboard:
+      # Setup the keyboard always, and then turn on/off as needed.
+      self._setup_usb_keyboard(value)
+    if value:
+      self._servo._usb_keyboard.open()
+    else:
+      self._servo._usb_keyboard.close()
 
   def _Get_init_default_keyboard(self):
     """Return whether the keyboard on the servo instance is initialized."""
-    return int(self._servo._keyboard != None)
+    if not self._servo._keyboard:
+      # Setup the keyboard handler and turn it off.
+      self._servo.set('init_keyboard', 'off')
+    return int(self._servo._keyboard.is_open())
 
   def _Set_init_default_keyboard(self, value):
     """Initialize the default keyboard on the servo instance."""
-    if value:
+    if not self._servo._keyboard:
       if self._handler_type == 'usb':
         # Call through servo instead of calling method directly, because the
         # |_params| for default keyboard is not the same as for usb keyboard.
@@ -101,11 +93,8 @@ class kbHandlerInit(hw_driver.HwDriver):
         handler_class_name = '%sHandler' % self._handler_type
         handler_class = getattr(servo.keyboard_handlers, handler_class_name)
         self._servo._keyboard = handler_class(self._servo)
+    if value:
+      self._servo._keyboard.open()
     else:
-      # Here, we want to turn off the kb handler. This is only really
-      # relevant for usb keyboard but for completeness we'll do it for
-      # both.
-      if self._handler_type == 'usb':
-        # properly turn off the usb keyboard.
-        self._servo.set('init_usb_keyboard', value)
-      self._servo._keyboard = None
+      # Here, we want to turn off the kb handler.
+      self._servo._keyboard.close()

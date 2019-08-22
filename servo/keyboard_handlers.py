@@ -52,6 +52,20 @@ class _BaseHandler(object):
     # to minimize the dependencies on the rest of Autotest.
     self._servo = servo
     board = self._servo.get_board()
+    # The base subclasses need to handle opening themselves up.
+    self._open = False
+
+  def is_open(self):
+    """Query whether keyboard handler is open for use."""
+    return self._open
+
+  def open(self):
+    """Open the keyboard handler for use."""
+    self._open = True
+
+  def close(self):
+    """Close the keyboard handler for use."""
+    self._open = False
 
   def power_long_press(self):
     """Simulate a long power button press."""
@@ -216,6 +230,7 @@ class MatrixKeyboardHandler(_BaseHandler):
                            the host running servod.
         """
     super(MatrixKeyboardHandler, self).__init__(servo)
+    self.open()
 
   def _press_keys(self, key):
     """Simulate button presses.
@@ -299,6 +314,7 @@ class StoutHandler(MatrixKeyboardHandler):
                            the host running servod.
         """
     super(StoutHandler, self).__init__(servo)
+    self.open()
 
 
 class ParrotHandler(MatrixKeyboardHandler):
@@ -325,7 +341,7 @@ class ParrotHandler(MatrixKeyboardHandler):
                            the host running servod.
         """
     super(ParrotHandler, self).__init__(servo)
-
+    self.open()
 
 class ChromeECHandler(_BaseHandler):
   """Chrome EC keyboard handler for DUT with Chrome EC.
@@ -423,6 +439,7 @@ class ChromeECHandler(_BaseHandler):
     else:
       self._ec_uart_regexp = 'ec_uart_regexp'
       self._ec_uart_cmd = 'ec_uart_cmd'
+    self.open()
 
   def _send_command(self, command):
     """Send command through UART.
@@ -649,12 +666,27 @@ class USBkm232Handler(_BaseHandler):
     if serial_device is None:
       raise Exception('No device specified when '
                       'initializing usbkm232 keyboard handler')
-    self.serial = serial.Serial(serial_device, 9600, timeout=0.1)
+    self.serial_device = serial_device
+    self.serial = None
+    self.open()
+    logging.info('USBKM232: %s', self.serial_device)
+
+  def open(self):
+    """Open serial connection to serial_device."""
+    if self.is_open():
+      return
+    self.serial = serial.Serial(self.serial_device, 9600, timeout=0.1)
     self.serial.interCharTimeout = 0.5
     self.serial.timeout = 0.5
     self.serial.writeTimeout = 0.5
-    if serial_device == servo.get('atmega_pty'):
-      self._test_atmega()
+    super(USBkm232Handler, self).open()
+
+  def close(self):
+    """Close usbkm232 device, and assert rst on atmega if necessary."""
+    if not self.is_open():
+      return
+    self.serial.close()
+    super(USBkm232Handler, self).close()
 
   def _test_atmega(self):
     """Send and receive a dummy key from teh atmega to verify it is present.
@@ -810,6 +842,46 @@ class USBkm232Handler(_BaseHandler):
     """Press and release tab"""
     self._write([self._press('<tab>')])
 
+class ServoUSBkm232Handler(USBkm232Handler):
+  """Keyboard handler for devices without internal keyboard."""
+
+
+  def __init__(self, servo, legacy):
+    """
+    Args:
+      servo: Servo device used to execute controls
+      legacy: bool, true for servo v2, v3 as they require more setup.
+    """
+    servo.set('atmega_rst', 'on')
+    servo.set('at_hwb', 'off')
+    servo.set('atmega_rst', 'off')
+    serial = servo.get('atmega_pty')
+    self.legacy = legacy
+    super(ServoUSBkm232Handler, self).__init__(servo, serial)
+
+  def open(self):
+    """Take atmega out of reset, and potentially do legacy setup."""
+    if self.is_open():
+      return
+    # Ensure that the atmega is not in reset
+    self._servo.set('atmega_rst', 'off')
+    # Do proper setup for legacy devices
+    if self.legacy:
+      self._servo.set('atmega_baudrate', '9600')
+      self._servo.set('atmega_bits', 'eight')
+      self._servo.set('atmega_parity', 'none')
+      self._servo.set('atmega_sbits', 'one')
+      self._servo.set('usb_mux_sel4', 'on')
+      self._servo.set('usb_mux_oe4', 'on')
+    # Give the board enough time to boot up.
+    time.sleep(1)
+    super(ServoUSBkm232Handler, self).open()
+    self._test_atmega()
+
   def close(self):
-    """Close usbkm232 device."""
-    self.serial.close()
+    """Set the atmega to reset before closing the serial port."""
+    if not self.is_open():
+      return
+    # If using the atmega, ensure that the atmega is in reset.
+    self._servo.set('atmega_rst', 'on')
+    super(ServoUSBkm232Handler, self).close()
