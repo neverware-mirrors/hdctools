@@ -16,6 +16,10 @@ boards.
 *   [`servod`: Daemon for Servo](./docs/servod.md)
 *   [`servod` FAQ](./docs/servod_faq.md)
 
+## Closed Case Debugging (CCD)
+
+*   [Closed Case Debugging (CCD) Overview](./docs/ccd.md)
+
 ## Power Measurement
 
 *   [Power Measurement](./docs/power_measurement.md)
