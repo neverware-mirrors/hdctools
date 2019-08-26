@@ -5,6 +5,13 @@
 import os
 import subprocess
 
+# Track labstation pushes in the version. Increase this by 1 whenever we do a
+# labstation push.
+LAB_PUSH_FIELD = 0
+# Track major servod features. Increase this by 1 whenever a new feature lands.
+MAJOR_FEATURE_FIELD = 0
+# TODO(mruthven): make the third field related to commit counts.
+THIRD_FIELD = 0
 
 def get_ghash():
   """Get the hash of the latest git commit.
@@ -23,5 +30,8 @@ def get_ghash():
       ghash = 'unknown'
   return ghash
 
+def get_version_number():
+    """Convert lab and major features to a version number."""
+    return '%d.%d.%d' % (LAB_PUSH_FIELD, MAJOR_FEATURE_FIELD, THIRD_FIELD)
 
-__version__ = '0.0.1+' + get_ghash()
+__version__ = '%s+%s' % (get_version_number(), get_ghash())
