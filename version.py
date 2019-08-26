@@ -7,7 +7,7 @@ import subprocess
 
 # Track labstation pushes in the version. Increase this by 1 whenever we do a
 # labstation push.
-LAB_PUSH_FIELD = 0
+LAB_PUSH_FIELD = 1
 # Track major servod features. Increase this by 1 whenever a new feature lands.
 MAJOR_FEATURE_FIELD = 0
 # TODO(mruthven): make the third field related to commit counts.
