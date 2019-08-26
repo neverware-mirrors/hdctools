@@ -27,6 +27,7 @@ import ec3po_driver
 import ec3po_servo
 import ec3po_servo_micro
 import ec3po_servo_v4
+import fluffy
 import ftdii2c_cmd
 import fw_wp_ccd
 import fw_wp_servoflex

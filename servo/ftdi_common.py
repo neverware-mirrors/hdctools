@@ -38,6 +38,7 @@ SERVO_PID_DEFAULTS = OrderedDict([
     ('reston', [0x5007]),
     ('fruitpie', [0x5009]),
     ('plankton', [0x500c]),
+    ('fluffy', [0x503b]),
 ])
 
 SERVO_CONFIG_DEFAULTS = \

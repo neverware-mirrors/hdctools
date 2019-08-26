@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<root>
+  <include>
+    <name>common.xml</name>
+  </include>
+  <control>
+    <name>fluffy_uart_pty</name>
+    <doc>Fluffy's stm32 console UART</doc>
+    <params cmd="get" subtype="pty" interface="61" drv="uart">
+    </params>
+  </control>
+  <control>
+    <name>active_chg_port</name>
+    <doc>Port number you wish to enable. 'off' to disable all ports.
+    </doc>
+    <params subtype="active_chg_port" interface="61" drv="fluffy"
+    init="off" input_type="str"></params>
+  </control>
+  <control>
+    <name>cc_flip_en</name>
+    <doc>Enable flipping the CC line orientation in fluffy</doc>
+    <params subtype="cc_flip_en" interface="61" drv="fluffy"
+    map="onoff" init="off"></params>
+  </control>
+</root>

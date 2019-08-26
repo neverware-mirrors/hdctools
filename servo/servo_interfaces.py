@@ -240,6 +240,23 @@ for vid, pid in PLANKTON_ID_DEFAULTS:
 
 SERVO_ID_DEFAULTS.extend(PLANKTON_ID_DEFAULTS)
 
+# Fluffy
+FLUFFY_ID_DEFAULTS = [(0x18d1, 0x503b)]
+for vid, pid in FLUFFY_ID_DEFAULTS:
+  # Interface #0 is reserved for no use.
+  INTERFACE_DEFAULTS[vid][pid] = ['dummy']
+
+  # Dummy slots for servo micro/CCD, servo v4, and servo micro relocation use
+  # (interface #1-60).
+  INTERFACE_DEFAULTS[vid][pid] += ['dummy'] * SERVO_V4_SLOT_SIZE * 3
+
+  INTERFACE_DEFAULTS[vid][pid] += \
+    [
+     {'name': 'stm32_uart', 'interface': 0}, # 61 - Fluffy console
+    ]
+
+SERVO_ID_DEFAULTS.extend(FLUFFY_ID_DEFAULTS)
+
 # Allow Board overrides of interfaces as we've started to overload some servo V2
 # pinout functionality.  To-date just swapping EC SPI and JTAG interfaces for
 # USB PD MCU UART.  Note this can NOT be done on servo V3.  See crbug.com/567842
