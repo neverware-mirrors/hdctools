@@ -153,7 +153,8 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
       #
       # This is needed because the data role swaps normally don't happen in
       # EC_RO (which is the image we MUST be in for entering recovery mode).
-      if 'ccd' in self._interface.get('servo_type'):
+      servo_type = self._interface.get('servo_type')
+      if 'ccd' in servo_type and 'servo_micro' not in servo_type:
         try:
           # Check current data role.  Assuming port 0 is the CCD port.
           cmd = 'pd 0 state'

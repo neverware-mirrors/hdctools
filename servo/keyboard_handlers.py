@@ -99,7 +99,7 @@ class _BaseHandler(object):
     # Otherwise, use pwr_button_hold which calls a single EC
     # console command to toggle power button, for the CCD case.
     servo_type = self._servo.get('servo_type')
-    is_ccd = servo_type.find('ccd') >= 0
+    is_ccd = 'ccd' in servo_type and 'servo_micro' not in servo_type
 
     if is_ccd:
       use_hold_command = True
