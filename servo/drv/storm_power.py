@@ -10,24 +10,29 @@ import power_state
 class stormPower(power_state.PowerStateDriver):
   """Driver for power_state for storm-derived boards."""
 
-  # Time in seconds to allow the firmware to detect the 'rec_mode' signal
-  # after cold reset. How long holding the recovery button has different
-  # meanings:
-  #   > 8 seconds, < 16 seconds: power wash
-  #   > 16 seconds: enter recovery mode
-  _RECOVERY_DETECTION_DELAY = 20
+  def __init__(self, interface, params):
+    """Constructor.
+
+    Args:
+      interface: driver interface object
+      params: dictionary of params
+    """
+    super(stormPower, self).__init__(interface, params)
+    # Default recovery detection delay is 20 sec. Can be overwritten by device
+    # specific overlay
+    self._recovery_detection_time = int(self._params.get('rec_detection', 20))
 
   def _power_on_rec(self):
     """Power on in recovery mode."""
     self._interface.set('rec_mode', self.REC_ON)
     self._reset_cycle()
-    time.sleep(self._RECOVERY_DETECTION_DELAY)
+    time.sleep(self._recovery_detection_time)
     self._interface.set('rec_mode', self.REC_OFF)
 
   def _power_on_normal(self):
     """Power on in normal mode, i.e., no recovery."""
     self._interface.set('rec_mode', self.REC_OFF)
-    time.sleep(self._RECOVERY_DETECTION_DELAY)
+    time.sleep(self._recovery_detection_time)
     self._reset_cycle()
 
   def _power_on(self, rec_mode):

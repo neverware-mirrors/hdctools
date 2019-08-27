@@ -15,7 +15,7 @@
     <name>power_state</name>
     <doc>Used to turn the DUT off and on</doc>
     <params cmd="set" interface="servo" drv="storm_power"
-    input_type="str" reset_hold="0.7"/>
+    input_type="str" reset_hold="0.7" rec_detection="30"/>
   </control>
   <control>
     <name>ec_board</name>
