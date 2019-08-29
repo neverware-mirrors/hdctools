@@ -405,11 +405,6 @@
     <params interface="26" drv="ec3po_servo_v4" subtype="usbc_polarity"
     map="polarity"></params>
   </control>
-  <control>
-    <name>fw_wp_state</name>
-    <doc>Used to turn fw wp off and on</doc>
-    <params clobber_ok="" init="force_off"></params>
-  </control>
   <!-- Controls used by PD FAFT -->
   <control>
     <name>ppdut5_mv</name>
