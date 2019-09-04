@@ -9,6 +9,7 @@ import pty_driver
 ACTIVE_PORT_RX_RE = r'Port (\d+) is ON'
 NO_PORT_RX = r'No ports enabled'
 CC_FLIP_RE = r'CC Flip: (\w+)\]'
+DUT_VOLTAGE_RE = r'PPVAR_VBUS_DUT: (\d+)mV'
 
 class fluffy(pty_driver.ptyDriver):
   """Object to control fluffy debug board"""
@@ -76,3 +77,12 @@ class fluffy(pty_driver.ptyDriver):
     """
     val = 'enable' if enable else 'disable'
     self._issue_cmd_get_results('ccflip %s' % val, [CC_FLIP_RE])
+
+  def _Get_dut_voltage(self):
+    """Getter of the voltage present at the DUT connector.
+
+    Returns:
+      A string indicating the voltage present at the DUT connector in mV.
+    """
+    _, voltage = self._issue_cmd_get_results('status', [DUT_VOLTAGE_RE])[0]
+    return voltage

@@ -22,4 +22,9 @@
     <params subtype="cc_flip_en" interface="61" drv="fluffy"
     map="onoff" init="off"></params>
   </control>
+  <control>
+    <name>dut_voltage_mv</name>
+    <doc>Return the voltage in mV present at the DUT connector.</doc>
+    <params subtype="dut_voltage" interface="61" drv="fluffy"></params>
+  </control>
 </root>
