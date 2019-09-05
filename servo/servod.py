@@ -209,6 +209,9 @@ class ServodStarter(object):
     Raises:
       ServodError: if automatic config cannot be found
     """
+    # The scratch initialization here ensures that potentially stale entries
+    # are removed from the scratch before attempting to create a new one.
+    self._scratchutil = servodutil.ServoScratch()
     options = self._parse_args(cmdline)
     self._host = options.host
     if options.port:
@@ -278,9 +281,6 @@ class ServodStarter(object):
 
     self._logger = logging.getLogger(os.path.basename(sys.argv[0]))
     self._logger.info('Start')
-    # The scratch initialization here ensures that potentially stale entries
-    # are removed from the scratch before attempting to create a new one.
-    self._scratchutil = servodutil.ServoScratch()
 
     servo_parsing.get_env_options(self._logger, options)
 
