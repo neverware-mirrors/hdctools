@@ -25,8 +25,31 @@ All instances on the same port are in the same directory.
 import logging
 import logging.handlers
 import os
+import sys
 import tarfile
 import time
+
+
+# Format strings used for servod logging.
+DEFAULT_FMT_STRING = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+DEBUG_FMT_STRING = ('%(asctime)s - %(name)s - %(levelname)s - '
+                    '%(filename)s:%(lineno)d:%(funcName)s - %(message)s')
+
+# Convenience map to have access to format string and level using a shorthand.
+LOGLEVEL_MAP = {
+    'critical': (logging.CRITICAL, DEFAULT_FMT_STRING),
+    'error': (logging.ERROR, DEFAULT_FMT_STRING),
+    'warning': (logging.WARNING, DEFAULT_FMT_STRING),
+    'info': (logging.INFO, DEFAULT_FMT_STRING),
+    'debug': (logging.DEBUG, DEBUG_FMT_STRING)
+}
+
+# Default loglevel used on servod for stdout logger.
+DEFAULT_LOGLEVEL = 'info'
+
+# Levels used to generate logs in servod in parallel.
+# On initialization, a handler for each of these levels is created.
+LOGLEVEL_FILES = ['debug', 'warning', 'info']
 
 # Max log size for one log file. ~10 MB
 MAX_LOG_BYTES_COMPRESSED = 1024 * 1024 * 10
@@ -38,9 +61,12 @@ SERVO_LOG_COMPRESSION_RATIO = 20
 MAX_LOG_BYTES = MAX_LOG_BYTES_COMPRESSED * SERVO_LOG_COMPRESSION_RATIO
 
 # Max number of logs to keep around per port.
+# Since logging is used for multiple concurrent logfiles (DEBUG, INFO, WARNING)
+# this limit is set assuming that the output of INFO + WARNING will not be more
+# than DEBUG.
 # Going with the extreme assumption of 10 servo instances this means at
 # most 10GB per port i.e. 100GB of logs if all log files are saturated.
-LOG_BACKUP_COUNT = 1024
+LOG_BACKUP_COUNT = 512
 
 # Filetype suffix used for compressed logs.
 COMPRESSION_SUFFIX = 'tbz2'
@@ -53,7 +79,7 @@ LOG_DIR_PREFIX = 'servod'
 LOG_FILE_PREFIX = 'log'
 
 # link name to the latest, open log file
-LINK_NAME = 'latest'
+LINK_PREFIX = 'latest'
 
 # The timestamp that identifies the instance is cached in this file.
 TS_FILE = 'ts'
@@ -69,8 +95,104 @@ def _buildLogdirName(logdir, port):
   # pylint: disable=invalid-name
   # File is an extension to the standard library logger. Conform to their code
   # style.
-  """Helper to generate the log directory for an instance at |port|."""
+  """Helper to generate the log directory for an instance at |port|.
+
+  Args:
+    logdir: path to directory where all of servod logging should reside
+    port: port of the instance for the logger
+
+  Returns:
+    str, path for directory where servod logs for instance at |port| should go
+  """
   return os.path.join(logdir, '%s_%s' % (LOG_DIR_PREFIX, str(port)))
+
+
+def _generateTs():
+  """Helper to generate a timestamp to tag per-instance logs.
+
+  Returns:
+    formatted timestamp of time when called
+  """
+  # pylint: disable=invalid-name
+  # File is an extension to the standard library logger. Conform to their code
+  # style.
+  raw_ts = time.time()
+  return (time.strftime(TS_FORMAT, time.gmtime(raw_ts)) +
+          (TS_MS_FORMAT % (raw_ts % 1))[1:])
+
+
+def _compress_old_files(logdir, logging_ts):
+  """Helper to compress files that aren't using the current |logging_ts|.
+
+  Files that aren't using |logging_ts| in their filename but are in the same
+  port directory are presumed to be old and not in use, as only one instance
+  can be running on a given port, and that instance (this) is using
+  |logging_ts|. This closes and compresses those old logs.
+
+  Args:
+    logdir: str, path to servod instance log directory (e.g. /..../servod_9999/)
+    logging_ts: timestamp used to tag current instance
+  """
+  for candidate_file in os.listdir(logdir):
+    candidate_path = os.path.join(logdir, candidate_file)
+    if os.path.islink(candidate_path):
+      # No need to compress links, rather remove them, and let servod rebuild
+      # them.
+      os.remove(candidate_path)
+    elif (logging_ts not in candidate_path and
+          COMPRESSION_SUFFIX not in candidate_path):
+      ServodRotatingFileHandler.compressFn(candidate_path)
+
+
+def setup(logdir, port, debug_stdout=False):
+  """Setup servod logging.
+
+  This function handles setting up logging, whether it be normal basicConfig
+  logging, or using logdir and file logging in servod.
+
+  Args:
+    logdir: str, log directory for all servod logs (*)
+    port: port used for current instance
+    debug_stdout: whether the stdout logs should be debug
+
+  (*) if |logdir| is None, the system will not setup log handlers, but rather
+  setup logging using basicConfig()
+  """
+  # pylint: disable=invalid-name
+  # File is an extension to the standard library logger. Conform to their code
+  # style.
+  root_logger = logging.getLogger()
+  # Let the root logger process every log message, while the different
+  # handlers chose which ones to put out.
+  root_logger.setLevel(logging.DEBUG)
+  stdout_level = 'debug' if debug_stdout else DEFAULT_LOGLEVEL
+  level, fmt = LOGLEVEL_MAP[stdout_level]
+  # |log_dir| is None iff it's not in the cmdline. Otherwise it contains
+  # a directory path to store the servod logs in.
+  # Start file loggers for each output file.
+  if not logdir:
+    # In this case, servod requests that no file logging is done.
+    logging.basicConfig(level=level, format=fmt)
+  else:
+    # File logging requires different handlers.
+    stdout_handler = logging.StreamHandler(sys.stdout)
+    stdout_handler.setLevel(level)
+    stdout_handler.formatter = logging.Formatter(fmt=fmt)
+    root_logger.addHandler(stdout_handler)
+    instance_logdir = _buildLogdirName(logdir, port)
+    logging_ts = _generateTs()
+    if not os.path.isdir(instance_logdir):
+      os.makedirs(instance_logdir)
+    # Compress all currently open files with the old timestamps.
+    # It's safe to remove this, as no 2 servod instances can be listening
+    # on the same port. Therefore, the file currently 'alive' is not being
+    # logged to anymore, and can be safely compressed.
+    _compress_old_files(instance_logdir, logging_ts)
+    for level in LOGLEVEL_FILES:
+      fh_level, fh_fmt = LOGLEVEL_MAP[level]
+      fh = ServodRotatingFileHandler(logdir=instance_logdir, ts=logging_ts,
+                                     fmt=fh_fmt, level=fh_level)
+      root_logger.addHandler(fh)
 
 
 class ServodRotatingFileHandler(logging.handlers.RotatingFileHandler):
@@ -82,33 +204,48 @@ class ServodRotatingFileHandler(logging.handlers.RotatingFileHandler):
   See above for details.
   """
 
-  def __init__(self, logdir, port):
-    """Wrap original init by forcing one rotation on init."""
-    self.logdir = _buildLogdirName(logdir, port)
-    if os.path.isdir(self.logdir):
-      old_ts, ts = self.setTs()
-      previous_instance_fn = self._buildFilename(old_ts)
-      if os.path.exists(previous_instance_fn):
-        # It's safe to remove this, as no 2 servod instances can be listening
-        # on the same port. Therefore, the file currently 'alive' is not being
-        # logged to anymore, and can be safely compressed.
-        self.compressFn(previous_instance_fn)
-    else:
-      os.makedirs(self.logdir)
-      _, ts = self.setTs()
+  def __init__(self, logdir, ts, fmt, level=logging.DEBUG):
+    """Wrap original init by forcing one rotation on init.
+
+    Args:
+      logdir: str, path to log output directory
+      ts: str, timestamp used to create logfile name for this instance
+      fmt: str, output format to use
+      level: loglevel to use
+    """
+    self.levelsuffix = logging.getLevelName(level)
+    self._logger = logging.getLogger('%s.%s' %(type(self).__name__,
+                                               self.levelsuffix))
+    self.linkname = '%s.%s' % (LINK_PREFIX, self.levelsuffix)
+    self.logdir = logdir
     filename = self._buildFilename(ts)
-    self.ts = ts
     logging.handlers.RotatingFileHandler.__init__(self, filename=filename,
                                                   backupCount=LOG_BACKUP_COUNT,
                                                   maxBytes=MAX_LOG_BYTES)
     self.updateConvenienceLink()
+    # Level and format for ServodRotatingFileHandlers are set once at init
+    # and then cannot be changed. Therefore, those methods are wrapped in a
+    # noop.
+    formatter = logging.Formatter(fmt=fmt)
+    logging.handlers.RotatingFileHandler.setLevel(self, level)
+    logging.handlers.RotatingFileHandler.setFormatter(self, formatter)
+
+  def setLevel(self, level):
+    """Noop to avoid setLevel being triggered."""
+    self._logger.warning('setLevel is not supported on %s. Please consider '
+                         'changing the code here.', type(self).__name__)
+
+  def setFormatter(self, fmt):
+    """Noop to avoid setFormatter being triggered."""
+    self._logger.warning('setFormatter is not supported on %s. Please consider '
+                         'changing the code here.', type(self).__name__)
 
   def updateConvenienceLink(self):
     # pylint: disable=invalid-name
     # File is an extension to the standard library logger. Conform to their code
     # style.
     """Generate a symbolic link to the latest file."""
-    linkfile = os.path.join(self.logdir, LINK_NAME)
+    linkfile = os.path.join(self.logdir, self.linkname)
     if os.path.lexists(linkfile):
       os.remove(linkfile)
     os.symlink(self.baseFilename, linkfile)
@@ -125,32 +262,11 @@ class ServodRotatingFileHandler(logging.handlers.RotatingFileHandler):
     Returns:
       Full path of the logfile for the given timestamp.
     """
-    return os.path.join(self.logdir, '%s.%s' % (LOG_FILE_PREFIX, ts))
+    return os.path.join(self.logdir, '%s.%s.%s' % (LOG_FILE_PREFIX, ts,
+                                                   self.levelsuffix))
 
-  def setTs(self):
-    # pylint: disable=invalid-name
-    # File is an extension to the standard library logger. Conform to their code
-    # style.
-    """Generate a timestamp and cache it in |logdir|.
-
-    Returns:
-      (old_ts, ts) where old_ts is the old cache entry if any, and ts is the
-                   newly generated stamp.
-    """
-    raw_ts = time.time()
-    ts = '%s%s' % (time.strftime(TS_FORMAT, time.gmtime(raw_ts)),
-                   (TS_MS_FORMAT % (raw_ts % 1))[1:])
-    ts_path = os.path.join(self.logdir, TS_FILE)
-    if os.path.exists(ts_path):
-      with open(ts_path, 'r') as f:
-        old_ts = f.read().strip()
-    else:
-      old_ts = None
-    with open(ts_path, 'w') as f:
-      f.write(ts)
-    return (old_ts, ts)
-
-  def compressFn(self, path):
+  @staticmethod
+  def compressFn(path):
     # pylint: disable=invalid-name
     # File is an extension to the standard library logger. Conform to their code
     # style.
@@ -184,7 +300,7 @@ class ServodRotatingFileHandler(logging.handlers.RotatingFileHandler):
         if os.path.exists(src):
           os.rename(src, dst)
       # Compress the latest rotated doc.
-      self.compressFn(rolled_fn)
+      ServodRotatingFileHandler.compressFn(rolled_fn)
       # Servod backup counts are meant across invocations on the same port,
       # therefore this needs to count all files in the logdir and make sure
       # that the backup count does not grow too large.

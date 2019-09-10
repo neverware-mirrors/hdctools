@@ -8,6 +8,7 @@ import logging
 import os
 import shutil
 import tempfile
+import time
 import unittest
 
 import servo_logging
@@ -49,6 +50,9 @@ class TestServodRotatingFileHandler(unittest.TestCase):
     unittest.TestCase.setUp(self)
     self.logdir = tempfile.mkdtemp()
     self.port = 9999
+    self.loglevel = logging.DEBUG
+    self.fmt = ''
+    self.ts = servo_logging._generateTs()
     self.test_logger = logging.getLogger('Test')
     self.test_logger.setLevel(logging.DEBUG)
     self.test_logger.propagate = False
@@ -66,20 +70,15 @@ class TestServodRotatingFileHandler(unittest.TestCase):
     for attr, val in self.module_defaults.iteritems():
       setattr(servo_logging, attr, val)
 
-  def _installFH(self, fh):
-    # pylint: disable=invalid-name
-    # conform to standard unittest method naming.
-    """Helper to install |fh| to |self.test_logger|."""
-    fh.setLevel(logging.DEBUG)
-    fh.formatter = logging.Formatter(fmt='')
-    self.test_logger.addHandler(fh)
-
   def test_LoggerLogsToFile(self):
     """Basic sanity that content is being output to the file."""
     test_str = 'This is a test string to make sure there is logging.'
     handler = servo_logging.ServodRotatingFileHandler(logdir=self.logdir,
-                                                      port=self.port)
-    self._installFH(handler)
+                                                      port=self.port,
+                                                      ts=self.ts,
+                                                      fmt=self.fmt,
+                                                      level=self.loglevel)
+    self.test_logger.addHandler(handler)
     self.test_logger.info(test_str)
     with open(handler.baseFilename, 'r') as log:
       assert log.read().strip() == test_str
@@ -89,8 +88,11 @@ class TestServodRotatingFileHandler(unittest.TestCase):
     test_max_log_bytes = 40
     setattr(servo_logging, 'MAX_LOG_BYTES', test_max_log_bytes)
     handler = servo_logging.ServodRotatingFileHandler(logdir=self.logdir,
-                                                      port=self.port)
-    self._installFH(handler)
+                                                      port=self.port,
+                                                      ts=self.ts,
+                                                      fmt=self.fmt,
+                                                      level=self.loglevel)
+    self.test_logger.addHandler(handler)
     # The first log is only 20 bytes and should not cause rotation.
     log1 = 'Here are 20 bytes la'
     # The second log is 40 bytes and should cause rotation.
@@ -108,7 +110,10 @@ class TestServodRotatingFileHandler(unittest.TestCase):
     new_backup_count = 3
     setattr(servo_logging, 'LOG_BACKUP_COUNT', new_backup_count)
     handler = servo_logging.ServodRotatingFileHandler(logdir=self.logdir,
-                                                      port=self.port)
+                                                      port=self.port,
+                                                      ts=self.ts,
+                                                      fmt=self.fmt,
+                                                      level=self.loglevel)
     for _ in range(2 * new_backup_count):
       handler.doRollover()
       # The assertion checks that there are at most new_backup_count files.
@@ -123,17 +128,24 @@ class TestServodRotatingFileHandler(unittest.TestCase):
     new_backup_count = 3
     setattr(servo_logging, 'LOG_BACKUP_COUNT', new_backup_count)
     handler = servo_logging.ServodRotatingFileHandler(logdir=self.logdir,
-                                                      port=self.port)
-    first_ts = handler.ts
+                                                      port=self.port,
+                                                      ts=self.ts,
+                                                      fmt=self.fmt,
+                                                      level=self.loglevel)
+    first_ts = self.ts
     for _ in range(new_backup_count):
       handler.doRollover()
       # The assertion checks that there are at most new_backup_count files.
       assert len(os.listdir(handler.logdir)) <= (new_backup_count +
                                                  BACKUP_COUNT_EXEMPT_FILES)
-    # Creating a new instance changes the timestamp. This is to ensure that old
-    # file deletion is not only done on the current instance's timestamp.
+    # Change the timestamp and create a new instance. Rotate out all old files.
+    new_ts = servo_logging._generateTs()
+    servo_logging._compress_old_files(logdir=self.logdir, logging_ts=new_ts)
     handler = servo_logging.ServodRotatingFileHandler(logdir=self.logdir,
-                                                      port=self.port)
+                                                      port=self.port,
+                                                      ts=new_ts,
+                                                      fmt=self.fmt,
+                                                      level=self.loglevel)
     for _ in range(new_backup_count):
       handler.doRollover()
       # The assertion checks that there are at most new_backup_count files.
@@ -149,14 +161,17 @@ class TestServodRotatingFileHandler(unittest.TestCase):
     # test as the two handlers might be generated in the same millisecond.
     servo_logging.TS_MS_FORMAT = '%.7f'
     handler = servo_logging.ServodRotatingFileHandler(logdir=self.logdir,
-                                                      port=self.port)
-    self._installFH(handler)
+                                                      port=self.port,
+                                                      ts=self.ts,
+                                                      fmt=self.fmt,
+                                                      level=self.loglevel)
+    self.test_logger.addHandler(handler)
     self.test_logger.info('Test content.')
     # Add a small delay between creating the instances to let the timestamps
     # be different.
-    # Creating a new instance should force a rotation of the logfile.
-    _ = servo_logging.ServodRotatingFileHandler(logdir=self.logdir,
-                                                port=self.port)
+    time.sleep(0.001)
+    new_ts = servo_logging._generateTs()
+    servo_logging._compress_old_files(self.logdir, logging_ts=new_ts)
     assert not os.path.exists(handler.baseFilename)
     assert os.path.exists('%s.%s' % (handler.baseFilename,
                                      servo_logging.COMPRESSION_SUFFIX))
@@ -169,8 +184,11 @@ class TestServodRotatingFileHandler(unittest.TestCase):
     # The rotation starts at 2 as the first compression happens at index 1.
     start_rotation = 2
     handler = servo_logging.ServodRotatingFileHandler(logdir=self.logdir,
-                                                      port=self.port)
-    self._installFH(handler)
+                                                      port=self.port,
+                                                      ts=self.ts,
+                                                      fmt=self.fmt,
+                                                      level=self.loglevel)
+    self.test_logger.addHandler(handler)
     self.test_logger.info('This is just some test content.')
     handler.doRollover()
     # At this point the compressed log-file should exist.
@@ -186,20 +204,15 @@ class TestServodRotatingFileHandler(unittest.TestCase):
       # the checksum.
       assert md5sum == get_file_md5sum(rolled_fn)
 
-  def test_CreateLogDirIfNotAvailable(self):
-    """The output directory for a specific port is created on demand."""
-    output_dir = servo_logging._buildLogdirName(self.logdir, self.port)
-    assert not os.path.isdir(output_dir)
-    _ = servo_logging.ServodRotatingFileHandler(logdir=self.logdir,
-                                                port=self.port)
-    assert os.path.isdir(output_dir)
-
   def test_HandleExistingLogDir(self):
     """The output directory for a specific port already existing is fine."""
     output_dir = servo_logging._buildLogdirName(self.logdir, self.port)
     os.makedirs(output_dir)
     _ = servo_logging.ServodRotatingFileHandler(logdir=self.logdir,
-                                                port=self.port)
+                                                port=self.port,
+                                                ts=self.ts,
+                                                fmt=self.fmt,
+                                                level=self.loglevel)
     assert os.path.isdir(output_dir)
 
 if __name__ == '__main__':

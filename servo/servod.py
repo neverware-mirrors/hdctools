@@ -17,11 +17,9 @@ import signal
 import SimpleXMLRPCServer
 import socket
 import sys
-import tarfile
 import threading
 import time
 
-import drv.loglevel
 import ftdi_common
 import servo_interfaces
 import servo_logging
@@ -239,36 +237,8 @@ class ServodStarter(object):
 
       self._logger.fatal(err_msg)
       sys.exit(-1)
-    root_logger = logging.getLogger()
-    # Let the root logger process every log message, while the different
-    # handlers chose which ones to put out.
-    root_logger.setLevel(logging.DEBUG)
-    if options.debug:
-      level = 'debug'
-    else:
-      level = drv.loglevel.DEFAULT_LOGLEVEL
-
-    loglevel, fmt = drv.loglevel.LOGLEVEL_MAP[level]
-
-    # Add file logging if requested.
-    if options.log_dir:
-      # |log_dir| is None iff it's not in the cmdline. Otherwise it contains
-      # a directory path to store the servod logs in.
-      # Start debug file logger.
-      stdout_handler = logging.StreamHandler(sys.stdout)
-      stdout_handler.setLevel(loglevel)
-      stdout_handler.formatter = logging.Formatter(fmt=fmt)
-      root_logger.addHandler(stdout_handler)
-      fh_level, fh_fmt = drv.loglevel.LOGLEVEL_MAP['debug']
-      fh = servo_logging.ServodRotatingFileHandler(logdir=options.log_dir,
-                                                   port=self._servo_port)
-      fh.setLevel(fh_level)
-      fh.formatter = logging.Formatter(fmt=fh_fmt)
-      root_logger.addHandler(fh)
-    else:
-      # If log-dir is not defined, the default behavior with a stdout handler
-      # that does not itself gate-keep based on log-levels is preferred.
-      logging.basicConfig(level=loglevel, format=fmt)
+    servo_logging.setup(logdir=options.log_dir, port=self._servo_port,
+                        debug_stdout=options.debug)
 
     if options.dual_v4:
       # Leave the right breadcrumbs for servo_postinit to know whether to setup
