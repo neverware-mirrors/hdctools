@@ -3,7 +3,7 @@
 Servo v4 is a debug device in the Servo family.
 
 Servo v4 functions as a configurable USB hub to support developer and lab
-recovery features. However, it doesn't have any hardware debug features on it's
+recovery features. However, it doesn't have any hardware debug features on its
 own. It must be paired with CCD (Cr50's on-board servo implementation) or
 [Servo Micro].
 
@@ -44,7 +44,6 @@ Servo combines the functionality of the following devices into one:
 *   uSD to USB3.0 dongle
 *   Keyboard emulator
 *   Pass through charger
-*   USB Type-C CC testing (similar to Twinkie)
 
 Details:
 
@@ -77,8 +76,8 @@ power Servo v4 while allowing the user to control Servo v4 using [`servod`].
 The DUT connector (which is a captive cable) can be plugged into a DUT,
 providing the DUT access to the ethernet and blue USB port.
 
-The Type-C captive cable contains a [SuzyQ], which enables debugging of devices
-that have a Cr50 (recent Chromebooks) through [CCD].
+The Type-C captive cable enables debugging of devices that have a Cr50 (recent
+Chromebooks) through [CCD].
 
 The "uServo" USB port can be used to plug a servo micro to debug devices over
 the Yoshi debug header.
@@ -110,11 +109,12 @@ stuffed.
 
 ### Type-C Version
 
-The Type-C version integrates a [SuzyQ] and acts as both a USB hub and PD
-charger. It should be used on systems with [CCD].
+The Type-C version acts as both a USB hub and PD charger. Servo v4 can also
+control both CC terminations which allows it to act as a debug accessory. It
+should be used on systems with [CCD].
 
 *** note
-NOTE: Type-C Servo v4 is a chargethrough hub and is NOT functionally equivalent
+NOTE: Type-C Servo v4 is a charge-through hub and is NOT functionally equivalent
 to a Type-A servo with an A-to-C adapter. DO NOT use a Type-C Servo v4 just
 because you want to plug into a Type-C port. Older Chromebooks (Eve, Samus,
 etc.) have [EC] bugs that prevent charge through hubs from working correctly.
@@ -144,7 +144,7 @@ The DVT version is completely functional except for the one bug affecting only
 Type-C variant. There are about one thousand of these, so you may encounter
 them.
 
-*   PD Chargethrough only works on chargers up to 10V.
+*   PD Charge-through only works on chargers up to 10V.
 *   Firmware identifies this by board revision and will not negotiate any
     voltages above 10V.
 
