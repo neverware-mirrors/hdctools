@@ -670,6 +670,7 @@ class ServodStarter(object):
     self._scratchutil.RemoveEntry(self._servo_port)
     self._logger.info('Server on %s port %s turned down', self._host,
                       self._servo_port)
+    servo_logging.cleanup()
 
   def _serve(self):
     """Wrapper around rpc server's serve_forever to catch server errors."""
