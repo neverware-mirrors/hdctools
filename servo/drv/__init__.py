@@ -42,6 +42,7 @@ import ina3221
 import kb
 import kb_handler_init
 import kitty_power
+import kukui_power
 import larvae_adc
 import lcm2004
 import link_power

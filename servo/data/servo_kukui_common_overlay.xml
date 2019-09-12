@@ -23,7 +23,7 @@
     <name>power_state</name>
     <doc>Used to turn the DUT off and on</doc>
     <params clobber_ok="" shutdown_delay="3.0" reset_recovery="0.6"
-    warm_reset_can_hold_ap="no" />
+            drv="kukui_power" warm_reset_can_hold_ap="no" />
   </control>
   <!-- lid open has to go through the EC always on kukui irrespective of
        servo type. -->
