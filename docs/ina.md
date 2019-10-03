@@ -29,6 +29,7 @@ There are up to 3 variables inside the configuration file needed.
     *   **`type`**: one of `ina3221`, `ina219`, `ina231`, `sweetberry`
     *   **`addr`**: i2c slave address (see sweetberry below for note)
     *   **`name`**: human readable name used to control measurements later
+    *   **`nom`**: nominal voltage of power rail
     *   **`sense`**: sense resistor value in Ohm
     *   **`location`**: loc string for docstring generation
     *   **`calib`**: `True` if the rail should be configured for power
