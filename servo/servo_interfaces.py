@@ -306,6 +306,7 @@ for board in [
     'soraka',
     'strago',
     'zoombini',
+    'zork',
 ]:
   INTERFACE_BOARDS[board][0x18d1][0x5002] = \
       list(INTERFACE_DEFAULTS[0x18d1][0x5002])
