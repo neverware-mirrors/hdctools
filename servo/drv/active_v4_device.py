@@ -75,12 +75,17 @@ class activeV4Device(hw_driver.HwDriver):
 
   def _Set_device(self, device):
     """Configure cr50 to enable using servo micro or ccd."""
-    if device == self._Get_device():
-      return
+    if device == 'default':
+      device = self.get_v4_device_info('default')
+
     devices = self.get_v4_device_info('usable_devices')
     if device not in devices:
       raise activeV4DeviceError('Invalid device %r. Try %r' % (device, devices))
     use_servo = self.V4_DEVICES[device]
+
+    if device == self._Get_device():
+      self._logger.info('Active device is already %r', device)
+      return
 
     # The servo micro uart signals are driven when servo micro is powered. These
     # are the signals that interfere with ccd. Disable/enable them based on
@@ -103,6 +108,8 @@ class activeV4Device(hw_driver.HwDriver):
 
     if device != self._Get_device():
       raise activeV4DeviceError('Could not set %r as active device' % device)
+
+    self._logger.info('active_v4_device: %s', device)
 
   def _Get_device(self):
     """Return the active device."""
