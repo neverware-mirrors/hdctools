@@ -13,6 +13,12 @@ import urllib
 
 import hw_driver
 import servo.servodutil as util
+import usb
+
+
+# If a hub is attached to the usual image usb storage slot, use this port on the
+# hub to search for the usb storage.
+STORAGE_ON_HUB_PORT = 1
 
 
 class UsbImageManagerError(hw_driver.HwDriverError):
@@ -31,9 +37,9 @@ class usbImageManager(hw_driver.HwDriver):
   # Timeout to wait before giving up on hoping the image usb dev will enumerate
   _WAIT_TIMEOUT = 10
 
-  # Control aliases to the usb mux (and its power) intended for image management
-  _IMAGE_MUX = 'image_usbkey_mux'
-  _IMAGE_MUX_PWR = 'image_usbkey_pwr'
+  # Control aliases to the image mux and power intended for image management
+  _IMAGE_USB_MUX = 'image_usbkey_mux'
+  _IMAGE_USB_PWR = 'image_usbkey_pwr'
   _IMAGE_DEV = 'image_usbkey_dev'
   _IMAGE_MUX_TO_SERVO = 'servo_sees_usbkey'
 
@@ -43,17 +49,21 @@ class usbImageManager(hw_driver.HwDriver):
     """Initialize driver by initializing HwDriver."""
     super(usbImageManager, self).__init__(interface, params)
     # This delay is required to safely switch the usb image mux direction
-    self._poweroff_delay = params.get('usb_power_off_delay', None)
+    self._poweroff_delay = params.get('usb_power_off_delay', 0)
     if self._poweroff_delay:
       self._poweroff_delay = float(self._poweroff_delay)
     # This is required to determine if the usbkey is connected to the host
     self._image_usbkey_hub_port = params.get('hub_port', None)
+    # Flag to indicate whether the usb port supports having a hub attached to
+    # it. In that case, the image will be searched on the |STORAGE_ON_HUB_PORT|
+    # of the hub.
+    self._supports_hub_on_port = params.get('hub_on_port', False)
     # Hold the last image path so we can reduce downloads to the usb device.
     self._image_path = None
 
   def _Get_image_usbkey_direction(self):
     """Return direction of image usbkey mux."""
-    return self._interface.get(self._IMAGE_MUX)
+    return self._interface.get(self._IMAGE_USB_MUX)
 
   def _Set_image_usbkey_direction(self, mux_direction):
     """Connect USB flash stick to either servo or DUT.
@@ -65,7 +75,7 @@ class usbImageManager(hw_driver.HwDriver):
       mux_direction: map values of "servo_sees_usbkey" or "dut_sees_usbkey".
     """
     self._SafelySwitchMux(mux_direction)
-    if self._interface.get(self._IMAGE_MUX) == self._IMAGE_MUX_TO_SERVO:
+    if self._interface.get(self._IMAGE_USB_MUX) == self._IMAGE_MUX_TO_SERVO:
       # This will ensure that we make a best-effort attempt to only
       # return when the block device of the attached usb stick fully
       # enumerates.
@@ -81,11 +91,18 @@ class usbImageManager(hw_driver.HwDriver):
     Args:
       mux_direction: map values of "servo_sees_usbkey" or "dut_sees_usbkey".
     """
-    self._interface.set(self._IMAGE_MUX_PWR, 'off')
+    self._interface.set(self._IMAGE_USB_PWR, 'off')
     time.sleep(self._poweroff_delay)
-    self._interface.set(self._IMAGE_MUX, mux_direction)
+    self._interface.set(self._IMAGE_USB_MUX, mux_direction)
     time.sleep(self._poweroff_delay)
-    self._interface.set(self._IMAGE_MUX_PWR, 'on')
+    self._interface.set(self._IMAGE_USB_PWR, 'on')
+
+  def _PathIsHub(self, usb_sysfs_path):
+    """Return whether |usb_sysfs_path| is a usb hub."""
+    if not os.path.exists(usb_sysfs_path):
+      return False
+    with open(os.path.join(usb_sysfs_path, 'bDeviceClass'), 'r') as classf:
+      return int(classf.read().strip()) == usb.CLASS_HUB
 
   def _Get_image_usbkey_dev(self):
     """Probe the USB disk device plugged in the servo from the host side.
@@ -98,7 +115,7 @@ class usbImageManager(hw_driver.HwDriver):
     servod = self._interface
     # When the user is requesting the usb_dev they most likely intend for the
     # usb to the facing the servo, and be powered. Enforce that.
-    if servod.get(self._IMAGE_MUX) != self._IMAGE_MUX_TO_SERVO:
+    if servod.get(self._IMAGE_USB_MUX) != self._IMAGE_MUX_TO_SERVO:
       self._SafelySwitchMux(self._IMAGE_MUX_TO_SERVO)
     usb_hierarchy = util.UsbHierarchy()
     # Look for own servod usb device
@@ -111,20 +128,35 @@ class usbImageManager(hw_driver.HwDriver):
     hub_on_servo = usb_hierarchy.GetParentPath(self_usb)
     # Image usb is at hub port |self._image_usbkey_hub_port|
     image_usbkey_sysfs = '%s.%s' % (hub_on_servo, self._image_usbkey_hub_port)
+    # Possible image locations can be multiple places if a hub is allowed.
+    # In that case, first check if the hub location exists before defaulting to
+    # the non hub logic.
+    image_location_candidates = [image_usbkey_sysfs]
+    if self._supports_hub_on_port:
+      # Here the config says that |image_usbkey_sysfs| might actually have a hub
+      # and not storage attached to it. In that case, the |STORAGE_ON_HUB_PORT|
+      # on that hub will house the storage.
+      storage_on_hub_sysfs = '%s.%d' % (image_usbkey_sysfs, STORAGE_ON_HUB_PORT)
+      # Checking the hub path first should make things slightly faster as it can
+      #
+      image_location_candidates.insert(0, storage_on_hub_sysfs)
     self._logger.debug('usb image dev file should be at %s', image_usbkey_sysfs)
     end = time.time() + self._WAIT_TIMEOUT
     while True:
-      if os.path.exists(image_usbkey_sysfs):
-        # Use /sys/block/ entries to see which block device really is just
-        # the self_usb
-        for candidate in os.listdir('/sys/block'):
-          # /sys/block is a link to a sys hw device file
-          devicepath = os.path.realpath(os.path.join('/sys/block', candidate))
-          # |image_usbkey_sysfs| is also a link to a sys hw device file
-          if devicepath.startswith(os.path.realpath(image_usbkey_sysfs)):
-            devpath = '/dev/%s' % candidate
-            if os.path.exists(devpath):
-              return devpath
+      for active_storage_sysfs in image_location_candidates:
+        if (os.path.exists(active_storage_sysfs) and not
+            # Do not check the whole hub, only devices
+            self._PathIsHub(active_storage_sysfs)):
+          # Use /sys/block/ entries to see which block device really is just
+          # the self_usb
+          for candidate in os.listdir('/sys/block'):
+            # /sys/block is a link to a sys hw device file
+            devicepath = os.path.realpath(os.path.join('/sys/block', candidate))
+            # |active_storage_sysfs| is also a link to a sys hw device file
+            if devicepath.startswith(os.path.realpath(active_storage_sysfs)):
+              devpath = '/dev/%s' % candidate
+              if os.path.exists(devpath):
+                return devpath
       if time.time() >= end:
         break
       time.sleep(self._POLLING_DELAY)
