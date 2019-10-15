@@ -12,7 +12,7 @@ rotation across instances.
 Inside that directory, the logs are compressed after rotation, except for the
 log file currently in use and another 4 left for convenience.
 Each log file has the following naming convention.
-log.YYYY-MM-DD--HH-MM-SS.MS.LOGLEVEL.[.x.tbz2]
+log.YYYY-MM-DD--HH-MM-SS.MS.LOGLEVEL[.x.tbz2]
 (prefix).(invocation date & time (UTC))(log level)[seq num][compressed type]
 e.g. log.2019-07-01--21-21-06.9582.DEBUG.1.tbz2
 When a new instance is started on the same port, the old open log is closed
@@ -55,6 +55,9 @@ DEFAULT_LOGLEVEL = 'info'
 # Levels used to generate logs in servod in parallel.
 # On initialization, a handler for each of these levels is created.
 LOGLEVEL_FILES = ['debug', 'warning', 'info']
+
+# Re to extract the loglevel from a given filename.
+loglevel_extractor_re = re.compile('|'.join(f.upper() for f in LOGLEVEL_FILES))
 
 # Max log size for one log file. ~10 MB
 MAX_LOG_BYTES_COMPRESSED = 1024 * 1024 * 10
@@ -173,8 +176,11 @@ def _compressOldFiles(logdir):
     logpath = os.path.join(logdir, logfile)
     if not os.path.islink(logpath) and COMPRESSION_SUFFIX not in logpath:
       # Extract the loglevel from the names.
-      loglevel = re.findall(r'\.([A-Z]+)(\.\d+)?', logfile)[0][0]
-      uncompressed_logs[loglevel].append(logpath)
+      loglevel_search = loglevel_extractor_re.search(logfile)
+      if loglevel_search:
+        # As the regex has no groups, the match is just group(0)
+        loglevel = loglevel_search.group(0)
+        uncompressed_logs[loglevel].append(logpath)
   for loglevel, logfiles in uncompressed_logs.iteritems():
     chronological_logfiles = _sortLogs(logfiles, loglevel)
     # + 1 here as backupCount in the logger works by having up to that
