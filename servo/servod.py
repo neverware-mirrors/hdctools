@@ -369,7 +369,7 @@ class ServodStarter(object):
     dev_pars.add_argument('-c', '--config', default=None, type=str,
                           action='append', help='system config file (XML) to '
                                                 'read')
-    dev_pars.add_argument('-b', '--board', default=None, type=str,
+    dev_pars.add_argument('-b', '--board', default='', type=str,
                           action='store', help='include config file (XML) for '
                                                'given board')
     dev_pars.add_argument('-m', '--model', default='', type=str, action='store',

@@ -231,13 +231,14 @@ class ServoV4PostInit(BasePostInit):
           self.add_servo_serial(servo_micro, self.servod.SERVO_MICRO_SERIAL)
           # Add aliases for the servo micro as well.  This is useful if there
           # are multiple servo micros.
-          self.add_servo_serial(
-              servo_micro,
-              self.servod.SERVO_MICRO_SERIAL + '_for_' + self.servod._board)
-          if self.servod._model:
+          if self.servod._board:
             self.add_servo_serial(
                 servo_micro,
-                self.servod.SERVO_MICRO_SERIAL + '_for_' + self.servod._model)
+                self.servod.SERVO_MICRO_SERIAL + '_for_' + self.servod._board)
+            if self.servod._model:
+              self.add_servo_serial(
+                  servo_micro,
+                  self.servod.SERVO_MICRO_SERIAL + '_for_' + self.servod._model)
           main_micro_found = True
 
     if main_micro_found and not DUAL_V4_VAR in os.environ:
