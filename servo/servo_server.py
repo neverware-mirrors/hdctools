@@ -871,6 +871,11 @@ class Servod(object):
                            'error is not just a setup issue, consider filing '
                            'a bug. Also checkout go/servo-ki.')
 
+    # If there is the control of 'active_v4_device', set active_v4_device to
+    # the default device as initialization.
+    if  self._syscfg.is_control('active_v4_device'):
+      self.set('active_v4_device', 'default')
+
     return True
 
   def echo(self, echo):
