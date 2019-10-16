@@ -112,14 +112,30 @@ class activeV4Device(hw_driver.HwDriver):
     self._logger.info('active_v4_device: %s', device)
 
   def _Get_device(self):
-    """Return the active device."""
+    """Return the active device.
+
+    Returns:
+      'servo_micro' if cr50 has enabled servo in ccdstate and
+                       servod has enabled EC uart, or
+      'ccd_cr50' if cr50 has disabled servo in ccdstate and
+                    servod has disabled EC uart, or
+      'neither' otherwise.
+    """
     try:
       servo_state = self._interface.get('cr50_servo')
     except Exception, e:
       self._logger.info('Could not communicate with cr50. %r', str(e))
       return self.get_v4_device_info('default')
-    using_servo = servo_state == 'connected'
-    for device, use_servo in self.V4_DEVICES.items():
-      if use_servo == using_servo:
+    using_servo = ('servo' in self.get_v4_device_info('default') and
+                   self._interface.get('ec_uart_en') == 'on')
+    using_ccd = servo_state != 'connected'
+
+    if using_servo == using_ccd:
+      self._logger.warn('Neither v4 device is enabled.')
+      return 'neither'
+
+    devices = self.get_v4_device_info('usable_devices')
+    for device in devices:
+      if using_servo == self.V4_DEVICES[device]:
         return device
     return self.get_v4_device_info('default')
