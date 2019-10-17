@@ -3,8 +3,10 @@
 # found in the LICENSE file.
 """System configuration module."""
 import collections
+import glob
 import logging
 import os
+import re
 import xml.etree.ElementTree
 
 # valid tags in system config xml.  Any others will be ignored
@@ -122,6 +124,22 @@ class SystemConfig(object):
     if os.path.isfile(fullname):
       return fullname
     return None
+
+  def get_all_cfg_names(self):
+    """Return all XML config file names.
+
+    Returns:
+      A list of file names.
+    """
+    exclude_re = re.compile(r'servo_.*_overlay\.xml')
+    pattern = os.path.join(os.path.dirname(__file__), 'data', '*.xml')
+
+    cfg_names = []
+    for name in glob.glob(pattern):
+      name = os.path.basename(name)
+      if not exclude_re.match(name):
+        cfg_names.append(name)
+    return cfg_names
 
   def set_board_cfg(self, filename):
     """Save the filename for the board config."""

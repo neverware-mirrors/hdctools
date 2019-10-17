@@ -4,7 +4,7 @@
 include $(HDCTOOLS_DIR)/defs/definitions.mk
 include $(HDCTOOLS_DIR)/defs/utilities.mk
 
-SUBDIRS		= servo_mfg
+SUBDIRS		= servo_mfg bash_completion
 SUBDIRS_INSTALL	= $(foreach var,$(SUBDIRS),$(var)-install)
 
 all: 		$(SUBDIRS)
