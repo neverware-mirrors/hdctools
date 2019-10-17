@@ -124,12 +124,13 @@ def main(cmdline=sys.argv[1:]):
   if args.save_all:
     args.save_logs = args.save_raw_data = args.save_summary = True
   pm_logger = logging.getLogger('')
-  pm_logger.setLevel(logging.DEBUG)
+  pm_logger.setLevel(logging.INFO)
   if not args.port:
     args.port = client.DEFAULT_PORT
   stdout_handler = logging.StreamHandler(sys.stdout)
   stdout_handler.setLevel(logging.INFO)
   if args.debug:
+    pm_logger.setLevel(logging.DEBUG)
     stdout_handler.setLevel(logging.DEBUG)
   if not args.no_output:
     pm_logger.addHandler(stdout_handler)
