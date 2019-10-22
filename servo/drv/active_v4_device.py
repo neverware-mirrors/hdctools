@@ -111,6 +111,15 @@ class activeV4Device(hw_driver.HwDriver):
 
     self._logger.info('active_v4_device: %s', device)
 
+  def _using_servo(self):
+    """Return True if servo uart is enabled."""
+    return ('servo' in self.get_v4_device_info('default') and
+            self._interface.get('ec_uart_en') == 'on')
+
+  def _using_ccd(self):
+    """Return True if ccd uart is enabled."""
+    return self._interface.get('cr50_servo') != 'connected'
+
   def _Get_device(self):
     """Return the active device.
 
@@ -122,13 +131,11 @@ class activeV4Device(hw_driver.HwDriver):
       'neither' otherwise.
     """
     try:
-      servo_state = self._interface.get('cr50_servo')
-    except Exception, e:
-      self._logger.info('Could not communicate with cr50. %r', str(e))
+      using_servo = self._using_servo()
+      using_ccd = self._using_ccd()
+    except:
+      self._logger.info('assuming default device. comms failed: %r', str(e))
       return self.get_v4_device_info('default')
-    using_servo = ('servo' in self.get_v4_device_info('default') and
-                   self._interface.get('ec_uart_en') == 'on')
-    using_ccd = servo_state != 'connected'
 
     if using_servo == using_ccd:
       self._logger.warn('Neither v4 device is enabled.')
