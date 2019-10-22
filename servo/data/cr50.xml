@@ -215,6 +215,12 @@
     <params cmd="get" subtype="brdprop" interface="9" drv="cr50" clobber_ok=""
     servo_v3_drv="na"></params>
   </control>
+  <control>
+    <name>cr50_ccd_state_flags</name>
+    <doc>CCD state flags that are currently enabled.</doc>
+    <params cmd="get" subtype="ccd_state_flags" interface="9" drv="cr50" clobber_ok=""
+    servo_v3_drv="na"></params>
+  </control>
   <!-- cr50 I2C controls -->
   <control>
     <name>cr50_i2c_ctrl</name>

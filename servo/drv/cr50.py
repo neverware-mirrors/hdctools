@@ -446,3 +446,11 @@ class cr50(pty_driver.ptyDriver):
     if result is None:
       raise cr50Error('Cannot retrieve the ccdblock result on cr50 console.')
     return 1 if ' SERVO' in result else 0
+
+  def _Get_ccd_state_flags(self):
+    """Getter of the cr50 ccd state flags."""
+    result = self._issue_cmd_get_results(
+        'ccdstate', ['State flags:([\S ]+)[\n\r]'])[0][1]
+    if result is None:
+      raise cr50Error('Cannot retrieve the ccd state flags on cr50 console.')
+    return result
