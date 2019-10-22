@@ -118,7 +118,7 @@ class activeV4Device(hw_driver.HwDriver):
 
   def _using_ccd(self):
     """Return True if ccd uart is enabled."""
-    return self._interface.get('cr50_servo') != 'connected'
+    return '+TX' in self._interface.get('cr50_ccd_state_flags')
 
   def _Get_device(self):
     """Return the active device.
