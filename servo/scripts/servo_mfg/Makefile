@@ -8,12 +8,18 @@ SUBDIRS		= binfiles
 SUBDIRS_INSTALL	= $(foreach var,$(SUBDIRS),$(var)-install)
 PYTHON_SRC	= $(notdir $(wildcard $(HDCTOOLS_SOURCE_DIR)/*.py))
 PYTHON_DST	= $(addprefix $(THIS_BUILD_DIR)/, $(PYTHON_SRC))
+SH_SRC	= $(notdir $(wildcard $(HDCTOOLS_SOURCE_DIR)/*.sh))
+SH_DST	= $(addprefix $(THIS_BUILD_DIR)/, $(SH_SRC))
 
 $(THIS_BUILD_DIR)/%.py: $(HDCTOOLS_SOURCE_DIR)/%.py
 	$(MESSAGE) "Copying $(notdir $@)"
 	$(CP) $< $@
 
-all: 		$(PYTHON_DST) $(SUBDIRS)
+$(THIS_BUILD_DIR)/%.sh: $(HDCTOOLS_SOURCE_DIR)/%.sh
+	$(MESSAGE) "Copying $(notdir $@)"
+	$(CP) $< $@
+
+all: 		$(PYTHON_DST) $(SH_DST) $(SUBDIRS)
 install:	$(SUBDIRS_INSTALL)
 
 $(SUBDIRS):

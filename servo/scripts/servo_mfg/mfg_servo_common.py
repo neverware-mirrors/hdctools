@@ -9,6 +9,7 @@ various servo manufacturiong scripts.
 """
 
 import errno
+from distutils import sysconfig
 import os
 import subprocess
 import time
@@ -116,7 +117,10 @@ def do_dfu(bin_name):
   Must have 'dfu-util' and 'flash_stm32.sh' present
   in the current directory to work.
   """
-  if subprocess.call('./flash_stm32.sh %s' % bin_name, shell=True):
+  mfg_dir = os.path.join(sysconfig.get_python_lib(standard_lib=False),
+                         'servo_mfg')
+  dfu_sh = os.path.join(mfg_dir, 'flash_stm32.sh')
+  if subprocess.call('%s %s' % (dfu_sh, bin_name), shell=True):
     log('Flash, Failed to flash stm32: %s' % bin_name)
     raise Exception('Flash', 'Failed to flash %s' % bin_name)
 

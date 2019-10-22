@@ -9,7 +9,7 @@ IMG=${1:-sweetberry.bin}
 function flash_stm32_dfu() {
         DFU_DEVICE=0483:df11
         ADDR=0x08000000
-        DFU_UTIL='./dfu-util'
+        DFU_UTIL='dfu-util'
         which $DFU_UTIL &> /dev/null || die \
                 "no dfu-util util found.  Did you 'sudo emerge dfu-util'"
 
