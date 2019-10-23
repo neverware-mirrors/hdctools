@@ -58,6 +58,7 @@ class Susb():
     self._product = product
     self._interface = interface
     self._serialname = serialname
+    self._dev = None
     self._find_device()
 
   def reset_usb(self):
@@ -92,6 +93,18 @@ class Susb():
         raise SusbError('USB device(%s) not found' % self._serialname)
     else:
       dev = dev_list[0]
+
+    # TODO(crbug.com/1014672): investigate whether there is a better way not to
+    # leak this many file descriptors for once system, and if there is a better
+    # way to clean up the resources than the way/workaround implemented here.
+    if self._dev:
+      if self._dev.address != dev.address:
+        # Dispose of the resources of the previously found device.
+        usb.util.dispose_resources(self._dev)
+      else:
+        # The device did not reenumerate. No need to reinitialize it, it's still
+        # valid.
+        return
 
     # Detatch raiden.ko if it is loaded.
     if dev.is_kernel_driver_active(self._interface):
