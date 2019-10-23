@@ -102,7 +102,7 @@ def do_macaddr(macaddr, check_only=False):
   if not check_only:
     # Actually attempt to rewrite.
 
-    cmd = 'rtunicpg-x86_64 %s /93c46' % macaddr.replace(':', '').upper()
+    cmd = 'rtunicpg %s /93c46' % macaddr.replace(':', '').upper()
 
     if subprocess.call(cmd, shell=True):
       c.log('Failed to set mac %s' % macaddr)
