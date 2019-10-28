@@ -133,7 +133,7 @@ class activeV4Device(hw_driver.HwDriver):
     try:
       using_servo = self._using_servo()
       using_ccd = self._using_ccd()
-    except:
+    except Exception, e:
       self._logger.info('assuming default device. comms failed: %r', str(e))
       return self.get_v4_device_info('default')
 
