@@ -29,6 +29,14 @@
     subtype="single" map="onoff_i" init="on"></params>
   </control>
   <control>
+    <name>servo_micro_ec_boot_mode_uut</name>
+    <alias>ec_boot_mode_uut</alias>
+    <doc>UUT boot mode GPIO. See also tp1 control. Rework in
+    b/143163043#comment3 is necessary for this to work.</doc>
+    <params subtype="uut_boot_mode" interface="6" drv="ec3po_servo_micro"
+    map="onoff" init="off" />
+  </control>
+  <control>
     <name>servo_jtag_trst</name>
     <doc>SERVO_JTAG_TRST_L</doc>
     <params interface="6" drv="ec3po_gpio" name="SERVO_JTAG_TRST_L"
@@ -175,8 +183,11 @@
   </control>
   <control>
     <name>tp1</name>
-    <doc>Test point 1</doc>
-    <params interface="2" drv="tca6416" slv="0x20" od="PU" port="0"
+    <doc>Test point 1. This is also used on a reworked (b/143163043#comment3)
+    servo micro to control the direction of the EC_TX_SERVO_RX pin in the level
+    shifter, thus allowing the servo to drive the net low to enable UART
+    programming on the EC</doc>
+    <params interface="2" drv="tca6416" slv="0x20" port="0"
     offset="3" map="onoff" init="off"></params>
   </control>
   <control>
@@ -245,7 +256,7 @@
   <control>
     <name>tp2</name>
     <doc>Test point 2</doc>
-    <params interface="2" drv="tca6416" slv="0x20" od="PU" port="1"
+    <params interface="2" drv="tca6416" slv="0x20" port="1"
     offset="7" map="onoff" init="off"></params>
   </control>
   <control>
