@@ -18,7 +18,7 @@ import time
 
 import mfg_servo_common as c
 
-SERVO_V4_BIN = 'binfiles/servo_v4.bin'
+SERVO_V4_BIN = 'servo_v4.bin'
 STM_DFU_VIDPID = '0483:df11'
 STM_VIDPID = '18d1:501b'
 ATM_BIN = 'binfiles/Keyboard.hex'
@@ -297,7 +297,7 @@ def main():
       c.log('Plug in servo_v4 via OTG adapter')
       c.wait_for_usb(STM_DFU_VIDPID)
       c.log('Found DFU target')
-      c.do_dfu(c.full_bin_path(SERVO_V4_BIN))
+      c.do_dfu(c.full_servo_bin_path(SERVO_V4_BIN))
 
     c.log('\n\n************************************************\n')
     c.log('Plug in servo_v4 via normal cable')
@@ -307,6 +307,8 @@ def main():
     c.log('Plug in servo_v4 via DUT cable')
     # Wait for cypress USB hub
     c.wait_for_usb(CYPRESS_DUT_VIDPID)
+    # Give the device enough time to come up before initializing tiny_servod.
+    time.sleep(0.2)
 
     if args.serial or args.atmega:
       pty = c.setup_tinyservod(STM_VIDPID, 0)

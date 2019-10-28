@@ -15,11 +15,14 @@ import subprocess
 import time
 
 import pty_driver
+import servo_updater
 import stm32uart
 
 logfile = None
 testerlogfile = None
 
+def full_servo_bin_path(binfile):
+  return os.path.join(servo_updater.FIRMWARE_PATH, binfile)
 
 def full_bin_path(binfile):
   return os.path.join(os.path.dirname(os.path.realpath(__file__)), binfile)

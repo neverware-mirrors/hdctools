@@ -98,7 +98,6 @@ setup(
   py_modules=['servo_mfg' ],
   packages=['servo_mfg'],
   package_data={'servo_mfg': ['binfiles/*.hex',
-                              'binfiles/*.bin',
                               '*.sh']},
   url = "http://www.chromium.org",
   maintainer='chromium os',
