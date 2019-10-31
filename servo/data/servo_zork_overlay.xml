@@ -17,7 +17,10 @@
   <control>
     <name>fw_wp_state</name>
     <doc>Used to turn fw wp off and on</doc>
-    <params clobber_ok="" fw_wp_vref="pp3300"/>
+    <!-- fw_wp_vref and spi2_vref share the same voltage rail on the servo
+    device, and the Zork AP SPI Flash (DUT_SPI2) is 1.8V, so set fw_wp_vref to
+    match. b/143319676 -->
+    <params clobber_ok="" fw_wp_vref="pp1800"/>
   </control>
   <control>
     <name>ec_chip</name>
