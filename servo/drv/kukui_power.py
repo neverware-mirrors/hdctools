@@ -19,17 +19,40 @@ class kukuiPower(cros_ec_softrec_power.crosEcSoftrecPower):
   def __init__(self, interface, params):
     super(kukuiPower, self).__init__(interface, params)
     self._usb3_pwr_en = 'usb3_pwr_en'
+    self._on = 'on'
+    self._off = 'off'
     if not interface._syscfg.is_control(self._usb3_pwr_en):
       self._usb3_pwr_en = None
 
-  def _set_usb3_pwr_en(self, state):
-    """Sets USB3 power (if available) to a new state."""
-    if self._usb3_pwr_en:
-      self._logger.info('Setting %s to %s', self._usb3_pwr_en, state)
-      self._interface.set(self._usb3_pwr_en, state)
+  def _reset_usb(self):
+    """Resets the USB 3 power (if available and turned on) by turning it off.
+
+    Returns:
+      True if reset (i.e., need to restore later), otherwise False.
+    """
+    if not self._usb3_pwr_en:
+      return False
+
+    # Some FAFT tests (e.g, platform_ServoPowerStateController*) will set
+    # usb3_pwr_en to off to test booting system into recovery mode (without
+    # booting from USB) so we want to reset only when usb3_pwr_en is turned on.
+    state = self._interface.get(self._usb3_pwr_en)
+    self._logger.debug('%s state: %s', self._usb3_pwr_en, state);
+    if state != self._on:
+      return False
+
+    self._logger.info('Reset %s to %s', self._usb3_pwr_en, self._off)
+    self._interface.set(self._usb3_pwr_en, self._off)
+    return True
+
+  def _restore_usb(self):
+    """Returns (turns on) USB3 power."""
+    self._logger.info('Set %s to %s', self._usb3_pwr_en, self._on)
+    self._interface.set(self._usb3_pwr_en, self._on)
 
   def _power_on_ap(self):
     """Power on the AP after initializing recovery state."""
-    self._set_usb3_pwr_en('off')
+    need_to_restore = self._reset_usb()
     super(kukuiPower, self)._power_on_ap()
-    self._set_usb3_pwr_en('on')
+    if need_to_restore:
+      self._restore_usb()
