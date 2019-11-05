@@ -873,8 +873,13 @@ class Servod(object):
 
     # If there is the control of 'active_v4_device', set active_v4_device to
     # the default device as initialization.
-    if  self._syscfg.is_control('active_v4_device'):
+    try:
       self.set('active_v4_device', 'default')
+    except NameError as e:
+      # If the control does not exist, just pass it.
+      pass
+    except activeV4DeviceError as e:
+      self._logger.error(str(e))
 
     return True
 
