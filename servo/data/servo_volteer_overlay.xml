@@ -14,29 +14,23 @@
   </include>
   <!-- ******** Controls ******** -->
   <control>
+    <!-- Volteer connects TABLET_MODE_L to the rec_mode signal -->
     <name>power_state</name>
     <doc>Used to turn the DUT off and on</doc>
-    <params drv="cros_ec_softrec_power" clobber_ok="" reset_recovery="0.6"
-    shutdown_delay="11.0" warm_reset_can_hold_ap="no"/>
+    <params drv="cros_ec_softrec_power" clobber_ok="" cmd="set"
+    reset_recovery="0.6" shutdown_delay="11.0" warm_reset_can_hold_ap="no"/>
   </control>
   <control>
     <name>fw_wp_state</name>
     <doc>Used to turn fw wp off and on</doc>
     <params clobber_ok="" fw_wp_vref="pp3300"/>
   </control>
+  <!-- First boards have gang mode programming enabled over servo, CCD uses
+  UART mode -->
   <control>
     <name>ec_chip</name>
     <doc>EC chip name (read-only)</doc>
     <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
-    drv="cros_chip" chip="npcx_int_spi"/>
-  </control>
-  <!-- cr50 UART Buffers & VREF Controls -->
-  <control>
-    <name>jtag_vref_sel0</name>
-    <params clobber_ok="" init="off"></params>
-  </control>
-  <control>
-    <name>jtag_vref_sel1</name>
-    <params clobber_ok="" init="off"></params>
+    drv="cros_chip" chip="npcx_int_spi" chip_for_ccd_cr50="npcx_uut"/>
   </control>
 </root>
