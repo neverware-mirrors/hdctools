@@ -28,8 +28,8 @@ inas = [
     ('sweetberry', '0x45:3', 'pp950_vccio',        0.95, 0.010, 'j3', True), # R461
     ('sweetberry', '0x45:1', 'vbat',               7.70, 0.010, 'j3', True), # R569
     ('sweetberry', '0x45:2', 'ppvar_elv_in',       7.70, 0.010, 'j3', True), # R717
-    ('sweetberry', '0x46:3', 'ppvar_gt',           1.52, 0.020, 'j3', True), # U143, originally 0 Ohm
-    ('sweetberry', '0x46:1', 'ppvar_sa',           1.52, 0.020, 'j3', True), # U144, originally 0 Ohm
-    ('sweetberry', '0x46:2', 'ppvar_vcc',          1.52, 0.020, 'j3', True), # U141, originally 0 Ohm
-    ('sweetberry', '0x46:0', 'ppvar_vprim_core_a', 1.05, 0.010, 'j3', True), # R460
+    ('sweetberry', '0x45:0', 'ppvar_gt',           1.52, 0.020, 'j3', True), # U143, originally 0 Ohm
+    ('sweetberry', '0x46:3', 'ppvar_sa',           1.52, 0.020, 'j3', True), # U144, originally 0 Ohm
+    ('sweetberry', '0x46:1', 'ppvar_vcc',          1.52, 0.020, 'j3', True), # U141, originally 0 Ohm
+    ('sweetberry', '0x46:2', 'ppvar_vprim_core_a', 1.05, 0.010, 'j3', True), # R460
 ]
