@@ -197,7 +197,9 @@
     <name>image_usbkey_dev</name>
     <doc>Get USB dev attached to this servo</doc>
     <params subtype="image_usbkey_dev" interface="servo" drv="usb_image_manager"
-      hub_port="4" usb_power_off_delay="2" hub_on_port="True"></params>
+      hub_port="4" usb_power_off_delay="2" hub_on_port="True"
+      error_amendment="Make sure you are using the usb port next to the
+      ethernet adapter."></params>
   </control>
 
   <control>

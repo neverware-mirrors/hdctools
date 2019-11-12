@@ -4,6 +4,7 @@
 
 """Driver for common sequences for image management on switchable usb port."""
 
+import glob
 import os
 import shutil
 import subprocess
@@ -45,6 +46,8 @@ class usbImageManager(hw_driver.HwDriver):
 
   _HTTP_PREFIX = 'http://'
 
+  _DEFAULT_ERROR_MSG = 'No USB storage device found for image transfer.'
+
   def __init__(self, interface, params):
     """Initialize driver by initializing HwDriver."""
     super(usbImageManager, self).__init__(interface, params)
@@ -60,6 +63,9 @@ class usbImageManager(hw_driver.HwDriver):
     self._supports_hub_on_port = params.get('hub_on_port', False)
     # Hold the last image path so we can reduce downloads to the usb device.
     self._image_path = None
+    self._error_msg = self._DEFAULT_ERROR_MSG
+    if 'error_amendment' in params:
+      self._error_msg += ' ' + params['error_amendment']
 
   def _Get_image_usbkey_direction(self):
     """Return direction of image usbkey mux."""
@@ -102,7 +108,7 @@ class usbImageManager(hw_driver.HwDriver):
     if not os.path.exists(usb_sysfs_path):
       return False
     with open(os.path.join(usb_sysfs_path, 'bDeviceClass'), 'r') as classf:
-      return int(classf.read().strip()) == usb.CLASS_HUB
+      return int(classf.read().strip(), 16) == usb.CLASS_HUB
 
   def _Get_image_usbkey_dev(self):
     """Probe the USB disk device plugged in the servo from the host side.
@@ -142,26 +148,35 @@ class usbImageManager(hw_driver.HwDriver):
       image_location_candidates.insert(0, storage_on_hub_sysfs)
     self._logger.debug('usb image dev file should be at %s', image_usbkey_sysfs)
     end = time.time() + self._WAIT_TIMEOUT
-    while True:
-      for active_storage_sysfs in image_location_candidates:
-        if (os.path.exists(active_storage_sysfs) and not
-            # Do not check the whole hub, only devices
-            self._PathIsHub(active_storage_sysfs)):
-          # Use /sys/block/ entries to see which block device really is just
-          # the self_usb
-          for candidate in os.listdir('/sys/block'):
-            # /sys/block is a link to a sys hw device file
-            devicepath = os.path.realpath(os.path.join('/sys/block', candidate))
-            # |active_storage_sysfs| is also a link to a sys hw device file
-            if devicepath.startswith(os.path.realpath(active_storage_sysfs)):
-              devpath = '/dev/%s' % candidate
-              if os.path.exists(devpath):
-                return devpath
+    while image_location_candidates:
+      active_storage_candidate = image_location_candidates.pop(0)
+      if os.path.exists(active_storage_candidate):
+        if self._PathIsHub(active_storage_candidate):
+          # Do not check the whole hub, only devices. Do not enqueue again.
+          continue
+        # Use /sys/block/ entries to see which block device really is just
+        # the self_usb. Use sd* to avoid querying any non-external block devices
+        for candidate in glob.glob('/sys/block/sd*'):
+          # /sys/block is a link to a sys hw device file
+          devicepath = os.path.realpath(candidate)
+          # |active_storage_candidate| is also a link to a sys hw device file
+          if devicepath.startswith(os.path.realpath(active_storage_candidate)):
+            devpath = '/dev/%s' % os.path.basename(candidate)
+            if os.path.exists(devpath):
+              return devpath
+      # Enqueue the candidate again in hopes that it will eventually enumerate.
+      image_location_candidates.append(active_storage_candidate)
       if time.time() >= end:
         break
       time.sleep(self._POLLING_DELAY)
-    self._logger.warn('usb image dev file found, but no block device. %s',
-                      image_usbkey_sysfs)
+    # Split and join to help with error message formatting from XML that might
+    # introduce multiple white-spaces.
+    self._logger.warn(' '.join(self._error_msg.split()))
+    self._logger.warn('Stick should be at %s.', image_usbkey_sysfs)
+    if self._supports_hub_on_port:
+      self._logger.warn('If using a hub on the image key port, please make '
+                        'sure to use port %d on the hub. This should be at %s.',
+                        STORAGE_ON_HUB_PORT, storage_on_hub_sysfs)
     return ''
 
   def _Get_download_to_usb_dev(self):
