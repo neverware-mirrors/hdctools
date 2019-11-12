@@ -27,4 +27,9 @@
     <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
     drv="cros_chip" chip="npcx_spi"/>
   </control>
+  <control>
+    <name>cold_reset</name>
+    <doc>cold reset used for warm reset</doc>
+    <remap>warm_reset</remap>
+  </control>
 </root>
