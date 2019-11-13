@@ -50,6 +50,20 @@
     input_type="float" map="keypress_duration" clobber_ok=""></params>
   </control>
   <control>
+    <name>arrow_up</name>
+    <doc>Send arrow up key either by servoflex or USB KB
+    emulation</doc>
+    <params cmd="set" subtype="key" key="arrow_up" interface="servo" drv="kb"
+    input_type="float" map="keypress_duration" clobber_ok=""></params>
+  </control>
+  <control>
+    <name>arrow_down</name>
+    <doc>Send arrow down key either by servoflex or USB KB
+    emulation</doc>
+    <params cmd="set" subtype="key" key="arrow_down" interface="servo" drv="kb"
+    input_type="float" map="keypress_duration" clobber_ok=""></params>
+  </control>
+  <control>
     <name>enter_key</name>
     <doc>Send enter key either by servoflex or USB KB
     emulation</doc>

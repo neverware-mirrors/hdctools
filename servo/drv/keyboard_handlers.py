@@ -201,6 +201,14 @@ class _BaseHandler(_HandlerTemplate):
     """Simulate Enter key button press."""
     NotImplementedError()
 
+  def arrow_up(self, press_secs=''):
+    """Simulate ArrowUp key button press."""
+    NotImplementedError()
+
+  def arrow_down(self, press_secs=''):
+    """Simulate ArrowDown key button press."""
+    NotImplementedError()
+
   def enter_key(self, press_secs=''):
     """Simulate Enter key button press."""
     NotImplementedError()
@@ -526,6 +534,14 @@ class ChromeECHandler(_BaseHandler):
     """Simulate Enter key button press."""
     self._press_and_release_keys(['<ctrl_l>'], press_secs)
 
+  def arrow_up(self, press_secs=''):
+    """Simulate ArrowUp key button press."""
+    self._press_and_release_keys(['<up>'], press_secs)
+
+  def arrow_down(self, press_secs=''):
+    """Simulate ArrowDown key button press."""
+    self._press_and_release_keys(['<down>'], press_secs)
+
   def enter_key(self, press_secs=''):
     """Simulate Enter key button press."""
     self._press_and_release_keys(['<enter>'], press_secs)
@@ -835,6 +851,14 @@ class USBkm232Handler(_BaseHandler):
   def ctrl_s(self, press_secs=''):
     """Press and release ctrl-s sequence."""
     self._write([self._press('<lctrl>'), self._press('s')])
+
+  def arrow_up(self, press_secs=''):
+    """Press and release ArrowUp key."""
+    self._write([self._press('<uparrow>')])
+
+  def arrow_down(self, press_secs=''):
+    """Press and release ArrowDown key."""
+    self._write([self._press('<downarrow>')])
 
   def enter_key(self, press_secs=''):
     """Press and release enter"""
