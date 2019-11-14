@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-_all_servod_xmls=$(python -c "
+_all_servod_xmls=$(python2 -c "
 from servo import system_config
 print(' '.join(system_config.SystemConfig().get_all_cfg_names()))
 ")
