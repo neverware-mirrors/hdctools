@@ -41,7 +41,6 @@ MAX_ISERIAL_STR = 128
 DEFAULT_PORT_RANGE = (9980, 9999)
 
 
-
 class ServoDeviceWatchdog(threading.Thread):
   """Watchdog to ensure servod stops when a servo device gets lost.
 
@@ -390,10 +389,12 @@ class ServodStarter(object):
                                '(Optional), e.g. /dev/ttyUSB0')
     # Create a unified parser with both server & device arguments to display
     # meaningful help messages to the user.
-    help_displayer = servo_parsing.BaseServodParser(description=description,
-                                                    examples=examples,
-                                                    version=version,
-                                                    parents=[dev_pars])
+    # pylint: disable=protected-access
+    # The parser here is used for its base ability to format examples.
+    help_displayer = servo_parsing._BaseServodParser(description=description,
+                                                     examples=examples,
+                                                     parents=[server_pars,
+                                                              dev_pars])
     if any([True for argstr in cmdline if argstr in ['-h', '--help']]):
       help_displayer.print_help()
       help_displayer.exit()
