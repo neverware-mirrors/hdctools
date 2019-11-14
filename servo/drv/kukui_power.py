@@ -53,6 +53,9 @@ class kukuiPower(cros_ec_softrec_power.crosEcSoftrecPower):
   def _power_on_ap(self):
     """Power on the AP after initializing recovery state."""
     need_to_restore = self._reset_usb()
-    super(kukuiPower, self)._power_on_ap()
+
+    # b/131856041: Kukui tablets boot only after power button pressed > 1.0s.
+    self._interface.set('power_key', 'press')
+
     if need_to_restore:
       self._restore_usb()
