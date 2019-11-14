@@ -50,3 +50,11 @@ class servoMetadata(hw_driver.HwDriver):
       self._logger.warn('No ServodRotatingFileHandlers on this instance. noop.')
     for h in handlers:
       h.doRollover()
+
+  def _Get_servod_logs_active(self):
+    """Return whether servod file logging is turned on."""
+    for h in logging.getLogger().handlers:
+      if isinstance(h, servo.servo_logging.ServodRotatingFileHandler):
+    # Automatically converted to the 'yes/no' by servod.
+        return 1
+    return 0

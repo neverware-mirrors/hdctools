@@ -71,6 +71,12 @@
       subtype="rotate_logs"/>
   </control>
   <control>
+    <name>servod_logging_active</name>
+    <doc>Query whether file logging is turned on.</doc>
+    <params drv="servo_metadata" interface="servo" map="yesno"
+      subtype="servod_logs_active"/>
+  </control>
+  <control>
     <name>servod_pid</name>
     <doc>The process id of the servod instance.</doc>
     <params drv="servo_metadata" subtype="pid" interface="servo" />
