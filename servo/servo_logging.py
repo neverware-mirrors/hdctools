@@ -56,11 +56,15 @@ DEFAULT_LOGLEVEL = 'info'
 # On initialization, a handler for each of these levels is created.
 LOGLEVEL_FILES = ['debug', 'warning', 'info']
 
-# Re to extract the loglevel from a given filename.
-loglevel_extractor_re = re.compile('|'.join(f.upper() for f in LOGLEVEL_FILES))
+LOGLEVEL_RE_GROUP = 'loglevel'
 
-# Max log size for one log file. ~10 MB
-MAX_LOG_BYTES_COMPRESSED = 1024 * 1024 * 10
+# Regex to extract the loglevel, and rollover_id from a given filename.
+extractor_re = re.compile(r'(?P<%s>%s)([.]\d+)?$'
+                          % (LOGLEVEL_RE_GROUP,
+                             '|'.join(f.upper() for f in LOGLEVEL_FILES)))
+
+# Max log size for one log file. ~100 kB
+MAX_LOG_BYTES_COMPRESSED = 1024 * 100
 
 # Tests have shown this to be roughly accurate for servod log compression.
 SERVO_LOG_COMPRESSION_RATIO = 20
@@ -72,9 +76,7 @@ MAX_LOG_BYTES = MAX_LOG_BYTES_COMPRESSED * SERVO_LOG_COMPRESSION_RATIO
 # Since logging is used for multiple concurrent logfiles (DEBUG, INFO, WARNING)
 # this limit is set assuming that the output of INFO + WARNING will not be more
 # than DEBUG.
-# Going with the extreme assumption of 10 servo instances this means at
-# most 10GB per port i.e. 100GB of logs if all log files are saturated.
-LOG_BACKUP_COUNT = 512
+LOG_BACKUP_COUNT = 64
 
 # Uncompressed backup count is kept small for convenience.
 UNCOMPRESSED_BACKUP_COUNT = 5
@@ -102,6 +104,12 @@ TS_FORMAT = '%Y-%m-%d--%H-%M-%S'
 TS_MS_FORMAT = '%.3f'
 
 
+# pylint: disable=g-bad-exception-name
+# Follows servod error naming convetion.
+class ServoLoggingError(Exception):
+  """Error to throw on logging issues."""
+
+
 def _buildLogdirName(logdir, port):
   """Helper to generate the log directory for an instance at |port|.
 
@@ -124,6 +132,46 @@ def _generateTs():
   raw_ts = time.time()
   return (time.strftime(TS_FORMAT, time.gmtime(raw_ts)) +
           (TS_MS_FORMAT % (raw_ts % 1))[1:])
+
+
+def _loglevelFromF(f):
+  """Helper to extract loglevel from file name |f|.
+
+  Args:
+    f: log filename to inspect
+
+  Returns:
+    loglevel in specified in |f|
+
+  Raises:
+    ServoLoggingError: if no known loglevel found in |f|
+  """
+  search = extractor_re.search(f)
+  if not search:
+    raise ServoLoggingError('No loglevel found in file %s' % f)
+  return search.group(LOGLEVEL_RE_GROUP)
+
+
+def _sortLogTagFn(f):
+  """Helper function to pass to .sort for a loglevel.
+
+  If the filename ends with loglevel, it's the lowest priority.
+  If it ends with an integer, the priority is the integer.
+  Compression suffix does not matter.
+
+  Args:
+    f: file to evaluate
+
+  Returns:
+    int, sorting priority for |f| within its own tag (rollover number)
+  """
+  if COMPRESSION_SUFFIX in f:
+    # Remove the compression suffix and the period with it.
+    f = f[:-(len(COMPRESSION_SUFFIX)+1)]
+  last_component = f.split('.')[-1]
+  if last_component.isdigit():
+    return int(last_component)
+  return 0
 
 
 def _sortLogs(logfiles, loglevel):
@@ -151,8 +199,7 @@ def _sortLogs(logfiles, loglevel):
   instance_tags = list(set(f.split(loglevel)[0] for f in logfiles))
   instance_tags.sort(reverse=True)
   for tag in instance_tags:
-    tag_logfiles = [f for f in logfiles if tag in f]
-    tag_logfiles.sort()
+    tag_logfiles = sorted([f for f in logfiles if tag in f], key=_sortLogTagFn)
     chronological_logfiles.extend(tag_logfiles)
   return chronological_logfiles
 
@@ -176,11 +223,8 @@ def _compressOldFiles(logdir):
     logpath = os.path.join(logdir, logfile)
     if not os.path.islink(logpath) and COMPRESSION_SUFFIX not in logpath:
       # Extract the loglevel from the names.
-      loglevel_search = loglevel_extractor_re.search(logfile)
-      if loglevel_search:
-        # As the regex has no groups, the match is just group(0)
-        loglevel = loglevel_search.group(0)
-        uncompressed_logs[loglevel].append(logpath)
+      loglevel = _loglevelFromF(logfile)
+      uncompressed_logs[loglevel].append(logpath)
   for loglevel, logfiles in uncompressed_logs.iteritems():
     chronological_logfiles = _sortLogs(logfiles, loglevel)
     # + 1 here as backupCount in the logger works by having up to that
@@ -189,7 +233,7 @@ def _compressOldFiles(logdir):
       ServodRotatingFileHandler.compressFn(logpath)
 
 
-def setup(logdir, port, debug_stdout=False):
+def setup(logdir, port, debug_stdout=False, backup_count=LOG_BACKUP_COUNT):
   """Setup servod logging.
 
   This function handles setting up logging, whether it be normal basicConfig
@@ -199,6 +243,7 @@ def setup(logdir, port, debug_stdout=False):
     logdir: str, log directory for all servod logs (*)
     port: port used for current instance
     debug_stdout: whether the stdout logs should be debug
+    backup_count: max number of compressed and uncompressed files to keep around
 
   (*) if |logdir| is None, the system will not setup log handlers, but rather
   setup logging using basicConfig()
@@ -230,7 +275,10 @@ def setup(logdir, port, debug_stdout=False):
     for level in LOGLEVEL_FILES:
       fh_level, fh_fmt = LOGLEVEL_MAP[level]
       fh = ServodRotatingFileHandler(logdir=instance_logdir, ts=logging_ts,
-                                     fmt=fh_fmt, level=fh_level)
+                                     fmt=fh_fmt, backup_count=backup_count,
+                                     level=fh_level)
+      # Ensure that the global backup limit is kept across instances.
+      fh.pruneOldLogsAcrossInstances()
       root_logger.addHandler(fh)
     # Compress and rotate currently open files with the old timestamps beyond
     # the uncompressed limit.
@@ -263,13 +311,16 @@ class ServodRotatingFileHandler(logging.handlers.RotatingFileHandler):
   See above for details.
   """
 
-  def __init__(self, logdir, ts, fmt, level=logging.DEBUG):
+  def __init__(self, logdir, ts, fmt, backup_count=LOG_BACKUP_COUNT,
+               level=logging.DEBUG):
     """Wrap original init by forcing one rotation on init.
 
     Args:
       logdir: str, path to log output directory
       ts: str, timestamp used to create logfile name for this instance
       fmt: str, output format to use
+      backup_count: max number of compressed and uncompressed files to keep
+                    around
       level: loglevel to use
     """
     self.levelsuffix = logging.getLevelName(level)
@@ -277,11 +328,11 @@ class ServodRotatingFileHandler(logging.handlers.RotatingFileHandler):
                                                self.levelsuffix))
     self.linkname = '%s.%s' % (LINK_PREFIX, self.levelsuffix)
     self.logdir = logdir
-    self.levelBackupCount = LOG_BACKUP_COUNT
+    self.levelBackupCount = backup_count
     filename = self._buildFilename(ts)
     # The +1 here is to ensure that the last file still gets rotated
     # before logging can compress it.
-    backup_count = UNCOMPRESSED_BACKUP_COUNT + 1
+    backup_count = min(UNCOMPRESSED_BACKUP_COUNT + 1, self.levelBackupCount)
     logging.handlers.RotatingFileHandler.__init__(self, filename=filename,
                                                   backupCount=backup_count,
                                                   maxBytes=MAX_LOG_BYTES)
@@ -362,6 +413,29 @@ class ServodRotatingFileHandler(logging.handlers.RotatingFileHandler):
       # This file has been compressed and can be safely deleted now.
       os.remove(path)
 
+  def pruneOldLogsAcrossInstances(self):
+    """Helper to enforce |self.levelBackupCount| across instances."""
+    # Servod backup counts are meant across invocations on the same port.
+    # Therefore, this needs to find all logs in the logdir for the level and
+    # make sure that the backup count does not grow too large.
+    loglevel_logs = []
+    for logfile in os.listdir(self.logdir):
+      logpath = os.path.join(self.logdir, logfile)
+      if not os.path.islink(logpath) and self.levelsuffix in logpath:
+        # Exclude the linkname from search and sort.
+        loglevel_logs.append(logpath)
+    sorted_logs = _sortLogs(loglevel_logs, self.levelsuffix)
+    # There might be trailing logs form a previous instance that were not
+    # compressed. Treat those the same way after sorting.
+    for log in sorted_logs[self.backupCount:self.levelBackupCount + 1]:
+      # This does not recompress the file again if it was already compressed.
+      ServodRotatingFileHandler.compressFn(log)
+    # The +1 here is needed as the idea is to keep |backupCount| backups
+    # around in addition to the active logfile.
+    remove_logs = sorted_logs[self.levelBackupCount + 1:]
+    for fp in remove_logs:
+      os.remove(fp)
+
   def doRollover(self):
     """Extend stock doRollover to support compression.
 
@@ -385,23 +459,4 @@ class ServodRotatingFileHandler(logging.handlers.RotatingFileHandler):
           os.rename(src, dst)
       # Compress the latest rotated doc.
       ServodRotatingFileHandler.compressFn(first_compressable_fn)
-    # Servod backup counts are meant across invocations on the same port.
-    # Therefore, this needs to find all logs in the logdir for the level and
-    # make sure that the backup count does not grow too large.
-    loglevel_logs = []
-    for logfile in os.listdir(self.logdir):
-      logpath = os.path.join(self.logdir, logfile)
-      if not os.path.islink(logpath) and self.levelsuffix in logpath:
-        # Exclude the linkname from search and sort.
-        loglevel_logs.append(logpath)
-    sorted_logs = _sortLogs(loglevel_logs, self.levelsuffix)
-    # There might be trailing logs form a previous instance that were not
-    # compressed. Treat those the same way after sorting.
-    for log in sorted_logs[self.backupCount:self.levelBackupCount + 1]:
-      # This does not recompress the file again if it was already compressed.
-      ServodRotatingFileHandler.compressFn(log)
-    # The +1 here is needed as the idea is to keep |backupCount| backups
-    # around in addition to the active logfile.
-    remove_logs = sorted_logs[self.levelBackupCount + 1:]
-    for fp in remove_logs:
-      os.remove(fp)
+    self.pruneOldLogsAcrossInstances()

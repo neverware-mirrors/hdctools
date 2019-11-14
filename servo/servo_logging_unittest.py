@@ -72,6 +72,62 @@ class TestServodRotatingFileHandler(unittest.TestCase):
     for attr, val in self.module_defaults.iteritems():
       setattr(servo_logging, attr, val)
 
+  def _GenerateSortedFilesFromTags(self, tags):
+    """Helper sub-test that given a tag list generates sorted log-files.
+    Args:
+      tags: list of tags to generate (fake) log file names for
+
+    Returns:
+      tuple t, where t[0] sorted_files: the log file names in sorted order
+                     t[1] shuffled_files: the same files as t[0] but shuffled
+    """
+    loglevel_str = logging.getLevelName(self.loglevel)
+    # Range crossing 10, as just sorting by string would place 10 above 9
+    ints = [str(i) for i in range(7, 13)]
+    for i in range(0, len(ints), 2):
+      # For every other file add a compression suffix. This is to ensure
+      # that the suffix is ignored when sorting the logs.
+      ints[i] = '%s.%s' % (ints[i], servo_logging.COMPRESSION_SUFFIX)
+    files = []
+    for tag in tags:
+      tag_files = ['%s.%s.%s' % (tag, loglevel_str, i) for i in ints]
+      # The open log file has no int or compression suffix. Add a sample too.
+      tag_files.insert(0, '%s.%s' % (tag, loglevel_str))
+      files.extend(tag_files)
+    # At this point the files in files are sorted. We now need to make a copy,
+    # shuffle it, and then make sure after our custom sort function, the copy
+    # looks the same.
+    shuffled_files = copy.copy(files)
+    # Implement this shuffling instead of random.shuffle to ensure that
+    # random.shuffle does not randomly generate the same sequence again.
+    shuffling_iterations = len(shuffled_files)
+    for i in range(shuffling_iterations):
+      shuffled_files.append(shuffled_files.pop(i))
+    # Assert the order is not the same anymore.
+    assert shuffled_files != files
+    return (files, shuffled_files)
+
+  def test_TagSorting(self):
+    """Test the tag sorting function."""
+    # Only one tag as we want to test sorting within one tag.
+    tags = ['test-tag']
+    files, shuffled_files = self._GenerateSortedFilesFromTags(tags)
+    shuffled_files.sort(key=servo_logging._sortLogTagFn)
+    # Assert the order is the same again.
+    assert shuffled_files == files
+
+  def test_LogfileSorting(self):
+    """Testing sorting by tags as well as by the index within a tag."""
+    # The tag in the real implementation is a time-stamp. Therefore, the
+    # first element should always be "higher" element after sorting, the
+    # newer timestamp. Simulate here with a z instead of a t.
+    tags = ['test-zag', 'test-tag']
+    loglevel_str = logging.getLevelName(self.loglevel)
+    files, shuffled_files = self._GenerateSortedFilesFromTags(tags)
+    shuffled_files = servo_logging._sortLogs(shuffled_files, loglevel_str)
+    # Assert the order is the same again.
+    assert shuffled_files == files
+
   def test_LoggerLogsToFile(self):
     """Basic sanity that content is being output to the file."""
     test_str = 'This is a test string to make sure there is logging.'
@@ -107,16 +163,16 @@ class TestServodRotatingFileHandler(unittest.TestCase):
   def test_DeleteMultiplePastBackupCount(self):
     """No more than backup count logs are kept."""
     # Set the backup count to only be 3 compressed for this test.
-    new_backup_count = servo_logging.UNCOMPRESSED_BACKUP_COUNT + 3
-    setattr(servo_logging, 'LOG_BACKUP_COUNT', new_backup_count)
+    new_count = servo_logging.UNCOMPRESSED_BACKUP_COUNT + 3
     handler = servo_logging.ServodRotatingFileHandler(logdir=self.logdir,
+                                                      backup_count=new_count,
                                                       ts=self.ts,
                                                       fmt=self.fmt,
                                                       level=self.loglevel)
-    for _ in range(2 * new_backup_count):
+    for _ in range(2 * new_count):
       handler.doRollover()
-      # The assertion checks that there are at most new_backup_count files.
-      assert len(os.listdir(handler.logdir)) <= (new_backup_count +
+      # The assertion checks that there are at most new_count files.
+      assert len(os.listdir(handler.logdir)) <= (new_count +
                                                  BACKUP_COUNT_EXEMPT_FILES)
 
   def test_DeleteMultipleInstancesPastBackupCount(self):
@@ -124,30 +180,35 @@ class TestServodRotatingFileHandler(unittest.TestCase):
 
     Additionally, this test validates that the oldest get deleted.
     """
-    new_backup_count = servo_logging.UNCOMPRESSED_BACKUP_COUNT + 3
-    setattr(servo_logging, 'LOG_BACKUP_COUNT', new_backup_count)
+    new_count = servo_logging.UNCOMPRESSED_BACKUP_COUNT + 20
     handler = servo_logging.ServodRotatingFileHandler(logdir=self.logdir,
+                                                      backup_count=new_count,
                                                       ts=self.ts,
                                                       fmt=self.fmt,
                                                       level=self.loglevel)
-    for _ in range(new_backup_count):
+    for _ in range(new_count):
       handler.doRollover()
-      # The assertion checks that there are at most new_backup_count files.
-      assert len(os.listdir(handler.logdir)) <= (new_backup_count +
+      # The assertion checks that there are at most new_count files.
+      assert len(os.listdir(handler.logdir)) <= (new_count +
                                                  BACKUP_COUNT_EXEMPT_FILES)
+    assert len(os.listdir(handler.logdir)) == (new_count +
+                                               BACKUP_COUNT_EXEMPT_FILES)
     # Change the timestamp and create a new instance. Rotate out all old files.
     new_ts = servo_logging._generateTs()
     servo_logging._compressOldFiles(logdir=self.logdir)
     handler = servo_logging.ServodRotatingFileHandler(logdir=self.logdir,
+                                                      backup_count=new_count,
                                                       ts=new_ts,
                                                       fmt=self.fmt,
                                                       level=self.loglevel)
-    for _ in range(new_backup_count):
+    for _ in range(new_count):
       handler.doRollover()
-      # The assertion checks that there are at most new_backup_count files.
-      assert len(os.listdir(handler.logdir)) <= (new_backup_count +
+      # The assertion checks that there are at most new_count files.
+      assert len(os.listdir(handler.logdir)) <= (new_count +
                                                  BACKUP_COUNT_EXEMPT_FILES)
-    # After two new_backup_count rotations, the first timestamp should no longer
+    assert len(os.listdir(handler.logdir)) == (new_count +
+                                               BACKUP_COUNT_EXEMPT_FILES)
+    # After two new_count rotations, the first timestamp should no longer
     # be around as it has been rotated out. Verify that.
     assert not any(self.ts in f for f in os.listdir(handler.logdir))
 
@@ -159,7 +220,9 @@ class TestServodRotatingFileHandler(unittest.TestCase):
                               servo_logging._generateTs())
     # This mimicks the active, open logfile.
     logfiles = ['%s.%s' % (instance_tag, loglevel)]
-    for i in range(5):
+    # suffix .0 will never be generated if the main file still exists.
+    # Start here at suffix .1 to simulate proper rotation.
+    for i in range(1, 6):
       logfiles.append('%s.%s.%d' % (instance_tag, loglevel, i))
     sorted_logfiles = copy.copy(logfiles)
     # Do not use randomization but rather swap each element pair to
@@ -183,7 +246,7 @@ class TestServodRotatingFileHandler(unittest.TestCase):
     logfiles = ['%s.%s' % (fresh_tag, loglevel)]
     logfiles.append('%s.%s' % (stale_tag, loglevel))
     for i in range(1, 6):
-      # Adding them both at the same time here ensures a predicable way of
+      # Adding them both at the same time here ensures a predictable way of
       # having the list be unsorted.
       logfiles.append('%s.%s.%d' % (fresh_tag, loglevel, i))
       logfiles.append('%s.%s.%d' % (stale_tag, loglevel, i))

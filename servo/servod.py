@@ -220,7 +220,8 @@ class ServodStarter(object):
       self._logger.fatal(err_msg)
       sys.exit(-1)
     servo_logging.setup(logdir=sopts.log_dir, port=self._servo_port,
-                        debug_stdout=sopts.debug)
+                        debug_stdout=sopts.debug,
+                        backup_count=sopts.log_dir_backup_count)
 
     if sopts.dual_v4:
       # Leave the right breadcrumbs for servo_postinit to know whether to setup
@@ -353,11 +354,22 @@ class ServodStarter(object):
     # BaseServodParser adds port, host, debug args.
     server_pars = servo_parsing.BaseServodParser(version=version,
                                                  add_help=False)
-    server_pars.add_argument('--log-dir', type=str, default=None,
-                             const='/var/log/', nargs='?',
-                             help='path where to dump servod debug logs as a '
-                             'file. If flag omitted in command line, no logs '
-                             'will be dumped to a file.')
+    log_dir = server_pars.add_mutually_exclusive_group()
+    log_dir.add_argument('--no-log-dir', default=False, action='store_true',
+                         help='Turn off log dir functionality.')
+    log_dir.add_argument('--log-dir', type=str, default='/var/log',
+                         help='path where to dump servod debug logs as a file. '
+                         'If flag omitted default path is used')
+    server_pars.add_argument('--log-dir-backup-count', type=int,
+                             default=servo_logging.LOG_BACKUP_COUNT,
+                             help='Max number of backup logs that will be '
+                             'kept per loglevel for one servod port. Reminder: '
+                             'files get rotated on new instance, by user '
+                             'request or when they grow past %d bytes. After '
+                             'the newest %d files they are compressed. '
+                             'inactive when no log dir requested.' %
+                             (servo_logging.MAX_LOG_BYTES,
+                              servo_logging.UNCOMPRESSED_BACKUP_COUNT))
     server_pars.add_argument('--allow-dual-v4', dest='dual_v4', default=False,
                              action='store_true',
                              help='Allow dual micro and ccd on servo v4.')
@@ -399,6 +411,9 @@ class ServodStarter(object):
       help_displayer.print_help()
       help_displayer.exit()
     server_args, dev_cmdline = server_pars.parse_known_args(cmdline)
+    # Adjust log-dir to be None if no_log_dir is requested.
+    if server_args.no_log_dir:
+      server_args.log_dir = None
     dev_args = dev_pars.parse_args(dev_cmdline)
     return (server_args, dev_args)
 
