@@ -134,7 +134,11 @@ class activeV4Device(hw_driver.HwDriver):
       using_servo = self._using_servo()
       using_ccd = self._using_ccd()
     except Exception, e:
-      self._logger.info('assuming default device. comms failed: %r', str(e))
+      # The error message is pretty long if it's a No control error. Strip the
+      # extra information off the end of the string.
+      msg = str(e).split('All controls')[0].strip()
+      self._logger.info('v4 device setup issue: %r', msg)
+      self._logger.info('Assuming default device.')
       return self.get_v4_device_info('default')
 
     if using_servo == using_ccd:
