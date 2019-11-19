@@ -1,0 +1,18 @@
+<root>
+  <!-- ******** Includes ******** -->
+  <!-- ******** Controls ******** -->
+  <control>
+    <name>cpu_uart_pty</name>
+    <alias>ap_side_pty</alias>
+    <params clobber_ok=""/>
+  </control>
+  <control>
+    <name>cpu_uart_timestamp</name>
+    <params clobber_ok="" init="on"/>
+  </control>
+  <control>
+    <name>ec_uart_pty</name>
+    <alias>connector_side_pty</alias>
+    <params clobber_ok=""/>
+  </control>
+</root>
