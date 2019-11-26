@@ -878,7 +878,7 @@ class Servod(object):
     except NameError as e:
       # If the control does not exist, just pass it.
       pass
-    except activeV4DeviceError as e:
+    except servo_drv.active_v4_device.activeV4DeviceError as e:
       self._logger.error(str(e))
 
     return True
