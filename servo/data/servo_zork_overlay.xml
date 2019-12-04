@@ -33,4 +33,13 @@
     <doc>Used to turn the DUT off and on</doc>
     <params clobber_ok="" cmd="set" drv="cros_ec_softrec_power"/>
   </control>
+  <control>
+    <name>dev_mode</name>
+    <alias>servo_present</alias>
+    <doc>Used to connect servo to SPI flash via mux</doc>
+    <!-- servo_present is an alias with dev_mode (and spi1_buf_on_flex_en),
+    but change type to push-pull since we need to drive high to enable SPI
+    flash b/143179371 -->
+    <params clobber_ok="" od="PP" />
+  </control>
 </root>
