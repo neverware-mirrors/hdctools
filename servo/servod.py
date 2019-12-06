@@ -210,7 +210,9 @@ class ServodStarter(object):
         self._logger.fatal("Problem opening Server's socket: %s", e)
         sys.exit(-1)
     else:
-      if sopts.port:
+      if start_port == end_port:
+        # This condition indicates that a specific port was being requested.
+        # Report that the port itself is busy.
         err_msg = ('Port %d is busy' % sopts.port)
       else:
         err_msg = ('Could not find a free port in %d..%d range' % (end_port,
