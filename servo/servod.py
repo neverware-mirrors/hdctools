@@ -38,7 +38,7 @@ MAX_ISERIAL_STR = 128
 # the range from high to low addresses to maintain backwards compatibility
 # (the first checked default port is 9999, the range is such that all possible
 # port numbers are 4 digits).
-DEFAULT_PORT_RANGE = (9990, 9999)
+DEFAULT_PORT_RANGE = (9980, 9999)
 
 
 

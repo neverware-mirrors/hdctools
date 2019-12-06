@@ -299,7 +299,7 @@ SERVO_SCRATCH_DIR = '/tmp/servoscratch'
 # order used to print information
 ORDER = ['port', 'serials', 'pid']
 
-PORT_RANGE = (9990, 9999)
+PORT_RANGE = (9980, 9999)
 
 
 def _FormatInfo(info):
