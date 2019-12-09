@@ -18,6 +18,7 @@ import servo.keyboard_handlers
 class kbHandlerInitError(hw_driver.HwDriverError):
   """Error class for keyboard initialization issues."""
 
+
 # pylint: disable=invalid-name
 # Servod requires camel-case class names
 class kbHandlerInit(hw_driver.HwDriver):
@@ -86,8 +87,16 @@ class kbHandlerInit(hw_driver.HwDriver):
       if self._handler_type == 'usb':
         # Call through servo instead of calling method directly, because the
         # |_params| for default keyboard is not the same as for usb keyboard.
-        self._servo.set('init_usb_keyboard', value)
-        self._servo._keyboard = self._servo._usb_keyboard
+        if self._servo._syscfg.is_control('init_usb_keyboard'):
+          self._servo.set('init_usb_keyboard', value)
+          self._servo._keyboard = self._servo._usb_keyboard
+        else:
+          # This might be working as intended e.g. micro without a v4.
+          # Warn the user about this, but don't make a scene.
+          self._logger.warn('The servo setup does not have a usb keyboard '
+                            'emulator. Will not throw an error, but note '
+                            'that the keyboard controls will fail, as no '
+                            'keyboard could be setup.')
       else:
         # The main keyboard is a normal keyboard handler.
         handler_class_name = '%sHandler' % self._handler_type
