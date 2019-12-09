@@ -312,7 +312,7 @@ class ServodRotatingFileHandler(logging.handlers.RotatingFileHandler):
     linkfile = self._getLinkpath()
     if os.path.lexists(linkfile):
       os.remove(linkfile)
-    os.symlink(self.baseFilename, linkfile)
+    os.symlink(os.path.basename(self.baseFilename), linkfile)
 
   def _buildFilename(self, ts):
     """Helper to build the active log file's filename.
