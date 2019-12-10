@@ -49,7 +49,7 @@ class veyronChromeboxPower(power_state.PowerStateDriver):
     self._interface.set('cold_reset', 'off')
     # If DUT off by _power_off(), then we don't need a power_key event,
     # otherwise, it's need a power_key pressed.
-    self._interface.power_key(0.7)
+    self._interface.set('power_key', '0.7')
 
   def _power_on(self, rec_mode):
     """Power on the DUT.

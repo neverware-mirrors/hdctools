@@ -14,7 +14,7 @@ class kittyPower(cros_ec_hardrec_power.crosEcHardrecPower):
 
   # _PWR_BUTTON_SHUTDOWN_TIME: This represents the long-press time of power
   # button.  Used in _power_off().
-  _PWR_BUTTON_SHUTDOWN_TIME = 10
+  _PWR_BUTTON_SHUTDOWN_TIME = '10'
 
   def _power_off(self):
-    self._interface.power_key(self._PWR_BUTTON_SHUTDOWN_TIME)
+    self._interface.set('power_key', self._PWR_BUTTON_SHUTDOWN_TIME)
