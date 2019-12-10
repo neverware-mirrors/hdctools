@@ -12,9 +12,11 @@
 import time
 
 import hw_driver
-import servo.keyboard_handlers
+import keyboard_handlers
 
 
+# pylint: disable=invalid-name
+# Follows error naming convention in servod.
 class kbHandlerInitError(hw_driver.HwDriverError):
   """Error class for keyboard initialization issues."""
 
@@ -49,8 +51,8 @@ class kbHandlerInit(hw_driver.HwDriver):
     """Setup the usb keyboard on the servo instance."""
     # Avoid reinitializing the same usb keyboard handler.
     if self._servo._usbkm232:
-      usb_kb = servo.keyboard_handlers.USBkm232Handler(self._servo,
-                                                       self._servo_usbkm232)
+      usb_kb = keyboard_handlers.USBkm232Handler(self._servo,
+                                                 self._servo_usbkm232)
     else:
       self._logger.debug('No device path specified for usbkm232 handler. Use '
                          'the servo atmega chip to handle.')
@@ -61,8 +63,8 @@ class kbHandlerInit(hw_driver.HwDriver):
         raise kbHandlerInitError(msg)
       # This flag is used in servo v2/v3 to setup the atmega chip properly.
       legacy_atmega = 'init_atmega_uart' in self._params
-      usb_kb = servo.keyboard_handlers.ServoUSBkm232Handler(self._servo,
-                                                            legacy_atmega)
+      usb_kb = keyboard_handlers.ServoUSBkm232Handler(self._servo,
+                                                      legacy_atmega)
     self._servo._usb_keyboard = usb_kb
 
   def _Set_init_usb_keyboard(self, value):
@@ -100,7 +102,7 @@ class kbHandlerInit(hw_driver.HwDriver):
       else:
         # The main keyboard is a normal keyboard handler.
         handler_class_name = '%sHandler' % self._handler_type
-        handler_class = getattr(servo.keyboard_handlers, handler_class_name)
+        handler_class = getattr(keyboard_handlers, handler_class_name)
         self._servo._keyboard = handler_class(self._servo)
     if value:
       self._servo._keyboard.open()

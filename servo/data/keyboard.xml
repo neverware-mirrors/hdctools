@@ -8,7 +8,7 @@
   <control>
     <name>power_key</name>
     <doc>Send power key either by servoflex or USB KB emulation</doc>
-    <params cmd="set" subtype="key" key="power_key" interface="servo" drv="kb"
+    <params cmd="set" key="power_key" interface="servo" drv="power_kb"
     input_type="float" map="keypress_duration" clobber_ok=""></params>
   </control>
   <control>

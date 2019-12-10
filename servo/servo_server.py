@@ -23,7 +23,6 @@ import ftdii2c
 import ftdi_common
 import ftdiuart
 import i2cbus
-import keyboard_handlers
 import servo_dev
 import servo_interfaces
 import servo_postinit

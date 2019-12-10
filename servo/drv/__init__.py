@@ -41,6 +41,7 @@ import ina2xx
 import ina3221
 import kb
 import kb_handler_init
+import keyboard_handlers
 import kitty_power
 import kukui_power
 import larvae_adc
@@ -59,6 +60,7 @@ import pca9537
 import pca9546
 import pca95xx
 import plankton
+import power_kb
 import power_tools
 import ps8742
 import pty_driver

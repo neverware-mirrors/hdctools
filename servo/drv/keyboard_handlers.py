@@ -7,10 +7,10 @@
 
 import logging
 import os
-import serial
 import time
 
-from drv.hw_driver import HwDriverError
+from hw_driver import HwDriverError
+import serial
 
 
 class _BaseHandler(object):
