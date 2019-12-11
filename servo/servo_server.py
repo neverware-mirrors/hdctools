@@ -520,9 +520,10 @@ class Servod(object):
       is_get: boolean to determine
 
     Returns:
-      tuple (param, drv) where:
-        param: param dictionary for control
+      tuple (params, drv, device_info) where:
+        params: param dictionary for control
         drv: instance object of driver for particular control
+        device_info: servo device information
 
     Raises:
       ServodError: Error occurred while examining params dict
@@ -755,12 +756,12 @@ class Servod(object):
     if 'serialname' in name:
       return self.get_serial_number(name.split('serialname')[0].strip('_'))
 
-    (param, drv, device) = self._get_param_drv(name)
+    (params, drv, device) = self._get_param_drv(name)
     if device in self._devices:
       self._devices[device].wait(self.INTERFACE_AVAILABILITY_TIMEOUT)
     try:
       val = drv.get()
-      rd_val = self._syscfg.reformat_val(param, val)
+      rd_val = self._syscfg.reformat_val(params, val)
       self._logger.debug('%s = %s' % (name, rd_val))
       return rd_val
     except AttributeError, error:
