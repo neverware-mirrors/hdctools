@@ -1,5 +1,8 @@
 <root>
   <!-- ******** Includes ******** -->
+  <include>
+    <name>servoflex_v2_r0_p50.xml</name>
+  </include>
   <!-- ******** Controls ******** -->
   <control>
     <name>cpu_uart_pty</name>
