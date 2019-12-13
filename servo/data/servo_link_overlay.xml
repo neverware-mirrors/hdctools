@@ -3,6 +3,9 @@
   <include>
     <name>x86_ec_common.xml</name>
   </include>
+  <include>
+    <name>cpu_fw_spi_pp3300.xml</name>
+  </include>
   <!-- ******** Controls ******** -->
   <control>
     <name>lid_open</name>

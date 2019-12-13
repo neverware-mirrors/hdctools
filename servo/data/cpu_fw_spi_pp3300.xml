@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<root>
+  <control>
+    <!-- This is to override cpu_fw_spi.xml, by replacing spi2_vref from pp1800
+         to pp3300. -->
+    <name>cpu_fw_spi</name>
+    <params clobber_ok=""
+      set_value_1="spi2_buf_en:on spi2_buf_on_flex_en:on spi2_vref:pp3300
+                   cold_reset:on spi_hold:off"
+      set_value_0="spi2_buf_en:off spi2_buf_on_flex_en:off spi2_vref:off
+                   cold_reset:off spi_hold:off"
+      />
+  </control>
+</root>

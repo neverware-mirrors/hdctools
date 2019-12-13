@@ -4,6 +4,9 @@
     <name>servoflex_v2_r0_p50.xml</name>
   </include>
   <include>
+    <name>cpu_fw_spi_pp3300.xml</name>
+  </include>
+  <include>
     <name>x86_ec_common.xml</name>
   </include>
   <include>

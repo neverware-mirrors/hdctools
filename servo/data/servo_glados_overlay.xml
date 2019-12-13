@@ -165,4 +165,13 @@
     <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
     drv="cros_chip" chip="stm32" />
   </control>
+  <control>
+    <name>cpu_fw_spi</name>
+    <params clobber_ok=""
+      set_value_1="spi2_vref:pp3300 spi2_buf_en:on spi2_buf_on_flex_en:on
+                   spi_hold:off usbpd_reset:on"
+      set_value_0="spi2_vref:off spi2_buf_en:off spi2_buf_on_flex_en:off
+                   spi_hold:off usbpd_reset:off"
+      />
+  </control>
 </root>
