@@ -143,6 +143,30 @@ for vid, pid in SERVO_MICRO_DEFAULTS:
       'raw_pty': 'raw_cpu_uart_pty', 'source': 'CPU'},
     ]
 
+# C2D2
+C2D2_DEFAULTS = [(0x18d1, 0x5041)]
+for vid, pid in C2D2_DEFAULTS:
+  INTERFACE_DEFAULTS[vid][pid] = \
+    ['dummy',
+     {'name': 'stm32_uart', 'interface': 0}, # 1: H1 console
+     'dummy',                                # 2: dummy (will be i2c)
+     {'name': 'stm32_uart', 'interface': 3}, # 3: servo console
+     'dummy',                                # 4: dummy
+     'dummy',                                # 5: dummy
+     {'name': 'ec3po_uart',                  # 6: servo console
+      'raw_pty': 'raw_c2d2_uart_pty', 'source': 'c2d2'},
+     {'name': 'stm32_uart', 'interface': 6}, # 7: uart1/EC console
+     {'name': 'stm32_uart', 'interface': 5}, # 8: uart2/AP console
+     {'name': 'ec3po_uart',                  # 9: EC3PO for H1
+      'raw_pty': 'raw_usbpd_uart_pty', 'source': 'H1'},
+     {'name': 'ec3po_uart',                  #10: EC3PO for EC
+      'raw_pty': 'raw_ec_uart_pty', 'source': 'EC'},
+     {'name': 'ec3po_uart',                  #11: EC3PO for CPU
+      'raw_pty': 'raw_cpu_uart_pty', 'source': 'CPU'},
+    ]
+
+SERVO_ID_DEFAULTS.extend(C2D2_DEFAULTS)
+
 # Servo v4
 SERVO_V4_DEFAULTS = [(0x18d1, 0x501b)]
 SERVO_V4_SLOT_SIZE = 20

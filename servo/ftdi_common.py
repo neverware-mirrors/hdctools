@@ -26,6 +26,7 @@ SERVO_LOT_ID_DEFAULTS = \
      }
 
 SERVO_PID_DEFAULTS = OrderedDict([
+    ('c2d2', [0x5041]),
     ('miniservo_v1', [0x5000]),
     ('servo_v1', [0x5001]),
     ('servo_v2', [0x5002]),
@@ -42,7 +43,8 @@ SERVO_PID_DEFAULTS = OrderedDict([
 ])
 
 SERVO_CONFIG_DEFAULTS = \
-    {'miniservo_v1': ['miniservo.xml'],
+    {'c2d2': ['c2d2.xml'],
+     'miniservo_v1': ['miniservo.xml'],
      'servo_v1': ['servo.xml'],
      'servo_v2_r0': ['servo_v2_r0.xml'],
      'servo_v2': ['servo_v2_r1.xml'],

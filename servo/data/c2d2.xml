@@ -1,0 +1,135 @@
+<?xml version="1.0"?>
+<root>
+  <include>
+    <name>common.xml</name>
+  </include>
+  <include>
+    <name>uart_common.xml</name>
+  </include>
+  <!-- Maps -->
+  <map>
+    <name>onoff_vref_sel</name>
+    <doc>Determine VREF between pp3300, pp1800 and off. Default is off</doc>
+    <params off="0" pp1800="1800" pp3300="3300"></params>
+  </map>
+  <!-- Console GPIO interface -->
+  <control>
+    <name>c2d2_ec_boot_mode_uut</name>
+    <alias>ec_boot_mode_uut,ec_boot_mode</alias>
+    <doc>UUT boot mode GPIO.</doc>
+    <params subtype="uut_boot_mode" interface="6" drv="ec3po_c2d2"
+    map="onoff" init="off" />
+  </control>
+  <control>
+    <name>cold_reset</name>
+    <doc>Hold DUT in reset via H1 reset</doc>
+    <params subtype="h1_reset" interface="6" drv="ec3po_c2d2" clobber_ok=""
+    map="onoff" init="off" />
+  </control>
+  <control>
+    <name>pwr_button</name>
+    <doc>Hold DUT power button</doc>
+    <params subtype="pwr_button" interface="6" drv="ec3po_c2d2" clobber_ok=""
+    map="onoff" init="off" />
+  </control>
+  <!-- UART and CONSOLE settings -->
+  <control>
+    <name>uart3_pty</name>
+    <alias>raw_cr50_uart_pty</alias>
+    <doc>Raw H1 UART console. USART4: PA0/PA1</doc>
+    <params cmd="get" subtype="pty" interface="1" drv="uart">
+    </params>
+  </control>
+  <control>
+    <name>uart3_parity</name>
+    <alias>cr50_uart_parity</alias>
+    <doc>Parity for H1 uart console</doc>
+    <params drv="uart" subtype="props" line_prop="parity"
+    interface="1" map="uart_parity"></params>
+  </control>
+  <control>
+    <name>uart3_baudrate</name>
+    <alias>cr50_uart_baudrate</alias>
+    <doc>Baudrate for H1 uart console</doc>
+    <params drv="uart" subtype="props" line_prop="baudrate"
+    interface="1"></params>
+  </control>
+  <control>
+    <name>uart2_pty</name>
+    <alias>raw_cpu_uart_pty</alias>
+    <doc>Raw CPU UART console. USART3: PB10/PB11</doc>
+    <params cmd="get" subtype="pty" interface="8" drv="uart">
+    </params>
+  </control>
+  <control>
+    <name>uart2_parity</name>
+    <alias>cpu_uart_parity</alias>
+    <doc>Parity for CPU uart console</doc>
+    <params drv="uart" subtype="props" line_prop="parity"
+    interface="8" map="uart_parity"></params>
+  </control>
+  <control>
+    <name>uart2_baudrate</name>
+    <alias>cpu_uart_baudrate</alias>
+    <doc>Baudrate for CPU uart console</doc>
+    <params drv="uart" subtype="props" line_prop="baudrate"
+    interface="8"></params>
+  </control>
+  <control>
+    <name>uart1_pty</name>
+    <alias>raw_ec_uart_pty</alias>
+    <doc>Raw EC UART console. USART1: PB6/PB7</doc>
+    <params cmd="get" subtype="pty" interface="7" drv="uart">
+    </params>
+  </control>
+  <control>
+    <name>uart1_parity</name>
+    <alias>ec_uart_parity</alias>
+    <doc>Parity for EC uart console</doc>
+    <params drv="uart" subtype="props" line_prop="parity"
+    interface="7" map="uart_parity"></params>
+  </control>
+  <control>
+    <name>uart1_baudrate</name>
+    <alias>ec_uart_baudrate</alias>
+    <doc>Baudrate for EC uart console</doc>
+    <params drv="uart" subtype="props" line_prop="baudrate"
+    interface="7"></params>
+  </control>
+  <control>
+    <name>raw_c2d2_uart_pty</name>
+    <doc>C2D2's stm32 console.</doc>
+    <params cmd="get" subtype="pty" interface="3" drv="uart">
+    </params>
+  </control>
+  <!-- SPI controls -->
+  <control>
+    <name>spi2_vref</name>
+    <doc>VREF applied to SPI2 (AP SPI)</doc>
+    <params subtype="spi_vref" interface="6" drv="ec3po_c2d2"
+    map="onoff_vref_sel" init="off"></params>
+  </control>
+  <!-- EC-3PO console interpreter linkup -->
+  <control>
+    <name>ec3po_c2d2_uart</name>
+    <alias>c2d2_uart_pty</alias>
+    <doc>C2D2 console provided via EC-3PO console interpreter.</doc>
+    <params cmd="get" subtype="pty" interface="6" drv="uart">
+    </params>
+  </control>
+  <!-- Version controls -->
+  <control>
+    <name>c2d2_version</name>
+    <doc>current fw version</doc>
+    <params cmd="get" subtype="version" interface="6"
+    drv="ec3po_c2d2" map="print" init="print" clobber_ok="">
+    </params>
+  </control>
+  <control>
+    <name>c2d2_latest_version</name>
+    <doc>servo-firmware available fw version</doc>
+    <params cmd="get" subtype="latest_version" interface="6"
+    drv="ec3po_c2d2">
+    </params>
+  </control>
+</root>
