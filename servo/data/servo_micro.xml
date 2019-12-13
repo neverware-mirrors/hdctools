@@ -9,6 +9,9 @@
   <include>
     <name>uart_common.xml</name>
   </include>
+  <include>
+    <name>cpu_fw_spi.xml</name>
+  </include>
   <!-- Console GPIO interface -->
   <map>
     <name>onoff_vref_sel</name>

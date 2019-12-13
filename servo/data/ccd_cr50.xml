@@ -95,6 +95,11 @@
     <params interface="9" drv="fw_wp_ccd" input_type="str"
     init="force_off" />
   </control>
+  <control>
+    <name>cpu_fw_spi</name>
+    <doc>Enable SPI mode for flashing CPU firmware (dummy in CCD)</doc>
+    <params interface="servo" drv="na"/>
+  </control>
   <!-- cr50 UART Buffers & VREF Controls -->
   <control>
     <name>uart4_on_flex_en</name>
