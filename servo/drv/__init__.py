@@ -51,6 +51,7 @@ import ap
 import loglevel
 import ltc1663
 import lumpy_power
+import macro
 import m24c02
 import na
 import parrot_ec
