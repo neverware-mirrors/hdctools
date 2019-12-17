@@ -13,7 +13,53 @@ from hw_driver import HwDriverError
 import serial
 
 
-class _BaseHandler(object):
+class _HandlerTemplate(object):
+  """Template for all handlers to support common open/close operations."""
+
+  def __init__(self):
+    # The base subclasses need to handle opening themselves up.
+    self._logger = logging.getLogger(type(self).__name__)
+    self._open = False
+
+  def is_open(self):
+    """Query whether keyboard handler is open for use."""
+    return self._open
+
+  def open(self):
+    """Open the keyboard handler for use."""
+    self._open = True
+
+  def close(self):
+    """Close the keyboard handler for use."""
+    self._open = False
+
+
+class NoopHandler(_HandlerTemplate):
+  """Noop keyboard handler that always keeps the keyboard closed.
+
+  For some use-cases a proper keyboard handler cannot be initialized e.g.
+  missing hardware. If those cases are not necessarily blocking, use a
+  NoopHandler. It will warn every time open/close are being used that
+  they are noops, but will not issue an exception.
+
+  As open open() and close() just print warnings, |self._open| stays False
+  and is_open() always returns False
+  """
+
+  _BASE_WRN = ('Using a noop keyboard handler. Check logs to see why it is '
+               'in use and address issue if full keyboard functionality is '
+               'needed.')
+
+  def open(self):
+    """Print warning only."""
+    self._logger.warn(self._BASE_WRN)
+
+  def close(self):
+    """Print warning only."""
+    self._logger.warn(self._BASE_WRN)
+
+
+class _BaseHandler(_HandlerTemplate):
   """Base class for keyboard handlers.
     """
   # Power button press delays in seconds.
@@ -47,25 +93,12 @@ class _BaseHandler(object):
         @param servo: A Servo object representing
                            the host running servod.
         """
+    super(_BaseHandler, self).__init__()
     # TODO(fdeng): crbug.com/298379
     # We should move servo object out of servo object
     # to minimize the dependencies on the rest of Autotest.
     self._servo = servo
     board = self._servo.get_board()
-    # The base subclasses need to handle opening themselves up.
-    self._open = False
-
-  def is_open(self):
-    """Query whether keyboard handler is open for use."""
-    return self._open
-
-  def open(self):
-    """Open the keyboard handler for use."""
-    self._open = True
-
-  def close(self):
-    """Close the keyboard handler for use."""
-    self._open = False
 
   def power_long_press(self):
     """Simulate a long power button press."""
@@ -131,7 +164,7 @@ class _BaseHandler(object):
         Args:
           press_secs: Time in seconds to simulate the keypress.
         """
-    logging.info('Pressing power button for %.4f secs', press_secs)
+    self._logger.info('Pressing power button for %.4f secs', press_secs)
     self._servo.set_get_all(
         ['pwr_button:press',
          'sleep:%.4f' % press_secs, 'pwr_button:release'])
@@ -143,7 +176,7 @@ class _BaseHandler(object):
       value = self._servo.get('pwr_button')
       if value == 'release' or retry > self.RELEASE_RETRY_MAX:
         break
-      logging.info('Waiting for pwr_button to release, retry %d.', retry)
+      self._logger.info('Waiting for pwr_button to release, retry %d.', retry)
       retry += 1
       time.sleep(self.SHORT_DELAY)
 
@@ -669,7 +702,7 @@ class USBkm232Handler(_BaseHandler):
     self.serial_device = serial_device
     self.serial = None
     self.open()
-    logging.info('USBKM232: %s', self.serial_device)
+    self._logger.info('USBKM232: %s', self.serial_device)
 
   def open(self):
     """Open serial connection to serial_device."""
@@ -697,8 +730,9 @@ class USBkm232Handler(_BaseHandler):
     self.serial.write(chr(0))
     rsp = self.serial.read(1)
     if not rsp or (ord(rsp) != 0xff):
-      logging.error('Presence check response from atmega KB emu: rsp: %s', rsp)
-      logging.error('Atmega KB offline: failed to communicate.')
+      self._logger.error('Presence check response from atmega KB emu: rsp: %s',
+                         rsp)
+      self._logger.error('Atmega KB offline: failed to communicate.')
 
   def _press(self, press_ch):
     """Encode and return character to press using usbkm232.
