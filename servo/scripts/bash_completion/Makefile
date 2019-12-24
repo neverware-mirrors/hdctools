@@ -4,7 +4,8 @@
 include $(HDCTOOLS_DIR)/defs/definitions.mk
 include $(HDCTOOLS_DIR)/defs/utilities.mk
 
-SCRIPT_DEST_DIR = $(DESTDIR)etc/bash_completion.d
+SCRIPTDIR       = /etc/bash_completion.d
+SCRIPT_DEST_DIR = $(DESTDIR)$(SCRIPTDIR)
 
 SCRIPT_SRC = $(notdir $(wildcard $(HDCTOOLS_SOURCE_DIR)/*.bash))
 SCRIPT_DST = $(addprefix $(SCRIPT_DEST_DIR)/, $(subst .bash,,$(SCRIPT_SRC)))
