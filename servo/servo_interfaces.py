@@ -310,6 +310,7 @@ for board in [
     'glados',
     'grunt',
     'hatch',
+    'jacuzzi',
     'kalista',
     'kukui',
     'kunimitsu',
