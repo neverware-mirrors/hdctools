@@ -12,7 +12,7 @@
     <doc>Determine VREF between pp3300, pp1800 and off. Default is off</doc>
     <params off="0" pp1800="1800" pp3300="3300"></params>
   </map>
-  <!-- Console GPIO interface -->
+  <!-- C2D2 Console GPIO interface -->
   <control>
     <name>c2d2_ec_boot_mode_uut</name>
     <alias>ec_boot_mode_uut,ec_boot_mode</alias>
@@ -30,6 +30,13 @@
     <name>pwr_button</name>
     <doc>Hold DUT power button</doc>
     <params subtype="pwr_button" interface="6" drv="ec3po_c2d2" clobber_ok=""
+    map="onoff" init="off" />
+  </control>
+  <!-- CR50 Console GPIO interface -->
+  <control>
+    <name>ap_flash_select</name>
+    <doc>AP_FLASH_SELECT GPIO pin.</doc>
+    <params subtype="ap_flash_select" interface="9" drv="cr50"
     map="onoff" init="off" />
   </control>
   <!-- UART and CONSOLE settings -->

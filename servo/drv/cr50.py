@@ -389,9 +389,9 @@ class cr50(pty_driver.ptyDriver):
   def _Get_ec_boot_mode(self):
     boot_mode = 'off'
     result = self._issue_cmd_get_results('gpioget EC_FLASH_SELECT',
-                                         ['\s+([01])\s+EC_FLASH_SELECT'])[0]
+                                         ['\s+([01])\*?\s+EC_FLASH_SELECT'])[0]
     if result:
-      if result[0] == '1':
+      if result[1] == '1':
         boot_mode = 'on'
 
     return boot_mode
@@ -404,6 +404,19 @@ class cr50(pty_driver.ptyDriver):
     if re.search('GPIO0_GPIO15:\s+read 0 drive 0', result):
         return 'on'
     return 'off'
+
+  def _Get_ap_flash_select(self):
+    flash_select = 'off'
+    result = self._issue_cmd_get_results('gpioget AP_FLASH_SELECT',
+                                         ['\s+([01])\*?\s+AP_FLASH_SELECT'])[0]
+    if result:
+      if result[1] == '1':
+        flash_select = 'on'
+
+    return flash_select
+
+  def _Set_ap_flash_select(self, value):
+    self._issue_cmd('gpioset AP_FLASH_SELECT %s' % value)
 
   def _Set_uut_boot_mode(self, value):
     self._issue_cmd('gpioset EC_TX_CR50_RX_OUT %s' % value)
