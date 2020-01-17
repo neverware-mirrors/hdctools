@@ -477,9 +477,11 @@ class ServodStarter(object):
     if len(all_servos) == 1:
       return all_servos[0]
 
-    # See if only one primary servo. Filter secordary servos, like servo-micro.
+    # See if only one primary servo. Filter secondary servos.
     secondary_servos = (
-        servo_interfaces.SERVO_MICRO_DEFAULTS + servo_interfaces.CCD_DEFAULTS)
+        servo_interfaces.SERVO_MICRO_DEFAULTS +
+        servo_interfaces.CCD_DEFAULTS +
+        servo_interfaces.C2D2_DEFAULTS)
     all_primary_servos = [
         servo for servo in all_servos
         if (servo.idVendor, servo.idProduct) not in secondary_servos
