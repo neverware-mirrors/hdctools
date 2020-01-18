@@ -207,7 +207,20 @@ class ptyDriver(hw_driver.HwDriver):
       except pexpect.TIMEOUT:
         self._logger.debug('Before: ^%s^' % self._child.before)
         self._logger.debug('After: ^%s^' % self._child.after)
-        raise ptyError('Timeout waiting for response.')
+        if self._child.before:
+          # TODO(crbug.com/1043408): this needs more granular error detection
+          # to distinguish whether the console is read-only, or if the control
+          # itself had an error on the EC console.
+          output = self._child.before
+          # Reformat output a bit so that the logs don't get messed up.
+          output = output.replace('\n', ', ')
+          output = output.replace('\r', '')
+          msg = 'Timeout waiting for response. There was output: %s' % output
+        else:
+          msg = 'No data was sent from the pty.'
+        if hasattr(self._interface, '_source'):
+          msg = '%s: %s' % (self._interface._source, msg)
+        raise ptyError(msg)
       finally:
         # Reenable capturing the console output
         self._interface.resume_capture()
