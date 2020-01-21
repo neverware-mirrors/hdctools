@@ -8,4 +8,10 @@
   <include>
     <name>dev_mode_to_ap_download_reconf.xml</name>
   </include>
+  <!-- The keyboard on detachables is the external USB KB. -->
+  <control>
+    <name>init_keyboard</name>
+    <doc>initialize keyboard handler</doc>
+    <params handler_type="usb" clobber_ok=""></params>
+  </control>
 </root>
