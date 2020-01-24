@@ -100,11 +100,14 @@ class usbImageManager(hw_driver.HwDriver):
     Args:
       mux_direction: map values of "servo_sees_usbkey" or "dut_sees_usbkey".
     """
-    self._interface.set(self._IMAGE_USB_PWR, 'off')
-    time.sleep(self._poweroff_delay)
-    self._interface.set(self._IMAGE_USB_MUX, mux_direction)
-    time.sleep(self._poweroff_delay)
-    self._interface.set(self._IMAGE_USB_PWR, 'on')
+    if self._interface.get(self._IMAGE_USB_MUX) != mux_direction:
+      self._interface.set(self._IMAGE_USB_PWR, 'off')
+      time.sleep(self._poweroff_delay)
+      self._interface.set(self._IMAGE_USB_MUX, mux_direction)
+      time.sleep(self._poweroff_delay)
+    if self._interface.get(self._IMAGE_USB_PWR) != 'on':
+      # Enforce that power is supplied.
+      self._interface.set(self._IMAGE_USB_PWR, 'on')
 
   def _PathIsHub(self, usb_sysfs_path):
     """Return whether |usb_sysfs_path| is a usb hub."""
@@ -124,8 +127,7 @@ class usbImageManager(hw_driver.HwDriver):
     servod = self._interface
     # When the user is requesting the usb_dev they most likely intend for the
     # usb to the facing the servo, and be powered. Enforce that.
-    if servod.get(self._IMAGE_USB_MUX) != self._IMAGE_MUX_TO_SERVO:
-      self._SafelySwitchMux(self._IMAGE_MUX_TO_SERVO)
+    self._SafelySwitchMux(self._IMAGE_MUX_TO_SERVO)
     usb_hierarchy = util.UsbHierarchy()
     # Look for own servod usb device
     # pylint: disable=protected-access
