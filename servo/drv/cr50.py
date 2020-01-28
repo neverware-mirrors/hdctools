@@ -467,3 +467,46 @@ class cr50(pty_driver.ptyDriver):
     if result is None:
       raise cr50Error('Cannot retrieve the ccd state flags on cr50 console.')
     return result
+
+
+  def _Get_rec_btn_force(self):
+    result = self._issue_cmd_get_results(
+        'recbtnforce', ['RecBtn:([\S ]+)[\n\r]'])[0][1]
+    if result is None:
+      raise cr50Error('Cannot retrieve the recbtnforce on cr50 console.')
+    if 'not pressed' in result:
+      return 'off'
+    elif 'forced pressed' in result:
+      return 'on'
+    else:
+      raise cr50Error('Invalid value for recbtnforce')
+
+  def _Set_rec_btn_force(self, value):
+    try:
+      result = None
+      if value:
+        result = self._issue_cmd_get_results(
+              'recbtnforce enable', ['forced pressed'])
+      else:
+        result = self._issue_cmd_get_results(
+              'recbtnforce disable', ['not pressed'])
+      if result is None:
+        raise cr50Error('recbtnforce failed, Check GscFullConsole perm.')
+    except pty_driver.ptyError:
+      raise cr50Error('Unable to change recbtnforce status!')
+
+  def _Get_rec_mode(self):
+    result = 'off'
+    gpio = self._issue_cmd_get_results('gpioget CCD_REC_LID_SWITCH',
+                                       ['\s+([01])\*?\s+CCD_REC_LID_SWITCH'])[0]
+    if gpio:
+      if gpio[1] == '0':
+        result = 'on'
+
+    if result != self._Get_rec_btn_force():
+      raise cr50Error('recbtnforce and CCD_REC_LID_SWITCH don\'t match!')
+    return result
+
+  def _Set_rec_mode(self, value):
+    self._issue_cmd('gpioset CCD_REC_LID_SWITCH %d' % value)
+    self._Set_rec_btn_force(value == 0)
