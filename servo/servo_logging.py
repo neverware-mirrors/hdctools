@@ -76,7 +76,7 @@ MAX_LOG_BYTES = MAX_LOG_BYTES_COMPRESSED * SERVO_LOG_COMPRESSION_RATIO
 # Since logging is used for multiple concurrent logfiles (DEBUG, INFO, WARNING)
 # this limit is set assuming that the output of INFO + WARNING will not be more
 # than DEBUG.
-LOG_BACKUP_COUNT = 64
+LOG_BACKUP_COUNT = 8
 
 # Uncompressed backup count is kept small for convenience.
 UNCOMPRESSED_BACKUP_COUNT = 5
