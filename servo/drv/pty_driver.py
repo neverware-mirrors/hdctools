@@ -143,13 +143,10 @@ class ptyDriver(hw_driver.HwDriver):
   def _issue_cmd(self, cmds):
     """Send command to the device and do not wait for response.
 
-    Don't flush output before sending the command, because we don't care
-    about it.
-
     Args:
       cmds: The commands to send to the device, either a list or a string.
     """
-    self._issue_cmd_get_results(cmds, [], flush=False)
+    self._issue_cmd_get_results(cmds, [])
 
   def _issue_cmd_get_results(self, cmds, regex_list, flush=None,
                              timeout=DEFAULT_UART_TIMEOUT):
