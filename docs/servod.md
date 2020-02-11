@@ -244,7 +244,7 @@ The purpose is for shared arguments and shared parsing logic
 (e.g. runtime configuration mappings) to live in one place, to ensure a
 consistent cmdline experience across servod tools, and to simplify and
 centralize future changes.
-Please see [this top comment][21] for an overview.
+Please see [this top comment][21] for an overview and the [servodrc examples].
 
 ## Servodutil {#servod-util}
 
@@ -301,3 +301,4 @@ reinitalization phase will block until the interface is reinitialized.
 [19]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/servod.py#69
 [20]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/ftdi_common.py#28
 [21]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/servo_parsing.py#16
+[servodrc examples]: ./servo.md#servodrc

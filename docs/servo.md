@@ -207,6 +207,41 @@ You can specify the `--port` flag to `dut-control` to target a specific
 ```
 ***
 
+### servodrc
+
+An even simpler way to deal with multiple servos is to use a `.servodrc` file.
+This file lets you map arbitrary symbolic names to servo serial numbers, so you
+don't have to remember the port when running `dut-control`.
+
+For complete details on the format see [Servo Parsing].
+
+#### Example
+
+**`~/.servodrc`**:
+
+```
+# servo-name, serial-number, port-number (legacy, ignored), board-name (optional), board-model (optional)
+
+kohaku, C1706311077, , hatch
+dragonclaw, CMO653-00166-040489J03624
+nocturne, C1804020116, , nocturne
+```
+
+***note
+**NOTE**: Even though `board-name` is optional, you probably want to specify it
+if you know it. Otherwise some controls (e.g., `power_state`) will not work.
+***
+
+With the above `.servodrc`, you can now simply start `servod` instances by
+symbolic name as as follows:
+
+```bash
+(chroot) $ sudo servod -n kohaku
+```
+
+```bash
+(chroot) $ dut-control -n kohaku fw_wp_state
+```
 
 [FAFT]: https://www.chromium.org/for-testers/faft
 [FAFT setup image]: https://www.chromium.org/for-testers/faft/Servo2_with_labels.jpg
@@ -218,3 +253,4 @@ You can specify the `--port` flag to `dut-control` to target a specific
 [Servo Micro]: ./servo_micro.md
 [servod_no_nspid]: https://groups.google.com/a/google.com/d/msg/chromeos-chatty-firmware/mDexO8T1TyM/rFONCSifAAAJ
 [CCD]: https://chromium.googlesource.com/chromiumos/platform/ec/+/refs/heads/master/docs/case_closed_debugging_cr50.md
+[Servo Parsing]: ./servod.md#servo-parsing
