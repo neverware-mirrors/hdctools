@@ -10,29 +10,19 @@ own. It must be paired with CCD (Cr50's on-board servo implementation) or
 [TOC]
 
 *** note
-**Googlers**: gLinux has a 4.19 kernel bug (http://b/123886969) that will cause
-USB hang on many devices, including all servo and ADB.
+**Googlers**: gLinux has a [kernel bug] that will cause all
+USB devices (including keyboard and mouse) to randomly stop working when using
+servo v4.
 
-To work around this issue, you can run:
-
-```bash
-# Install 4.18 kernel.
-apt-get install linux-image-4.18.10-1rodete2-amd64
-sudo glinux-config set custom_grub_config yes
-sudo update-grub
-# Copy 4.18 to the top of the menu as default, or select at boot.
-```
-
-**Alternatively, you can enable tracing to help debug the issue:**
-
-Enable tracing:
+To enable tracing and help debug the issue, which also seems to help reduce the
+frequency of occurrence, you can add the following to `/etc/rc.local`:
 
 ```bash
-echo 1 | sudo tee /sys/kernel/debug/tracing/events/xhci-hcd/enable
+logger "Enabling USB Tracing: See http://b/123886969 and http://b/136676682"
+echo 1 > /sys/kernel/debug/tracing/events/xhci-hcd/enable
 ```
 
-See this for more details:
-http://g/chromeos-chatty-eng/tWChV-rkCHw/0JO8VG2dAgAJ
+See this [email][chatty-eng servo issue] for more details.
 ***
 
 ## What is Servo v4?
@@ -391,3 +381,5 @@ To set the Servo v4 serial number on the Servo console:
 [`FlashAP`]: https://chromium.googlesource.com/chromiumos/platform/ec/+/refs/heads/master/docs/case_closed_debugging_cr50.md#Flashing-the-AP
 [Bug]: https://bugs.chromium.org/p/chromium/issues/entry?components=Tools%3EChromeOSDebugBoards
 [`hdctools`]: https://chromium.googlesource.com/chromiumos/third_party/hdctools
+[kernel bug]: https://issuetracker.google.com/123886969
+[chatty-eng servo issue]: https://groups.google.com/a/google.com/g/chromeos-chatty-eng/c/tWChV-rkCHw/m/0JO8VG2dAgAJ
