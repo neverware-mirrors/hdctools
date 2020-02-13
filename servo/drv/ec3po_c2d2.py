@@ -4,7 +4,6 @@
 """Driver for c2d2 specific controls through ec3po.
 """
 
-import re
 import logging
 import time
 
@@ -125,3 +124,23 @@ class ec3poC2d2(ec3po_servo.ec3poServo):
       value: 0, 1800, and 3300; The mV to the rail
     """
     self._issue_cmd('enable_spi %s' % value)
+
+  def _Get_i2c_speed(self):
+    """Gets the i2c bus speed for the bus specified in the control
+
+    Returns:
+      I2C Bus speed in kbps units
+    """
+    bus = self._params['bus']
+    result = self._issue_cmd_get_results('enable_i2c %s' % bus,
+      ['I2C speed kpbs: (\d+)'])[0][1]
+    return result
+
+  def _Set_i2c_speed(self, value):
+    """Sets the i2c bus speed for the bus specified in the control.
+
+    Args:
+      value: 0, 100, and 400; The i2c bus speed in kpbs units
+    """
+    bus = self._params['bus']
+    self._issue_cmd('enable_i2c %s %d' % (bus, value))

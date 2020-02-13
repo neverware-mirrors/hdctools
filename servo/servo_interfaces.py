@@ -149,7 +149,7 @@ for vid, pid in C2D2_DEFAULTS:
   INTERFACE_DEFAULTS[vid][pid] = \
     ['dummy',
      {'name': 'stm32_uart', 'interface': 0}, # 1: H1 console
-     'dummy',                                # 2: dummy (will be i2c)
+     {'name': 'stm32_i2c',  'interface': 4}, # 2: i2c
      {'name': 'stm32_uart', 'interface': 3}, # 3: servo console
      'dummy',                                # 4: dummy
      'dummy',                                # 5: dummy
