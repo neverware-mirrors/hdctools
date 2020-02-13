@@ -280,25 +280,25 @@ reboot, cable unplug, etc) and the device is found again within the timeout
 period, the interface is reinitialized. Controls issued during the
 reinitalization phase will block until the interface is reinitialized.
 
-[1]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/system_config.py#220
-[2]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/data/ec_common.xml
-[3]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/data/servo_glados_overlay.xml#2
-[4]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/data/common.xml
-[5]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/data/common.xml#95
-[6]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/data/servo_micro.xml#194
-[7]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/drv/hw_driver.py#38
-[8]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/drv/pty_driver.py
-[9]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/data/arm_ec_common.xml#14
-[10]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/servo_interfaces.py
-[11]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/system_config.py#455
-[12]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/drv/hw_driver.py#72
-[13]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/system_config.py#382
-[14]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/servo_server.py#52
-[15]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/system_config.py#19
+[1]: ../servo/system_config.py#220
+[2]: ../servo/data/ec_common.xml
+[3]: ../servo/data/servo_glados_overlay.xml#2
+[4]: ../servo/data/common.xml
+[5]: ../servo/data/common.xml#95
+[6]: ../servo/data/servo_micro.xml#194
+[7]: ../servo/drv/hw_driver.py#38
+[8]: ../servo/drv/pty_driver.py
+[9]: ../servo/data/arm_ec_common.xml#14
+[10]: ../servo/servo_interfaces.py
+[11]: ../servo/system_config.py#455
+[12]: ../servo/drv/hw_driver.py#72
+[13]: ../servo/system_config.py#382
+[14]: ../servo/servo_server.py#52
+[15]: ../servo/system_config.py#19
 [16]: ./FAQ.md#how-do-i-reroute_overwrite-a-control-for-a-board-tl_dr
-[17]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/drv/ec.py
-[18]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/servodutil.py
-[19]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/servod.py#69
-[20]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/ftdi_common.py#28
-[21]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/servo_parsing.py#16
+[17]: ../servo/drv/ec.py
+[18]: ../servo/servodutil.py
+[19]: ../servo/servod.py#69
+[20]: ../servo/ftdi_common.py#28
+[21]: ../servo/servo_parsing.py#16
 [servodrc examples]: ./servo.md#servodrc

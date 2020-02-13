@@ -192,9 +192,9 @@ Config                    | Context
 See [Sweetberry USB power monitoring][7].
 
 [1]: ./ina.md
-[2]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/data/nami_rev1_inas.py
-[3]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/data/servo_sweetberry_rails_addr.py
-[4]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/data/servo_sweetberry_rails_pins.py
+[2]: ../servo/data/nami_rev1_inas.py
+[3]: ../servo/data/servo_sweetberry_rails_addr.py
+[4]: ../servo/data/servo_sweetberry_rails_pins.py
 [5]: ./servo.md
 [6]: ./sweetberry.md
 [7]: https://chromium.googlesource.com/chromiumos/platform/ec/+/master/extra/usb_power/powerlog.README.md

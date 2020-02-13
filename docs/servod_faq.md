@@ -160,10 +160,10 @@ Alternatively, you can create your own XMLRPC proxy and execute the exposed rpc
 functions (the `Servod` class' methods) through that proxy.
 [Example code using proxy][3].
 
-[1]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/servo_server.py#519
-[2]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/dut_control.py#354
+[1]: ../servo/servo_server.py#519
+[2]: ../servo/dut_control.py#354
 [3]: https://chromium.googlesource.com/chromiumos/third_party/autotest/+/master/server/hosts/servo_host.py#177
-[4]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/master/servo/system_config.py#134
+[4]: ../servo/system_config.py#134
 [5]: ./servod.md#servod-util
 [6]: ./servod.md#servo-device-watchdog
 [`servod` docs]: ./servod.md
