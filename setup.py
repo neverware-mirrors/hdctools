@@ -45,7 +45,7 @@ setup(
   version = __version__,
   package_dir = {'' : 'build'},
   py_modules=['servo.servod', 'servo.dut_control'],
-  packages=['servo', 'servo.data', 'servo.drv'],
+  packages=['servo', 'servo.data', 'servo.drv', 'servo.utils'],
   package_data={'servo': ['data/*.xml',
                           'data/*.scenario',
                           'data/*.board']},
