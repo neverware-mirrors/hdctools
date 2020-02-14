@@ -13,9 +13,9 @@ import time
 import usb
 
 import servo_interfaces
-import servodutil as util
 import system_config
 import utils.diagnose
+import utils.usb_hierarchy as usb_hierarchy
 
 POST_INIT = collections.defaultdict(dict)
 
@@ -57,7 +57,7 @@ class ServoV4PostInit(BasePostInit):
     Returns:
       servo v4 usb.core.Device object associated with the servod instance.
     """
-    servo_v4_candidates = util.UsbHierarchy.GetAllUsbDevices(
+    servo_v4_candidates = usb_hierarchy.Hierarchy.GetAllUsbDevices(
         servo_interfaces.SERVO_V4_DEFAULTS)
     for d in servo_v4_candidates:
       d_serial = usb.util.get_string(d, d.iSerialNumber)
@@ -73,7 +73,7 @@ class ServoV4PostInit(BasePostInit):
       List of servo micro devices as usb.core.Device objects.
     """
     vid_pid_list = servo_interfaces.SERVO_MICRO_DEFAULTS
-    return util.UsbHierarchy.GetAllUsbDevices(vid_pid_list)
+    return usb_hierarchy.Hierarchy.GetAllUsbDevices(vid_pid_list)
 
   def get_ccd_devices(self):
     """Return all CCD USB devices detected.
@@ -81,7 +81,7 @@ class ServoV4PostInit(BasePostInit):
     Returns:
       List of CCD USB devices as usb.core.Device objects.
     """
-    return util.UsbHierarchy.GetAllUsbDevices(servo_interfaces.CCD_DEFAULTS)
+    return usb_hierarchy.Hierarchy.GetAllUsbDevices(servo_interfaces.CCD_DEFAULTS)
 
   def prepend_config(self, new_cfg_file, remove_head=False, name_prefix=None,
                      interface_increment=0):
@@ -173,7 +173,7 @@ class ServoV4PostInit(BasePostInit):
     self.kick_devices()
 
     # Snapshot the USB hierarchy at this moment.
-    usb_hierarchy = util.UsbHierarchy()
+    hierarchy = usb_hierarchy.Hierarchy()
 
     main_micro_found = False
     # We want to check if we have one/multiple servo micros connected to
@@ -186,7 +186,7 @@ class ServoV4PostInit(BasePostInit):
       # The servo_micro and the STM chip of servo v4 share the same internal hub
       # on servo v4 board. Check the USB hierarchy to find the servo_micro
       # behind.
-      if usb_hierarchy.ShareSameHub(servo_v4, servo_micro):
+      if hierarchy.ShareSameHub(servo_v4, servo_micro):
         default_slot = servo_interfaces.SERVO_V4_SLOT_POSITIONS['default']
         slot_size = servo_interfaces.SERVO_V4_SLOT_SIZE
         backup_interfaces = self.servod.get_servo_interfaces(
@@ -252,7 +252,7 @@ class ServoV4PostInit(BasePostInit):
     ccd_candidates = self.get_ccd_devices()
     for ccd in ccd_candidates:
       # Pick the proper CCD endpoint behind the servo v4.
-      if usb_hierarchy.ShareSameHub(servo_v4, ccd):
+      if hierarchy.ShareSameHub(servo_v4, ccd):
         if not main_micro_found:
           self.prepend_config(self.CCD_CFG)
           self.servod._version += '_with_ccd_cr50'

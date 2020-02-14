@@ -13,7 +13,7 @@ import time
 import urllib
 
 import hw_driver
-import servo.servodutil as util
+import servo.utils.usb_hierarchy as usb_hierarchy
 import usb
 
 
@@ -128,15 +128,15 @@ class usbImageManager(hw_driver.HwDriver):
     # When the user is requesting the usb_dev they most likely intend for the
     # usb to the facing the servo, and be powered. Enforce that.
     self._SafelySwitchMux(self._IMAGE_MUX_TO_SERVO)
-    usb_hierarchy = util.UsbHierarchy()
+    hierarchy = usb_hierarchy.Hierarchy()
     # Look for own servod usb device
     # pylint: disable=protected-access
     # Need servod information to find own servod instance.
-    self_usb = util.UsbHierarchy.GetUsbDevice(servod._vendor,
-                                              servod._product,
-                                              servod._serialnames['main'])
+    self_usb = usb_hierarchy.Hierarchy.GetUsbDevice(servod._vendor,
+                                                    servod._product,
+                                                    servod._serialnames['main'])
     # Get your parent from the hierarchy
-    hub_on_servo = usb_hierarchy.GetParentPath(self_usb)
+    hub_on_servo = hierarchy.GetParentPath(self_usb)
     # Image usb is at hub port |self._image_usbkey_hub_port|
     image_usbkey_sysfs = '%s.%s' % (hub_on_servo, self._image_usbkey_hub_port)
     # Possible image locations can be multiple places if a hub is allowed.

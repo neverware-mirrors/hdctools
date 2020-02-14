@@ -9,7 +9,7 @@ import os
 import threading
 
 import servo_interfaces
-import servodutil
+import utils.usb_hierarchy as usb_hierarchy
 
 
 class ServoDeviceError(Exception):
@@ -45,8 +45,8 @@ class ServoDevice(object):
     self._ifaces_available = threading.Event()
     self._reinit_capable = (vid, pid) in self.REINIT_CAPABLE
     self._reinit_attempts = self.REINIT_ATTEMPTS
-    usbmap = servodutil.UsbHierarchy()
-    dev = servodutil.UsbHierarchy.GetUsbDevice(vid, pid, serialname)
+    usbmap = usb_hierarchy.Hierarchy()
+    dev = usb_hierarchy.Hierarchy.GetUsbDevice(vid, pid, serialname)
     sysfs_path = usbmap.GetPath(dev)
     if not sysfs_path:
       raise ServoDeviceError('No sysfs path found for device.')
