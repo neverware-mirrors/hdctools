@@ -15,6 +15,7 @@ import usb
 import servo_interfaces
 import servodutil as util
 import system_config
+import utils.diagnose
 
 POST_INIT = collections.defaultdict(dict)
 
@@ -290,7 +291,7 @@ class ServoV4PostInit(BasePostInit):
     # Fail if we requested board control but don't have an interface for this.
     if self.servod._board:
       if self.servod.get('servo_v4_type') == 'type-c':
-        util.diagnose_ccd(self.servod)
+        utils.diagnose.diagnose_ccd(self.servod)
 
       self._logger.error('No servo micro or CCD detected for board %s',
           self.servod._board)
