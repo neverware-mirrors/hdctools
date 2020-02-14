@@ -387,8 +387,14 @@
   </control>
   <map>
     <name>pdrole</name>
-    <doc>map for USB-PD port role</doc>
+    <doc>map for USB-PD port role (will be deprecated by pdpr)</doc>
     <params sink="0" src5v="1" src12v="2" src20v="3"></params>
+  </map>
+  <map>
+    <name>pdpr</name>
+    <doc>map for USB-PD port power role</doc>
+    <params sink="0" src5v="5" src9v="9" src10v="10" src12v="12" src15v="15"
+    src20v="20"></params>
   </map>
   <map>
     <name>polarity</name>
@@ -397,9 +403,15 @@
   </map>
   <control>
     <name>usbc_role</name>
-    <doc>USB-PD port role</doc>
+    <doc>USB-PD port role (will be deprecated by usbc_pr)</doc>
     <params interface="26" drv="ec3po_servo_v4" subtype="usbc_role"
     map="pdrole"></params>
+  </control>
+  <control>
+    <name>usbc_pr</name>
+    <doc>USB-PD port power role</doc>
+    <params interface="26" drv="ec3po_servo_v4" subtype="usbc_pr"
+    map="pdpr"></params>
   </control>
   <control>
     <name>usbc_polarity</name>

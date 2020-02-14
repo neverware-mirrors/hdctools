@@ -7,8 +7,6 @@ Provides the following console controlled function subtypes:
   servo_v4_ccd_mode
 """
 
-import time
-
 import ec3po_servo
 import pty_driver
 import servo
@@ -258,6 +256,8 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
   def _Set_usbc_role(self, value):
     """Setter of usbc_role.
 
+    TODO(b:140256624): Should be deprecated by _Set_usbc_pr
+
     Args:
       value: 0 for dev, 1 for 5v, 2 for 12v, 3 for 20v
     """
@@ -265,6 +265,8 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
 
   def _Get_usbc_role(self):
     """Getter of usbc_role.
+
+    TODO(b:140256624): Should be deprecated by _Get_usbc_pr
 
     Returns:
       0 for dev, 1 for 5v, 2 for 12v, 3 for 20v
@@ -280,6 +282,39 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
       return self.USBC_ACTION_ROLE.index(vol)
 
     raise ValueError("Invalid voltage: '%s'" % vol)
+
+  def _Set_usbc_pr(self, value):
+    """Setter of usbc_pr.
+
+    Args:
+      value: 0 for dev, 5 for 5v, 12 for 12v, 20 for 20v, etc.
+    """
+    if value == 0:
+      self._issue_cmd('usbc_action dev')
+      return
+
+    try:
+      self._issue_cmd_get_results(
+          'usbc_action chg %s' % str(value), [r'CHG SRC \d+mV'], timeout=1)
+    except pty_driver.ptyError:
+      # TODO(b:140256624): This is a hack to ensure chg subcmd exists.
+      # Drop this when we phase out the old servo_v4 firmware.
+      raise ec3poServoV4Error('Unsupported command, update servo_v4 firmware')
+
+  def _Get_usbc_pr(self):
+    """Getter of usbc_pr.
+
+    Returns:
+      0 for dev, 5 for 5v, 9 for 9v, 20 for 20v, etc.
+    """
+    _, _, mode, _ = self.servo_cc_modes()
+
+    # Sink mode, return 0 for dev.
+    if mode == 'off':
+      return 0
+
+    # drop 'v'. e.g. '20v' -> 20
+    return int(self.max_req_voltage()[:-1])
 
   def _Set_usbc_polarity(self, value):
     """Setter of usbc_polarity.
