@@ -160,6 +160,32 @@ class ec3poServo(pty_driver.ptyDriver):
       self._restore_channel()
     return res
 
+  def _issue_safe_cmd_get_multi_results(self, cmd, rx):
+    """Run a command and regex the response, safely.
+
+    This function waits for arbitrary number of response message
+    matching a regular expression.
+
+    This disables EC debug output while waiting for a
+    command response, to prevent unexpected output interleaved
+    with expected data.
+
+    Args:
+      (See pty_driver._issue_cmd_get_multi_results)
+      cmd: command string to run.
+      rx: List of regex strings to match in response.
+
+    Returns:
+      List of match lists, containing matched string plus extracted values.
+    """
+    res = None
+    self._limit_channel()
+    try:
+      res = self._issue_cmd_get_multi_results(cmd, rx)
+    finally:
+      self._restore_channel()
+    return res
+
   def _Get_enable_ite_dfu(self):
     """Enable ITE EC direct firmware update over I2C mode.
 

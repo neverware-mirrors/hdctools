@@ -380,6 +380,12 @@
     input_type="str" init="on"></params>
   </control>
   <control>
+    <name>ada_srccaps</name>
+    <doc>SrcCap of the adapter connected to servo_v4</doc>
+    <params subtype="ada_srccaps" interface="26" drv="ec3po_servo_v4"
+    input_type="str" cmd="get"></params>
+  </control>
+  <control>
     <name>servo_v4_role</name>
     <doc>Power role for DUT port on servo_v4</doc>
     <params subtype="servo_v4_power_role" interface="26" drv="ec3po_servo_v4"

@@ -223,10 +223,10 @@ class ptyDriver(hw_driver.HwDriver):
         self._interface.resume_capture()
     return result_list
 
-  def _issue_cmd_get_multi_results(self, cmd, regex):
+  def _issue_cmd_get_multi_results(self, cmd, regex, flush=None):
     """Send command to the device and wait for multiple response.
 
-    This function waits for arbitary number of response message
+    This function waits for arbitrary number of response message
     matching a regular expression.
 
     Args:

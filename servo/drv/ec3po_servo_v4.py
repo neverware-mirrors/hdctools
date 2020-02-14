@@ -172,13 +172,35 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
     Returns:
       string of voltage, like '20v'
     """
-    rx = ['max req:\s*(\d+)000mV']
-    res = self._issue_safe_cmd_get_results('pd 1 dev', rx);
+    rx = [r'max req:\s*(\d+)000mV']
+    res = self._issue_safe_cmd_get_results('pd 1 dev', rx)
 
     if len(res) != len(rx):
       raise ec3poServoV4Error("Can't receive voltage info: [%s]" % res)
 
     return res[0][1] + 'v'
+
+  def adapter_source_capability(self):
+    """Get a list of PDO strings.
+
+    Returns:
+      a list of PDO strings: e.g. ["0: 5000mV/3000mA", "1: 9000mV/3000mA"]
+    """
+    rx = [r'\d: \d*mV/\d*mA']
+    res = self._issue_safe_cmd_get_multi_results('ada_srccaps', rx)
+
+    if not len(res):
+      raise ec3poServoV4Error('No Adapter SrcCap. Maybe charger not plugged or '
+                              'servo v4 firmware too old?')
+    return res
+
+  def _Get_ada_srccaps(self):
+    """Getter of ada_srccaps
+
+    Returns:
+      a list of PDO strings: e.g. ["0: 5000mV/3000mA", "1: 9000mV/3000mA"]
+    """
+    return self.adapter_source_capability()
 
   def _Get_servo_v4_dts_mode(self):
     """Getter of servo_v4_dts_mode.
