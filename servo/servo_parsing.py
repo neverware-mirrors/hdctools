@@ -10,7 +10,7 @@ import textwrap
 
 import client
 import servo_logging
-import servodutil
+import utils.scratch
 
 
 # A brief overview of the classes found here, and their abilities.
@@ -442,10 +442,10 @@ class ServodClientParser(ServodRCParser):
     # Passing None here uses the default production logic while passing any
     # other directory can be used for testing. No need to check whether
     # |self._scratchdir| is None.
-    scratch = servodutil.ServoScratch(self._scratchdir)
+    scratch = utils.scratch.Scratch(self._scratchdir)
     try:
       entry = scratch.FindById(opts.serialname)
-    except servodutil.ServodUtilError:
+    except utils.scratch.ScratchError:
       self.error('No servod instance running for device with serialname: %r' %
                  opts.serialname)
     opts.port = int(entry['port'])

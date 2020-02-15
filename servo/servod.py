@@ -25,10 +25,10 @@ import servo_logging
 import servo_parsing
 import servo_postinit
 import servo_server
-import servodutil
 import system_config
 import terminal_freezer
 import usb
+import utils.scratch as scratch
 
 VERSION = pkg_resources.require('servo')[0].version
 
@@ -183,7 +183,7 @@ class ServodStarter(object):
     """
     # The scratch initialization here ensures that potentially stale entries
     # are removed from the scratch before attempting to create a new one.
-    self._scratchutil = servodutil.ServoScratch()
+    self._scratchutil = scratch.Scratch()
     # Initialize logging up here first to ensure log messages from parsing
     # can go through.
     loglevel, fmt = servo_logging.LOGLEVEL_MAP[servo_logging.DEFAULT_LOGLEVEL]
@@ -606,7 +606,7 @@ class ServodStarter(object):
     serials = set(self._servod.get_servo_serials().values())
     try:
       self._scratchutil.AddEntry(self._servo_port, serials, os.getpid())
-    except servodutil.ServodUtilError:
+    except scratch.ScratchError:
       self._servod.close()
       sys.exit(1)
     self._watchdog_thread.start()

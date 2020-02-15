@@ -13,7 +13,7 @@ import unittest
 
 import client
 import servo_parsing
-import servodutil
+import utils.scratch as scratch
 
 # Throughout all the tests in this file, parse_known_args is used instead of
 # parse args. This is to avoid having to clutter the tests with unrelated
@@ -197,7 +197,7 @@ class TestServodClientParser(unittest.TestCase):
       if env_var in os.environ:
         del os.environ[env_var]
     self._scratchdir = tempfile.mkdtemp()
-    self._scratch = servodutil.ServoScratch(self._scratchdir)
+    self._scratch = scratch.Scratch(self._scratchdir)
     self._scratchport = 12345
     self._serial = 'this-is-a-fake-serial'
     self._invalid_serial = 'this-is-an-invalid-fake-serial'
