@@ -13,7 +13,7 @@ class sarienPower(power_state.PowerStateDriver):
   _RECOVERY_DETECTION_DELAY = 5
 
   # Time in seconds to wait before taking action after cold reset.
-  _COLD_RESET_DELAY = 3
+  _COLD_RESET_DELAY = 5
 
   def __init__(self, interface, params):
     """Constructor
