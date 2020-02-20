@@ -18,7 +18,7 @@ import system_config
 
 POST_INIT = collections.defaultdict(dict)
 
-DUAL_V4_VAR = 'DUAL_V4'
+DUAL_V4_VAR = 'DUAL_V4_CFG'
 DUAL_V4_VAR_DUMMY = 'dummy'
 
 class ServoPostInitError(Exception):
