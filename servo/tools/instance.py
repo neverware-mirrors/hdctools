@@ -1,17 +1,20 @@
-# Copyright 2018 The Chromium OS Authors. All rights reserved.
+# Copyright 2020 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Collection of servod utilities."""
+"""Instance tool to manage running instances."""
 
-import argparse
-import logging
 import os
 import signal
-import sys
 import time
 
-import utils.scratch as scratch
+import servo.utils.scratch as scratch
+import tool
+
+
+class InstanceError(Exception):
+  """Instance tool error class."""
+  pass
 
 
 def _FormatInfo(info):
@@ -27,13 +30,8 @@ ORDER = ['port', 'serials', 'pid']
 PORT_RANGE = (9980, 9999)
 
 
-class ServodUtilError(Exception):
-  """General servodutil error class."""
-  pass
-
-
-class Instance(object):
-  """Class to implement various tools to manage a servod instance."""
+class Instance(tool.Tool):
+  """Class to implement various subtools to manage a servod instance."""
 
   # Minimum time in s to wait on a servod process to turn down gracefully before
   # attempting to send a SIGKILL instead.
@@ -43,8 +41,13 @@ class Instance(object):
 
   def __init__(self):
     """Setup scratch to use."""
-    self._logger = logging.getLogger(type(self).__name__)
+    super(Instance, self).__init__()
     self._scratch = scratch.Scratch()
+
+  @property
+  def help(self):
+    """Tool help message for parsing."""
+    return 'Manage running servod instances.'
 
   def Show(self, args):
     """Print info of servod instance found by -p/-s args."""
@@ -111,24 +114,48 @@ class Instance(object):
       args: parser namespace that should contain |port|,
             port is either None or a port number
     """
-    def known_ports():
-      # pylint: disable=invalid-name
-      return set(int(entry['port']) for
-                 entry in self._scratch.GetAllEntries())
+    known_ports = lambda entries: set(int(entry['port']) for entry in entries)
     if args.port:
       port = args.port
-      if port in known_ports():
+      if port in known_ports(self._scratch.GetAllEntries()):
         self._logger.info('port %r already known.', port)
       elif not self._scratch.GenerateEntryFromPort(port):
         self._logger.error('Could not rebuild entry for port %r', port)
       return
     # PORT_RANGE[1] + 1 as PORT_RANGE[1] should be in the set.
     ports = set(range(PORT_RANGE[0], PORT_RANGE[1] + 1))
-    ports -= known_ports()
+    ports -= known_ports(self._scratch.GetAllEntries())
     for port in ports:
       # GenerateEntryFromPort will attempt to generate a new entry if
       # a ServoClient can be bound to |port|.
       self._scratch.GenerateEntryFromPort(port)
+
+  def add_args(self, tool_parser):
+    """Add the arguments needed for this tool."""
+    subcommands = tool_parser.add_subparsers(dest='command')
+    show = subcommands.add_parser('show',
+                                  help='show information on servod instance')
+    stop = subcommands.add_parser('stop',
+                                  help='gracefully stop servod instance')
+    # TODO(coconutruben): build out restart function
+    for p in [show, stop]:
+      id_group = p.add_mutually_exclusive_group(required=True)
+      id_group.add_argument('-s', '--serial', dest='id',
+                            help='serial of servo device on associated servod.')
+      id_group.add_argument('-p', '--port', dest='id', type=int,
+                            help='port where servod instance is listening.')
+    rebuild = subcommands.add_parser('rebuild', help='try to rebuild entry for '
+                                     'servod running on a given port. If no '
+                                     'specific port provided, attempts default '
+                                     'servod port range.')
+    rebuild.add_argument('-p', '--port', default=None, type=int,
+                         help='port to rebuild.')
+    subcommands.add_parser('show-all', help='show info on all servod instances')
+
+  def run(self, args):
+    """Execute the tool after parsing."""
+    cmd = _ConvertNameToMethod(args.command)
+    getattr(self, cmd)(args)
 
 
 # pylint: disable=invalid-name
@@ -136,41 +163,3 @@ def _ConvertNameToMethod(name):
   """Convert dash separated words to camelcase."""
   parts = name.split('-')
   return ''.join([w.capitalize() for w in parts])
-
-
-# pylint: disable=dangerous-default-value
-def main(cmdline=sys.argv[1:]):
-  """Entry function for cmdline servodutil tool."""
-  # pylint: disable=protected-access
-  root_logger = logging.getLogger()
-  stdout_handler = logging.StreamHandler(sys.stdout)
-  stdout_handler.setLevel(logging.INFO)
-  root_logger.setLevel(logging.DEBUG)
-  root_logger.addHandler(stdout_handler)
-  instances = Instance()
-  parser = argparse.ArgumentParser()
-  subparsers = parser.add_subparsers(dest='command')
-  show = subparsers.add_parser('show',
-                               help='show information on servod instance')
-  stop = subparsers.add_parser('stop',
-                               help='gracefully stop servod instance')
-  # TODO(coconutruben): build out restart function
-  for p in [show, stop]:
-    id_group = p.add_mutually_exclusive_group(required=True)
-    id_group.add_argument('-s', '--serial', dest='id',
-                          help='serial of servo device on associated servod.')
-    id_group.add_argument('-p', '--port', dest='id', type=int,
-                          help='port where servod instance is listening.')
-  rebuild = subparsers.add_parser('rebuild', help='try to rebuild entry for '
-                                  'servod running on a given port. If no '
-                                  'specific port provided, attempts default '
-                                  'servod port range.')
-  rebuild.add_argument('-p', '--port', default=None, type=int,
-                       help='port to rebuild.')
-  subparsers.add_parser('show-all', help='show info on all servod instances')
-  args = parser.parse_args(cmdline)
-  cmd = _ConvertNameToMethod(args.command)
-  getattr(instances, cmd)(args)
-
-if __name__ == '__main__':
-  main()

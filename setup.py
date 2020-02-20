@@ -48,7 +48,7 @@ setup(
   package_dir = {'' : 'build'},
   py_modules=['servo.servod', 'servo.dut_control'],
   packages=['servo', 'servo.data', 'servo.drv', 'servo.interface',
-            'servo.utils'],
+            'servo.tools', 'servo.utils'],
   package_data={'servo': ['data/*.xml',
                           'data/*.scenario',
                           'data/*.board']},
@@ -64,7 +64,8 @@ setup(
       'servod = servo.servod:main',
       'dut-control = servo.dut_control:main',
       'dut-power = servo.dut_power:main',
-      'servodutil = servo.servodutil:main'
+      'servodutil = servo.servodtool:servodutil',
+      'servodtool = servo.servodtool:main'
     ]
   }
 )

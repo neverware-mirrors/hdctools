@@ -246,26 +246,32 @@ consistent cmdline experience across servod tools, and to simplify and
 centralize future changes.
 Please see [this top comment][21] for an overview and the [servodrc examples].
 
-## Servodutil {#servod-util}
+## Servodtool {#servod-tool}
 
-[`servodutil`][18] is a cmdline tool (and library) to manage `servod` instances.
-It supports listing all instances running on a system and their info (e.g., what
-port they run on, what the main process' PID is, what the serial numbers of the
-attached servo devices are), and gracefully stopping an instance.
+[`servodtool`][18] is a cmdline tool (and library) to manage `servod` instances
+and devices. It's the command-line entry point for tools inside servo/tools.
+
+### instance tool
+
+The instance tool uses the file-system to leave information around about running
+servod instances. It supports listing all instances running on a system and
+their info (e.g., what port they run on, what the main process' PID is, what
+the serial numbers of the attached servo devices are), and gracefully stopping
+an instance.
 
 It works by writing all the information into a file at `/tmp/servoscratch` on
 invocation and clearing out the entry when `servod` turns off. This flow is
-supported for almost all methods of turning off `servod`: `Ctrl-C`, `servodutil
-stop`, or sending a `SIGTERM` to the main process.
+supported for almost all methods of turning off `servod`: `Ctrl-C`, `servodtool
+instance stop`, or sending a `SIGTERM` to the main process.
 
 Should it become necessary for `servod` to be killed using `SIGKILL`, `servod`
 cannot perform a clean-up and stale entries will be left around. On each usage
-of `servodutil`, or invocation of `servod`, the system attempts to clean out
-stale entries.
+of `servodtool instance`, or invocation of `servod`, the system attempts to
+clean out stale entries.
 
 The inverse is also problematic: should it for some reason become necessary to
 delete `/tmp/servoscratch`, then existing instances are not tracked. For this,
-`servodutil rebuild` provides a way to try and rebuild lost entries.
+`servodtool instance rebuild` provides a way to try and rebuild lost entries.
 
 ## ServoDeviceWatchdog {#servo-device-watchdog}
 
@@ -297,7 +303,7 @@ reinitalization phase will block until the interface is reinitialized.
 [15]: ../servo/system_config.py#19
 [16]: ./FAQ.md#how-do-i-reroute_overwrite-a-control-for-a-board-tl_dr
 [17]: ../servo/drv/ec.py
-[18]: ../servo/servodutil.py
+[18]: ../servo/servodtool.py
 [19]: ../servo/servod.py#69
 [20]: ../servo/ftdi_common.py#28
 [21]: ../servo/servo_parsing.py#16
