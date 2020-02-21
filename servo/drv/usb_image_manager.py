@@ -136,7 +136,7 @@ class usbImageManager(hw_driver.HwDriver):
                                                     servod._product,
                                                     servod._serialnames['main'])
     # Get your parent from the hierarchy
-    hub_on_servo = hierarchy.GetParentPath(self_usb)
+    hub_on_servo = hierarchy.GetParentHubStub(self_usb)
     # Image usb is at hub port |self._image_usbkey_hub_port|
     image_usbkey_sysfs = '%s.%s' % (hub_on_servo, self._image_usbkey_hub_port)
     # Possible image locations can be multiple places if a hub is allowed.

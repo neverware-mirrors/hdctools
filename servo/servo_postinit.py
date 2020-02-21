@@ -186,7 +186,7 @@ class ServoV4PostInit(BasePostInit):
       # The servo_micro and the STM chip of servo v4 share the same internal hub
       # on servo v4 board. Check the USB hierarchy to find the servo_micro
       # behind.
-      if hierarchy.ShareSameHub(servo_v4, servo_micro):
+      if hierarchy.DevOnDevHub(servo_v4, servo_micro):
         default_slot = servo_interfaces.SERVO_V4_SLOT_POSITIONS['default']
         slot_size = servo_interfaces.SERVO_V4_SLOT_SIZE
         backup_interfaces = self.servod.get_servo_interfaces(
@@ -252,7 +252,7 @@ class ServoV4PostInit(BasePostInit):
     ccd_candidates = self.get_ccd_devices()
     for ccd in ccd_candidates:
       # Pick the proper CCD endpoint behind the servo v4.
-      if hierarchy.ShareSameHub(servo_v4, ccd):
+      if hierarchy.DevOnDevHub(servo_v4, ccd):
         if not main_micro_found:
           self.prepend_config(self.CCD_CFG)
           self.servod._version += '_with_ccd_cr50'

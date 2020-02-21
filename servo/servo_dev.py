@@ -45,9 +45,8 @@ class ServoDevice(object):
     self._ifaces_available = threading.Event()
     self._reinit_capable = (vid, pid) in self.REINIT_CAPABLE
     self._reinit_attempts = self.REINIT_ATTEMPTS
-    usbmap = usb_hierarchy.Hierarchy()
-    dev = usb_hierarchy.Hierarchy.GetUsbDevice(vid, pid, serialname)
-    sysfs_path = usbmap.GetPath(dev)
+    sysfs_path = usb_hierarchy.Hierarchy.GetUsbDeviceSysfsPath(vid, pid,
+                                                               serialname)
     if not sysfs_path:
       raise ServoDeviceError('No sysfs path found for device.')
     self._sysfs_path = sysfs_path
