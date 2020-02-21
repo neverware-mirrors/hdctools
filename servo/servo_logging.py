@@ -34,6 +34,7 @@ import sys
 import tarfile
 import time
 
+from .drv import hw_driver
 
 # Format strings used for servod logging.
 DEFAULT_FMT_STRING = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -460,3 +461,243 @@ class ServodRotatingFileHandler(logging.handlers.RotatingFileHandler):
       # Compress the latest rotated doc.
       ServodRotatingFileHandler.compressFn(first_compressable_fn)
     self.pruneOldLogsAcrossInstances()
+
+
+class _ControlWrapper(object):
+  """
+  When running tests, it's nice to be able to see all the servod calls the test
+  is making, without having to open the DEBUG log full of console output and
+  implementation details.
+
+  Some set() and get() calls result in additional calls, so now they are logged
+  with indentation.
+
+  The child classes define the actual text for the log messages.
+  """
+
+  # Pad shorter control names, to align the value separators (':' or '=').
+  NAME_ALIGN = 16
+
+  # Number of characters to log before switching to just logging the count
+  # servo_micro_uart_stream = '2020-02-19 14:11:37 chan save\r\n2020-02-19 ...
+  MAX_VALUE_LEN = 80
+
+  # The history of recursive set/get/set calls
+  # This is a class attribute so indentation can be shared between instances.
+  call_stack = []
+
+  def __init__(self, name):
+    self.logger = logging.getLogger('Servod')
+    self.depth = len(self.__class__.call_stack)
+    self.indent = '  ' * self.depth
+    self.name = name
+
+  def __str__(self):
+    """String representation of this wrapper object."""
+    return "<%s %s>" % (self.__class__.__name__, self.name)
+
+  def _align_name(self):
+    """Return the name, left-padded to a certain number of spaces"""
+    return self.name.ljust(self.NAME_ALIGN)
+
+  def _truncate_string(self, val):
+    """If string is very long, truncate it and note how long it was.
+
+    Args:
+      val (str): The original value
+
+    Returns:
+      A reformatted representation of the original value
+      """
+    if isinstance(val, str) and len(val) > self.MAX_VALUE_LEN:
+      # The output should already be there, via LogConsoleOutput.
+      # Abbreviate the output: ec_uart_stream   = (962 characters) '2020-...
+      return '(%d characters) %s...' % (len(val), val[:self.MAX_VALUE_LEN])
+    return val
+
+  def __enter__(self):
+    """Upon entering the context, log that the call is starting."""
+    self._log_start()
+
+    # Record self in the stack, so inner calls are indented.
+    self.__class__.call_stack.append(str(self))
+    return self
+
+  def __exit__(self, exc_type, exc_val, exc_tb):
+    """Report any exception that occurred inside the context manager.
+
+    Args:
+      exc_type (type): The class of the captured exception, if any
+      exc_value (Exception): The exception object
+      exc_tb: The traceback object
+    """
+
+    # Remove one level from the call stack, since this call is done.
+    if self.__class__.call_stack:
+      self.__class__.call_stack.pop(-1)
+
+    if exc_val is None:
+      self._log_success()
+      return
+
+    self._log_exception(exc_type, exc_val, exc_tb)
+
+  def _log_start(self):
+    """Log the start of a call.  (Must be overridden.)"""
+    raise NotImplementedError()
+
+  def _log_success(self):
+    """Log a successful finish: exception not raised.  (Must be overridden.)"""
+    raise NotImplementedError()
+
+  def _log_exception(self, exc_type, exc_val, exc_tb):
+    """Log any exception caused by the call.  (Must be overridden.)
+
+    Args:
+      exc_type (type): The class of the captured exception, if any
+      exc_value (Exception): The exception object
+      exc_tb: The traceback object
+    """
+    raise NotImplementedError()
+
+
+class WrapSetCall(_ControlWrapper):
+  """
+  This class is a context manager for use around "set" calls.
+
+  It logs the before and after, and logs the exception that exited the context,
+  if one happened.
+
+  Format:
+
+    Servod - INFO - (SET) fw_wp_state        force_off
+    Servod - INFO -   (SET) fw_wp_vref         pp3300
+    Servod - INFO -   (set) fw_wp_vref       : pp3300
+    Servod - INFO -   (SET) fw_wp_en           on
+    Servod - INFO -   (set) fw_wp_en         : on
+    Servod - INFO -   (SET) fw_wp              off
+    Servod - INFO -   (set) fw_wp            : off
+    Servod - INFO - (set) fw_wp_state      : force_off
+  """
+
+  def __init__(self, name, value):
+    """Instance initializer
+
+    Args:
+      name:  the name of the control
+      value: the value to be set
+
+    Example:
+      with WrapSetCall(name, value):
+        ...
+
+    """
+    super(WrapSetCall, self).__init__(name)
+    self.value = value
+
+  def _log_start(self):
+    """Log the start of a set() operation, indicating the value to be set."""
+    self.logger.info('%s(SET) %s   %s',
+                     self.indent, self._align_name(), self.value)
+
+  def _log_success(self):
+    """Log the success of a set() operation, showing that the value was set."""
+    self.logger.info('%s(set) %s : %s',
+                     self.indent, self._align_name(), self.value)
+
+  def _log_exception(self, exc_type, exc_val, exc_tb):
+    """Log any exception coming from the driver's actual set() operation.
+
+    Args:
+      exc_type (type): The class of the captured exception, if any
+      exc_value (Exception): The exception object
+      exc_tb: The traceback object
+    """
+
+    if isinstance(exc_val, (AttributeError, hw_driver.HwDriverError)):
+      # Ordinary exceptions: ERROR shows only first line; DEBUG shows traceback.
+      first_line = str(exc_val).split('\n', 1)[0]
+      self.logger.error('(%s) Failed setting %s -> %s: %s',
+                        exc_type.__name__, self.name, self.value, first_line)
+    else:
+      # Inform the user of errors that shouldn't happen and need investigation.
+      self.logger.error('(%s) Unknown issue setting %s -> %s. '
+                        'Please take a look in the DEBUG logs.',
+                        exc_type.__name__, self.name, self.value)
+    self.logger.debug('(%s) Details:',
+                      exc_type.__name__, exc_info=(exc_type, exc_val, exc_tb))
+
+
+class WrapGetCall(_ControlWrapper):
+  """
+  This class is a context manager for use around "get" calls.
+
+  It logs the before and after, and logs the exception that exited the context,
+  if one happened.
+
+  Format:
+    Servod - INFO - (GET) fw_wp_state      ?
+    Servod - INFO -   (GET) fw_wp_en         ?
+    Servod - INFO -   (get) fw_wp_en         = off
+    Servod - INFO -   (GET) fw_wp            ?
+    Servod - INFO -   (get) fw_wp            = on
+    Servod - INFO - (get) fw_wp_state      = on
+
+  If a value is very long (>MAX_VALUE_LEN characters), it is truncated, and a
+  note is added stating how long it was originally:
+      Servod - INFO - (get) ec_uart_stream   = (962 characters) '2020-02-...
+
+  """
+
+  def __init__(self, name):
+    """Instance initializer
+
+    Args:
+      name: the name of the control being requested
+
+    Examples:
+      with WrapGetCall(name) as wrapper:
+        ...
+        result = ...
+        wrapper.got_result(result)
+    """
+    super(WrapGetCall, self).__init__(name)
+    self.result = None
+    self._result_reported = False
+
+  def got_result(self, value):
+    """Store the return value of the call, to be logged during __exit__."""
+    self.result = value
+    self._result_reported = True
+
+  def _log_start(self):
+    """Log the start of a get() operation, with value not known."""
+    self.logger.info('%s(GET) %s ?',
+                     self.indent, self._align_name())
+
+  def _log_success(self):
+    """Log the success of a get() operation, showing the retrieved value."""
+    if self._result_reported:
+      result_str = self._truncate_string(self.result)
+    else:
+      result_str = '[result not reported]'
+    self.logger.info('%s(get) %s = %s',
+                     self.indent, self._align_name(), result_str)
+
+  def _log_exception(self, exc_type, exc_val, exc_tb):
+    """Log any exception coming from the driver's actual get() method."""
+
+    if isinstance(exc_val, (AttributeError, hw_driver.HwDriverError)):
+      # Ordinary exceptions: ERROR shows only first line; DEBUG shows traceback.
+      first_line = str(exc_val).split('\n', 1)[0]
+      self.logger.error('(%s) Failed getting %s: %s',
+                        exc_type.__name__, self.name, first_line)
+
+    else:
+      # Inform the user of errors that shouldn't happen and need investigation.
+      self.logger.error('(%s) Unknown issue getting %s. '
+                        'Please take a look in the DEBUG logs.',
+                        exc_type.__name__, self.name)
+
+    self.logger.debug('(%s) Details:',
+                      exc_type.__name__, exc_info=(exc_type, exc_val, exc_tb))

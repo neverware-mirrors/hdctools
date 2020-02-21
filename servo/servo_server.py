@@ -25,6 +25,7 @@ import ftdiuart
 import i2cbus
 import servo_dev
 import servo_interfaces
+import servo_logging
 import servo_postinit
 import stm32gpio
 import stm32i2c
@@ -748,34 +749,22 @@ class Servod(object):
       HwDriverError: Error occurred while using drv
       ServodError: if interfaces are not available within timeout period
     """
-    self._logger.debug('name(%s)' % (name))
-    # This route is to retrieve serialnames on servo v4, which
-    # connects to multiple servo-micros or CCD, like the controls,
-    # 'ccd_serialname', 'servo_micro_for_soraka_serialname', etc.
-    # TODO(aaboagye): Refactor it.
     if 'serialname' in name:
+      # This route is to retrieve serialnames on servo v4, which
+      # connects to multiple servo-micros or CCD, like the controls,
+      # 'ccd_serialname', 'servo_micro_for_soraka_serialname', etc.
+      # TODO(aaboagye): Refactor it.
       return self.get_serial_number(name.split('serialname')[0].strip('_'))
 
-    (params, drv, device) = self._get_param_drv(name)
-    if device in self._devices:
-      self._devices[device].wait(self.INTERFACE_AVAILABILITY_TIMEOUT)
-    try:
+    with servo_logging.WrapGetCall(name) as wrapper:
+      (params, drv, device) = self._get_param_drv(name)
+      if device in self._devices:
+        self._devices[device].wait(self.INTERFACE_AVAILABILITY_TIMEOUT)
+
       val = drv.get()
       rd_val = self._syscfg.reformat_val(params, val)
-      self._logger.debug('%s = %s' % (name, rd_val))
+      wrapper.got_result(rd_val)
       return rd_val
-    except AttributeError, error:
-      self._logger.error('Getting %s: %s' % (name, error))
-      raise
-    except HwDriverError:
-      self._logger.error('Getting %s' % (name))
-      raise
-    # pylint: disable=broad-except
-    # This acts as a safety to inform the user of errors that should not
-    # be happening/require more investigation.
-    except Exception:
-      self._logger.error('Unknown issue getting %s. Please take a look.', name)
-      raise
 
   def get_all(self, verbose):
     """Get all controls values.
@@ -813,23 +802,14 @@ class Servod(object):
       HwDriverError: Error occurred while using driver
       ServodError: if interfaces are not available within timeout period
     """
-    self._logger.debug('name(%s) wr_val(%s)' % (name, wr_val_str))
-    (params, drv, device) = self._get_param_drv(name, False)
-    if device in self._devices:
-      self._devices[device].wait(self.INTERFACE_AVAILABILITY_TIMEOUT)
-    wr_val = self._syscfg.resolve_val(params, wr_val_str)
-    try:
+    with servo_logging.WrapSetCall(name, wr_val_str):
+      (params, drv, device) = self._get_param_drv(name, False)
+      if device in self._devices:
+        self._devices[device].wait(self.INTERFACE_AVAILABILITY_TIMEOUT)
+      wr_val = self._syscfg.resolve_val(params, wr_val_str)
+
       drv.set(wr_val)
-    except HwDriverError:
-      self._logger.error('Setting %s -> %s' % (name, wr_val_str))
-      raise
-    # pylint: disable=broad-except
-    # This acts as a safety to inform the user of errors that should not
-    # be happening/require more investigation.
-    except Exception:
-      self._logger.error('Unknown issue setting %s -> %s. Please take a look.',
-                         name, wr_val_str)
-      raise
+
     # TODO(crbug.com/841097) Figure out why despite allow_none=True for both
     # xmlrpc server & client I still have to return something to appease the
     # marshall/unmarshall
