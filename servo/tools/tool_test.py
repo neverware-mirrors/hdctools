@@ -4,20 +4,20 @@
 
 import unittest
 
-import instance
+import tool
 
 
-class TestInstance(unittest.TestCase):
+class TestTool(unittest.TestCase):
 
   def test_ConvertNameToMethodNoCamel(self):
     """Verify that strings without '-' only get capitalized."""
     name = 'hi'
-    assert instance._ConvertNameToMethod(name) == 'Hi'
+    assert tool._ConvertNameToMethod(name) == 'Hi'
 
   def test_ConvertNameToMethodDoubleCamel(self):
     """Verify proper camel-case conversion for strings containing '-'."""
     name = 'hi-there-friends'
-    assert instance._ConvertNameToMethod(name) == 'HiThereFriends'
+    assert tool._ConvertNameToMethod(name) == 'HiThereFriends'
 
 if __name__ == '__main__':
   unittest.main()

@@ -251,6 +251,12 @@ Please see [this top comment][21] for an overview and the [servodrc examples].
 [`servodtool`][18] is a cmdline tool (and library) to manage `servod` instances
 and devices. It's the command-line entry point for tools inside servo/tools.
 
+### device tool
+
+The device tool uses mainly the usb\_hierarchy utility to provide query
+functions around the physical servo devices. So far, it provides a tool to find
+the /sys/bus/usb/devices/ path of a servo device given its serialname.
+
 ### instance tool
 
 The instance tool uses the file-system to leave information around about running

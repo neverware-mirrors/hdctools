@@ -151,15 +151,3 @@ class Instance(tool.Tool):
     rebuild.add_argument('-p', '--port', default=None, type=int,
                          help='port to rebuild.')
     subcommands.add_parser('show-all', help='show info on all servod instances')
-
-  def run(self, args):
-    """Execute the tool after parsing."""
-    cmd = _ConvertNameToMethod(args.command)
-    getattr(self, cmd)(args)
-
-
-# pylint: disable=invalid-name
-def _ConvertNameToMethod(name):
-  """Convert dash separated words to camelcase."""
-  parts = name.split('-')
-  return ''.join([w.capitalize() for w in parts])

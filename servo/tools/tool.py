@@ -37,5 +37,21 @@ class Tool(object):
     raise NotImplementedError('Tools need to provide their args.')
 
   def run(self, args):
-    """Execute the tool after parsing."""
-    raise NotImplementedError('Tools need to provide an implementation.')
+    """Execute the tool after parsing.
+
+    Args:
+      args: argparse.parse_arguments() returned namespace to execute a command
+
+    The default invocation is that a tool, for each sub-command, implements
+    a method that conforms to _ConvertNameToMethod below. The tool is of course
+    free to overwrite run() to have a custom invocation logic.
+    """
+    cmd = _ConvertNameToMethod(args.command)
+    getattr(self, cmd)(args)
+
+
+# pylint: disable=invalid-name
+def _ConvertNameToMethod(name):
+  """Convert dash separated words to camelcase."""
+  parts = name.split('-')
+  return ''.join([w.capitalize() for w in parts])
