@@ -34,6 +34,10 @@ class activeV4Device(hw_driver.HwDriver):
   # the key. The value is True if it's a servo flex device.
   V4_DEVICES = {'ccd_cr50' : False, 'servo_micro' : True}
 
+  # This is a flag in CR50 board property, which shows EC-CR50 communication
+  # support.
+  BOARD_EC_CR50_COMM_SUPPORT = 1 << 21
+
   def init_v4_device_info(self):
     """Initialize the v4 device information.
 
@@ -117,8 +121,17 @@ class activeV4Device(hw_driver.HwDriver):
             self._interface.get('ec_uart_en') == 'on')
 
   def _using_ccd(self):
-    """Return True if ccd uart is enabled."""
-    return '+TX' in self._interface.get('cr50_ccd_state_flags')
+    """Return True if ccd uart TX is enabled."""
+    flags = self._interface.get('cr50_ccd_state_flags')
+    brdprop = int(self._interface.get('cr50_brdprop'), base=16)
+
+    # If BOARD_EC_CR50_COMM_SUPPORT flag is set in board property,
+    # EC UART might be enabled occasionally regardless of CCD connection or CCD
+    # capability. CCD activeness in this test should not check EC UART status
+    # in this case.
+    if brdprop & self.BOARD_EC_CR50_COMM_SUPPORT:
+      return 'UARTAP+TX' in flags
+    return 'UARTAP+TX' in flags or 'UARTEC+TX' in flags
 
   def _Get_device(self):
     """Return the active device.
