@@ -21,4 +21,12 @@ inas = [
     ('sweetberry', '0x43:1', 'LCD_BL_VOUT',        3.30, 0.010, 'j2', True), # R227
     ('sweetberry', '0x43:2', 'PP3300_TCPC_C0',     3.30, 0.100, 'j2', True), # R138
     ('sweetberry', '0x43:0', 'PPVAR_BAT_R',        3.30, 0.100, 'j2', True), # Across battery
+    ('sweetberry', '0x44:3', 'PP1200_BRIJ',        3.30, 0.100, 'j3', True), # R93_LS
+    ('sweetberry', '0x44:1', 'PP912_S3A',          3.30, 0.100, 'j3', True), # R200
+    ('sweetberry', '0x44:2', 'PP868_S2A',          3.30, 0.100, 'j3', True), # R197
+    ('sweetberry', '0x44:0', 'PP1125_S1A',         3.30, 0.100, 'j3', True), # R1
+    ('sweetberry', '0x45:3', 'PP868_S4C',          3.30, 0.100, 'j3', True), # R195
+    ('sweetberry', '0x45:1', 'PP900_L7A',          3.30, 0.100, 'j3', True), # R203
+    ('sweetberry', '0x45:2', 'PP1000_L3A',         3.30, 0.100, 'j3', True), # R202
+
 ]

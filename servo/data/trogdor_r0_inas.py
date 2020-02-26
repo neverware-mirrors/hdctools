@@ -44,7 +44,8 @@ inas = [
         ('ina3221', '0x42:0', 'pp1300_l2c',         1.30, 0.050,  'rem dut_adc_mux:bank1', True), # R213
         ('ina3221', '0x42:1', 'pp3300_l10c',        3.30, 0.100,  'rem dut_adc_mux:bank1', True), # R216
         ('ina3221', '0x42:2', 'pp3300_l11c',        3.30, 0.100,  'rem dut_adc_mux:bank1', True), # R214
-        ('ina3221', '0x43:0', 'src_vph_pwr',        4.00, 0.002,  'rem dut_adc_mux:bank1', True), # R321
+        # requires a rework, default resistor value on r0 is 0.002 Ohm
+        ('ina3221', '0x43:0', 'src_vph_pwr',        4.00, 0.100,  'rem dut_adc_mux:bank1', True), # R321
         #('ina3221', '0x43:1', 'tp189/190',         0.00, 0.000,  'rem dut_adc_mux:bank1', True), # R205
         #('ina3221', '0x43:2', 'tp191/192',         0.00, 0.000,  'rem dut_adc_mux:bank1', True), # R212
 ]
