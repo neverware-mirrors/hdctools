@@ -114,7 +114,8 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
     """Get cc line state info from servo V4.
 
     returns:
-      (dts, charging, charge_enabled, polarity) tuple of on/off.
+      A dict of status, with keys ('dts', 'charging', 'charge_enabled',
+      'polarity', 'pd_comm')
 
     > cc
     cc: on
@@ -123,6 +124,7 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
     chg allowed: off
     drp enabled: off
     cc polarity: cc1
+    pd enabled: on
     """
     rx = ['dts mode:\s*(off|on)', 'chg mode:\s*(off|on)',
           'chg allowed:\s*(off|on)']
@@ -131,38 +133,58 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
     if len(res) != len(rx):
       raise ec3poServoV4Error("Can't receive cc info: [%s]" % res)
 
-    dts = res[0][1]
-    chg = res[1][1]
-    mode = res[2][1]
-    # Old firmware can't change CC polarity, i.e. always cc1.
-    pol = 'cc1'
+    cc_dict = {'dts': res[0][1], 'chg': res[1][1], 'mode': res[2][1]}
 
     # TODO(waihong): Move the optional match to mandatory when the old
     # firmware is phased out.
-    try:
-      optional_rx = ['cc polarity:\s*(cc1|cc2)']
-      optional_res = self._issue_safe_cmd_get_results('cc', optional_rx)
-      pol = optional_res[0][1]
-    except pty_driver.ptyError:
-      self._logger.warn("CC polarity not supported. Update the servo v4 fw.")
-      pass
+    def _get_optional_field(rx, default, warn_str):
+      """Get the optional fields of comand cc.
 
-    return (dts, chg, mode, pol)
+        Returns 'default' if failed to parse the value.
 
-  def lookup_cc_setting(self, mode, dts):
+        Args:
+          rx: a string for regex pattern
+          default: a default value when parse fail
+          warn_str: a string to warn when fail to obatin the field
+
+        Returns:
+          The regexed string if success, and "default" otherwise
+      """
+      try:
+        optional_res = self._issue_safe_cmd_get_results('cc', [rx])
+        return optional_res[0][1]
+      except pty_driver.ptyError:
+        self._logger.warn('%s unsupported, return %s. Update the servo v4 fw.' %
+                          (str(default), warn_str))
+      return default
+
+    # Old firmware can't change CC polarity, i.e. always cc1.
+    cc_dict['pol'] = _get_optional_field('cc polarity:\s*(cc1|cc2)', 'cc1',
+                                         'CC polarity')
+
+    # Old firmware can't control PD comm, it always the same as 'chg allowed'.
+    cc_dict['pd'] = _get_optional_field('pd enabled:\s*(off|on)',
+                                        cc_dict['chg'], 'PD comm')
+
+    return cc_dict
+
+  def lookup_cc_setting(self, mode, dts, snk_with_pd):
     """Composite settings into cc commandline arg.
 
     Args:
       mode: 'on'/'off' setting for charge enable
       dts:  'on'/'off' setting for dts enable
+      snk_with_pd: 'on / off' setting for sink with PD.
 
     Returns:
-      string: 'src', 'snk', 'srcdts', 'snkdts' as appropriate.
+      string: 'src', 'snk', 'pdsnk', 'srcdts', 'snkdts', 'pdsnkdts' as
+              appropriate.
     """
     newdts = 'dts' if (dts == 'on') else ''
     newmode = 'src' if (mode == 'on') else 'snk'
+    newpd = 'pd' if (newmode == 'snk' and snk_with_pd == 'on') else ''
 
-    newcc = newmode + newdts
+    newcc = newpd + newmode + newdts
 
     return newcc
 
@@ -209,9 +231,7 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
       "off": DTS mode is disabled.
       "on": DTS mode is enabled.
     """
-    dts, _, _, _ = self.servo_cc_modes()
-
-    return dts
+    return self.servo_cc_modes()['dts']
 
   def _Set_servo_v4_dts_mode(self, value):
     """Setter of servo_v4_dts_mode.
@@ -220,8 +240,8 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
       value: "off", "on"
     """
     if value == 'off' or value == 'on':
-      _, _, mode, _ = self.servo_cc_modes()
-      newcc = self.lookup_cc_setting(mode, value)
+      cc_dict = self.servo_cc_modes()
+      newcc = self.lookup_cc_setting(cc_dict['mode'], value, cc_dict['pd'])
 
       self._issue_cmd('cc %s' % newcc)
     else:
@@ -249,13 +269,39 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
 
     return info
 
+  def _Get_servo_v4_pd_comm(self):
+    """Getter of servo_v4 DUT port PD communication capbility.
+
+    Returns: a string for 'on' or 'off'
+    """
+    return self.servo_cc_modes()['pd']
+
+  def _Set_servo_v4_pd_comm(self, value):
+    """Setter of servo_v4 DUT port PD communication capbility.
+
+    Args:
+      value: 'on' or 'off'
+    """
+    cc_dict = self.servo_cc_modes()
+    role = 'src' if cc_dict['chg'] == 'on' else 'snk'
+
+    if role == 'snk' and (value == 'on' or value == 'off'):
+      newcc = self.lookup_cc_setting(cc_dict['mode'], cc_dict['dts'], value)
+      self._issue_cmd('cc %s' % newcc)
+    elif role == 'src' and value == 'on':
+      # Intentionally passthrough, PD comm is enabled at SRC role.
+      pass
+    else:
+      raise ValueError('Invalid PD comm setting: %s. PD comm can only '
+                       'be config at SNK role' % value)
+
   def _Get_servo_v4_power_role(self):
     """Getter of servo_v4_role.
 
     Returns:
       Current power role, like "src", "snk"
     """
-    _, chg, _, _ = self.servo_cc_modes()
+    chg = self.servo_cc_modes()['chg']
 
     return 'src' if (chg == 'on') else 'snk'
 
@@ -266,9 +312,11 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
       role: "src", "snk"
     """
     if role == 'src' or role == 'snk':
-      dts, _, _, _ = self.servo_cc_modes()
+      dts = self.servo_cc_modes()['dts']
       newrole = 'on' if role == 'src' else 'off'
-      newcc = self.lookup_cc_setting(newrole, dts)
+      # SNK role defaults to disable PD comm, and SRC role defaults to enable
+      newpd = 'on' if role == 'src' else 'off'
+      newcc = self.lookup_cc_setting(newrole, dts, newpd)
 
       self._issue_cmd('cc %s' % newcc)
     else:
@@ -293,7 +341,7 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
     Returns:
       0 for dev, 1 for 5v, 2 for 12v, 3 for 20v
     """
-    _, _, mode, _ = self.servo_cc_modes()
+    mode = self.servo_cc_modes()['mode']
 
     # Sink mode, return 0 for dev.
     if mode == 'off':
@@ -329,7 +377,7 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
     Returns:
       0 for dev, 5 for 5v, 9 for 9v, 20 for 20v, etc.
     """
-    _, _, mode, _ = self.servo_cc_modes()
+    mode = self.servo_cc_modes()['mode']
 
     # Sink mode, return 0 for dev.
     if mode == 'off':
@@ -344,8 +392,9 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
     Args:
       value: 0 for CC1, 1 for CC2
     """
-    dts, _, mode, _ = self.servo_cc_modes()
-    cc = self.lookup_cc_setting(mode, dts)
+
+    cc_dict = self.servo_cc_modes()
+    cc = self.lookup_cc_setting(cc_dict['mode'], cc_dict['dts'], cc_dict['pd'])
     self._issue_cmd('cc %s %s' % (cc, self.CC_POLARITY[value]))
 
   def _Get_usbc_polarity(self):
@@ -354,5 +403,5 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
     Returns:
       0 for CC1, 1 for CC2
     """
-    _, _, _, pol = self.servo_cc_modes()
+    pol = self.servo_cc_modes()['pol']
     return self.CC_POLARITY.index(pol)
