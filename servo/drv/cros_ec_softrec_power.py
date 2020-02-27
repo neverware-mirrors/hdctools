@@ -58,6 +58,8 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
         'wait_ext_is_fake', 'no'))
     self._role_swap_delay = float(
         self._params.get('role_swap_delay', 1.0))
+    self._need_ap_off_in_ro = ('yes' == self._params.get(
+        'need_ap_off_in_ro', 'no'))
 
 
   def _power_on_ap(self):
@@ -73,6 +75,7 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
         # Note that this only seems to work reliably for ARM devices.
         self._interface.set('warm_reset', 'on')
 
+      ap_off_option = 'ap-off-in-ro' if self._need_ap_off_in_ro else 'ap-off'
       try:
         if self._wait_ext_is_fake:
           raise Exception("wait-ext isn't supported")
@@ -80,7 +83,8 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
         # our command.  Pexpect is minimally greedy so we won't be able to match
         # the exact reset cause string.  But, this should be good enough.
         self._interface.set('ec_uart_regexp', '["Waiting"]')
-        self._interface.set('ec_uart_cmd', 'reboot wait-ext ap-off')
+        self._interface.set('ec_uart_cmd', 'reboot wait-ext %s' %
+                            ap_off_option)
         # Reset the EC to force it back into RO code; this clears
         # the EC_IN_RW signal, so the system CPU will trust the
         # upcoming recovery mode request.
@@ -102,7 +106,7 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
         # EC and AP when rebooting. However, the reboot will be triggered
         # internally by the EC watchdog, and there is no external reset signal.
         self._interface.set('ec_uart_regexp', '["Rebooting!"]')
-        self._interface.set('ec_uart_cmd', 'reboot ap-off')
+        self._interface.set('ec_uart_cmd', 'reboot %s' % ap_off_option)
       finally:
         self._interface.set('ec_uart_regexp', 'None')
         self._interface.set('ec_uart_flush', 'on')
