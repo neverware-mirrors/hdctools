@@ -77,6 +77,12 @@
       subtype="servod_logs_active"/>
   </control>
   <control>
+    <name>log_msg</name>
+    <doc>Send a string to the servod INFO logs.</doc>
+    <params drv="servo_metadata" interface="servo" input_type="str"
+      subtype="log_msg"/>
+  </control>
+  <control>
     <name>servod_pid</name>
     <doc>The process id of the servod instance.</doc>
     <params drv="servo_metadata" subtype="pid" interface="servo" />

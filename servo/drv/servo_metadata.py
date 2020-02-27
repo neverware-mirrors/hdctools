@@ -19,9 +19,7 @@ class servoMetadata(hw_driver.HwDriver):
       interface: A driver interface object.  This is the servod interface.
       params: A dictionary of parameters, but is ignored.
     """
-    self._logger = logging.getLogger('Servo Type')
-    self._interface = interface
-    self._params = params
+    super(servoMetadata, self).__init__(interface, params)
 
   def _Get_type(self):
     """Gets the current servo type."""
@@ -58,3 +56,7 @@ class servoMetadata(hw_driver.HwDriver):
     # Automatically converted to the 'yes/no' by servod.
         return 1
     return 0
+
+  def _Set_log_msg(self, msg):
+    """Log |msg| into info."""
+    self._logger.info('%s', msg)
