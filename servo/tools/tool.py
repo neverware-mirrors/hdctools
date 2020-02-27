@@ -6,6 +6,7 @@
 
 
 import logging
+import sys
 
 
 class ToolError(Exception):
@@ -35,6 +36,17 @@ class Tool(object):
   def add_args(self, tool_parser):
     """Add the arguments needed for this tool."""
     raise NotImplementedError('Tools need to provide their args.')
+
+  def error(self, msg, *args):
+    # pylint: disable=invalid-name
+    """Log error and exit.
+
+    Args:
+      msg: message to log
+      *args: args to pass to logging module
+    """
+    self._logger.info(msg, *args)
+    sys.exit(1)
 
   def run(self, args):
     """Execute the tool after parsing.
