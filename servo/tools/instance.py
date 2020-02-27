@@ -55,7 +55,7 @@ class Instance(tool.Tool):
       entry = self._scratch.FindById(args.id)
       self._logger.info(_format_info(entry))
     except scratch.ScratchError as e:
-      self._logger.info(str(e))
+      self.error(str(e))
 
   def show_all(self, _):
     """Print info of all registered servod instances."""
@@ -120,8 +120,7 @@ class Instance(tool.Tool):
       if port in known_ports(self._scratch.GetAllEntries()):
         self._logger.info('port %r already known.', port)
       elif not self._scratch.GenerateEntryFromPort(port):
-        self._logger.error('Could not rebuild entry for port %r', port)
-      return
+        self.error('Could not rebuild entry for port %r', port)
     # PORT_RANGE[1] + 1 as PORT_RANGE[1] should be in the set.
     ports = set(range(PORT_RANGE[0], PORT_RANGE[1] + 1))
     ports -= known_ports(self._scratch.GetAllEntries())

@@ -60,4 +60,7 @@ class Tool(object):
     logic.
     """
     cmd = args.command.replace('-', '_')
+    if not hasattr(self, cmd):
+      self.error('Tool does not recognize command %r. It should be implemented '
+                 'as a method called %r.', args.command, cmd)
     getattr(self, cmd)(args)
