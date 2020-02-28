@@ -549,7 +549,7 @@ class ServodStarter(object):
     self._server_thread.start()
     signal.pause()
     # Set watchdog thread to end
-    self._watchdog_thread.done.set()
+    self._watchdog_thread.deactivate()
     # Collect servo and watchdog threads
     self._server_thread.join()
     self._watchdog_thread.join()

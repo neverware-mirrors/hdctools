@@ -29,6 +29,7 @@ class DeviceWatchdog(threading.Thread):
     """
     threading.Thread.__init__(self)
     self._logger = logging.getLogger(type(self).__name__)
+    self._turndown_signal = signal.SIGTERM
     self.done = threading.Event()
     self._servod = servod
     self._rate = poll_rate
@@ -44,6 +45,11 @@ class DeviceWatchdog(threading.Thread):
     # TODO(coconutruben): Here and below in addition to VID/PID also print out
     # the device type i.e. servo_micro.
     self._logger.info('Watchdog setup for devices: %s', self._devices)
+
+
+  def deactivate(self):
+    """Signal to watchdog to stop polling."""
+    self.done.set()
 
   def run(self):
     """Poll |_devices| every |_rate| seconds. Send SIGTERM if device lost."""
@@ -67,7 +73,7 @@ class DeviceWatchdog(threading.Thread):
             # Device was not found and we can't reinitialize it. End servod.
             self._logger.error('Device - %s - Turning down servod.', device)
             # Watchdog should run in the same process as servod thread.
-            os.kill(os.getpid(), signal.SIGTERM)
+            os.kill(os.getpid(), self._turndown_signal)
             self.done.set()
             break
           disconnected_devices[dev_id] = 1
