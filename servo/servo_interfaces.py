@@ -310,6 +310,8 @@ for board in [
     'cheza',
     'dragonegg',
     'drallion',
+    'endeavour',
+    'excelsior',
     'eve',
     'fizz',
     'flapjack',
