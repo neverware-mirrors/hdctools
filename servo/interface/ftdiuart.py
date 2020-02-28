@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 """Allow creation of uart interface via libftdiuart library for FTDI devices."""
 import ctypes
-import logging
 import errno
+import logging
 import os
 import sys
 import termios
@@ -12,8 +12,10 @@ import threading
 import time
 import tty
 
-import ftdi_utils
+import common as c
 import ftdi_common
+import ftdi_utils
+import ftdigpio
 import uart
 
 # TODO(tbroch) need some way to xref these to values in ftdiuart.h
@@ -22,7 +24,7 @@ FUART_BUF_SIZE = 128
 FUART_USECS_SLEEP = 5000
 
 
-class FuartError(Exception):
+class FuartError(c.InterfaceError):
   """Class for exceptions of Fuart."""
 
   def __init__(self, msg, value=0):
@@ -116,6 +118,33 @@ class Fuart(uart.Uart):
         ctypes.byref(self._fuartc), ctypes.byref(self._fc))
     if err:
       raise FuartError('doing fuart_init', err)
+
+  @staticmethod
+  def Build(index, vid, pid, sid, **kwargs):
+    """Factory method to implement the interface."""
+    interface, pid = ftdi_utils.get_interface_and_pid(index, pid)
+    fobj = Fuart(vendor=vid, product=pid, interface=interface, serialname=sid)
+    fobj.run()
+
+    c.build_logger.info('%s' % fobj.get_pty())
+    return fobj
+
+  @staticmethod
+  def BuildGPIOUart(index, vid, pid, sid, **kwargs):
+    """Initialize special gpio + uart interface and open for use."""
+    fgpio = ftdigpio.Fgpio.Build(index=index, vid=vid, pid=pid, sid=sid)
+    interface, pid = ftdi_utils.get_interface_and_pid(index, pid)
+    fuart = Fuart(vendor=vid, product=pid, interface=interface, serialname=sid,
+                  ftdi_context=fgpio._fc)
+    fuart.run()
+
+    c.build_logger.info('uart pty: %s' % fuart.get_pty())
+    return fgpio, fuart
+
+  @staticmethod
+  def name():
+    """Name to request interface by in interface config maps."""
+    return 'ftdi_uart'
 
   def __del__(self):
     """Fuart destructor."""

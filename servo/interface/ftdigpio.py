@@ -7,12 +7,12 @@ devices."""
 import logging
 import ctypes
 
-import ftdi_utils
+import common as c
 import ftdi_common
+import ftdi_utils
 import gpio_interface
 
-
-class FgpioError(Exception):
+class FgpioError(c.InterfaceError):
   """Class for exceptions of Fgpio."""
 
   def __init__(self, msg, value=0):
@@ -64,7 +64,7 @@ class Fgpio(gpio_interface.GpioInterface):
     Raises:
       FgpioError: An error accessing Fgpio object
     """
-    self._logger = logging.getLogger('Fgpio')
+    gpio_interface.GpioInterface.__init__(self)
     self._logger.debug('')
 
     (self._flib, self._lib) = ftdi_utils.load_libs('ftdi', 'ftdigpio')
@@ -80,6 +80,19 @@ class Fgpio(gpio_interface.GpioInterface):
       raise FgpioError('doing ftdi_init')
     if self._lib.fgpio_init(ctypes.byref(self._fgc), ctypes.byref(self._fc)):
       raise FgpioError('doing fgpio_init')
+
+  @staticmethod
+  def Build(index, vid, pid, sid, **kwargs):
+    """Factory method to implement the interface."""
+    interface, pid = ftdi_utils.get_interface_and_pid(index, pid)
+    fobj = Fgpio(vendor=vid, product=pid, interface=interface, serialname=sid)
+    fobj.open()
+    return fobj
+
+  @staticmethod
+  def name():
+    """Name to request interface by in interface config maps."""
+    return 'ftdi_gpio'
 
   def __del__(self):
     """Fgpio destructor."""

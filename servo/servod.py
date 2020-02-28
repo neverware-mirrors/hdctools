@@ -19,7 +19,7 @@ import sys
 import threading
 import time
 
-import ftdi_common
+import interface.ftdi_common
 import servo_interfaces
 import servo_logging
 import servo_parsing
@@ -470,12 +470,12 @@ class ServodStarter(object):
     """
     if lot_id:
       for (board_version, lot_ids) in \
-            ftdi_common.SERVO_LOT_ID_DEFAULTS.iteritems():
+            interface.ftdi_common.SERVO_LOT_ID_DEFAULTS.iteritems():
         if lot_id in lot_ids:
           return board_version
 
     for (board_version, vids) in \
-          ftdi_common.SERVO_PID_DEFAULTS.iteritems():
+          interface.ftdi_common.SERVO_PID_DEFAULTS.iteritems():
       if product_id in vids:
         return board_version
 
@@ -511,11 +511,11 @@ class ServodStarter(object):
     Returns:
       configs: list of XML config files that should be loaded
     """
-    if board_version not in ftdi_common.SERVO_CONFIG_DEFAULTS:
+    if board_version not in interface.ftdi_common.SERVO_CONFIG_DEFAULTS:
       self._logger.warning('Unable to determine configs to load for board '
                            'version = %s', board_version)
       return []
-    return ftdi_common.SERVO_CONFIG_DEFAULTS[board_version]
+    return interface.ftdi_common.SERVO_CONFIG_DEFAULTS[board_version]
 
   def cleanup(self):
     """Perform any cleanup related work after servod server shut down."""

@@ -8,6 +8,7 @@ import re
 import subprocess
 
 import bbmux_controller
+import common as c
 import uart
 
 BITS_RE = 'cs(?P<value>[5-8])'
@@ -44,7 +45,7 @@ RXD_PATTERN = 'uart%d_rxd'
 RXD_MODE = 0X2
 
 
-class BBuartError(Exception):
+class BBuartError(c.InterfaceError):
   """Class for exceptions of Buart."""
 
   def __init__(self, msg, value=0):
@@ -83,6 +84,16 @@ class BBuart(uart.Uart):
                        interface, self._pty)
     # Beaglebone defaults to a baudrate of 9600, set it to what servo expects.
     self.set_uart_props(DEFAULT_UART_SETTINGS)
+
+  @staticmethod
+  def Build(interface_data, **kwargs):
+    """Factory method to implement the interface."""
+    return BBuart(interface=interface_data)
+
+  @staticmethod
+  def name():
+    """Name to request interface by in interface config maps."""
+    return 'bb_uart'
 
   def _open_pin(self, params, pattern, mode):
     """Selects a Uart signal (TX or RX) through the OMAP Muxes.

@@ -18,10 +18,10 @@ import termios
 import time
 import tty
 
+import common as c
 from ec3po import console
 from ec3po import interpreter
 from ec3po import threadproc_shim
-
 import uart
 
 
@@ -84,6 +84,11 @@ def _SendShutdown(pipe_wr):
     pipe_wr.close()
 
 
+class EC3POInterfaceError(c.InterfaceError):
+  """Error class to raise in ec3po interface issues."""
+  pass
+
+
 class EC3PO(uart.Uart):
   """Class for an EC-3PO console interpreter instance.
 
@@ -99,8 +104,7 @@ class EC3PO(uart.Uart):
       device: A tuple of the USB device info (vid, pid, serialname)
     """
     # Run Fuart init.
-    uart.Uart.__init__(self)
-    self._logger = logging.getLogger('%s - EC3PO Interface' % source_name)
+    uart.Uart.__init__(self, logger_name='%s - EC3PO Interface' % source_name)
     # Create the console and interpreter passing in the raw EC UART PTY.
     self._raw_ec_uart = raw_ec_uart
     self._source = source_name
@@ -227,6 +231,28 @@ class EC3PO(uart.Uart):
     self._logger.info('-------------------- %s console on: %s', self._source,
                       user_pty_name)
 
+
+  @staticmethod
+  def Build(index, vid, pid, sid, interface_data, servod):
+    """Factory method to implement the interface."""
+    device = (vid, pid, sid)
+    raw_uart_name = interface_data['raw_pty']
+    raw_uart_source = interface_data['source']
+    if servod._syscfg.is_control(raw_uart_name):
+      raw_ec_uart = servod.get(raw_uart_name)
+      return EC3PO(raw_ec_uart, raw_uart_source, device)
+    else:
+      # The overlay doesn't have the raw PTY defined, therefore we can skip
+      # initializing this interface since no control relies on it.
+      c.build_logger.debug('Skip initializing EC3PO for %s, no control '
+                           'specified.', raw_uart_name)
+      return dummy.Build()
+
+  @staticmethod
+  def name():
+    """Name to request interface by in interface config maps."""
+    return 'ec3po_uart'
+
   def get_device_info(self):
     """Get the usb device information."""
     return self._device
@@ -280,7 +306,7 @@ class EC3PO(uart.Uart):
     """
     level = logging.getLevelName(value.upper())
     if not isinstance(level, int):
-        raise Exception('invalid loglevel %r' % value)
+      raise EC3POInterfaceError('invalid loglevel %r' % value)
     self._console_loglevel = level
     self._console.oobm_queue.put('loglevel %d' % level)
 

@@ -5,8 +5,11 @@
 import glob
 import os
 
+import common as c
+import interface
 
-class BBadcError(Exception):
+
+class BBadcError(c.InterfaceError):
   """Class for exceptions of BBadc."""
 
   def __init__(self, msg, value=0):
@@ -16,12 +19,12 @@ class BBadcError(Exception):
       msg: string, message describing error in detail
       value: integer, value of error when non-zero status returned.  Default=0
     """
-    super(BBAdcError, self).__init__(msg, value)
+    super(BBadcError, self).__init__(msg, value)
     self.msg = msg
     self.value = value
 
 
-class BBadc(object):
+class BBadc(interface.Interface):
   """Provides interface to ADC through beaglebone."""
 
   ADC_ENABLE_COMMAND = 'echo cape-bone-iio > %s'
@@ -30,9 +33,20 @@ class BBadc(object):
 
   def __init__(self):
     """Enables ADC drvier."""
+    interface.Interface.__init__(self)
     adc_nodes = glob.glob(BBadc.ADC_ENABLE_NODE)
     for adc_node in adc_nodes:
       os.system(BBadc.ADC_ENABLE_COMMAND % adc_node)
+
+  @staticmethod
+  def Build(**kwargs):
+    """Factory method to implement the interface."""
+    return BBadc()
+
+  @staticmethod
+  def name():
+    """Name to request interface by in interface config maps."""
+    return 'bb_adc'
 
   def read(self):
     """Reads ADC values.

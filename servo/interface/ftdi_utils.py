@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 """Common functions for tools and libraries related to FTDI devices.
 """
-import commands
 import ctypes
 import ctypes.util
 import logging
@@ -11,8 +10,29 @@ import optparse
 import os
 import sys
 
+import common as c
 import ftdi_common
-import libftdi_for_servo
+import servo.libftdi_for_servo
+
+
+def get_interface_and_pid(index, pid):
+  """Helper to retrieve the 'real' ftdi pid and interface given the index.
+
+  Args:
+    index: int, index in the interface list
+    pid: product id of ftdi device
+
+  Returns:
+    tuple(index, pid) - the effective index and pid after conversion
+  """
+  # servos with multiple FTDI are guaranteed to have contiguous USB PIDs
+  # The interface argument in ftdi initialization is the interface number.
+  idx = ((index - 1) % ftdi_common.MAX_FTDI_INTERFACES_PER_DEVICE) + 1
+  product_increment = (index - 1) / ftdi_common.MAX_FTDI_INTERFACES_PER_DEVICE
+  pid = pid + product_increment
+  if product_increment:
+    c.build_logger.info('Use the next FTDI part @ pid = 0x%04x', pid)
+  return (idx, pid)
 
 
 def ftdi_locate_lib(lib_name):
@@ -57,7 +77,7 @@ def load_libs(*args):
   dll_list = []
   for lib_name in args:
     if lib_name == 'ftdi':
-      lib_name = libftdi_for_servo.LIB_NAME
+      lib_name = servo.libftdi_for_servo.LIB_NAME
 
     lib_path = ftdi_locate_lib(lib_name)
     logging.debug('lib_path for %s is %s\n', lib_name, lib_path)

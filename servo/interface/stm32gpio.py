@@ -6,13 +6,14 @@
 import array
 import logging
 import struct
-import usb
 
+import common as c
 import gpio_interface
 import stm32usb
+import usb
 
 
-class SgpioError(Exception):
+class SgpioError(c.InterfaceError):
   """Class for exceptions of Sgpio."""
 
   def __init__(self, msg, value=0):
@@ -51,7 +52,7 @@ class Sgpio(gpio_interface.GpioInterface):
     Raises:
       SgpioError: An error accessing Sgpio object
     """
-    self._logger = logging.getLogger('Sgpio')
+    gpio_interface.GpioInterface.__init__(self)
     self._logger.debug('')
 
     self._susb = stm32usb.Susb(vendor=vendor, product=product,
@@ -59,6 +60,18 @@ class Sgpio(gpio_interface.GpioInterface):
                                logger=self._logger)
 
     self._logger.debug('Set up stm32 gpio')
+
+  @staticmethod
+  def Build(vid, pid, sid, interface_data, **kwargs):
+    """Factory method to implement the interface."""
+    c.build_logger.info('Sgpio: interface: %s', interface_data)
+    return Sgpio(vendor=vid, product=pid, interface=interface_data['interface'],
+                 serialname=sid)
+
+  @staticmethod
+  def name():
+    """Name to request interface by in interface config maps."""
+    return 'stm32_uart'
 
   def __del__(self):
     """Sgpio destructor."""

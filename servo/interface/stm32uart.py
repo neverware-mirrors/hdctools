@@ -6,20 +6,20 @@ import errno
 import exceptions
 import logging
 import os
-import pty
 import select
 import sys
 import termios
 import threading
 import time
 import tty
-import usb
 
+import common as c
 import stm32usb
 import uart
+import usb
 
 
-class SuartError(Exception):
+class SuartError(c.InterfaceError):
   """Class for exceptions of Suart."""
 
   def __init__(self, msg, value=0):
@@ -69,6 +69,23 @@ class Suart(uart.Uart):
                                logger=self._logger)
 
     self._logger.debug('Set up stm32 uart')
+
+  @staticmethod
+  def Build(vid, pid, sid, interface_data, **kwargs):
+    """Factory method to implement the interface."""
+    c.build_logger.info('Suart: interface: %s' % interface_data)
+    sobj = Suart(vendor=vid, product=pid, interface=interface_data['interface'],
+                 serialname=sid)
+
+    sobj.run()
+
+    c.build_logger.info('%s' % sobj.get_pty())
+    return sobj
+
+  @staticmethod
+  def name():
+    """Name to request interface by in interface config maps."""
+    return 'stm32_uart'
 
   def close(self):
     """Suart wind down logic."""

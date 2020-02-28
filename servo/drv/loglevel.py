@@ -6,7 +6,7 @@
 import logging
 
 import hw_driver
-import servo.ec3po_interface
+import servo.interface.ec3po_interface
 import servo.servo_logging
 
 
@@ -52,7 +52,7 @@ class loglevel(hw_driver.HwDriver):
       # Set EC-3PO's logging level. This is only relevant when filtering through
       # the root-logger and not through the handlers.
       for interface in self._interface._interface_list:
-        if isinstance(interface, servo.ec3po_interface.EC3PO):
+        if isinstance(interface, servo.interface.ec3po_interface.EC3PO):
           interface.set_loglevel(new_level)
     else:
       for handler in out_handlers:

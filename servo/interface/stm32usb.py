@@ -3,10 +3,11 @@
 # found in the LICENSE file.
 """Allows creation of an interface via stm32 usb."""
 
+import common as c
 import usb
 
 
-class SusbError(Exception):
+class SusbError(c.InterfaceError):
   """Class for exceptions of Susb."""
 
   def __init__(self, msg, value=0):

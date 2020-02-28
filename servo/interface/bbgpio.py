@@ -3,9 +3,9 @@
 # found in the LICENSE file.
 
 import atexit
-import logging
 import os
 
+import common as c
 import bbmux_controller
 import gpio_interface
 
@@ -20,7 +20,7 @@ DIR_OUT = 1
 DIR_VAL_MAP = {DIR_IN: 'in', DIR_OUT: 'out'}
 
 
-class BBgpioError(Exception):
+class BBgpioError(c.InterfaceError):
   """Class for exceptions of Bgpio."""
 
   def __init__(self, msg, value=0):
@@ -46,7 +46,7 @@ class BBgpio(gpio_interface.GpioInterface):
   """
 
   def __init__(self):
-    self._logger = logging.getLogger('BBGpio')
+    gpio_interface.GpioInterface.__init__(self)
     self._logger.debug('')
     self._exported_gpios = []
     self._bbmux_controller = None
@@ -54,6 +54,16 @@ class BBgpio(gpio_interface.GpioInterface):
       self._bbmux_controller = bbmux_controller.BBmuxController()
     # Ensure we release the system resources at exit time.
     atexit.register(self.close)
+
+  @staticmethod
+  def Build(**kwargs):
+    """Factory method to implement the interface."""
+    return BBgpio()
+
+  @staticmethod
+  def name():
+    """Name to request interface by in interface config maps."""
+    return 'bb_gpio'
 
   def open(self):
     """Opens access to Beaglebone interface as a GPIO (bitbang).

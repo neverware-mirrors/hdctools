@@ -2,38 +2,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Servo Server."""
-import datetime
-import fcntl
-import fnmatch
 import logging
-import os
-import re
 import SimpleXMLRPCServer
-import time
-import usb
 
 import drv as servo_drv
-import bbadc
-import bbi2c
-import bbgpio
-import bbuart
-import ec3po_interface
-import ftdigpio
-import ftdii2c
-import ftdi_common
-import ftdiuart
-import i2cbus
+import interface as _interface
 import servo_dev
 import servo_interfaces
 import servo_logging
 import servo_postinit
-import stm32gpio
-import stm32i2c
-import stm32uart
 
 HwDriverError = servo_drv.hw_driver.HwDriverError
-
-MAX_I2C_CLOCK_HZ = 100000
 
 
 class ServodError(Exception):
@@ -82,43 +61,31 @@ class Servod(object):
     interfaces_len = len(interfaces)
     interface_list_len = len(self._interface_list)
     if interfaces_len > interface_list_len:
-      self._interface_list += [None] * (interfaces_len - interface_list_len)
+      # Fill with dummies.
+      self._interface_list += [_interface.dummy.Dummy()] * (interfaces_len -
+                                                            interface_list_len)
 
-    for i, interface in enumerate(interfaces):
-      is_ftdi_interface = False
-      if type(interface) is dict:
-        name = interface['name']
+    for i, interface_data in enumerate(interfaces):
+      if type(interface_data) is dict:
+        name = interface_data['name']
         # Store interface index for those that care about it.
-        interface['index'] = i
-      elif type(interface) is str:
-        if interface == 'dummy':
+        interface_data['index'] = i
+      elif type(interface_data) is str:
+        if interface_data in ['dummy', 'ftdi_dummy']:
           # 'dummy' reserves the interface for future use.  Typically the
           # interface will be managed by external third-party tools like
           # openOCD for JTAG or flashrom for SPI.  In the case of servo V4,
           # it serves as a placeholder for servo micro interfaces.
           continue
-        name = interface
-        is_ftdi_interface = interface.startswith('ftdi')
+        name = interface_data
       else:
-        raise ServodError('Illegal interface type %s' % type(interface))
-
-      # servos with multiple FTDI are guaranteed to have contiguous USB PIDs
-      product_increment = 0
-      if is_ftdi_interface:
-        # The interface argument in ftdi initialization is the interface number.
-        interface = ((i - 1) % ftdi_common.MAX_FTDI_INTERFACES_PER_DEVICE) + 1
-        product_increment = (i - 1) / ftdi_common.MAX_FTDI_INTERFACES_PER_DEVICE
-        if product_increment:
-          self._logger.info('Use the next FTDI part @ pid = 0x%04x',
-                            product + product_increment)
+        raise ServodError('Illegal interface data type %s'
+                          % type(interface_data))
 
       self._logger.info('Initializing interface %d to %s', i, name)
-      try:
-        func = getattr(self, '_init_%s' % name)
-      except AttributeError:
-        raise ServodError('Unable to locate init for interface %s' % name)
-      result = func(vendor, product + product_increment, serialname, interface)
-
+      result = _interface.Build(name=name, index=i, vid=vendor, pid=product,
+                                sid=serialname, interface_data=interface_data,
+                                servod=self)
       if isinstance(result, tuple):
         result_len = len(result)
         self._interface_list[i:(i + result_len)] = result
@@ -183,10 +150,7 @@ class Servod(object):
   def reinitialize(self):
     """Reinitialize all interfaces that support reinitialization"""
     for i, interface in enumerate(self._interface_list):
-      if hasattr(interface, 'reinitialize'):
-        interface.reinitialize()
-      else:
-        self._logger.debug('interface %d has no reset functionality', i)
+      interface.reinitialize()
     # Indicate interfaces are safe to use again.
     for device in self._devices.values():
         device.connect()
@@ -214,8 +178,7 @@ class Servod(object):
     """Servod turn down logic."""
     for i, interface in enumerate(self._interface_list):
       self._logger.info('Turning down interface %d' % i)
-      if hasattr(interface, 'close'):
-        interface.close()
+      interface.close()
 
   def get_devices(self):
     return self._devices.values()
@@ -225,224 +188,6 @@ class Servod(object):
       vid, pid, serial = device
       servod_device = servo_dev.ServoDevice(vid, pid, serial)
       self._devices[device] = servod_device
-
-  def _init_ftdi_dummy(self, vendor, product, serialname, interface):
-    """Dummy interface for ftdi devices.
-
-    This is a dummy function specifically for ftdi devices to not initialize
-    anything but to help pad the interface list.
-
-    Returns:
-      None.
-    """
-    return None
-
-  def _init_ftdi_gpio(self, vendor, product, serialname, interface):
-    """Initialize gpio driver interface and open for use.
-
-    Args:
-      interface: interface number of FTDI device to use.
-
-    Returns:
-      Instance object of interface.
-
-    Raises:
-      ServodError: If init fails
-    """
-    fobj = ftdigpio.Fgpio(vendor, product, interface, serialname)
-    try:
-      fobj.open()
-    except ftdigpio.FgpioError as e:
-      raise ServodError('Opening gpio interface. %s ( %d )' % (e.msg, e.value))
-
-    return fobj
-
-  def _init_stm32_uart(self, vendor, product, serialname, interface):
-    """Initialize stm32 uart interface and open for use
-
-    Note, the uart runs in a separate thread.  Users wishing to
-    interact with it will query control for the pty's pathname and connect
-    with their favorite console program.  For example:
-      cu -l /dev/pts/22
-
-    Args:
-      interface: dict of interface parameters.
-
-    Returns:
-      Instance object of interface
-
-    Raises:
-      ServodError: Raised on init failure.
-    """
-    self._logger.info('Suart: interface: %s' % interface)
-    sobj = stm32uart.Suart(vendor, product, interface['interface'], serialname)
-
-    try:
-      sobj.run()
-    except stm32uart.SuartError as e:
-      raise ServodError('Running uart interface. %s ( %d )' % (e.msg, e.value))
-
-    self._logger.info('%s' % sobj.get_pty())
-    return sobj
-
-  def _init_stm32_gpio(self, vendor, product, serialname, interface):
-    """Initialize stm32 gpio interface.
-    Args:
-      interface: dict of interface parameters.
-
-    Returns:
-      Instance object of interface
-
-    Raises:
-      SgpioError: Raised on init failure.
-    """
-    interface_number = interface
-    # Interface could be a dict.
-    if type(interface) is dict:
-      interface_number = interface['interface']
-    self._logger.info('Sgpio: interface: %s' % interface_number)
-    return stm32gpio.Sgpio(vendor, product, interface_number, serialname)
-
-  def _init_stm32_i2c(self, vendor, product, serialname, interface):
-    """Initialize stm32 USB to I2C bridge interface and open for use
-
-    Args:
-      interface: dict of interface parameters.
-
-    Returns:
-      Instance object of interface.
-
-    Raises:
-      Si2cError: Raised on init failure.
-    """
-    self._logger.info('Si2cBus: interface: %s' % interface)
-    port = interface.get('port', 0)
-    return stm32i2c.Si2cBus(vendor, product, interface['interface'], port=port,
-                            serialname=serialname)
-
-  def _init_bb_adc(self, vendor, product, serialname, interface):
-    """Initalize beaglebone ADC interface."""
-    return bbadc.BBadc()
-
-  def _init_bb_gpio(self, vendor, product, serialname, interface):
-    """Initalize beaglebone gpio interface."""
-    return bbgpio.BBgpio()
-
-  def _init_ftdi_i2c(self, vendor, product, serialname, interface):
-    """Initialize i2c interface and open for use.
-
-    Args:
-      interface: interface number of FTDI device to use
-
-    Returns:
-      Instance object of interface
-
-    Raises:
-      ServodError: If init fails
-    """
-    fobj = ftdii2c.Fi2c(vendor, product, interface, serialname)
-    try:
-      fobj.open()
-    except ftdii2c.Fi2cError as e:
-      raise ServodError('Opening i2c interface. %s ( %d )' % (e.msg, e.value))
-
-    # Set the frequency of operation of the i2c bus.
-    # TODO(tbroch) make configureable
-    fobj.setclock(MAX_I2C_CLOCK_HZ)
-
-    return fobj
-
-  # TODO (sbasi) crbug.com/187489 - Implement bb_i2c.
-  def _init_bb_i2c(self, interface):
-    """Initalize beaglebone i2c interface."""
-    return bbi2c.BBi2c(interface)
-
-  def _init_dev_i2c(self, vendor, product, serialname, interface):
-    """Initalize Linux i2c-dev interface."""
-    return i2cbus.I2CBus('/dev/i2c-%d' % interface['bus_num'])
-
-  def _init_ftdi_uart(self, vendor, product, serialname, interface):
-    """Initialize ftdi uart inteface and open for use
-
-    Note, the uart runs in a separate thread (pthreads).  Users wishing to
-    interact with it will query control for the pty's pathname and connect
-    with there favorite console program.  For example:
-      cu -l /dev/pts/22
-
-    Args:
-      interface: interface number of FTDI device to use
-
-    Returns:
-      Instance object of interface
-
-    Raises:
-      ServodError: If init fails
-    """
-    fobj = ftdiuart.Fuart(vendor, product, interface, serialname)
-    try:
-      fobj.run()
-    except ftdiuart.FuartError as e:
-      raise ServodError('Running uart interface. %s ( %d )' % (e.msg, e.value))
-
-    self._logger.info('%s' % fobj.get_pty())
-    return fobj
-
-  # TODO (sbasi) crbug.com/187492 - Implement bbuart.
-  def _init_bb_uart(self, vendor, product, serialname, interface):
-    """Initalize beaglebone uart interface."""
-    logging.debug('UART INTERFACE: %s', interface)
-    return bbuart.BBuart(interface)
-
-  def _init_ftdi_gpiouart(self, vendor, product, serialname, interface):
-    """Initialize special gpio + uart interface and open for use
-
-    Note, the uart runs in a separate thread (pthreads).  Users wishing to
-    interact with it will query control for the pty's pathname and connect
-    with there favorite console program.  For example:
-      cu -l /dev/pts/22
-
-    Args:
-      interface: interface number of FTDI device to use
-
-    Returns:
-      Instance objects of interface
-
-    Raises:
-      ServodError: If init fails
-    """
-    fgpio = self._init_ftdi_gpio(vendor, product, serialname, interface)
-    fuart = ftdiuart.Fuart(vendor, product, interface, serialname, fgpio._fc)
-    try:
-      fuart.run()
-    except ftdiuart.FuartError as e:
-      raise ServodError('Running uart interface. %s ( %d )' % (e.msg, e.value))
-
-    self._logger.info('uart pty: %s' % fuart.get_pty())
-    return fgpio, fuart
-
-  def _init_ec3po_uart(self, vendor, product, serialname, interface):
-    """Initialize EC-3PO console interpreter interface.
-
-    Args:
-      interface: A dictionary representing the interface.
-
-    Returns:
-      An EC3PO object representing the EC-3PO interface or None if there's no
-      interface for the USB PD UART.
-    """
-    device = (vendor, product, serialname)
-    raw_uart_name = interface['raw_pty']
-    raw_uart_source = interface['source']
-    if self._syscfg.is_control(raw_uart_name):
-      raw_ec_uart = self.get(raw_uart_name)
-      return ec3po_interface.EC3PO(raw_ec_uart, raw_uart_source, device)
-    else:
-      # The overlay doesn't have the raw PTY defined, therefore we can skip
-      # initializing this interface since no control relies on it.
-      self._logger.debug(
-          'Skip initializing EC3PO for %s, no control specified.',
-          raw_uart_name)
-      return None
 
   def _camel_case(self, string):
     output = ''

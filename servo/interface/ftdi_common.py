@@ -3,14 +3,14 @@
 # found in the LICENSE file.
 """Defines common structures for use with c libraries related to FTDI devices.
 """
-import ctypes
 from collections import OrderedDict
+import ctypes
 
-import servo_interfaces
+import servo.servo_interfaces
 
 MAX_FTDI_INTERFACES_PER_DEVICE = 4
 
-(DEFAULT_VID, DEFAULT_PID) = servo_interfaces.SERVO_ID_DEFAULTS[0]
+(DEFAULT_VID, DEFAULT_PID) = servo.servo_interfaces.SERVO_ID_DEFAULTS[0]
 
 (INTERFACE_TYPE_ANY, INTERFACE_TYPE_GPIO, INTERFACE_TYPE_I2C,
  INTERFACE_TYPE_JTAG, INTERFACE_TYPE_SPI, INTERFACE_TYPE_UART) = \

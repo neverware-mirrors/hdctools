@@ -7,12 +7,16 @@
 import ctypes
 import logging
 
+import common as c
 import ftdi_common
 import ftdi_utils
 import i2c_base
 
 
-class Fi2cError(Exception):
+MAX_I2C_CLOCK_HZ = 100000
+
+
+class Fi2cError(c.InterfaceError):
   """Class for exceptions of Fi2c."""
 
   def __init__(self, msg, value=0):
@@ -69,7 +73,7 @@ class Fi2c(i2c_base.BaseI2CBus):
     self._logger.debug('')
 
     (self._flib, self._lib, self._gpiolib) = \
-        ftdi_utils.load_libs('ftdi', 'ftdii2c',  'ftdigpio')
+        ftdi_utils.load_libs('ftdi', 'ftdii2c', 'ftdigpio')
     self._fargs = ftdi_common.FtdiCommonArgs(
         vendor_id=vendor, product_id=product, interface=interface,
         serialname=serialname)
@@ -80,6 +84,24 @@ class Fi2c(i2c_base.BaseI2CBus):
     self.init()
 
     self._i2c_mask = ~self._fic.gpio.mask
+
+  @staticmethod
+  def Build(index, vid, pid, sid, **kwargs):
+    """Factory method to implement the interface."""
+    interface, pid = ftdi_utils.get_interface_and_pid(index, pid)
+    fobj = Fi2c(vendor=vid, product=pid, interface=interface, serialname=sid)
+    fobj.open()
+
+    # Set the frequency of operation of the i2c bus.
+    # TODO(tbroch) make configureable
+    fobj.setclock(MAX_I2C_CLOCK_HZ)
+
+    return fobj
+
+  @staticmethod
+  def name():
+    """Name to request interface by in interface config maps."""
+    return 'ftdi_i2c'
 
   def __del__(self):
     """Fi2c destructor.

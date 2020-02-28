@@ -3,11 +3,10 @@
 # found in the LICENSE file.
 """Accesses I2C buses through stm32 usb endpoint."""
 
-import array
 import errno
 import logging
-import usb
 
+import common as c
 import i2c_base
 import stm32usb
 
@@ -15,7 +14,7 @@ _MAX_WRITE_SIZE = (1 << 12) - 1
 _MAX_READ_SIZE = (1 << 15) - 1
 
 
-class Si2cError(Exception):
+class Si2cError(c.InterfaceError):
   """Class for exceptions of Si2c."""
 
   def __init__(self, msg, value=0):
@@ -61,6 +60,20 @@ class Si2cBus(i2c_base.BaseI2CBus):
                                logger=self._logger)
 
     self._logger.debug('Set up stm32 i2c')
+
+  @staticmethod
+  def Build(vid, pid, sid, interface_data, **kwargs):
+    """Factory method to implement the interface."""
+    c.build_logger.info('Si2cBus: interface: %s' % interface_data)
+    port = interface_data.get('port', 0)
+    return Si2cBus(vendor=vid, product=pid,
+                   interface=interface_data['interface'], port=port,
+                   serialname=sid)
+
+  @staticmethod
+  def name():
+    """Name to request interface by in interface config maps."""
+    return 'stm32_i2c'
 
   def reinitialize(self):
     """Reinitialize the usb endpoint"""

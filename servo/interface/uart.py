@@ -3,19 +3,20 @@
 # found in the LICENSE file.
 """Common Functionality required by Servo Uart Interfaces."""
 import errno
-import logging
 import os
 import termios
 import threading
 import time
 import tty
 
+import interface
+
 MAX_BUFFER_SIZE = 500000  # Do not keep more than this number of bytes
 
 # when capturing.
 
 
-class Uart(object):
+class Uart(interface.Interface):
   """Base Class for UART interface implementations.
 
   Most the common functionality involves capturing the UART stream as this is
@@ -29,8 +30,17 @@ class Uart(object):
   _capture_lock: lock used to protect the _capture_buffer.
   """
 
-  def __init__(self):
-    self._logger = logging.getLogger('Uart')
+  def __init__(self, logger_name=None):
+    """Initialize the uart interface by setting up threads and locks.
+
+    Multiple UARTs might be using the same uart interface type. To make logging
+    easier to process, allow for a logger_name to be passed that might help
+    identify which underlying console the uart messages are coming from.
+
+    Args:
+      logger_name: detailed logger name
+    """
+    interface.Interface.__init__(self, logger_name)
     self._capture_active = False
     self._capture_buffer = []
     self._capture_thread = None
@@ -81,7 +91,7 @@ class Uart(object):
       # from the pty until capture is resumed.
       if self._capture_paused:
         if (capture_pause_count % 10) == 0:
-            self._logger.debug('capture paused %d', capture_pause_count)
+          self._logger.debug('capture paused %d', capture_pause_count)
         capture_pause_count += 1
         time.sleep(.01)
         continue

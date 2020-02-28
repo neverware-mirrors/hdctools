@@ -25,6 +25,16 @@ class I2CBus(i2c_base.BaseI2CBus):
     i2c_base.BaseI2CBus.__init__(self)
     self._interface = interface
 
+  @staticmethod
+  def Build(interface_data, **kwargs):
+    """Factory method to implement the interface."""
+    return I2CBus('/dev/i2c-%d' % interface_data['bus_num'])
+
+  @staticmethod
+  def name():
+    """Name to request interface by in interface config maps."""
+    return 'dev_i2c'
+
   def _raw_wr_rd(self, slave_address, write_list, read_count=None):
     """Implements hdctools wr_rd() interface.
 

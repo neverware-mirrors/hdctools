@@ -9,12 +9,12 @@ Presently tested for:
 """
 import errno
 import logging
-import numpy
-import servo.stm32i2c
 import time
 
 import hw_driver
 import i2c_reg
+import numpy
+import servo.interface.stm32i2c
 
 
 class Ina2xxError(hw_driver.HwDriverError):
@@ -176,7 +176,7 @@ class ina2xx(hw_driver.HwDriver):
           last_exception = e
         else:
           raise
-      except servo.stm32i2c.Si2cError as e:
+      except servo.interface.stm32i2c.Si2cError as e:
         last_exception = e
 
     if last_exception:

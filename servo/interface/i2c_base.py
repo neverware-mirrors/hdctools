@@ -10,6 +10,7 @@ import threading
 import weakref
 
 import i2c_pseudo
+import interface
 
 
 def _format_write_list(write_list):
@@ -26,7 +27,7 @@ def _format_write_list(write_list):
   return '[%s]' % (', '.join('0x%02X' % (value,) for value in write_list),)
 
 
-class BaseI2CBus(object):
+class BaseI2CBus(interface.Interface):
   """Base class for all I2c bus classes.
 
   Thread safety:
@@ -40,6 +41,7 @@ class BaseI2CBus(object):
 
   def __init__(self):
     """Initializer."""
+    interface.Interface.__init__(self)
     self.__logger = logging.getLogger('i2c_base')
     self.__lock = threading.Lock()
     self.__pseudo_adap = None

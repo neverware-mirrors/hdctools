@@ -7,10 +7,11 @@ import logging
 import subprocess
 
 import bbmux_controller
+import common as c
 import i2c_base
 
 
-class BBi2cError(Exception):
+class BBi2cError(c.InterfaceError):
   """Class for exceptions of BBi2c."""
 
   def __init__(self, msg, value=0):
@@ -37,6 +38,16 @@ class BBi2c(i2c_base.BaseI2CBus):
     # Older kernels utilizing the omap mux starts counting from 1
     if bbmux_controller.use_omapmux():
       self._bus_num += 1
+
+  @staticmethod
+  def Build(interface_data, **kwargs):
+    """Factory method to implement the interface."""
+    return BBi2c(interface=interface_data)
+
+  @staticmethod
+  def name():
+    """Name to request interface by in interface config maps."""
+    return 'bb_i2c'
 
   def _write(self, slv, address, wlist):
     """Preform a single i2cset write command.

@@ -2,17 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import interface
 
-class GpioInterface(object):
+
+class GpioInterface(interface.Interface):
   """Abstract class to be used by GPIO interface implementations."""
 
   def open(self):
     """Opens access to GPIO's."""
     raise NotImplementedError('open not yet implemented.')
-
-  def close(self):
-    """Close access to GPIO's."""
-    raise NotImplementedError('close not yet implemented.')
 
   def wr_rd(self, offset, width, dir_val=None, wr_val=None, chip=None,
             muxfile=None):
