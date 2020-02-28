@@ -403,7 +403,7 @@ class ServodClientParser(ServodRCParser):
   serialname as well.
   """
 
-  def __init__(self, scratch=None, **kwargs):
+  def __init__(self, scratch=utils.scratch.SERVO_SCRATCH_DIR, **kwargs):
     """Create a ServodRCParser that has the BaseServodParser args.
 
     (for testing) pass a scratch directory instead of the global default.
