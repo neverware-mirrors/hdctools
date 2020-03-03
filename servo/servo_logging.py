@@ -465,6 +465,25 @@ class ServodRotatingFileHandler(logging.handlers.RotatingFileHandler):
     self.pruneOldLogsAcrossInstances()
 
 
+class FuncNameAligner(logging.Filter):
+  """
+  Class to align the function names without having to alter the log format
+  """
+  def __init__(self, padding):
+    """Instance initializer
+
+    Args:
+      padding: number of spaces to reserve for function name
+    """
+    super(FuncNameAligner, self).__init__()
+    self.padding = padding
+
+  def filter(self, record):
+    """Modify the record, then allow it to be logged by returning True"""
+    record.funcName = record.funcName.ljust(self.padding)
+    return True
+
+
 class _ControlWrapper(object):
   """
   When running tests, it's nice to be able to see all the servod calls the test
@@ -477,9 +496,6 @@ class _ControlWrapper(object):
   The child classes define the actual text for the log messages.
   """
 
-  # Pad shorter control names, to align the value separators (':' or '=').
-  NAME_ALIGN = 16
-
   # Number of characters to log before switching to just logging the count
   # servo_micro_uart_stream = '2020-02-19 14:11:37 chan save\r\n2020-02-19 ...
   MAX_VALUE_LEN = 80
@@ -490,6 +506,7 @@ class _ControlWrapper(object):
 
   def __init__(self, name):
     self.logger = logging.getLogger('Controls')
+    self.logger.addFilter(FuncNameAligner(len('_log_success')))
     self.depth = len(self.__class__.call_stack)
     self.indent = '  ' * self.depth
     self.name = name
@@ -497,10 +514,6 @@ class _ControlWrapper(object):
   def __str__(self):
     """String representation of this wrapper object."""
     return "<%s %s>" % (self.__class__.__name__, self.name)
-
-  def _align_name(self):
-    """Return the name, left-padded to a certain number of spaces"""
-    return self.name.ljust(self.NAME_ALIGN)
 
   def _truncate_string(self, val):
     """If string is very long, truncate it and note how long it was.
@@ -598,13 +611,13 @@ class WrapSetCall(_ControlWrapper):
 
   def _log_start(self):
     """Log the start of a set() operation, indicating the value to be set."""
-    self.logger.debug('%s(SET) %s   %s',
-                      self.indent, self._align_name(), self.value)
+    self.logger.debug('%s(SET) %-16s   %s',
+                      self.indent, self.name, self.value)
 
   def _log_success(self):
     """Log the success of a set() operation, showing that the value was set."""
-    self.logger.debug('%s(set) %s : %s',
-                      self.indent, self._align_name(), self.value)
+    self.logger.debug('%s(set) %-16s : %s',
+                      self.indent, self.name, self.value)
 
   def _log_exception(self, exc_type, exc_val, exc_tb):
     """Log any exception coming from the driver's actual set() operation.
@@ -673,8 +686,8 @@ class WrapGetCall(_ControlWrapper):
 
   def _log_start(self):
     """Log the start of a get() operation, with value not known."""
-    self.logger.debug('%s(GET) %s ?',
-                      self.indent, self._align_name())
+    self.logger.debug('%s(GET) %-16s ?',
+                      self.indent, self.name)
 
   def _log_success(self):
     """Log the success of a get() operation, showing the retrieved value."""
@@ -682,8 +695,8 @@ class WrapGetCall(_ControlWrapper):
       result_str = self._truncate_string(self.result)
     else:
       result_str = '[result not reported]'
-    self.logger.debug('%s(get) %s = %s',
-                      self.indent, self._align_name(), result_str)
+    self.logger.debug('%s(get) %-16s = %s',
+                      self.indent, self.name, result_str)
 
   def _log_exception(self, exc_type, exc_val, exc_tb):
     """Log any exception coming from the driver's actual get() method."""
