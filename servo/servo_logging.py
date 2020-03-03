@@ -487,7 +487,7 @@ class _ControlWrapper(object):
   call_stack = []
 
   def __init__(self, name):
-    self.logger = logging.getLogger('Servod')
+    self.logger = logging.getLogger('Controls')
     self.depth = len(self.__class__.call_stack)
     self.indent = '  ' * self.depth
     self.name = name
@@ -569,15 +569,14 @@ class WrapSetCall(_ControlWrapper):
   if one happened.
 
   Format:
-
-    Servod - INFO - (SET) fw_wp_state        force_off
-    Servod - INFO -   (SET) fw_wp_vref         pp3300
-    Servod - INFO -   (set) fw_wp_vref       : pp3300
-    Servod - INFO -   (SET) fw_wp_en           on
-    Servod - INFO -   (set) fw_wp_en         : on
-    Servod - INFO -   (SET) fw_wp              off
-    Servod - INFO -   (set) fw_wp            : off
-    Servod - INFO - (set) fw_wp_state      : force_off
+    Controls - DEBUG - (SET) fw_wp_state         force_off
+    Controls - DEBUG -   (SET) fw_wp_vref          pp3300
+    Controls - DEBUG -   (set) fw_wp_vref        : pp3300
+    Controls - DEBUG -   (SET) fw_wp_en            on
+    Controls - DEBUG -   (set) fw_wp_en          : on
+    Controls - DEBUG -   (SET) fw_wp               off
+    Controls - DEBUG -   (set) fw_wp             : off
+    Controls - DEBUG - (set) fw_wp_state      : force_off
   """
 
   def __init__(self, name, value):
@@ -597,13 +596,13 @@ class WrapSetCall(_ControlWrapper):
 
   def _log_start(self):
     """Log the start of a set() operation, indicating the value to be set."""
-    self.logger.info('%s(SET) %s   %s',
-                     self.indent, self._align_name(), self.value)
+    self.logger.debug('%s(SET) %s   %s',
+                      self.indent, self._align_name(), self.value)
 
   def _log_success(self):
     """Log the success of a set() operation, showing that the value was set."""
-    self.logger.info('%s(set) %s : %s',
-                     self.indent, self._align_name(), self.value)
+    self.logger.debug('%s(set) %s : %s',
+                      self.indent, self._align_name(), self.value)
 
   def _log_exception(self, exc_type, exc_val, exc_tb):
     """Log any exception coming from the driver's actual set() operation.
@@ -636,16 +635,16 @@ class WrapGetCall(_ControlWrapper):
   if one happened.
 
   Format:
-    Servod - INFO - (GET) fw_wp_state      ?
-    Servod - INFO -   (GET) fw_wp_en         ?
-    Servod - INFO -   (get) fw_wp_en         = off
-    Servod - INFO -   (GET) fw_wp            ?
-    Servod - INFO -   (get) fw_wp            = on
-    Servod - INFO - (get) fw_wp_state      = on
+    Controls - DEBUG - (GET) fw_wp_state      ?
+    Controls - DEBUG -   (GET) fw_wp_en         ?
+    Controls - DEBUG -   (get) fw_wp_en         = off
+    Controls - DEBUG -   (GET) fw_wp            ?
+    Controls - DEBUG -   (get) fw_wp            = on
+    Controls - DEBUG - (get) fw_wp_state      = on
 
   If a value is very long (>MAX_VALUE_LEN characters), it is truncated, and a
   note is added stating how long it was originally:
-      Servod - INFO - (get) ec_uart_stream   = (962 characters) '2020-02-...
+    Controls - INFO - (get) ec_uart_stream   = (962 characters) '2020-02-...
 
   """
 
@@ -672,8 +671,8 @@ class WrapGetCall(_ControlWrapper):
 
   def _log_start(self):
     """Log the start of a get() operation, with value not known."""
-    self.logger.info('%s(GET) %s ?',
-                     self.indent, self._align_name())
+    self.logger.debug('%s(GET) %s ?',
+                      self.indent, self._align_name())
 
   def _log_success(self):
     """Log the success of a get() operation, showing the retrieved value."""
@@ -681,8 +680,8 @@ class WrapGetCall(_ControlWrapper):
       result_str = self._truncate_string(self.result)
     else:
       result_str = '[result not reported]'
-    self.logger.info('%s(get) %s = %s',
-                     self.indent, self._align_name(), result_str)
+    self.logger.debug('%s(get) %s = %s',
+                      self.indent, self._align_name(), result_str)
 
   def _log_exception(self, exc_type, exc_val, exc_tb):
     """Log any exception coming from the driver's actual get() method."""
