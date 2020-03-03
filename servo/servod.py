@@ -35,6 +35,9 @@ VERSION = pkg_resources.require('servo')[0].version
 
 MAX_ISERIAL_STR = 128
 
+# If user does not specify a log directory, use this one.
+DEFAULT_LOG_DIR = '/var/log'
+
 # If user does not specify a port to use, try ports in this range. Traverse
 # the range from high to low addresses to maintain backwards compatibility
 # (the first checked default port is 9999, the range is such that all possible
@@ -293,7 +296,7 @@ class ServodStarter(object):
     log_dir = server_pars.add_mutually_exclusive_group()
     log_dir.add_argument('--no-log-dir', default=False, action='store_true',
                          help='Turn off log dir functionality.')
-    log_dir.add_argument('--log-dir', type=str, default='/var/log',
+    log_dir.add_argument('--log-dir', type=str, default=DEFAULT_LOG_DIR,
                          help='path where to dump servod debug logs as a file. '
                          'If flag omitted default path is used')
     server_pars.add_argument('--log-dir-backup-count', type=int,
