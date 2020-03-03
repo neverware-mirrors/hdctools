@@ -38,6 +38,9 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
   # host event.
   _RECOVERY_DETECTION_DELAY = 1
 
+  # Time in seconds to wait after booting the AP to reboot the EC.
+  _RESET_DELAY = 1
+
   def __init__(self, interface, params):
     """Constructor
 
@@ -60,6 +63,7 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
         self._params.get('role_swap_delay', 1.0))
     self._need_ap_off_in_ro = ('yes' == self._params.get(
         'need_ap_off_in_ro', 'no'))
+    self._pb_init_idle = ('yes' == self._params.get('pb_init_idle', 'no'))
 
 
   def _power_on_ap(self):
@@ -203,3 +207,21 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
 
   def _power_on_fastboot(self):
     self._power_on_bytype(self.REC_ON, rec_type=self._REC_TYPE_FASTBOOT)
+
+  def _reset_cycle(self):
+    if self._pb_init_idle:
+      try:
+        self._interface.set('ec_uart_regexp', '["power state 3 = S0"]')
+        self._interface.set('ec_uart_cmd', 'powerinfo')
+        dut_was_off = False
+      except Exception:
+        dut_was_off = True
+      finally:
+        self._interface.set('ec_uart_regexp', 'None')
+
+      if dut_was_off:
+        # Boot the AP so the EC will boot the AP again after it reboots.
+        self._power_on(self.REC_OFF)
+        time.sleep(self._RESET_DELAY)
+
+    return super(crosEcSoftrecPower, self)._reset_cycle()
