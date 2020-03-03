@@ -273,6 +273,8 @@ def setup(logdir, port, debug_stdout=False, backup_count=LOG_BACKUP_COUNT):
     logging_ts = _generateTs()
     if not os.path.isdir(instance_logdir):
       os.makedirs(instance_logdir)
+    elif os.lstat(instance_logdir).st_uid != os.geteuid():
+      raise OSError(1, 'Log directory not owned by user', instance_logdir)
     for level in LOGLEVEL_FILES:
       fh_level, fh_fmt = LOGLEVEL_MAP[level]
       fh = ServodRotatingFileHandler(logdir=instance_logdir, ts=logging_ts,
