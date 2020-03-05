@@ -144,3 +144,13 @@ class ec3poC2d2(ec3po_servo.ec3poServo):
     """
     bus = self._params['bus']
     self._issue_cmd('enable_i2c %s %d' % (bus, value))
+
+  def _Get_h1_vref(self):
+    """Gets if H1 Vref is present or not
+
+    Returns:
+      1 if H1 vref is present, otherwise 0
+    """
+    result = self._issue_cmd_get_results('h1_vref',
+      ['H1 Vref: (\w+)'])[0][1]
+    return int(result == 'on')

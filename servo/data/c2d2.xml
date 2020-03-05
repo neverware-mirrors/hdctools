@@ -32,6 +32,12 @@
     <params subtype="pwr_button" interface="6" drv="ec3po_c2d2" clobber_ok=""
     map="onoff" init="off" />
   </control>
+  <control>
+    <name>h1_vref_present</name>
+    <doc>Hold DUT power button</doc>
+    <params cmd="get" subtype="h1_vref" interface="6" drv="ec3po_c2d2"
+    map="onoff" init="off" />
+  </control>
   <!-- CR50 Console GPIO interface -->
   <control>
     <name>ap_flash_select</name>
@@ -44,6 +50,12 @@
     <doc>EC_FLASH_SELECT GPIO pin.</doc>
     <params subtype="ec_boot_mode" interface="9" drv="cr50"
     map="onoff" init="off" />
+  </control>
+  <control>
+    <name>ec_reset</name>
+    <doc>Holds the EC in reset via CR50 command</doc>
+    <params subtype="cold_reset" interface="9" drv="cr50"
+    map="onoff_i" clobber_ok=""></params>
   </control>
   <!-- UART and CONSOLE settings -->
   <control>
