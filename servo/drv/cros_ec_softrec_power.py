@@ -65,6 +65,7 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
     self._interface.set('power_key', 'short_press')
 
   def _power_on_bytype(self, rec_mode, rec_type=_REC_TYPE_REC_ON):
+    self._interface.set('ec_uart_regexp', 'None')
     self._interface.set('ec_uart_cmd', '\r')
     if rec_mode == self.REC_ON or rec_mode == self.REC_ON_FORCE_MRC:
       if self._warm_reset_can_hold_ap:
