@@ -14,9 +14,9 @@ import os
 import subprocess
 import time
 
-import pty_driver
+import servo.drv.pty_driver as pty_driver
+import servo.stm32uart as stm32uart
 import servo_updater
-import stm32uart
 
 logfile = None
 testerlogfile = None

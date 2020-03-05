@@ -107,7 +107,8 @@ setup(
   description = "Tools to program and validate servo devices.",
   entry_points={
     'console_scripts': [
-        'mfg_servo_v4 = servo_mfg.mfg_servo_v4:main',
+        'mfg_servo_v4 = servo_mfg.mfg_servo_v4:flash_v4',
+        'mfg_servo_v4_1 = servo_mfg.mfg_servo_v4:flash_v4point1',
         'mfg_servo_micro = servo_mfg.mfg_servo_micro:main',
         'mfg_c2d2 = servo_mfg.mfg_c2d2:main',
     ]
