@@ -756,7 +756,8 @@ class Servod(object):
       # TODO(aaboagye): Refactor it.
       return self.get_serial_number(name.split('serialname')[0].strip('_'))
 
-    with servo_logging.WrapGetCall(name) as wrapper:
+    with servo_logging.WrapGetCall(
+            name, known_exceptions=(AttributeError, HwDriverError)) as wrapper:
       (params, drv, device) = self._get_param_drv(name)
       if device in self._devices:
         self._devices[device].wait(self.INTERFACE_AVAILABILITY_TIMEOUT)
@@ -802,7 +803,8 @@ class Servod(object):
       HwDriverError: Error occurred while using driver
       ServodError: if interfaces are not available within timeout period
     """
-    with servo_logging.WrapSetCall(name, wr_val_str):
+    with servo_logging.WrapSetCall(
+            name, wr_val_str, known_exceptions=(AttributeError, HwDriverError)):
       (params, drv, device) = self._get_param_drv(name, False)
       if device in self._devices:
         self._devices[device].wait(self.INTERFACE_AVAILABILITY_TIMEOUT)

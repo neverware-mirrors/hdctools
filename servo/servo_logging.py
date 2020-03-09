@@ -34,7 +34,6 @@ import sys
 import tarfile
 import time
 
-from .drv import hw_driver
 
 # Format strings used for servod logging.
 DEFAULT_FMT_STRING = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -504,12 +503,20 @@ class _ControlWrapper(object):
   # This is a class attribute so indentation can be shared between instances.
   call_stack = []
 
-  def __init__(self, name):
+  def __init__(self, name, known_exceptions=(AttributeError,)):
+    """Instance initializer
+
+    Args:
+      name: the name of the control being invoked
+      known_exceptions: a tuple of exception classes to count as "ordinary"
+                        in _log_exception
+    """
     self.logger = logging.getLogger('Controls')
     self.logger.addFilter(FuncNameAligner(len('_log_success')))
     self.depth = len(self.__class__.call_stack)
     self.indent = '  ' * self.depth
     self.name = name
+    self._known_exceptions = tuple(known_exceptions)
 
   def __str__(self):
     """String representation of this wrapper object."""
@@ -594,19 +601,20 @@ class WrapSetCall(_ControlWrapper):
     Controls - DEBUG - (set) fw_wp_state      : force_off
   """
 
-  def __init__(self, name, value):
+  def __init__(self, name, value, known_exceptions=(AttributeError,)):
     """Instance initializer
 
     Args:
       name:  the name of the control
       value: the value to be set
-
+      known_exceptions: a tuple of exception classes to count as "ordinary"
+                        in _log_exception
     Example:
       with WrapSetCall(name, value):
         ...
 
     """
-    super(WrapSetCall, self).__init__(name)
+    super(WrapSetCall, self).__init__(name, known_exceptions)
     self.value = value
 
   def _log_start(self):
@@ -628,7 +636,7 @@ class WrapSetCall(_ControlWrapper):
       exc_tb: The traceback object
     """
 
-    if isinstance(exc_val, (AttributeError, hw_driver.HwDriverError)):
+    if isinstance(exc_val, self._known_exceptions):
       # Ordinary exceptions: ERROR shows only first line; DEBUG shows traceback.
       first_line = str(exc_val).split('\n', 1)[0]
       self.logger.error('(%s) Failed setting %s -> %s: %s',
@@ -663,11 +671,13 @@ class WrapGetCall(_ControlWrapper):
 
   """
 
-  def __init__(self, name):
+  def __init__(self, name, known_exceptions=(AttributeError,)):
     """Instance initializer
 
     Args:
       name: the name of the control being requested
+      known_exceptions: a tuple of exception classes to count as "ordinary"
+                        in _log_exception
 
     Examples:
       with WrapGetCall(name) as wrapper:
@@ -675,7 +685,7 @@ class WrapGetCall(_ControlWrapper):
         result = ...
         wrapper.got_result(result)
     """
-    super(WrapGetCall, self).__init__(name)
+    super(WrapGetCall, self).__init__(name, known_exceptions)
     self.result = None
     self._result_reported = False
 
@@ -701,7 +711,7 @@ class WrapGetCall(_ControlWrapper):
   def _log_exception(self, exc_type, exc_val, exc_tb):
     """Log any exception coming from the driver's actual get() method."""
 
-    if isinstance(exc_val, (AttributeError, hw_driver.HwDriverError)):
+    if isinstance(exc_val, self._known_exceptions):
       # Ordinary exceptions: ERROR shows only first line; DEBUG shows traceback.
       first_line = str(exc_val).split('\n', 1)[0]
       self.logger.error('(%s) Failed getting %s: %s',
