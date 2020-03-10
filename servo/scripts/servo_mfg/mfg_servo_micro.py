@@ -15,9 +15,9 @@ import argparse
 import re
 import time
 
+import servo_updater
 import mfg_servo_common as c
 
-SERVO_MICRO_BIN = 'servo_micro.bin'
 STM_DFU_VIDPID = '0483:df11'
 STM_VIDPID = '18d1:501a'
 LOGNAME = '/var/log/mfg_servo_micro'
@@ -54,7 +54,7 @@ def main():
     c.log('Plug in servo_micro via OTG adapter')
     c.wait_for_usb(STM_DFU_VIDPID)
     c.log('Found DFU target')
-    c.do_dfu(c.full_servo_bin_path(SERVO_MICRO_BIN))
+    c.do_dfu(c.full_servo_bin_path(servo_updater.BOARD_SERVO_MICRO))
 
     c.log('\n\n************************************************\n')
     c.log('Plug in servo_micro via normal cable')

@@ -116,9 +116,7 @@ class ec3poServo(pty_driver.ptyDriver):
         The version string of the firmware available to servo_updater.
     """
     board = self._board
-    fname = servo_updater.FIRMWARE_PATH + board + '.bin'
-    if not os.path.isfile(fname):
-      return ''
+    _, fname = servo_updater.findfiles(board, None)
 
     return servo_updater.find_available_version(board, fname)
 

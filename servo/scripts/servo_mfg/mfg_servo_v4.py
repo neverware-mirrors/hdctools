@@ -16,6 +16,7 @@ import re
 import subprocess
 import time
 
+import servo_updater
 import mfg_servo_common as c
 
 LOGNAME = '/var/log/mfg_servo_v4'

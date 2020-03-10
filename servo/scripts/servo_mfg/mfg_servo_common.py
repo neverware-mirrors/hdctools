@@ -21,8 +21,10 @@ import servo_updater
 logfile = None
 testerlogfile = None
 
-def full_servo_bin_path(binfile):
-  return os.path.join(servo_updater.FIRMWARE_PATH, binfile)
+def full_servo_bin_path(board):
+  """Get full servo binary path by servo board name."""
+  _, bin_path = servo_updater.findfiles(board, None)
+  return bin_path
 
 def full_bin_path(binfile):
   return os.path.join(os.path.dirname(os.path.realpath(__file__)), binfile)
