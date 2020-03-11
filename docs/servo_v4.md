@@ -48,15 +48,18 @@ Details:
 Sorry, Servo v4 is not publicly available for purchase.
 ***
 
+*** note
+**IMPORTANT**: You will need to [update the firmware](#updating-firmware)
+before using, as the factory firmware is quite old.
+***
+
 ### Partners
 
 Your contact at Google should be able to provide you with Servo v4.
 
 ### Googlers
 
-Stop by your local Chromestop. You will need to
-[update the firmware](#updating-firmware) before using, as the factory firmware
-is quite old.
+Stop by your local Chromestop.
 
 ## How to Use Servo v4
 
