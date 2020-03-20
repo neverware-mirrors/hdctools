@@ -12,8 +12,8 @@ endif
 
 SUBDIRS_INSTALL	= $(foreach var,$(SUBDIRS),$(var)-install)
 
-all: 		$(SUBDIRS)
-install:	$(SUBDIRS_INSTALL)
+all:  ver  $(SUBDIRS)
+install:  ver  $(SUBDIRS_INSTALL)
 clean:
 	@rm -rf $(HDCTOOLS_BUILD_DIR)
 
@@ -26,7 +26,12 @@ $(SUBDIRS):
 $(SUBDIRS_INSTALL):	all
 	@$(call remake,Installing,$(subst -install,,$@),install)
 
-.PHONY:	$(SUBDIRS) $(SUBDIRS_INSTALL)
+.PHONY:	ver $(SUBDIRS) $(SUBDIRS_INSTALL)
+
+ver:
+	# Generate the sversion file in the same directory as setup.py so that
+	# versioning can happen on build-time.
+	$(HDCTOOLS_DIR)/getversion.sh > $(HDCTOOLS_DIR)/servo/sversion.py;
 
 src:	lib
 test:	src lib

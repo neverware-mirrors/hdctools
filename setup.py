@@ -8,9 +8,14 @@
 
 import imp
 import os
+import sys
+
 from setuptools import setup
 from setuptools.command import build_py
-import sys
+import servo.sversion_util as svu
+
+__version__ = svu.setuptools_version()
+
 
 class servo_build_py(build_py.build_py):
   """ Custom build_py class for servod to do setup """
@@ -31,8 +36,6 @@ class servo_build_py(build_py.build_py):
                                                                   [data_dir]))
     ina_generator.GenerateINAControls(data_dir)
     build_py.build_py.run(self)
-
-execfile('version.py')
 
 #overwrite setup tools here to do the following:
 

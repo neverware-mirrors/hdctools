@@ -22,3 +22,5 @@ cscope.po.out
 # Ignore tags for those using TAGS
 TAGS
 
+# build-time generated version file
+servo/sversion.py
