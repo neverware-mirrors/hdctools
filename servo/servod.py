@@ -349,6 +349,11 @@ class ServodStarter(object):
     if any([True for argstr in cmdline if argstr in ['-h', '--help']]):
       help_displayer.print_help()
       help_displayer.exit()
+    # Both parsers should display the same usage information when an
+    # argument is not found. Fix it here by pointing both of their methods
+    # to the help_displayer.
+    server_pars.format_usage = help_displayer.format_usage
+    dev_pars.format_usage = help_displayer.format_usage
     server_args, dev_cmdline = server_pars.parse_known_args(cmdline)
     # Adjust log-dir to be None if no_log_dir is requested.
     if server_args.no_log_dir:
