@@ -30,3 +30,13 @@ def setuptools_version():
     # To recognize when the package is being built by cros_workon.
     return '%s.dev' % vbase
   return vbase
+
+def extended_version():
+  """More informative version string to use in command-line tools."""
+  # The general format here is
+  # [vbase][ghash]
+  # [date]
+  # [builder]
+  vbase = setuptools_version()
+  return '%s%s\n%s\n%s' % (vbase, vdict['ghash'], vdict['date'],
+                           vdict['builder'])

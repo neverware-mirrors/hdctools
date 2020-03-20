@@ -10,6 +10,7 @@ import textwrap
 
 import client
 import servo_logging
+import sversion_util
 import utils.scratch
 
 
@@ -18,7 +19,7 @@ import utils.scratch
 #
 # _BaseServodParser: ArgumentParser with pretty-formatting for example list
 #
-#   BaseServodParser: adds common args: port, host, and debug
+#   BaseServodParser: adds common args: port, host, version, and debug
 #
 #   ServodRCParser: adds -name/-rcfile & overwrites parsing logic so that
 #                   rc parsing & configuration is handled internally
@@ -78,6 +79,11 @@ NAME_ENV_VAR = 'SERVOD_NAME'
 
 
 ARG_BY_USER_MARKER = 'supplied_by_user'
+
+# Keep track of both the 'version' according to PEP440 and 'sversion' our
+# internal version system, and provide arguments to print those.
+VERSION = '%(prog)s ' + sversion_util.setuptools_version()
+SVERSION = '%(prog)s ' + sversion_util.extended_version()
 
 
 def ArgMarkedAsUserSupplied(namespace, arg_name):
@@ -193,7 +199,10 @@ class BaseServodParser(_BaseServodParser):
                 or to create mutual exclusion with serialname and name (clients)
       **kwargs: keyword arguments forwarded to _BaseServodParser
     """
+    if 'version' not in kwargs:
+      kwargs['version'] = VERSION
     super(BaseServodParser, self).__init__(**kwargs)
+    self.add_argument('--sversion', action='version', version=SVERSION)
     self.add_argument('-d', '--debug', action='store_true', default=False,
                       help='enable debug messages')
     self.add_argument('--host', default='localhost', type=str,

@@ -31,8 +31,6 @@ import usb
 import utils.scratch as scratch
 import watchdog
 
-VERSION = pkg_resources.require('servo')[0].version
-
 MAX_ISERIAL_STR = 128
 
 # If user does not specify a log directory, use this one.
@@ -289,10 +287,8 @@ class ServodStarter(object):
                 ('-c <file> --vendor 0x18d1 --product 0x5001',
                  'Launch targetting usb device with vid:pid == 0x18d1:0x5001 '
                  '(Google/Servo)')]
-    version = '%(prog)s ' + VERSION
     # BaseServodParser adds port, host, debug args.
-    server_pars = servo_parsing.BaseServodParser(version=version,
-                                                 add_help=False)
+    server_pars = servo_parsing.BaseServodParser(add_help=False)
     log_dir = server_pars.add_mutually_exclusive_group()
     log_dir.add_argument('--no-log-dir', default=False, action='store_true',
                          help='Turn off log dir functionality.')

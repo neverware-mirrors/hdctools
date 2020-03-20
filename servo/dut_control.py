@@ -25,8 +25,6 @@ class ControlError(Exception):
   pass
 
 
-VERSION = pkg_resources.require('servo')[0].version
-
 # used to aid sorting of dict keys
 KEY_PREFIX = '__'
 STATS_PREFIX = '@@'
@@ -66,8 +64,7 @@ def _parse_args(cmdline):
               ('--verbose i2c_mux', 'gets value for i2c_mux control verbosely'),
               ('i2c_mux:remote_adcs', 'sets i2c_mux to value remote_adcs')]
   parser = servo_parsing.ServodClientParser(description=description,
-                                            examples=examples,
-                                            version='%(prog)s ' + VERSION)
+                                            examples=examples)
   info_g = parser.add_mutually_exclusive_group()
   info_g.add_argument('-i', '--info', help='show info about controls',
                       action='store_true', default=False)

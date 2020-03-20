@@ -22,6 +22,32 @@ ServoDeviceWatchdog regularly polls to ensure all devices (i.e. servos) that the
 system started with are still attached. If not, it will gracefully terminate
 servod.
 
+## What does the servod version mean
+
+### tl;dr:
+
+\[major-number\].\[minor-number\].\[commits-since-minor\]\[.dev\]
+
+### the longer read:
+
+The servod version needs to do two things: it needs to provide a pep440
+compliant version string (the package version) and it needs to provide useful
+information for debugging. Lastly, there are (usually) two environemnts where
+servod is built: locally using cros\_workon, and remotely when building an
+image. With that in mind `version` has to be a 'rather' meaningless number,
+especially when building locally as we don't have access to git tags, git
+history, and cannot use a git hash in pep440.
+
+The solution is to have two notions of version:
+- one is the python version that applies to the package and the scripts, and is
+  returned through `servod --version`.
+  This one receives a .dev when git-information is missing as that's likely
+  coming from building locally.
+- the other one is sversion, a more comprehensive version that reports the
+  version string, the git-hash, the build-time and builder. This can be queried
+  by doing `servod --sversion` (or any of the other command-line tools
+
+
 ## Where is the code logic for the control `control`?
 
 ### tl;dr:
