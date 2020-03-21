@@ -10,7 +10,12 @@ Current it only supports Linux GPIO interface.
 import logging
 import optparse
 import os
-import SimpleXMLRPCServer
+try:
+  from SimpleXMLRPCServer import SimpleXMLRPCServer
+except ImportError:
+  from xmlrpc.server import SimpleXMLRPCServer
+  # TODO(crbug.com/999878): This is for python3 compatibility.
+  # Remove once fully moved to python3.
 import socket
 import SocketServer
 import sys
@@ -19,8 +24,7 @@ import poll_common
 from poll_server import Polld, PolldError
 
 
-class ThreadedXMLRPCServer(SocketServer.ThreadingMixIn,
-                           SimpleXMLRPCServer.SimpleXMLRPCServer):
+class ThreadedXMLRPCServer(SocketServer.ThreadingMixIn, SimpleXMLRPCServer):
   """Threaded SimpleXMLRPCServer."""
   daemon_threads = True
   allow_reuse_address = True

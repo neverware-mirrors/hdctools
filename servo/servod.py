@@ -14,7 +14,12 @@ import os
 import pkg_resources
 import select
 import signal
-import SimpleXMLRPCServer
+try:
+  from SimpleXMLRPCServer import SimpleXMLRPCServer
+except ImportError:
+  from xmlrpc.server import SimpleXMLRPCServer
+  # TODO(crbug.com/999878): This is for python3 compatibility.
+  # Remove once fully moved to python3.
 import socket
 import sys
 import threading
@@ -141,9 +146,8 @@ class ServodStarter(object):
       end_port, start_port = DEFAULT_PORT_RANGE
     for self._servo_port in xrange(start_port, end_port - 1, -1):
       try:
-        self._server = SimpleXMLRPCServer.SimpleXMLRPCServer((self._host,
-                                                              self._servo_port),
-                                                             logRequests=False)
+        self._server = SimpleXMLRPCServer((self._host, self._servo_port),
+                                          logRequests=False)
         break
       except socket.error as e:
         if e.errno == errno.EADDRINUSE:

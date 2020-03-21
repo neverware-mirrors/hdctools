@@ -3,7 +3,16 @@
 # found in the LICENSE file.
 """Servo Server."""
 import logging
-import SimpleXMLRPCServer
+import os
+import re
+try:
+  from SimpleXMLRPCServer import SimpleXMLRPCServer
+except ImportError:
+  from xmlrpc.server import SimpleXMLRPCServer
+  # TODO(crbug.com/999878): This is for python3 compatibility.
+  # Remove once fully moved to python3.
+import time
+import usb
 
 import drv as servo_drv
 import interface as _interface
@@ -729,8 +738,7 @@ def test():
       # its a gpio interface
       servod_obj._interface_list[i].wr_rd(0)
 
-  server = SimpleXMLRPCServer.SimpleXMLRPCServer(('localhost', 9999),
-                                                 allow_none=True)
+  server = SimpleXMLRPCServer(('localhost', 9999), allow_none=True)
   server.register_introspection_functions()
   server.register_multicall_functions()
   server.register_instance(servod_obj)

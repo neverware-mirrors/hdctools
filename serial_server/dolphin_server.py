@@ -8,7 +8,12 @@ from __future__ import print_function
 import logging
 import optparse
 import os
-import SimpleXMLRPCServer
+try:
+  from SimpleXMLRPCServer import SimpleXMLRPCServer
+except ImportError:
+  from xmlrpc.server import SimpleXMLRPCServer
+  # TODO(crbug.com/999878): This is for python3 compatibility.
+  # Remove once fully moved to python3.
 import socket
 import SocketServer
 import subprocess
@@ -38,8 +43,7 @@ DOLPHIN_PARAMS =[{'serial_params': PLANKTON_SERIAL_PARAMS,
                   'port_index': port} for port in PLANKTON_CONN_PORT]
 
 
-class ThreadedXMLRPCServer(SocketServer.ThreadingMixIn,
-                           SimpleXMLRPCServer.SimpleXMLRPCServer):
+class ThreadedXMLRPCServer(SocketServer.ThreadingMixIn, SimpleXMLRPCServer):
   """Threaded SimpleXMLRPCServer."""
   daemon_threads = True
   allow_reuse_address = True
