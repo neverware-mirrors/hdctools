@@ -4,6 +4,7 @@
 #
 # Expects to be run in an environment with sudo and no interactive password
 # prompt, such as within the Chromium OS development chroot.
+from __future__ import print_function
 
 import logging
 import os
@@ -777,12 +778,12 @@ class USBkm232Handler(_BaseHandler):
     while (len(rsp) != 1 or ord(orig_ch) != (~ord(rsp) & 0xff)) \
             and count < self.MAX_RSP_RETRIES:
       rsp = self.serial.read(1)
-      print 're-read rsp'
+      print('re-read rsp')
       count += 1
 
     if count == self.MAX_RSP_RETRIES:
       raise Exception('Failed to get correct response from usbkm232')
-    print 'usbkm232: response [-] = \\0%03o 0x%02x' % (ord(rsp), ord(rsp))
+    print('usbkm232: response [-] = \\0%03o 0x%02x' % (ord(rsp), ord(rsp)))
 
   def _write(self, mylist, check=False, clear=True):
     """Write list of commands to usbkm232.
@@ -798,15 +799,15 @@ class USBkm232Handler(_BaseHandler):
     # TODO(tbroch): USB queue depth is 6 might be more efficient to write
     #               more than just one make/break
     for i, write_ch in enumerate(mylist):
-      print 'usbkm232: writing  [%d] = \\0%03o 0x%02x' % \
-          (i, ord(write_ch), ord(write_ch))
+      print('usbkm232: writing  [%d] = \\0%03o 0x%02x' % \
+            (i, ord(write_ch), ord(write_ch)))
       self.serial.write(write_ch)
       if check:
         self._rsp(write_ch)
       time.sleep(.05)
 
     if clear:
-      print 'usbkm232: clearing keystrokes'
+      print('usbkm232: clearing keystrokes')
       self.serial.write(self.CLEAR)
       if check:
         self._rsp(self.CLEAR)

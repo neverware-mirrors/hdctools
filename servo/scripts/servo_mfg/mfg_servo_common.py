@@ -7,6 +7,7 @@
 This script holds functionality shared between
 various servo manufacturiong scripts.
 """
+from __future__ import print_function
 
 import errno
 from distutils import sysconfig
@@ -69,7 +70,7 @@ def log(output):
   """Print output to console, and any open logfiles."""
   global logfile
   global testerlogfile
-  print output
+  print(output)
   if logfile:
     logfile.write(output)
     logfile.write('\n')

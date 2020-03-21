@@ -6,6 +6,7 @@
 
 # pylint: disable=g-bad-import-order
 # pkg_resources is erroneously suggested to be in the 3rd party segment
+from __future__ import print_function
 import collections
 import errno
 import logging
@@ -577,7 +578,7 @@ def main(cmdline=sys.argv[1:]):
   try:
     starter = ServodStarter(cmdline)
   except ServodError as e:
-    print 'Error: ', e.message
+    print('Error: ', e.message)
     sys.exit(1)
   starter.serve()
 

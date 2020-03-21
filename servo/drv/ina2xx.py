@@ -7,6 +7,7 @@ Presently tested for:
   INA219
   INA231
 """
+from __future__ import print_function
 import errno
 import logging
 import time
@@ -520,10 +521,10 @@ def testit(testname, adc):
     adc: integer of 7-bit i2c slave address
   """
   for i in range(0, 6):
-    print '%s: [%d] = 0x%04x' % (testname, i, adc._read_reg(i))
-  print '%s: mv = %d' % (testname, adc.millivolts())
-  print '%s: ma = %d' % (testname, adc.milliamps())
-  print '%s: mw = %d' % (testname, adc.milliwatts())
+    print('%s: [%d] = 0x%04x' % (testname, i, adc._read_reg(i)))
+  print('%s: mv = %d' % (testname, adc.millivolts()))
+  print('%s: ma = %d' % (testname, adc.milliamps()))
+  print('%s: mw = %d' % (testname, adc.milliwatts()))
 
 
 def test():

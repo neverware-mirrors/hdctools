@@ -29,10 +29,11 @@ For example:
         pwr_names.append(new_name)
 
     for name in new_names:
-        print '%s = %2.f\n' % (name, pwr.read_mw(name))
+        print('%s = %2.f\n' % (name, pwr.read_mw(name)))
 
 TODO(tbroch) Work with vendor to resolve discrepancies in measurements
 """
+from __future__ import print_function
 import commands
 import logging
 import numpy
@@ -312,7 +313,7 @@ def main():
       if len(stats[name]) == MAX_STATS:
         stats[name] = numpy.delete(stats[name], 0)
       stats[name] = numpy.append(stats[name], mw_val)
-      print '%s:%.f' % (name, stats[name].mean())
+      print('%s:%.f' % (name, stats[name].mean()))
     # delay in order to not raise power via the script
     # TODO(tbroch) sleep should be configureable
     time.sleep(2)

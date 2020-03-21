@@ -6,6 +6,7 @@
 
 # pylint: disable=g-bad-import-order
 # pkg_resources is erroneously suggested to be in the 3rd party segment
+from __future__ import print_function
 import collections
 import logging
 import pkg_resources
@@ -142,7 +143,7 @@ def display_table(table, prefix):
     out_str = ''
     for i in xrange(len(row)):
       out_str += row[i].rjust(max_col_width[i] + 2)
-    print prefix, out_str
+    print(prefix, out_str)
 
 
 def display_stats(stats, prefix=STATS_PREFIX):
@@ -203,7 +204,7 @@ def _print_gnuplot_header(control_args):
     logging.critical("Can't use --gnuplot without supplying controls to read "
                      'on command line')
     sys.exit(-1)
-  print GNUPLOT_PREFIX + ' seconds ' + ' seconds '.join(hdr)
+  print(GNUPLOT_PREFIX + ' seconds ' + ' seconds '.join(hdr))
 
 
 def _pretty_print_result(result):
@@ -314,7 +315,7 @@ def iterate(controls, options, sclient):
   for _ in iterate_over:
     iter_output = do_iteration(controls, options, sclient, stats)
     if iter_output:  # Avoid printing empty lines
-      print iter_output
+      print(iter_output)
 
   if (options.repeat != 1) or (options.time_in_secs > 0):
     prefix = STATS_PREFIX
@@ -343,12 +344,12 @@ def real_main(cmdline):
   if options.hwinit:
     sclient.hwinit()
   if options.get_all:
-    print sclient.get_all()
+    print(sclient.get_all())
 
   if not args:
     if options.info:
       # print all the doc info for the controls
-      print sclient.doc_all()
+      print(sclient.doc_all())
     elif not (options.hwinit or options.get_all):
       # Just print the help message and exit. The condition checks for the
       # permissible options that can run without arguments, and where a help

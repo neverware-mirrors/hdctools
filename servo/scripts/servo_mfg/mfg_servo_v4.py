@@ -10,6 +10,7 @@ consisting of barcode scan, flash, provision, test.
 It will produce logfiles in a logfile/ directory for
 each servo and for the full run.
 """
+from __future__ import print_function
 
 import argparse
 import re
@@ -284,14 +285,14 @@ class V4Flasher(object):
         while not serialno:
           serialno = raw_input('Scan serial number barcode: ')
           if RE_SERIALNO.match(serialno):
-            print 'Scanned sn %s' % serialno
+            print('Scanned sn %s' % serialno)
           else:
             serialno = None
       if args.mac and not macaddr:
         while not macaddr:
           macaddr = raw_input('Scan mac addr barcode: ')
           if RE_MACADDR.match(macaddr):
-            print 'Scanned mac %s' % macaddr
+            print('Scanned mac %s' % macaddr)
           else:
             macaddr = None
 
@@ -388,8 +389,8 @@ class V4Flasher(object):
       macaddr = None
       serialno = None
 
-      print '\n\n************************************************\n'
-      print 'Make sure no %s is plugged' % self.NAME
+      print('\n\n************************************************\n')
+      print('Make sure no %s is plugged' % self.NAME)
       c.wait_for_usb_remove(self.STM_VIDPID)
 
 def flash_v4():

@@ -10,6 +10,7 @@ consisting of barcode scan, flash, provision, test.
 It will produce logfiles in a logfile/ directory for
 each device and for the full run.
 """
+from __future__ import print_function
 
 import argparse
 import re
@@ -47,7 +48,7 @@ def main():
       while not done:
         serialno = raw_input('Scan serial number barcode: ')
         if RE_SERIALNO.match(serialno):
-          print 'Scanned sn %s' % serialno
+          print('Scanned sn %s' % serialno)
           done = True
 
     c.setup_logfile(LOGNAME, serialno)
@@ -83,7 +84,7 @@ def main():
     c.log('\n\n************************************************\n')
 
     c.finish_logfile()
-    print 'Finished programming.'
+    print('Finished programming.')
 
     if args.serialno:
       break

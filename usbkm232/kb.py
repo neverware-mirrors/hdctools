@@ -166,7 +166,7 @@ def direct_send_seq(kbd, rlist):
 
 
 def menu():
-  print """
+  print("""
   \r 1 to VT1
   \r 2 to VT2
   \r 0 to send [ -~]
@@ -175,7 +175,7 @@ def menu():
   \r i for interactive (ctrl-X to exit mode)
   \r ctrl-x to exit program.
   \r
-  """
+  """)
 
 
 def main():
@@ -183,7 +183,7 @@ def main():
   try:
     kbd = usbkm232(os.environ['USBKM232_UART_DEVICE'])
   except KeyError:
-    print "-E- Must set environment variable USBKM232_UART_DEVICE"
+    print('-E- Must set environment variable USBKM232_UART_DEVICE')
     sys.exit(-1)
   menu()
   fd = sys.stdin.fileno()
@@ -193,10 +193,10 @@ def main():
     tty.setraw(sys.stdin.fileno())
     while True:
       ch = sys.stdin.read(1)
-      print '\rRead %c:%d\r' % (ch, ord(ch))
+      print('\rRead %c:%d\r' % (ch, ord(ch)))
       if interactive_mode:
         if ord(ch) == 24: # Ctrl-X
-          print '\rInteractive mode off:\r'
+          print('\rInteractive mode off:\r')
           interactive_mode = False
           menu()
           continue
@@ -207,7 +207,7 @@ def main():
         continue
       # Menu items
       if ch == 'i':  # interactive mode
-        print '\rInteractive mode on (ctrl-x to leave).\r'
+        print('\rInteractive mode on (ctrl-x to leave).\r')
         interactive_mode = True
       elif ch == 'm':
         menu()
@@ -232,12 +232,12 @@ def main():
       elif ch == 'f': # Send F1- F12
         for i in range(1,12):
           s = '<f%d>' % i
-          print '\rSend %s' % s
+          print('\rSend %s' % s)
           direct_send_seq(kbd, [s])
           time.sleep(1)
       elif ord(ch) == 24: # Ctrl-X
         break
-      print '\r'
+      print('\r')
   finally:
     termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
   kbd.close()
