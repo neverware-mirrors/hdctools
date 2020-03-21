@@ -26,7 +26,7 @@ def restricted_command(func):
   def wrapper(instance, *args, **kwargs):
     try:
       return func(instance, *args, **kwargs)
-    except pty_driver.ptyError, e:
+    except pty_driver.ptyError as e:
       if str(e) == 'Timeout waiting for response.':
         if instance._Get_ccd_level() == 'Locked':
           raise cr50Error('CCD console is locked. Perform the unlock process!')
@@ -79,7 +79,7 @@ class cr50(pty_driver.ptyDriver):
     try:
       super(cr50, self)._issue_cmd_get_results('\n\n',
                                                ['(>|Console is enabled)'])
-    except pty_driver.ptyError, e:
+    except pty_driver.ptyError as e:
       self._logger.warn('Consider checking whether the servo device has '
                         'read/write access to the Cr50 UART console.')
       raise cr50Error('cr50 uart is unresponsive')

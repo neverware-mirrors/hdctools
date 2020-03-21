@@ -86,12 +86,12 @@ class gpio(hw_driver.HwDriver):
       raise gpioError('No offset in params for gpio')
     try:
       offset = int(self._params['offset'])
-    except ValueError, error:
+    except ValueError as error:
       raise gpioError(error)
 
     width_str = self._params.get('width', '1')
     try:
       width = int(width_str)
-    except ValueError, error:
+    except ValueError as error:
       raise gpioError(error)
     return (offset, width)

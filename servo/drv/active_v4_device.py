@@ -153,7 +153,7 @@ class activeV4Device(hw_driver.HwDriver):
     try:
       using_servo = self._using_servo()
       using_ccd = self._using_ccd()
-    except Exception, e:
+    except Exception as e:
       # The error message is pretty long if it's a No control error. Strip the
       # extra information off the end of the string.
       msg = str(e).split('All controls')[0].strip()

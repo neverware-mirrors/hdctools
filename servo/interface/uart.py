@@ -98,7 +98,7 @@ class Uart(interface.Interface):
       capture_pause_count = 0
       try:
         data = os.read(uart_fd, 100)
-      except OSError, e:
+      except OSError as e:
         if e.errno == errno.EWOULDBLOCK:  # Data unavailable
           time.sleep(.1)
           continue

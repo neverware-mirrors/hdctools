@@ -60,7 +60,7 @@ class ptyDriver():
         self._child.expect('.', timeout=0.01)
       except (pexpect.TIMEOUT, pexpect.EOF):
         break
-      except OSError, e:
+      except OSError as e:
         # EAGAIN indicates no data available, maybe we didn't wait long enough
         if e.errno != errno.EAGAIN:
           raise

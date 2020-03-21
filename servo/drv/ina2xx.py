@@ -142,7 +142,7 @@ class ina2xx(hw_driver.HwDriver):
     if 'channel' in self._params:
       try:
         channel = int(self._params['channel'])
-      except ValueError, e:
+      except ValueError as e:
         raise Ina2xxError(e)
 
     if channel > self.MAX_CHANNEL or channel < 0:
