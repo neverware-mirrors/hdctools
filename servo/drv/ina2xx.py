@@ -205,7 +205,7 @@ class ina2xx(hw_driver.HwDriver):
     Raises:
       Ina2xxError: if conversion didn't assert after self.BUSV_READ_RETRY times
     """
-    for _ in xrange(self.BUSV_READ_RETRY):
+    for _ in range(self.BUSV_READ_RETRY):
       is_cnvr = self._read_cnvr()
       if is_cnvr:
         break

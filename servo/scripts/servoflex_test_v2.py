@@ -359,14 +359,14 @@ def test_kbd_gpios():
   errors = 0
   # disable everything initially
   kbd_off_cmd = 'kbd_m1_a0:1 kbd_m1_a1:1 kbd_m2_a0:1 kbd_m2_a1:1 kbd_en:off'
-  for col_idx in xrange(2):
+  for col_idx in range(2):
     if not set_ctrls(kbd_off_cmd):
       logging.error('Disabling all keyboard rows/cols')
       errors += 1
       break
     mux_ctrl = KBD_MUX_COL_IDX[col_idx]
     kbd_col = 'kbd_col%d' % (col_idx + 1)
-    for row_idx in xrange(3):
+    for row_idx in range(3):
       kbd_row = 'kbd_row%d' % (row_idx + 1)
       cmd = '%s1:%d %s0:%d ' % (mux_ctrl, row_idx >> 1, mux_ctrl, row_idx & 0x1)
       cmd += 'kbd_en:on %s' % (kbd_col)
@@ -410,14 +410,14 @@ def test_v3_kbd_gpios():
   # disable everything initially
   kbd_off_cmd = ('bb_kbd_m1_c2_r1:0 bb_kbd_m1_c2_r2:0 bb_kbd_m1_c2_r3:0 '
                  'bb_kbd_m2_c1_r1:0 bb_kbd_m2_c1_r2:0 bb_kbd_m2_c1_r3:0')
-  for col_idx in xrange(2):
+  for col_idx in range(2):
     if not set_ctrls(kbd_off_cmd):
       logging.error('Disabling all keyboard rows/cols')
       errors += 1
       break
     mux_ctrl = V3_KBD_CONTROLS[col_idx]
     kbd_col = 'kbd_col%d' % (col_idx + 1)
-    for row_idx in xrange(3):
+    for row_idx in range(3):
       kbd_row = 'kbd_row%d' % (row_idx + 1)
       kbd_cntl = mux_ctrl % (col_idx + 1, row_idx + 1)
       cmd = '%s:1 %s' % (kbd_cntl, kbd_col)
@@ -486,7 +486,7 @@ def test_gpios(options):
         (_, real_gpio) = ctrl_name.split(prefix)
         gpios_to_test[real_gpio] = ctrl_name
 
-  for _ in xrange(2):
+  for _ in range(2):
     for set_name, get_name in gpios_to_test.iteritems():
       set_val = GPIO_MAPS[all_ctrls[set_name]]
       logging.debug('Trying %s %s -> %s', set_name, all_ctrls[set_name],

@@ -144,7 +144,7 @@ class ServodStarter(object):
       end_port = sopts.port
     else:
       end_port, start_port = DEFAULT_PORT_RANGE
-    for self._servo_port in xrange(start_port, end_port - 1, -1):
+    for self._servo_port in range(start_port, end_port - 1, -1):
       try:
         self._server = SimpleXMLRPCServer((self._host, self._servo_port),
                                           logRequests=False)

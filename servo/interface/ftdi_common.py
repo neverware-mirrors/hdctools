@@ -13,7 +13,7 @@ MAX_FTDI_INTERFACES_PER_DEVICE = 4
 
 (INTERFACE_TYPE_ANY, INTERFACE_TYPE_GPIO, INTERFACE_TYPE_I2C,
  INTERFACE_TYPE_JTAG, INTERFACE_TYPE_SPI, INTERFACE_TYPE_UART) = \
- map(ctypes.c_int, xrange(6))
+ map(ctypes.c_int, range(6))
 
 # key == <board>_<version>
 # value == list of lot identifiers (lot_id)

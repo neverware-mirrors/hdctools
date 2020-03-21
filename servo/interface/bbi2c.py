@@ -194,7 +194,7 @@ def test():
   logging.info('first: i2c read of slv=0x%02x reg=0x%02x == 0x%02x', slv,
                wbuf[0], rbuf[0])
   errcnt = 0
-  for cnt in xrange(1000):
+  for cnt in range(1000):
     try:
       rbuf = i2c.wr_rd(slv, [], 1)
     except:

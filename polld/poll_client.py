@@ -146,7 +146,7 @@ def iterate(io_ports, options, pclient):
   """
   logger = logging.getLogger()
 
-  for _ in xrange(options.repeat):
+  for _ in range(options.repeat):
     for io_port in io_ports:
       io, port = io_port.split(':')
       if io not in poll_common.GPIO_ACTION_LIST:

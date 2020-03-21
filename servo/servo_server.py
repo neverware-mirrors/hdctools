@@ -729,7 +729,7 @@ def test():
   # configure server & listen
   servod_obj = Servod(1)
   # 5 == number of interfaces on a FT4232H device
-  for i in xrange(1, 5):
+  for i in range(1, 5):
     if i == 2:
       # its an i2c interface ... see __init__ for details and TODO to make
       # this configureable

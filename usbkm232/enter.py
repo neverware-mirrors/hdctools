@@ -19,7 +19,7 @@ def main():
     if len(sys.argv) > 1:
         count = int(sys.argv[1])
 
-    for _ in xrange(0, count):
+    for _ in range(count):
         kbd.enter()
     kbd.close()
 

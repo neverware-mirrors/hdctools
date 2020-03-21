@@ -109,7 +109,7 @@ class I2cReg(object):
     """
     self._logger.debug('')
     wlist = []
-    for _ in xrange(self._reg_len):
+    for _ in range(self._reg_len):
       wlist.append(value & 0xff)
       value = value >> 8
     if value != 0:

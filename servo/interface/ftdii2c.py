@@ -184,7 +184,7 @@ class Fi2c(i2c_base.BaseI2CBus):
     wcnt = len(wlist)
     wbuf_type = ctypes.c_ubyte * wcnt
     wbuf = wbuf_type()
-    for i in xrange(wcnt):
+    for i in range(wcnt):
       wbuf[i] = wlist[i]
 
     rbuf_type = ctypes.c_ubyte * rcnt
@@ -272,7 +272,7 @@ def test():
   logging.info('first: i2c read of slv=0x%02x reg=0x%02x == 0x%02x', slv,
                wbuf[0], rbuf[0])
   errcnt = 0
-  for cnt in xrange(1000):
+  for cnt in range(1000):
     try:
       rbuf = fobj.wr_rd(slv, [], 1)
     except:

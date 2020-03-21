@@ -138,7 +138,7 @@ class m24c02(hw_driver.HwDriver):
       A list of bytes.
     """
     # TODO(Aaron) To replace this with bulk read command.
-    return [self._read_byte(addr) for addr in xrange(offset, offset + count)]
+    return [self._read_byte(addr) for addr in range(offset, offset + count)]
 
   def _write_byte(self, offset, value):
     """Writes one byte to EEPROM.

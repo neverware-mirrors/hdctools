@@ -135,13 +135,13 @@ def display_table(table, prefix):
     return
 
   max_col_width = []
-  for col_idx in xrange(len(table[0])):
+  for col_idx in range(len(table[0])):
     col_item_widths = [len(row[col_idx]) for row in table]
     max_col_width.append(max(col_item_widths))
 
   for row in table:
     out_str = ''
-    for i in xrange(len(row)):
+    for i in range(len(row)):
       out_str += row[i].rjust(max_col_width[i] + 2)
     print(prefix, out_str)
 
@@ -310,7 +310,7 @@ def iterate(controls, options, sclient):
   if options.time_in_secs > 0:
     iterate_over = timed_loop(options.time_in_secs)
   else:
-    iterate_over = xrange(options.repeat)
+    iterate_over = range(options.repeat)
 
   for _ in iterate_over:
     iter_output = do_iteration(controls, options, sclient, stats)

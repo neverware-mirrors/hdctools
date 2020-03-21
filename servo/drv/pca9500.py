@@ -171,7 +171,7 @@ class pca9500(hw_driver.HwDriver):
                          (len(byte_list), pca9500._byte_addr, EEPROM_BYTES))
     page_list = [
         byte_list[i:(i + PAGE_BYTES)]
-        for i in xrange(0, len(byte_list), PAGE_BYTES)
+        for i in range(0, len(byte_list), PAGE_BYTES)
     ]
     # insert idx for writing
     for i, page in enumerate(page_list):
@@ -213,7 +213,7 @@ class pca9500(hw_driver.HwDriver):
       raise pca9500Error('Getting PCA9500 EEPROM')
 
     lines = []
-    for i in xrange(0, len(byte_list), 16):
+    for i in range(0, len(byte_list), 16):
       line = ' '.join('0x%02x' % byte for byte in byte_list[i:i + 16])
       lines.append(line)
 
