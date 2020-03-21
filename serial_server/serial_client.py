@@ -9,7 +9,12 @@ from __future__ import print_function
 import logging
 import optparse
 import sys
-import xmlrpclib
+try:
+  from xmlrpclib import ServerProxy
+except ImportError:
+  # TODO(crbug.com/999878): This is for python3 compatibility.
+  # Remove once fully moved to python3.
+  from xmlrpc.client import ServerProxy
 
 import dolphin_server
 
@@ -35,10 +40,10 @@ class SerialClient(object):
     Args:
       host: Name or IP address of serial server host.
       tcp_port: TCP port on which serial server is listening on.
-      verbose: Enables verbose messaging across xmlrpclib.ServerProxy.
+      verbose: Enables verbose messaging across ServerProxy.
     """
     remote = 'http://%s:%s' % (host, tcp_port)
-    self._server = xmlrpclib.ServerProxy(remote, verbose=verbose)
+    self._server = ServerProxy(remote, verbose=verbose)
 
   def send(self, serial_index, command):
     """Sends a command through serial server.

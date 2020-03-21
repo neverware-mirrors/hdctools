@@ -5,7 +5,12 @@
 """
 
 import re
-import xmlrpclib
+try:
+  from xmlrpclib import ServerProxy
+except ImportError:
+  # TODO(crbug.com/999878): This is for python3 compatibility.
+  # Remove once fully moved to python3.
+  from xmlrpc.client import ServerProxy
 
 DEFAULT_HOST = 'localhost'
 DEFAULT_PORT = 9999
@@ -64,12 +69,11 @@ class ServoClient(object):
     Args:
       host: name or IP address of servo server host
       port: TCP port on which servod is listening on
-      verbose: enable verbose messaging across xmlrpclib.ServerProxy
+      verbose: enable verbose messaging across ServerProxy
     """
     self._verbose = verbose
     remote = 'http://%s:%s' % (host, port)
-    self._server = xmlrpclib.ServerProxy(remote, verbose=self._verbose,
-                                         allow_none=True)
+    self._server = ServerProxy(remote, verbose=self._verbose, allow_none=True)
 
   def doc_all(self):
     """Get the doc string for all controls from servo.
