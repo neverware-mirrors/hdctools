@@ -59,7 +59,7 @@ def _OsPipeFiles():
       except:
         pass
       # Re-raise the original exception.
-      raise exc_type, exc_value, exc_traceback
+      raise exc_type(exc_value, exc_traceback)
     finally:
       # Break the exc_traceback circular reference.
       del exc_type, exc_value, exc_traceback

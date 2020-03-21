@@ -132,9 +132,9 @@ class pca9500(hw_driver.HwDriver):
       pca9500Error: if byte_addr > EEPROM_BYTES
 
     """
-    raise pca9500Error, 'Fix crbug.com/294248'
+    raise pca9500Error('Fix crbug.com/294248')
     if byte_addr > EEPROM_BYTES:
-      raise pca9500Error, 'Byte address not valid'
+      raise pca9500Error('Byte address not valid')
     pca9500._byte_addr = byte_addr
 
   def _Set_eeprom(self, value):
@@ -162,13 +162,13 @@ class pca9500(hw_driver.HwDriver):
       pca9500Error: if I2c write failed to complete successfully
 
     """
-    raise pca9500Error, 'Fix crbug.com/294248'
+    raise pca9500Error('Fix crbug.com/294248')
     byte_list = [int(byte_str, 0) for byte_str in value.split()]
     self._write_byte_addr(pca9500._byte_addr)
 
     if (len(byte_list) + pca9500._byte_addr) > EEPROM_BYTES:
-      raise pca9500Error, 'Writing %d Bytes from addr %d will be > %d' % \
-          (len(byte_list), pca9500._byte_addr, EEPROM_BYTES)
+      raise pca9500Error('Writing %d Bytes from addr %d will be > %d' % \
+                         (len(byte_list), pca9500._byte_addr, EEPROM_BYTES))
     page_list = [
         byte_list[i:(i + PAGE_BYTES)]
         for i in xrange(0, len(byte_list), PAGE_BYTES)
@@ -180,7 +180,7 @@ class pca9500(hw_driver.HwDriver):
         self._interface.wr_rd(self._slave, page, 0)
       except Fi2cError:
         self._logger.error('page write of %i:%s', i, page)
-        raise pca9500Error, 'Setting PCA9500 EEPROM'
+        raise pca9500Error('Setting PCA9500 EEPROM')
 
   def _Get_eeprom(self):
     """Read the EEPROM.
@@ -203,14 +203,14 @@ class pca9500(hw_driver.HwDriver):
     Raises:
       pca9500Error: if I2c read failed to complete successfully
     """
-    raise pca9500Error, 'Fix crbug.com/294248'
+    raise pca9500Error('Fix crbug.com/294248')
     error = False
     self._write_byte_addr(0)
     try:
       byte_list = self._interface.wr_rd(self._slave, [], EEPROM_BYTES)
     except Fi2cError:
       self._logger.error('eeprom read')
-      raise pca9500Error, 'Getting PCA9500 EEPROM'
+      raise pca9500Error('Getting PCA9500 EEPROM')
 
     lines = []
     for i in xrange(0, len(byte_list), 16):
