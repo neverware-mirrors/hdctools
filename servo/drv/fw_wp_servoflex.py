@@ -17,6 +17,9 @@ class fwWpServoflex(fw_wp_state.FwWpStateDriver):
     """
     super(fwWpServoflex, self).__init__(interface, params)
     self._fw_wp_vref = self._params.get('fw_wp_vref', 'pp1800')
+    self._is_open_drain = self._params.get('open_drain', 'no') == 'yes'
+    if self._is_open_drain:
+      assert self._fw_wp_vref == 'off', 'Dangerous! Should set vref to off.'
 
     # Get the control prefix, like 'hammer_', if it is a base control.
     control_name = self._params.get('control_name', '')
@@ -33,25 +36,40 @@ class fwWpServoflex(fw_wp_state.FwWpStateDriver):
 
   def _force_on(self):
     """Force the firmware to write-protected."""
-    self._interface_set('fw_wp_vref', self._fw_wp_vref)
-    self._interface_set('fw_wp_en', 'on')
-    self._interface_set('fw_wp', 'on')
+    if self._is_open_drain:
+      self._interface_set('fw_wp_od', 'on')
+    else:
+      self._interface_set('fw_wp_vref', self._fw_wp_vref)
+      self._interface_set('fw_wp_en', 'on')
+      self._interface_set('fw_wp', 'on')
 
   def _force_off(self):
     """Force the firmware to not write-protected."""
-    self._interface_set('fw_wp_vref', self._fw_wp_vref)
-    self._interface_set('fw_wp_en', 'on')
-    self._interface_set('fw_wp', 'off')
+    if self._is_open_drain:
+      self._interface_set('fw_wp_od', 'off')
+    else:
+      self._interface_set('fw_wp_vref', self._fw_wp_vref)
+      self._interface_set('fw_wp_en', 'on')
+      self._interface_set('fw_wp', 'off')
 
   def _reset(self):
     """Reset the firmware write-protection state to the system value."""
-    self._interface_set('fw_wp_en', 'off')
+    if self._is_open_drain:
+      self._interface_set('fw_wp_od', 'off')
+    else:
+      self._interface_set('fw_wp_en', 'off')
 
   def _get_state(self):
     """Get the firmware write-protection state."""
-    fw_wp_en = (self._interface_get('fw_wp_en') == 'on')
-    fw_wp = (self._interface_get('fw_wp') == 'on')
-    if fw_wp_en:
-      return self._STATE_FORCE_ON if fw_wp else self._STATE_FORCE_OFF
+    if self._is_open_drain:
+      fw_wp_od = (self._interface_get('fw_wp_od') == 'on')
+      # Can't differentiate between a forced value or an original value;
+      # return it a forced value which is more compliant with the tests.
+      return self._STATE_FORCE_ON if fw_wp_od else self._STATE_FORCE_OFF
     else:
-      return self._STATE_ON if fw_wp else self._STATE_OFF
+      fw_wp_en = (self._interface_get('fw_wp_en') == 'on')
+      fw_wp = (self._interface_get('fw_wp') == 'on')
+      if fw_wp_en:
+        return self._STATE_FORCE_ON if fw_wp else self._STATE_FORCE_OFF
+      else:
+        return self._STATE_ON if fw_wp else self._STATE_OFF

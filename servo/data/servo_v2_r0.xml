@@ -238,6 +238,14 @@
     <params cmd="set" interface="2" drv="tca6416" slv="0x22"
     port="1" offset="5" map="onoff_i"></params>
   </control>
+  <!-- Duplicate the fw_wp control but uses open-drain output,
+  instead of the level shifter -->
+  <control>
+    <name>fw_wp_od</name>
+    <doc>Firmware write-protect open-drain GPIO</doc>
+    <params interface="2" drv="tca6416" slv="0x20" od="PU"
+    port="1" offset="3" map="onoff_i"></params>
+  </control>
   <control>
     <name>pwr_button</name>
     <doc>Power button GPIO</doc>

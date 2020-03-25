@@ -184,6 +184,15 @@
     <params cmd="set" interface="2" drv="tca6416" slv="0x20" port="0"
     offset="1" map="onoff_i"></params>
   </control>
+  <!-- Duplicate the fw_wp control but uses open-drain output,
+  instead of the level shifter -->
+  <control>
+    <name>fw_wp_od</name>
+    <doc>Firmware write-protect open-drain GPIO</doc>
+    <!-- DUT_MFG_MODE -->
+    <params interface="2" drv="tca6416" slv="0x20" od="PU" port="0"
+    offset="2" map="onoff_i"></params>
+  </control>
   <control>
     <name>tp1</name>
     <doc>Test point 1. This is also used on a reworked (b/143163043#comment3)
