@@ -111,6 +111,10 @@ class ServoDevice(object):
     """Set the name."""
     self._name = name
 
+  def usb_devnum(self):
+    """Return the current usb devnum."""
+    return usb_hierarchy.Hierarchy.DevNumFromSysfs(self._sysfs_path)
+
   def set_disconnect_ok(self, disconnect_ok):
     """Set if it's ok for the device to disconnect.
 
