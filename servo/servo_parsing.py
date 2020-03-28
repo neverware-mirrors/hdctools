@@ -315,7 +315,7 @@ class ServodRCParser(_BaseServodParser):
       setattr(options, 'serialname', rc['sn'])
     elif options.serialname:
       # srcs meaning serialname runtime configurations (rcs).
-      srcs = [(name, rc) for name, rc in rcd.iteritems() if
+      srcs = [(name, rc) for name, rc in rcd.items() if
               rc['sn'] == options.serialname]
       if srcs:
         logger.info('Found servodrc entry %r for serialname %r. Using it.',

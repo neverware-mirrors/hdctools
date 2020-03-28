@@ -167,7 +167,7 @@ class HighResServodPowerTracker(ServodPowerTracker):
       temp_stats.CalculateStats()
       temp_summary = temp_stats.GetSummary()
       samples = [(measurement, summary['mean']) for
-                 measurement, summary in temp_summary.iteritems()]
+                 measurement, summary in temp_summary.items()]
       self._stats.AddSamples(samples)
       # Sleep until the end of the sample rate
       self._stop_signal.wait(max(0, end - time.time()))
@@ -504,7 +504,7 @@ class PowerMeasurement(object):
       raise PowerMeasurementError(self.PREMATURE_RETRIEVAL_MSG)
     outdir = outdir if outdir else self._outdir
     outfiles = []
-    for stat in self._stats.itervalues():
+    for stat in self._stats.values():
       outfiles.extend(stat.SaveRawData(outdir))
     self._logger.info('Storing raw data at:\n%s', '\n'.join(outfiles))
     return outfiles
@@ -529,7 +529,7 @@ class PowerMeasurement(object):
     """
     if not self._processing_done:
       raise PowerMeasurementError(self.PREMATURE_RETRIEVAL_MSG)
-    return {name: stat.GetRawData() for name, stat in self._stats.iteritems()}
+    return {name: stat.GetRawData() for name, stat in self._stats.items()}
 
   def SaveSummary(self, outdir=None, message=None):
     """Save summary of the PowerMeasurement run.
@@ -547,7 +547,7 @@ class PowerMeasurement(object):
     if not self._processing_done:
       raise PowerMeasurementError(self.PREMATURE_RETRIEVAL_MSG)
     outdir = outdir if outdir else self._outdir
-    outfiles = [stat.SaveSummary(outdir) for stat in self._stats.itervalues()]
+    outfiles = [stat.SaveSummary(outdir) for stat in self._stats.values()]
     if message:
       for fname in outfiles:
         with open(fname, 'a') as f:
@@ -579,7 +579,7 @@ class PowerMeasurement(object):
     """
     if not self._processing_done:
       raise PowerMeasurementError(self.PREMATURE_RETRIEVAL_MSG)
-    return {name: stat.GetSummary() for name, stat in self._stats.iteritems()}
+    return {name: stat.GetSummary() for name, stat in self._stats.items()}
 
   def GetFormattedSummary(self):
     """Retrieve summary of the PowerMeasurement run.
@@ -594,7 +594,7 @@ class PowerMeasurement(object):
     """
     if not self._processing_done:
       raise PowerMeasurementError(self.PREMATURE_RETRIEVAL_MSG)
-    summaries = [stat.SummaryToString() for stat in self._stats.itervalues()]
+    summaries = [stat.SummaryToString() for stat in self._stats.values()]
     return '\n'.join(summaries)
 
   def DisplaySummary(self):

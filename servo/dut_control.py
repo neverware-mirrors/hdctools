@@ -211,7 +211,7 @@ def _pretty_print_result(result):
   if isinstance(result, list):
     return ', '.join(result)
   if isinstance(result, dict):
-    return '\n'.join(['%s: %s' % (k, v) for k, v in result.iteritems()])
+    return '\n'.join(['%s: %s' % (k, v) for k, v in result.items()])
   return result
 
 

@@ -350,7 +350,7 @@ class SystemConfig(object):
     if name not in self.syscfg_dict['control']:
       raise NameError('No control named %s. All controls:\n%s' %
                       (name,
-                       ','.join(sorted(self.syscfg_dict['control'].keys()))))
+                       ','.join(sorted(self.syscfg_dict['control']))))
     if is_get:
       return self.syscfg_dict['control'][name]['get_params']
     else:
@@ -424,7 +424,7 @@ class SystemConfig(object):
         # Do not raise error yet. This might just be that the input is not
         # using the map i.e. it's directly writing a raw mapped value.
         err = "Map '%s' doesn't contain key '%s'\n" % (params['map'], map_vstr)
-        err += "Try one of -> '%s'" % "', '".join(map_dict['map_params'].keys())
+        err += "Try one of -> '%s'" % "', '".join(map_dict['map_params'])
     if 'input_type' in params:
       if params['input_type'] in ALLOWABLE_INPUT_TYPES:
         try:
@@ -485,7 +485,7 @@ class SystemConfig(object):
     if 'map' in params:
       map_dict = self._lookup('map', params['map'])
       if map_dict:
-        for keyname, val in map_dict['map_params'].iteritems():
+        for keyname, val in map_dict['map_params'].items():
           if val == reformat_value:
             reformat_value = keyname
             break
@@ -523,10 +523,10 @@ class SystemConfig(object):
       rsp.append('*************')
       rsp.append('* ' + tag.upper())
       rsp.append('*************')
-      max_len = max(len(name) for name in self.syscfg_dict[tag].iterkeys())
+      max_len = max(len(name) for name in self.syscfg_dict[tag])
       max_len += len(prefix_str)
       dashes = '-' * max_len
-      for name in sorted(self.syscfg_dict[tag].iterkeys()):
+      for name in sorted(self.syscfg_dict[tag]):
         item_dict = self.syscfg_dict[tag][name]
         padded_name = '%-*s' % (max_len, '%s%s' % (prefix_str, name))
         rsp.append('%s DOC: %s' % (padded_name, item_dict['doc']))
@@ -565,7 +565,7 @@ def test():
       raise Exception('Unable to find map %s', map_name)
 
     logging.info('')
-    for keyname, val in map_dict['map_params'].iteritems():
+    for keyname, val in map_dict['map_params'].items():
       resolved_val = str(scfg.resolve_val(control_params, keyname))
       if resolved_val != val:
         logging.error('resolve failed for %s -> %s != %s', keyname, val,

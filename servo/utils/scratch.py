@@ -147,7 +147,7 @@ class Scratch(object):
                           'instance.', port)
         serials = sclient._server.get_servo_serials()
         # The serials have to be unique. Enforce this here by creating a set
-        serials = list(set(serials.itervalues()))
+        serials = list(set(serials.values()))
         pid = sclient.get('servod_pid')
         self.AddEntry(port=port, serials=serials, pid=pid)
         return True

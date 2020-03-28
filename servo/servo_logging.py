@@ -225,7 +225,7 @@ def _compressOldFiles(logdir):
       # Extract the loglevel from the names.
       loglevel = _loglevelFromF(logfile)
       uncompressed_logs[loglevel].append(logpath)
-  for loglevel, logfiles in uncompressed_logs.iteritems():
+  for loglevel, logfiles in uncompressed_logs.items():
     chronological_logfiles = _sortLogs(logfiles, loglevel)
     # + 1 here as backupCount in the logger works by having up to that
     # number of backups in addition to the original file.

@@ -30,7 +30,7 @@ class TestTimelinedStatsManager(unittest.TestCase):
 
   def assertColumnHeight(self):
     """Helper to assert that all domains have the same number of samples."""
-    heights = set([len(samples) for samples in self.data._data.itervalues()])
+    heights = set([len(samples) for samples in self.data._data.values()])
     self.assertEqual(1, len(heights))
 
   def test_NaNAddedOnMissingDomain(self):
@@ -91,7 +91,7 @@ class TestTimelinedStatsManager(unittest.TestCase):
     self.data.CalculateStats()
     # Verify that only the samples between the timestamps are left
     self.assertEqual([23, 20], self.data._data['A'])
-    for samples in self.data._data.itervalues():
+    for samples in self.data._data.values():
       # Verify that all domains were trimmed to size 2
       self.assertEqual(2, len(samples))
 
@@ -103,7 +103,7 @@ class TestTimelinedStatsManager(unittest.TestCase):
     self.data.CalculateStats()
     self.data.TrimSamples()
     self.assertEqual(orig_samples, self.data._data['A'])
-    for samples in self.data._data.itervalues():
+    for samples in self.data._data.values():
       # Verify that all domains were not trimmed
       self.assertEqual(len(orig_samples), len(samples))
 
@@ -132,7 +132,7 @@ class TestTimelinedStatsManager(unittest.TestCase):
     self.data.CalculateStats()
     # Verify that only the samples between the timestamps are left
     self.assertEqual([23, 20], self.data._data['A'])
-    for samples in self.data._data.itervalues():
+    for samples in self.data._data.values():
       # Verify that all domains were trimmed to size 2
       self.assertEqual(2, len(samples))
 

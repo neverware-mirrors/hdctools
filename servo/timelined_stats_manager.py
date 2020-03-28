@@ -126,7 +126,7 @@ class TimelinedStatsManager(stats_manager.StatsManager):
     tend += padding
     # pylint: disable=W0212
     domains_to_remove = set()
-    for domain, samples in self._data.iteritems():
+    for domain, samples in self._data.items():
       sample_arr = numpy.array(samples)
       trimmed_samples = sample_arr[numpy.bitwise_and(tstart <= timeline,
                                                      timeline <= tend)].tolist()

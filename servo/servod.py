@@ -479,12 +479,12 @@ class ServodStarter(object):
     """
     if lot_id:
       for (board_version, lot_ids) in \
-            interface.ftdi_common.SERVO_LOT_ID_DEFAULTS.iteritems():
+            interface.ftdi_common.SERVO_LOT_ID_DEFAULTS.items():
         if lot_id in lot_ids:
           return board_version
 
     for (board_version, vids) in \
-          interface.ftdi_common.SERVO_PID_DEFAULTS.iteritems():
+          interface.ftdi_common.SERVO_PID_DEFAULTS.items():
       if product_id in vids:
         return board_version
 

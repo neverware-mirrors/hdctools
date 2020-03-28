@@ -112,7 +112,7 @@ class TestSystemConfig(unittest.TestCase):
     # 3
     raw_input_str = '1'
     # in setUp, ALLOWABLE_INPUT_TYPES get cached in self.
-    for input_type, transform in self.ALLOWABLE_INPUT_TYPES.iteritems():
+    for input_type, transform in self.ALLOWABLE_INPUT_TYPES.items():
       # These are the params from the control using the map. In this case they
       # need to include the input type.
       control_params = {'input_type': input_type}

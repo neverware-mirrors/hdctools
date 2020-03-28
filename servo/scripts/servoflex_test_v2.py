@@ -487,7 +487,7 @@ def test_gpios(options):
         gpios_to_test[real_gpio] = ctrl_name
 
   for _ in range(2):
-    for set_name, get_name in gpios_to_test.iteritems():
+    for set_name, get_name in gpios_to_test.items():
       set_val = GPIO_MAPS[all_ctrls[set_name]]
       logging.debug('Trying %s %s -> %s', set_name, all_ctrls[set_name],
                     set_val)

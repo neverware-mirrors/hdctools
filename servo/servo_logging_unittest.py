@@ -69,7 +69,7 @@ class TestServodRotatingFileHandler(unittest.TestCase):
     unittest.TestCase.tearDown(self)
     self.test_logger.handlers = []
     # Restore cached module attributes.
-    for attr, val in self.module_defaults.iteritems():
+    for attr, val in self.module_defaults.items():
       setattr(servo_logging, attr, val)
 
   def _GenerateSortedFilesFromTags(self, tags):

@@ -37,7 +37,7 @@ class macro(hw_driver.HwDriver):
       return list(k.split(':', 1) for k in value.split())
 
     self._states = dict((k[len(str_prefix):], build_sequence(v))
-                        for k, v in self._params.iteritems()
+                        for k, v in self._params.items()
                         if k.startswith(str_prefix))
     all_controls = ' '.join(set(name for rule in self._states.values()
                                 for name in map(lambda x: x[0], rule)))
@@ -75,7 +75,7 @@ class macro(hw_driver.HwDriver):
       cached[ctrl] = value
       return value
 
-    for name, rules in self._states.iteritems():
+    for name, rules in self._states.items():
       # 'rules' is a list of (control, state) tuples.
       # To match, at least one control must be in self._get_list.
       matched = 0
