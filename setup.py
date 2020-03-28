@@ -25,23 +25,22 @@ class servo_build_py(build_py.build_py):
   # out to avoid building the python files.
   # See generate_ina_controls.py & servo/data/README.md for more
   # information.
-  def run(self):
-    """ Generate .xml servod configuration files from the servo/data/*.py
-        files before removing the servo.data package.
-    """
+
+  def build_ina_maps(self):
+    """Generate .xml servod configuration files from the servo/data/*.py"""
+    # get package_data files
+    # run generate_ina_controls.py over all the files,
+    # giving the file an output directory?
     data_dir = self.get_package_dir(self.packages.pop(1))
-    sys.path.append(data_dir)
     module_name = 'generate_ina_controls'
     ina_generator = imp.load_module(module_name, *imp.find_module(module_name,
                                                                   [data_dir]))
     ina_generator.GenerateINAControls(data_dir)
+
+  def run(self):
+    """Build INA maps."""
+    self.build_ina_maps()
     build_py.build_py.run(self)
-
-#overwrite setup tools here to do the following:
-
-# get package_data files
-# run generate_ina_controls.py over all the files,
-# giving the file an output directory?
 
 setup(
   name = "servo",

@@ -15,6 +15,11 @@ import re
 import sys
 import time
 
+# This file is run in a builder setup or command line, and therefore, we need
+# to ensure that the current directory is part of the path.
+sys.path.append(os.path.dirname(__file__))
+
+
 from sweetberry_preprocessor import SweetberryPreprocessor
 from servo_config_generator import ServoConfigFileGenerator
 from servo_config_generator import ServoControlGenerator
