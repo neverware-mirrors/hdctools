@@ -1,0 +1,11 @@
+<root>
+  <include>
+    <name>servo_dedede_overlay.xml</name>
+  </include>
+ <control>
+    <name>ec_chip</name>
+    <doc>EC chip name (read-only)</doc>
+    <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
+    drv="cros_chip" chip="it83xx"/>
+ </control>
+</root>
