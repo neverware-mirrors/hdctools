@@ -165,7 +165,7 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
         return optional_res[0][1]
       except pty_driver.ptyError:
         self._logger.warn('%s unsupported, return %s. Update the servo v4 fw.' %
-                          (str(default), warn_str))
+                          (warn_str, str(default)))
       return default
 
     # Old firmware can't change CC polarity, i.e. always cc1.
