@@ -27,13 +27,14 @@ See this [email][chatty-eng servo issue] for more details.
 
 ## What is Servo v4?
 
-Servo combines the functionality of the following devices into one:
+Servo v4 combines the functionality of the following devices into one:
 
 *   Ethernet-USB dongle
 *   Muxable USB port
 *   uSD to USB3.0 dongle
 *   Keyboard emulator
 *   Pass through charger
+*   [Case-Closed Debug (CCD)][CCD] interface ([SuzyQ] debug cable)
 
 Details:
 
@@ -220,15 +221,28 @@ Connect to Cr50 Console:
 #### Switch USB3 to DUT
 
 ```bash
-dut-control usb3_mux_en:on usb3_mux_sel:dut_sees_usbkey usb3_pwr_en:on
+(chroot) $ dut-control usb3_mux_en:on usb3_mux_sel:dut_sees_usbkey usb3_pwr_en:on
 ```
 
-Recipes for Type-C (Using PD firmware)
+### Disable/Enable [SuzyQ] wiring (debug accessory mode)
 
-*   Disable / Enable SuzyQ wiring / Debug accessory mode:
-    *   `dut-control servo_v4_dts_mode:off [on]`
-*   Disable / Enable Chargethrough:
-    *   `dut-control servo_v4_role:snk [src]`
+*** note
+Type-C Servo v4 only
+***
+
+```bash
+(chroot) $ dut-control servo_v4_dts_mode:off [on]
+```
+
+### Disable/Enable Chargethrough
+
+*** note
+Type-C Servo v4 only
+***
+
+```bash
+(chroot) $ dut-control servo_v4_role:snk [src]
+```
 
 ## Flashrom
 
@@ -379,8 +393,8 @@ To set the Servo v4 serial number on the Servo console:
 [Servo Micro]: ./servo.md
 [EC]: https://chromium.googlesource.com/chromiumos/platform/ec
 [`servod`]: ./servod.md
-[SuzyQ]: http://www.chromium.org/chromium-os/ccd
-[CCD]: https://chromium.googlesource.com/chromiumos/platform/ec/+/refs/heads/master/docs/case_closed_debugging_cr50.md
+[SuzyQ]: ./ccd.md#suzyq-suzyqable
+[CCD]: ./ccd.md
 [`FlashAP`]: https://chromium.googlesource.com/chromiumos/platform/ec/+/refs/heads/master/docs/case_closed_debugging_cr50.md#Flashing-the-AP
 [Bug]: https://bugs.chromium.org/p/chromium/issues/entry?components=Tools%3EChromeOSDebugBoards
 [`hdctools`]: https://chromium.googlesource.com/chromiumos/third_party/hdctools
