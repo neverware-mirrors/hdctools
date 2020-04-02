@@ -210,8 +210,10 @@ class ptyDriver(hw_driver.HwDriver):
           # itself had an error on the EC console.
           output = self._child.before
           # Reformat output a bit so that the logs don't get messed up.
-          output = output.replace('\n', ', ')
-          output = output.replace('\r', '')
+          output = output.replace('\n', ', ').replace('\r', '')
+          # Escape the characters in the string so that the server does not
+          # struggle marshaling the data across.
+          output = output.encode('unicode_escape', errors='replace')
           msg = 'Timeout waiting for response. There was output: %s' % output
         else:
           msg = 'No data was sent from the pty.'
