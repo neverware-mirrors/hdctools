@@ -60,7 +60,7 @@ cache_servov4_hub_and_servo_micro() {
 
   # The hub is one level up.
   SERVOV4_HUB=$(echo "${SERVOV4}" | sed 's/\.[0-9]\+$//')
-  if [ "${SERVO4_HUB}" == "${SERVOV4}" ]; then
+  if [ "${SERVOV4_HUB}" = "${SERVOV4}" ]; then
     log_output "Can't get servo hub by ${SERVOV4}"
     clean_config_key "${config_file}" HUB
     return
