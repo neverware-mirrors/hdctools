@@ -148,9 +148,33 @@ class ptyDriver(hw_driver.HwDriver):
     """
     self._issue_cmd_get_results(cmds, [])
 
+  def raise_cmd_error(self, err_msg=''):
+    """Raise an informative |ptyError| given regex matching issues."""
+    self._logger.debug('Before: ^%s^' % self._child.before)
+    self._logger.debug('After: ^%s^' % self._child.after)
+    if self._child.before:
+      # TODO(crbug.com/1043408): this needs more granular error detection
+      # to distinguish whether the console is read-only, or if the control
+      # itself hed an error on the EC console.
+      output = self._child.before
+      # Reformat output a bit so that the logs don't get messed up.
+      output = output.replace('\n', ', ').replace('\r', '')
+      # Escape the characters in the string so that the server does not
+      # struggle marshaling the data across.
+      output = output.encode('unicode_escape', errors='replace')
+      msg = 'There was output: %s' % output
+    else:
+      msg = 'No data was sent from the pty.'
+    if hasattr(self._interface, '_source'):
+      msg = '%s: %s' % (self._interface._source, msg)
+    if err_msg:
+      msg = '%s. %s' % (err_msg, msg)
+    raise ptyError(msg)
+
   def _issue_cmd_get_results(self, cmds, regex_list, flush=None,
-                             timeout=DEFAULT_UART_TIMEOUT):
-    """Send command to the device and wait for response.
+                             timeout=DEFAULT_UART_TIMEOUT,
+                             error_messages=[]):
+    r"""Send command to the device and wait for response.
 
     This function waits for response message matching a regular
     expressions.
@@ -163,6 +187,12 @@ class ptyDriver(hw_driver.HwDriver):
       flush:  Flag to decide to flush console (send newline) before cmd. Use
               the uart setting if flush isn't given.
       timeout: Timeout value in second.
+      error_messages: list of known error strings to also search for. Matching
+                      any of these will cause a ptyError to be triggered.
+
+    Note on error_messages: they work by being prepended to the first regex in
+    |regex_list| as an or (|) option. The advantage of providing those is that
+    the caller does not need to wait for a timeout to see the command failed.
 
     Returns:
       List of tuples, each of which contains the entire matched string and
@@ -179,8 +209,16 @@ class ptyDriver(hw_driver.HwDriver):
     Raises:
       ptyError: If timed out waiting for a response
     """
+    error_re = None
     result_list = []
     flush = flush if flush is not None else self._Get_uart_flush()
+
+    if regex_list and error_messages:
+      # Prepare the error message regex logic. First, create an or'd error
+      # regex:
+      error_re = '|'.join(error_messages)
+      # Then or all those with the first entry in the list
+      regex_list[0] = '%s|%s' % (error_re, regex_list[0])
 
     with self._open():
       # If there is no command interface, make sure console capture isn't active
@@ -198,28 +236,32 @@ class ptyDriver(hw_driver.HwDriver):
             lastindex = match.lastindex if match and match.lastindex else 0
             # Create a tuple which contains the entire matched string and all
             # the subgroups of the match.
-            result = match.group(*range(lastindex + 1)) if match else None
+            result = None
+            if match:
+              if error_re:
+                # Check if the match was due to a known error string.
+                err_match = re.search(error_re, match.group(0))
+                if err_match:
+                  # Matches often anchor on the \r or \n in the console output.
+                  # Remove that here.
+                  err = err_match.group(0).strip()
+                  msg = 'Known error %r' % err
+                  self._logger.error('%s matched when issuing %r', msg, cmds)
+                  # Append the output to the |before| attribute of child. This
+                  # ensure that the error message can properly print the console
+                  # error message.
+                  self._child.before += err_match.group(0)
+                  self.raise_cmd_error(msg)
+                  # We know that we matched because an error occured.
+              if lastindex:
+                result = match.group(*range(lastindex + 1))
+              else:
+                # Still provide a tuple even when there is only one entry.
+                result = match.group(0),
             result_list.append(result)
             self._logger.debug('Result: %s' % str(result))
       except pexpect.TIMEOUT:
-        self._logger.debug('Before: ^%s^' % self._child.before)
-        self._logger.debug('After: ^%s^' % self._child.after)
-        if self._child.before:
-          # TODO(crbug.com/1043408): this needs more granular error detection
-          # to distinguish whether the console is read-only, or if the control
-          # itself had an error on the EC console.
-          output = self._child.before
-          # Reformat output a bit so that the logs don't get messed up.
-          output = output.replace('\n', ', ').replace('\r', '')
-          # Escape the characters in the string so that the server does not
-          # struggle marshaling the data across.
-          output = output.encode('unicode_escape', errors='replace')
-          msg = 'Timeout waiting for response. There was output: %s' % output
-        else:
-          msg = 'No data was sent from the pty.'
-        if hasattr(self._interface, '_source'):
-          msg = '%s: %s' % (self._interface._source, msg)
-        raise ptyError(msg)
+        self.raise_cmd_error('Timeout waiting for response')
       finally:
         # Reenable capturing the console output
         self._interface.resume_capture()
