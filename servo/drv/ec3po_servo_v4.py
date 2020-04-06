@@ -6,6 +6,7 @@
 Provides the following console controlled function subtypes:
   servo_v4_ccd_mode
 """
+import re
 
 import ec3po_servo
 import pty_driver
@@ -29,6 +30,15 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
   USBC_ACTION_ROLE = ['dev', '5v', '12v', '20v']
 
   CC_POLARITY = ['cc1', 'cc2']
+
+  # The base regex to match a mac address.
+  RE_BASE_MACADDR = r'([0-9A-Fa-f]{2}[:]){5}([0-9A-Fa-f]{2})'
+
+  # This regex is used to validate input to the setter.
+  RE_MACADDR_INPUT = re.compile(r'%s$' % RE_BASE_MACADDR)
+
+  # This regex is used to extract the macaddr from the conosle.
+  RE_MACADDR_EXTRACT = r'MAC address: (%s|Unitialized)[\n\r ]' % RE_BASE_MACADDR
 
   def __init__(self, interface, params):
     """Constructor.
@@ -405,3 +415,34 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
     """
     pol = self.servo_cc_modes()['pol']
     return self.CC_POLARITY.index(pol)
+
+  def _Set_macaddr(self, macaddr):
+    """Setter of macaddr.
+
+    Args:
+      macaddr: mac address to set.
+    Raises:
+      ec3poServoV4Error: if |macaddr| doesn't match with |RE_MACADDR_INPUT|
+      ec3poServoV4Error: if |macaddr| is not the stored value in the end
+    """
+    macaddr = macaddr.lower()
+    if not re.match(self.RE_MACADDR_INPUT, macaddr):
+      raise ec3poServoV4Error('%r does not match mac address regex %r' %
+                              (macaddr, self.RE_BASE_MACADDR))
+    self._issue_cmd('macaddr set %s' % macaddr)
+    # Lastly, validate that the set worked as intended.
+    stored_macaddr = self._Get_macaddr()
+    if stored_macaddr != macaddr:
+      raise ec3poServoV4Error('Tried setting macaddr cache to %r but got %r.' %
+                              (macaddr, stored_macaddr))
+
+  def _Get_macaddr(self):
+    """Getter of macaddr.
+
+    Returns:
+      cached mac address.
+    """
+    res = self._issue_safe_cmd_get_results('macaddr',
+                                           [self.RE_MACADDR_EXTRACT])
+    # The first group is the actual mac address.
+    return res[0][1]

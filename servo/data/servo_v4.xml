@@ -250,7 +250,12 @@
     <params cmd="get" subtype="adc" adc_name="SBU2_DET" interface="26"
       drv="ec3po_servo_v4"></params>
   </control>
-
+  <control>
+    <name>macaddr</name>
+    <doc>cached mac address for NIC on servo v4</doc>
+    <params subtype="macaddr" interface="26" drv="ec3po_servo_v4"
+      input_type="str"></params>
+  </control>
   <control>
     <name>servo_v4_version</name>
     <doc>current fw version</doc>
