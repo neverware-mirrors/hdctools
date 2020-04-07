@@ -12,12 +12,12 @@ endif
 
 SUBDIRS_INSTALL	= $(foreach var,$(SUBDIRS),$(var)-install)
 
-all:  ver  $(SUBDIRS)
-install:  ver  $(SUBDIRS_INSTALL)
+all:    $(SUBDIRS)
+install:   $(SUBDIRS_INSTALL)
 clean:
 	@rm -rf $(HDCTOOLS_BUILD_DIR)
 
-$(SUBDIRS):
+$(SUBDIRS): ver
 	@$(call remake,Building,$@,all)
 
 # No subdirectory 'install' target needs any dependency on building
