@@ -6,6 +6,7 @@
 import logging
 import os
 import subprocess
+import sys
 import threading
 import weakref
 
@@ -188,9 +189,21 @@ class BaseI2CBus(interface.Interface):
     The modprobe attempt and its exit status will be logged at INFO level
     regardless of the quiet setting.
     """
-    # Escape the CrOS development chroot to find modules for the host system.
-    # Servod should be running as root anyways, should have permission for this.
-    args = ['chroot', '--', '/proc/1/root', 'modprobe']
+    # Only attempt to modprobe if the module isn't already loaded.
+    sysfs_path = '/sys/module/%s/' % (module.replace('-', '_'),)
+    if os.path.exists(sysfs_path):
+      logging.info('Skipping modprobe of %s: it is already loaded per existence'
+                   ' of: %s' % (module, sysfs_path))
+      return 0
+    args = []
+    # Run using sudo so that this also works outside the chroot as non-root.
+    if os.geteuid():
+      args.append('sudo')
+      # Only prompt for password if stdin is a terminal.
+      if not sys.stdin.isatty():
+        args.append('-n')
+      args.append('--')
+    args.append('modprobe')
     if quiet:
       args.append('--quiet')
     args.append('--')
