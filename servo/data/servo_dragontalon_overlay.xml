@@ -1,1 +1,10 @@
-servo_zerblebarn_overlay.xml
+<?xml version="1.0"?>
+<root>
+  <include>
+    <!-- See this file for documentation -->
+    <name>servo_fpmcu_dev_board_common_overlay.xml</name>
+  </include>
+  <include>
+    <name>dragontalon_inas.xml</name>
+  </include>
+</root>
