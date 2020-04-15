@@ -39,7 +39,7 @@ class usbImageManager(hw_driver.HwDriver):
   _WAIT_TIMEOUT_S = 10
 
   # Timeout to settle all pending tasks on the device before writing to it.
-  _SETTLE_TIMEOUT_S = 10
+  _SETTLE_TIMEOUT_S = 60
 
   # Control aliases to the image mux and power intended for image management
   _IMAGE_USB_MUX = 'image_usbkey_mux'
@@ -149,28 +149,26 @@ class usbImageManager(hw_driver.HwDriver):
       #
       image_location_candidates.insert(0, storage_on_hub_sysfs)
     self._logger.debug('usb image dev file should be at %s', image_usbkey_sysfs)
+    # Let the device settle first before pushing out any data onto it.
+    subprocess.call(['/bin/udevadm', 'settle', '-t',
+                     str(self._SETTLE_TIMEOUT_S)])
+    self._logger.debug('All udev events have settled.')
     end = time.time() + self._WAIT_TIMEOUT_S
     while image_location_candidates:
       active_storage_candidate = image_location_candidates.pop(0)
       if os.path.exists(active_storage_candidate):
         if self._PathIsHub(active_storage_candidate):
-          # Do not check the whole hub, only devices. Do not enqueue again.
+          # Do not check the hub, only devices.
           continue
-        # Use /sys/block/ entries to see which block device really is just
-        # the self_usb. Use sd* to avoid querying any non-external block devices
+        # Use /sys/block/ entries to see which block device is the |self_usb|.
+        # Use sd* to avoid querying any non-external block devices.
         for candidate in glob.glob('/sys/block/sd*'):
-          # /sys/block is a link to a sys hw device file
+          # |candidate| is a link to a sys hw device file
           devicepath = os.path.realpath(candidate)
           # |active_storage_candidate| is also a link to a sys hw device file
           if devicepath.startswith(os.path.realpath(active_storage_candidate)):
             devpath = '/dev/%s' % os.path.basename(candidate)
             if os.path.exists(devpath):
-              # Let the device settle first before pushing out any data onto it.
-              self._logger.debug('About to call udevadm settle.')
-              subprocess.call(['/bin/udevadm',
-                               'settle',
-                               '-t', str(self._SETTLE_TIMEOUT_S)])
-              self._logger.debug('All udev events have settled.')
               return devpath
       # Enqueue the candidate again in hopes that it will eventually enumerate.
       image_location_candidates.append(active_storage_candidate)
