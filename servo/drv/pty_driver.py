@@ -148,21 +148,25 @@ class ptyDriver(hw_driver.HwDriver):
     """
     self._issue_cmd_get_results(cmds, [])
 
-  def raise_cmd_error(self, err_msg=''):
+  def raise_cmd_error(self, cmds, err_msg=''):
     """Raise an informative |ptyError| given regex matching issues."""
     self._logger.debug('Before: ^%s^' % self._child.before)
     self._logger.debug('After: ^%s^' % self._child.after)
     if self._child.before:
-      # TODO(crbug.com/1043408): this needs more granular error detection
-      # to distinguish whether the console is read-only, or if the control
-      # itself hed an error on the EC console.
+      msg_core = 'There was output:'
+      # To see whether the console issues the command, check if any (here,
+      # arbitrarily the first) command actually made it to the console.
       output = self._child.before
+      if not re.search(r'%s\r' % cmds[0], output):
+        # This indicates that the |cmds[0]| was never received. However, there
+        # is output, indicating that the console is read-only.
+        msg_core = '%s (likely read_only console)' % msg_core
       # Reformat output a bit so that the logs don't get messed up.
       output = output.replace('\n', ', ').replace('\r', '')
       # Escape the characters in the string so that the server does not
       # struggle marshaling the data across.
       output = output.encode('unicode_escape', errors='replace')
-      msg = 'There was output: %s' % output
+      msg = '%s %s' % (msg_core, output)
     else:
       msg = 'No data was sent from the pty.'
     if hasattr(self._interface, '_source'):
@@ -213,6 +217,9 @@ class ptyDriver(hw_driver.HwDriver):
     result_list = []
     flush = flush if flush is not None else self._Get_uart_flush()
 
+    if not isinstance(cmds, list):
+      cmds = [cmds]
+
     if regex_list and error_messages:
       # Prepare the error message regex logic. First, create an or'd error
       # regex:
@@ -251,7 +258,7 @@ class ptyDriver(hw_driver.HwDriver):
                   # ensure that the error message can properly print the console
                   # error message.
                   self._child.before += err_match.group(0)
-                  self.raise_cmd_error(msg)
+                  self.raise_cmd_error(msg, cmds)
                   # We know that we matched because an error occured.
               if lastindex:
                 result = match.group(*range(lastindex + 1))
@@ -261,7 +268,7 @@ class ptyDriver(hw_driver.HwDriver):
             result_list.append(result)
             self._logger.debug('Result: %s' % str(result))
       except pexpect.TIMEOUT:
-        self.raise_cmd_error('Timeout waiting for response')
+        self.raise_cmd_error('Timeout waiting for response', cmds)
       finally:
         # Reenable capturing the console output
         self._interface.resume_capture()
