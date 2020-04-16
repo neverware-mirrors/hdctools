@@ -33,15 +33,11 @@ GNUPLOT_PREFIX = '##'
 TIME_KEY = KEY_PREFIX + 'sample_msecs'
 
 
-def _parse_args(cmdline):
-  """Parse commandline arguments.
-
-  Args:
-    cmdline: list, cmdline to be parsed
+def _build_parser():
+  """Build command line parser for dut_control.
 
   Returns:
-    tuple (options, args) where args is a list of cmdline arguments that the
-    parser was unable to match i.e. they're servod controls, not options.
+    ServodClientParser with dut_control arguments
   """
   description = (
       '%(prog)s allows users to set and get various controls on a DUT system '
@@ -73,6 +69,10 @@ def _parse_args(cmdline):
   info_g.add_argument('-o', '--value_only', help='show the value only',
                       action='store_true', default=False)
 
+  info_g.add_argument('--get-all', action='store_true', default=False,
+                      help="get all servod 'get' controls. Runs before any "
+                      'passed in args. WARNING: super slow, and alters state.')
+
   print_g = parser.add_mutually_exclusive_group()
   print_g.add_argument('-g', '--gnuplot', help='gnuplot style to stdout. '
                        'Implies print_time', action='store_true', default=False)
@@ -90,7 +90,7 @@ def _parse_args(cmdline):
   parser.add_argument('-z', '--sleep_msecs', type=float, default=0.0,
                       help='sleep for this many milliseconds between queries')
 
-  return parser.parse_known_args(cmdline)
+  return parser
 
 
 def display_table(table, prefix):
@@ -325,7 +325,8 @@ def iterate(controls, options, sclient):
 
 def real_main(cmdline):
   """actual main method logic."""
-  (options, args) = _parse_args(cmdline)
+  parser = _build_parser()
+  options, args = parser.parse_known_args(cmdline)
   loglevel = logging.INFO
   if options.debug:
     loglevel = logging.DEBUG
@@ -341,15 +342,18 @@ def real_main(cmdline):
   # Perform 1st in order to allow user to then override below
   if options.hwinit:
     sclient.hwinit()
-    # all done, don't read all controls
-    if not args:
-      return
-
-  if not args and options.info:
-    # print all the doc info for the controls
-    print sclient.doc_all()
-  elif not args:
+  if options.get_all:
     print sclient.get_all()
+
+  if not args:
+    if options.info:
+      # print all the doc info for the controls
+      print sclient.doc_all()
+    elif not (options.hwinit or options.get_all):
+      # Just print the help message and exit. The condition checks for the
+      # permissible options that can run without arguments, and where a help
+      # message is not required.
+      parser.print_help()
   else:
     if ':' not in ' '.join(args):
       # Sort args only if none of them sets values - otherwise the order is
