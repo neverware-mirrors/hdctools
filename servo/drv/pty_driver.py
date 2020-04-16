@@ -162,7 +162,7 @@ class ptyDriver(hw_driver.HwDriver):
         # is output, indicating that the console is read-only.
         msg_core = '%s (likely read_only console)' % msg_core
       # Reformat output a bit so that the logs don't get messed up.
-      output = output.replace('\n', ', ').replace('\r', '')
+      output = output.replace('\n', r'\n ').replace('\r', '')
       # Escape the characters in the string so that the server does not
       # struggle marshaling the data across.
       output = output.encode('unicode_escape', errors='replace')
