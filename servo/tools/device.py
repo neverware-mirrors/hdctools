@@ -25,7 +25,7 @@ class Device(tool.Tool):
     """Tool help message for parsing."""
     return 'Manage servo device.'
 
-  def UsbPath(self, args):
+  def usb_path(self, args):
     """Retrieve the usb sysfs path for a serial number."""
     # This list is used to find all servos on the system.
     vid_pid_list = [(SERVO_VID, None)]

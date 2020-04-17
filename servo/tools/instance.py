@@ -17,7 +17,7 @@ class InstanceError(Exception):
   pass
 
 
-def _FormatInfo(info):
+def _format_info(info):
   """Output format helper that turns a dictionary into 'key: value' lines."""
   output_lines = ['%s : %s' % (val, info[val]) for val in ORDER]
   return '\n'.join(output_lines)
@@ -49,24 +49,24 @@ class Instance(tool.Tool):
     """Tool help message for parsing."""
     return 'Manage running servod instances.'
 
-  def Show(self, args):
+  def show(self, args):
     """Print info of servod instance found by -p/-s args."""
     try:
       entry = self._scratch.FindById(args.id)
-      self._logger.info(_FormatInfo(entry))
+      self._logger.info(_format_info(entry))
     except scratch.ScratchError as e:
       self._logger.info(str(e))
 
-  def ShowAll(self, _):
+  def show_all(self, _):
     """Print info of all registered servod instances."""
-    output_lines = [_FormatInfo(entry) for entry in
+    output_lines = [_format_info(entry) for entry in
                     self._scratch.GetAllEntries()]
     if output_lines:
       self._logger.info('\n---\n'.join(output_lines))
     else:
       self._logger.info('No entries found.')
 
-  def Stop(self, args):
+  def stop(self, args):
     """Stop servod instance found by -i/--identifier arg.
 
     Servod handles the cleanup code to remove its own entry.
@@ -102,7 +102,7 @@ class Instance(tool.Tool):
                       str(pid))
     os.kill(pid, signal.SIGKILL)
 
-  def Rebuild(self, args):
+  def rebuild(self, args):
     """Rebuild servodscratch.
 
     If for some reason the scratch has gotten into a bad state, this can be used

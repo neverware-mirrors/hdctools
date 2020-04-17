@@ -43,15 +43,9 @@ class Tool(object):
       args: argparse.parse_arguments() returned namespace to execute a command
 
     The default invocation is that a tool, for each sub-command, implements
-    a method that conforms to _ConvertNameToMethod below. The tool is of course
-    free to overwrite run() to have a custom invocation logic.
+    a method that's just the commadn with '-' replaced wiht '_'.
+    The tool is of course free to overwrite run() to have a custom invocation
+    logic.
     """
-    cmd = _ConvertNameToMethod(args.command)
+    cmd = args.command.replace('-', '_')
     getattr(self, cmd)(args)
-
-
-# pylint: disable=invalid-name
-def _ConvertNameToMethod(name):
-  """Convert dash separated words to camelcase."""
-  parts = name.split('-')
-  return ''.join([w.capitalize() for w in parts])
