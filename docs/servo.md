@@ -143,7 +143,7 @@ Chrome devices:
 
 ```bash
 (chroot) $ dut-control spi2_buf_en:on spi2_buf_on_flex_en:on spi2_vref:pp1800 cold_reset:on
-(chroot) $ sudo flashrom -V -p ft2232_spi:type=servo-v2 -w $IMAGE # [need to change for each servo type]
+(chroot) $ sudo flashrom -V -p ft2232_spi:type=google-servo-v2 -w $IMAGE # [need to change for each servo type]
 (chroot) $ dut-control spi2_buf_en:off spi2_buf_on_flex_en:off spi2_vref:off cold_reset:off
 ```
 
