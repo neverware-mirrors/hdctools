@@ -238,7 +238,7 @@ def test_spi(dev_id, options):
   if options.v3:
     cmd = 'sudo flashrom -V -p linux_spi'
   else:
-    cmd = 'sudo flashrom -V -p ft2232_spi:divisor=60,type=servo-v2'
+    cmd = 'sudo flashrom -V -p ft2232_spi:divisor=60,type=google-servo-v2'
   if options.legacy:
     cmd += '-legacy'
     ctrls.extend([
