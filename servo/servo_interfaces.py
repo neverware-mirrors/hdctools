@@ -9,7 +9,7 @@ INTERFACE_DEFAULTS = collections.defaultdict(dict)
 
 SERVO_ID_DEFAULTS = [(0x0403, 0x6014), (0x18d1, 0x5001), (0x18d1, 0x5002),
                      (0x18d1, 0x5004), (0x18d1, 0x500f), (0x18d1, 0x5014),
-                     (0x18d1, 0x501a), (0x18d1, 0x501b)]
+                     (0x18d1, 0x501a)]
 
 # servo v1
 INTERFACE_DEFAULTS[0x18d1][0x5001] = \
@@ -168,7 +168,10 @@ for vid, pid in C2D2_DEFAULTS:
 SERVO_ID_DEFAULTS.extend(C2D2_DEFAULTS)
 
 # Servo v4
-SERVO_V4_DEFAULTS = [(0x18d1, 0x501b)]
+# Note: the (0x18d1, 0x520d) pair is actually servo v4.1
+# However, servo v4 and v4.1 have the same usb end-points and therefore
+# interfaces (for now). Should this change, break v4.1 into its own logic.
+SERVO_V4_DEFAULTS = [(0x18d1, 0x501b), (0x18d1, 0x520d)]
 SERVO_V4_SLOT_SIZE = 20
 SERVO_V4_SLOT_POSITIONS = {
     'default': 1,
@@ -203,6 +206,8 @@ for vid, pid in SERVO_V4_DEFAULTS:
 
   # Slots for relocating Hammer interfaces.
   INTERFACE_DEFAULTS[vid][pid] += ['dummy'] * SERVO_V4_SLOT_SIZE
+
+SERVO_ID_DEFAULTS.extend(SERVO_V4_DEFAULTS)
 
 # miniservo
 MINISERVO_ID_DEFAULTS = [(0x403, 0x6001), (0x18d1, 0x5000)]
