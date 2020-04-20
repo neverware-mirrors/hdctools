@@ -272,9 +272,23 @@ The latest firmware is available in the chroot at
 If the green LED on the servo does not light up when DUT POWER is connected to a
 USB charger, you probably don’t have the latest firmware and should update.
 
-Note: [`servod`] must not be running.
+*** note
+**NOTE**: [`servod`] must not be running.
+***
 
-Update to default firmware:
+Sync the latest source:
+
+```bash
+(chroot) repo sync
+```
+
+Update `sys-firmware/servo-firmware` to the latest version:
+
+```bash
+(chroot) ~/trunk/src/scripts/update_chroot
+```
+
+Update to latest stable firmware:
 
 ```bash
 (chroot) $ sudo servo_updater -b servo_v4

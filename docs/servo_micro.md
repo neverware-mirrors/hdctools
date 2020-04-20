@@ -57,10 +57,29 @@ devices. Adding this flag to the `flashrom` command will cause an error.
 *   If a Servo Micro is plugged into a DUT without being plugged into a host
     machine, it can cause undefined behavior on the DUT.
 
-## Programming
+## Updating Firmware
 
-Servo Micro can update to the latest released firmware with a tool in the
-chroot. Note that [`servod`] must not be running as it locks the device:
+Servo Micro can be updated to the latest stable firmware using the
+`servo_updater` tool.
+
+*** note
+**NOTE**: [`servod`] must not be running when updating since it locks the
+device.
+***
+
+Sync the latest source:
+
+```bash
+(chroot) repo sync
+```
+
+Update `sys-firmware/servo-firmware` to the latest version:
+
+```bash
+(chroot) ~/trunk/src/scripts/update_chroot
+```
+
+Update the firmware:
 
 ```bash
 (chroot) $ sudo servo_updater -b servo_micro
@@ -118,4 +137,3 @@ wires on and use a standard FTDI pin header 3.3V cable.
 [Servo Micro and Servo v4]: ./images/servo_micro_servo_v4_dut.jpg
 [Servo Micro USB OTG]: ./images/servo_micro_usb_otg.jpg
 [Servo Micro UART]: ./images/servo_micro_uart.png
-
