@@ -112,7 +112,7 @@ class Suart(uart.Uart):
       # Check if the pty is connected to anything, or hungup.
       if not events:
         try:
-          r = self._susb._read_ep.read(256, self._susb.TIMEOUT_MS)
+          r = self._susb.read_ep(256, self._susb.TIMEOUT_MS)
           if r:
             os.write(self._ptym, r)
 
@@ -142,7 +142,7 @@ class Suart(uart.Uart):
             # issues are fixed.
             time.sleep(0.001)
             if r:
-              self._susb._write_ep.write(r, self._susb.TIMEOUT_MS)
+              self._susb.write_ep(r, self._susb.TIMEOUT_MS)
 
         except IOError as e:
           self._logger.debug('tx %s: %s' % (self.get_pty(), e))

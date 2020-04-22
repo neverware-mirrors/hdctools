@@ -96,7 +96,7 @@ class Sgpio(gpio_interface.GpioInterface):
                        '%s, width=%s, dir_val=%s, wr_val=%s)' %
                        (offset, width, dir_val, wr_val))
     # Read preexisting values for debug output.
-    ret = self._susb._read_ep.read(4, self._susb.TIMEOUT_MS)
+    ret = self._susb.read_ep(4, self._susb.TIMEOUT_MS)
     read_mask = struct.unpack('<I', ret)[0]
     self._logger.debug('Read mask: 0x%08x' % read_mask)
 
@@ -109,13 +109,13 @@ class Sgpio(gpio_interface.GpioInterface):
       clear_mask = (~wr_val & width_mask) << offset
 
     byte_str = struct.pack('<II', set_mask, clear_mask)
-    ret = self._susb._write_ep.write(byte_str, self._susb.TIMEOUT_MS)
+    ret = self._susb.write_ep(byte_str, self._susb.TIMEOUT_MS)
     if (ret != len(byte_str)):
       raise SgpioError('Wrote %d bytes, expected %d' % (ret, len(byte_str)))
 
     # GPIO cached values update on read,
-    ret = self._susb._read_ep.read(4, self._susb.TIMEOUT_MS)
-    ret = self._susb._read_ep.read(4, self._susb.TIMEOUT_MS)
+    ret = self._susb.read_ep(4, self._susb.TIMEOUT_MS)
+    ret = self._susb.read_ep(4, self._susb.TIMEOUT_MS)
     if len(ret) != 4:
       raise SgpioError('Read error: expected 4 bytes, got %d [%s]' % (len(ret),
                                                                       ret))
@@ -126,6 +126,10 @@ class Sgpio(gpio_interface.GpioInterface):
     readvalue = (read_mask >> offset) & width_mask
     self._logger.debug('Read value: 0x%x' % readvalue)
     return readvalue
+
+  def reinitialize(self):
+    """Reinitialize the usb endpoint"""
+    self._susb.reset_usb()
 
   def get_device_info(self):
     """The usb device information."""

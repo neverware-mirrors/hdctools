@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Allows creation of an interface via stm32 usb."""
+import threading
+import time
 
 import common as c
 import usb
@@ -35,6 +37,11 @@ class Susb():
   WRITE_ENDPOINT = 0x1
   TIMEOUT_MS = 100
 
+  # The time after which to throw arms up when the lock acquisition fails.
+  LOCK_TIMEOUT_S = 60
+  # The rate to sample the lock at.
+  LOCK_SAMPLING_RATE_S = 0.001
+
   def __init__(self, vendor=0x18d1, product=0x500f, interface=1,
                serialname=None, logger=None):
     """Susb constructor.
@@ -54,6 +61,17 @@ class Susb():
       raise SusbError('No logger defined')
     self._logger = logger
     self._logger.debug('')
+    # An event used to signal when a thread is trying to reinitialize the
+    # interface.
+    self._reset_done = threading.Event()
+    # Only clear the flag when performing a reset.
+    self._reset_done.set()
+    # Setting up the read and write locks. These are per instance, as each
+    # instance represents one interface.
+    self._read_ep_lock = threading.Lock()
+    self._write_ep_lock = threading.Lock()
+    self._logger.debug('Set up stm32 read and write locks')
+
 
     self._vendor = vendor
     self._product = product
@@ -62,13 +80,40 @@ class Susb():
     self._dev = None
     self._find_device()
 
+  def wait_on_reset(self):
+    """Potentially give the resetting thread preference.
+
+    When endpoints are being read in a (tight) loop like in the UART interfaces,
+    a rice might happen between the reinitialization thread and the UART threads
+    the reinitialization thread keeps losing out on the lock.
+
+    With this helper, the thread can indicate that a reinit is about to happen,
+    encouraging other threads that are performing read/write to stop asking for
+    the lock, and wait until reinit is done.
+    """
+    # Set a very generous timeout for resetting to complete i.e the timeout
+    # acquire both locks slowly, and one more lock timeout as buffer.
+    if not self._reset_done.wait(3*self.LOCK_TIMEOUT_S):
+      raise SusbError('Reset seems to have never finished for %04x:%04x %s',
+                      self.get_device_info())
+
   def reset_usb(self):
     """Reinitializes USB based on the device based settings from __init__"""
+    # Signal that resetting is about to happen.
+    self._reset_done.clear()
+    # Reading and writing is unavailable until the reset has finished.
+    self._acquire_lock(self._read_ep_lock, 'read ep')
+    self._acquire_lock(self._write_ep_lock, 'write ep')
     try:
       self._find_device()
     except:
-      self._logger.info('device not found: %04x:%04x %s' %
-                        (self._vendor, self._product, self._serialname))
+      self._logger.info('device not found: %04x:%04x %s',
+                        self.get_device_info())
+    finally:
+      self._write_ep_lock.release()
+      self._read_ep_lock.release()
+    # Signal that resetting is about to happen.
+    self._reset_done.set()
 
   def get_device_info(self):
     """Returns a tuple (vid, pid, serialname)."""
@@ -149,6 +194,45 @@ class Susb():
     self._logger.debug('Writer endpoint: 0x%x' % write_ep.bEndpointAddress)
 
     self._logger.debug('Set up stm32 usb')
+
+  def _acquire_lock(self, lock, name):
+    """Try to acquire the |lock| within |LOCK_TIMEOUT_S|.
+
+    Args:
+      lock: lock to acquire
+      name: name of the lock to log
+
+    Raises:
+      SinterfaceError: if |lock| cannot be acquired in |LOCK_TIMEOUT_S| s
+    """
+    end = time.time() + self.LOCK_TIMEOUT_S
+    while time.time() < end:
+      if lock.acquire(False):
+        break
+      time.sleep(self.LOCK_SAMPLING_RATE_S)
+    else:
+      # Acquisition failed. Report and raise an error.
+      self._logger.error('%s lock acquisition failed after %ds.',
+                         name, self.LOCK_TIMEOUT_S)
+      raise SinterfaceError('Failed to acquire %s lock.' % name)
+
+  def read_ep(self, *args, **kwargs):
+    """Thread safe wrapper around reading the |read_ep|"""
+    self.wait_on_reset()
+    self._acquire_lock(self._read_ep_lock, 'read ep')
+    try:
+      return self._read_ep.read(*args, **kwargs)
+    finally:
+      self._read_ep_lock.release()
+
+  def write_ep(self, *args, **kwargs):
+    """Thread safe wrapper around writing to the |write_ep|"""
+    self.wait_on_reset()
+    self._acquire_lock(self._write_ep_lock, 'write ep')
+    try:
+      self._write_ep.write(*args, **kwargs)
+    finally:
+      self._write_ep_lock.release()
 
   def control(self, request, value):
     """Send control transfer.

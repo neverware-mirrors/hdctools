@@ -140,7 +140,7 @@ class Si2cBus(i2c_base.BaseI2CBus):
     # Send wr_rd command to stm32.
     cmd.extend(write_list)
     try:
-      ret = self._susb._write_ep.write(cmd, self._susb.TIMEOUT_MS)
+      ret = self._susb.write_ep(cmd, self._susb.TIMEOUT_MS)
     except IOError as e:
       if e.errno == errno.ENODEV:
         self._logger.error('USB disconnected 0x%04x:%04x, servod failed.',
@@ -148,7 +148,7 @@ class Si2cBus(i2c_base.BaseI2CBus):
       raise
 
     # Read back response if necessary.
-    data = self._susb._read_ep.read(read_count + 4, self._susb.TIMEOUT_MS)
+    data = self._susb.read_ep(read_count + 4, self._susb.TIMEOUT_MS)
 
     if len(data) < (read_count + 4):
       raise Si2cError('Read status failed.')
