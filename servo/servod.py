@@ -106,6 +106,10 @@ class ServodError(Exception):
 class ServodStarter(object):
   """Class to manage servod instance and rpc server its being served on."""
 
+  # Timeout period after which to just turn down, regardless of threads
+  # needing to clean up.
+  EXIT_TIMEOUT_S = 20
+
   def __init__(self, cmdline):
     """Prepare servod invocation.
 
@@ -555,8 +559,14 @@ class ServodStarter(object):
     # Set watchdog thread to end
     self._watchdog_thread.deactivate()
     # Collect servo and watchdog threads
-    self._server_thread.join()
-    self._watchdog_thread.join()
+    self._server_thread.join(self.EXIT_TIMEOUT_S)
+    if self._server_thread.isAlive():
+      self._logger.error('Server thread not turned down after %s s.',
+                         self.EXIT_TIMEOUT_S)
+    self._watchdog_thread.join(self.EXIT_TIMEOUT_S)
+    if self._watchdog_thread.isAlive():
+      self._logger.error('Watchdog thread not turned down after %s s.',
+                         self.EXIT_TIMEOUT_S)
     self.cleanup()
     sys.exit(self._exit_status)
 

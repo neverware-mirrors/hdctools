@@ -28,6 +28,7 @@ class DeviceWatchdog(threading.Thread):
       poll_rate: poll rate in seconds
     """
     threading.Thread.__init__(self)
+    self.daemon = True
     self._logger = logging.getLogger(type(self).__name__)
     self._turndown_signal = signal.SIGTERM
     self.done = threading.Event()
