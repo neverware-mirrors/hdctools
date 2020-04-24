@@ -54,28 +54,6 @@ def _GetIteChipidReStr(command):
 class ec3poServo(pty_driver.ptyDriver):
   """Parent object to servo console controls."""
 
-  # This is a list taken from ec's console.c. It's used to quickly match error
-  # rather than having to wait for a console timeout.
-  KNOWN_ERROR_STRINGS = [
-      'Unknown error',
-      'Unimplemented',
-      'Overflow',
-      'Timeout',
-      'Invalid argument',
-      'Busy',
-      'Access Denied',
-      'Not Powered',
-      'Not Calibrated',
-      'Wrong number of params',
-      r'Parameter \d+ invalid',
-      r'Command returned error \d+'
-  ]
-  KNOWN_ERROR_STRINGS = [r'%s[\r\n]' % err for err in KNOWN_ERROR_STRINGS]
-
-  # This regex needs to be per command, as the match requires knowing the
-  # command.
-  UNKNOWN_COMMAND_STR_BASE = r"Command '%s' not found or ambiguous.[\r\n]"
-
   def __init__(self, interface, params, board=''):
     """Constructor.
 
@@ -163,8 +141,6 @@ class ec3poServo(pty_driver.ptyDriver):
     This disables EC debug output while waiting for a
     command response, to prevent unexpected output interleaved
     with expected data.
-    It also prepends a list of known error messages to the first regex, to
-    catch and report those quicker than waiting for a timeout to occur.
 
     Args:
       (See pty_driver._issue_cmd_get_results)
@@ -175,11 +151,9 @@ class ec3poServo(pty_driver.ptyDriver):
       List of match lists, containing matched string plus extracted values.
     """
     res = None
-    errors = [self.UNKNOWN_COMMAND_STR_BASE % cmd] + self.KNOWN_ERROR_STRINGS
     self._limit_channel()
     try:
-      res = self._issue_cmd_get_results(cmd, rx, error_messages=errors)
-      # Check inside the response to see if an error string matched.
+      res = self._issue_cmd_get_results(cmd, rx)
     finally:
       self._restore_channel()
     return res
