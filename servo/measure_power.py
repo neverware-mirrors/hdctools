@@ -310,7 +310,10 @@ class PowerMeasurement(object):
           left empty.
   """
 
-  DEFAULT_OUTDIR_BASE = '/tmp/power_measurements/'
+  DEFAULT_OUTDIR_BASE = os.path.join(
+    os.getenv('TMPDIR', '/tmp'),
+    'power_measurements/'
+  )
 
   PREMATURE_RETRIEVAL_MSG = ('Cannot retrieve information before data '
                              'collection has finished.')
