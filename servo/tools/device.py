@@ -49,7 +49,7 @@ class Device(tool.Tool):
     """Tool help message for parsing."""
     return 'Manage servo device.'
 
-  def _usb_path(self, args):
+  def _usb_path(self, serial):
     """Helper to get the device path.
 
     Args:
