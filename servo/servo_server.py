@@ -601,12 +601,10 @@ class Servod(object):
     # If there is the control of 'active_v4_device', set active_v4_device to
     # the default device as initialization.
     try:
-      self.set('active_v4_device', 'default')
-    except NameError as e:
-      # If the control does not exist, just pass it.
-      pass
+      if self._syscfg.is_control('active_v4_device'):
+        self.set('active_v4_device', 'default')
     except servo_drv.active_v4_device.activeV4DeviceError as e:
-      self._logger.error(str(e))
+      self._logger.debug('Could not set active device: %s', str(e))
 
     return True
 
