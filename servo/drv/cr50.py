@@ -243,6 +243,28 @@ class cr50(pty_driver.ptyDriver):
       raise cr50Error('Cannot retrieve ccd privilege level on cr50 console.')
     return result[1].lower()
 
+  def _Get_idle_state(self):
+    """Getter of idle state level for CR50.
+
+    Returns:
+      string of the current idle state setting
+    """
+    result = self._issue_cmd_get_results('idle',
+                                         ['idle action:\s+(\w+)'])[0]
+    if result is None:
+      raise cr50Error('Cannot retrieve idle setting on cr50 console.')
+    return result[1].lower()
+
+  def _Set_idle_state(self, value):
+    """Setter of idle state level for CR50.
+
+    Note that not all values returned from get are valid for set.
+
+    Parameters:
+      value: 'wfi' or 'sleep' to set idle state setting
+    """
+    self._issue_cmd('idle %s' % value)
+
   def _Set_ccd_noop(self, value):
     """Used to ignore servo controls"""
     pass

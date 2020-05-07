@@ -17,6 +17,11 @@
          .................................................................-->
     <params clobber_ok="" ite_debugger_mode="0" />
   </map>
+  <map>
+    <name>idle_states</name>
+    <doc>Different levels of sleep the CR50 enters during idle time</doc>
+    <params active="wfi" sleep="sleep" />
+  </map>
   <!-- cr50 is also named 'usbpd' for compatibility with previous scripts -->
   <control>
     <name>uart4_pty</name>
@@ -185,6 +190,12 @@
     <doc>Control ccdblock to control detecting servo.</doc>
     <params subtype="detect_servo" interface="9" drv="cr50" map="onoff"
     clobber_ok="" servo_v3_drv="na"></params>
+  </control>
+  <control>
+    <name>cr50_idle_level</name>
+    <doc>Controls the level of sleep the CR50 will enter when idling.</doc>
+    <params subtype="idle_state" interface="9" drv="cr50" input_type="str"
+    map="idle_states"></params>
   </control>
   <!-- cr50 UART Buffers & VREF Controls -->
   <control>
