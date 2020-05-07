@@ -63,6 +63,9 @@ class activeV4Device(hw_driver.HwDriver):
     self._interface.v4_device_info = {}
     self._interface.v4_device_info['default'] = devices[0]
     self._interface.v4_device_info['usable_devices'] = list(usable_devices)
+    self._interface._can_control_cr50 = (
+        self._interface._syscfg.is_control('cr50_servo'))
+    self._interface._can_control_servo = 'servo_micro' in devices
 
   def get_v4_device_info(self, info_type):
     """Get the requested v4 device information.
@@ -95,20 +98,22 @@ class activeV4Device(hw_driver.HwDriver):
     # are the signals that interfere with ccd. Disable/enable them based on
     # whether servo micro is supposed to be active.
     uart_en = 'on' if use_servo else 'off'
-    self._interface.set('ec_uart_en', uart_en)
-    self._interface.set('cpu_uart_en', uart_en)
+    if self._interface._can_control_servo:
+      self._interface.set('ec_uart_en', uart_en)
+      self._interface.set('cpu_uart_en', uart_en)
 
-    # Cr50 can't detect servo if CCD EC uart is enabled. Enable cr50 servo
-    # detection just in case ccd is blocking it.
-    if self._interface.get('cr50_servo') == 'undetectable' and use_servo:
-      self._interface.set('cr50_force_servo_detect', 'on')
+    if self._interface._can_control_cr50:
+      # Cr50 can't detect servo if CCD EC uart is enabled. Enable cr50 servo
+      # detection just in case ccd is blocking it.
+      if self._interface.get('cr50_servo') == 'undetectable' and use_servo:
+        self._interface.set('cr50_force_servo_detect', 'on')
 
-    # Give Cr50 enough time to detect the new state.
-    time.sleep(2)
+      # Give Cr50 enough time to detect the new state.
+      time.sleep(2)
 
-    # Once Cr50 detects servo it should always be able to detect it. We don't
-    # need force_servo_detect anymore.
-    self._interface.set('cr50_force_servo_detect', 'off')
+      # Once Cr50 detects servo it should always be able to detect it. We don't
+      # need force_servo_detect anymore.
+      self._interface.set('cr50_force_servo_detect', 'off')
 
     if device != self._Get_device():
       raise activeV4DeviceError('Could not set %r as active device' % device)
@@ -117,11 +122,13 @@ class activeV4Device(hw_driver.HwDriver):
 
   def _using_servo(self):
     """Return True if servo uart is enabled."""
-    return ('servo' in self.get_v4_device_info('default') and
+    return (self._interface._can_control_servo and
             self._interface.get('ec_uart_en') == 'on')
 
   def _using_ccd(self):
     """Return True if ccd uart TX is enabled."""
+    if not self._interface._can_control_cr50:
+      return False
     flags = self._interface.get('cr50_ccd_state_flags')
     brdprop = int(self._interface.get('cr50_brdprop'), base=16)
 
