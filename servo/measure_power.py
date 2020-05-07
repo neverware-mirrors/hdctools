@@ -80,7 +80,6 @@ class ServodPowerTracker(threading.Thread):
       self._sclient.set_get_all(self._ctrls)
     except client.ServoClientError:
       msg = 'Failed to test servod commands. Tested: %s' % str(self._ctrls)
-      self._logger.error(msg)
       raise PowerTrackerError(msg)
 
   def run(self):
@@ -250,9 +249,12 @@ class ECPowerTracker(ServodPowerTracker):
     try:
       super(ECPowerTracker, self).verify()
       # This means that avg_ppvar_vbat_mw worked fine.
-    except PowerTrackerError:
+    except PowerTrackerError as e:
       # This means that avg_ppvar_vbat_mw is not supported.
       # Revert back to ppvar_vbat_mw for main ctrls.
+      self._logger.info(str(e))
+      self._logger.info("%s not supported, using %s instead." %
+              (self._avg_ec_cmd, self._ec_cmd))
       self._ctrls = [self._ec_cmd]
 
   def prepare(self, fast=False, powerstate=UNKNOWN_POWERSTATE):
