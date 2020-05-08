@@ -43,6 +43,10 @@ class Servod(object):
   # waiting for the device during an intentional disconnect.
   INTERFACE_AVAILABILITY_TIMEOUT = 5
 
+  # Exceptions to count as known or ordinary.  Any errors that aren't instances
+  # of these (or their subclasses) will be logged with "Please take a look."
+  KNOWN_EXCEPTIONS = (AttributeError, NameError, HwDriverError)
+
   def init_servo_interfaces(self, vendor, product, serialname, interfaces):
     """Init the servo interfaces with the given interfaces.
 
@@ -511,7 +515,7 @@ class Servod(object):
       return self.get_serial_number(name.split('serialname')[0].strip('_'))
 
     with servo_logging.WrapGetCall(
-            name, known_exceptions=(AttributeError, HwDriverError)) as wrapper:
+            name, known_exceptions=self.KNOWN_EXCEPTIONS) as wrapper:
       (params, drv, device) = self._get_param_drv(name)
       if device in self._devices:
         self._devices[device].wait(self.INTERFACE_AVAILABILITY_TIMEOUT)
@@ -558,7 +562,7 @@ class Servod(object):
       ServodError: if interfaces are not available within timeout period
     """
     with servo_logging.WrapSetCall(
-            name, wr_val_str, known_exceptions=(AttributeError, HwDriverError)):
+            name, wr_val_str, known_exceptions=self.KNOWN_EXCEPTIONS):
       (params, drv, device) = self._get_param_drv(name, False)
       if device in self._devices:
         self._devices[device].wait(self.INTERFACE_AVAILABILITY_TIMEOUT)
