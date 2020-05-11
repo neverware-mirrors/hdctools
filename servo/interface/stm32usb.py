@@ -11,17 +11,7 @@ import usb
 
 class SusbError(c.InterfaceError):
   """Class for exceptions of Susb."""
-
-  def __init__(self, msg, value=0):
-    """SusbError constructor.
-
-    Args:
-      msg: string, message describing error in detail
-      value: integer, value of error when non-zero status returned.  Default=0
-    """
-    super(SusbError, self).__init__(msg, value)
-    self.msg = msg
-    self.value = value
+  pass
 
 
 class Susb():
@@ -94,7 +84,7 @@ class Susb():
     # Set a very generous timeout for resetting to complete i.e the timeout
     # acquire both locks slowly, and one more lock timeout as buffer.
     if not self._reset_done.wait(3*self.LOCK_TIMEOUT_S):
-      raise SusbError('Reset seems to have never finished for %04x:%04x %s',
+      raise SusbError('Reset seems to have never finished for %04x:%04x %s' %
                       self.get_device_info())
 
   def reset_usb(self):
@@ -108,7 +98,7 @@ class Susb():
       self._find_device()
     except:
       self._logger.info('device not found: %04x:%04x %s',
-                        self.get_device_info())
+                        *self.get_device_info())
     finally:
       self._write_ep_lock.release()
       self._read_ep_lock.release()
