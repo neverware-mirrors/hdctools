@@ -19,6 +19,7 @@ import time
 import tty
 
 import common as c
+from . import dummy
 from ec3po import console
 from ec3po import interpreter
 from ec3po import threadproc_shim
@@ -246,7 +247,7 @@ class EC3PO(uart.Uart):
       # initializing this interface since no control relies on it.
       c.build_logger.debug('Skip initializing EC3PO for %s, no control '
                            'specified.', raw_uart_name)
-      return dummy.Build()
+      return dummy.Dummy.Build()
 
   @staticmethod
   def name():
