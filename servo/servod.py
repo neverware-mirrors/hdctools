@@ -129,7 +129,7 @@ class ServodStarter(object):
     # Initialize logging up here first to ensure log messages from parsing
     # can go through.
     loglevel, fmt = servo_logging.LOGLEVEL_MAP[servo_logging.DEFAULT_LOGLEVEL]
-    logging.basicConfig(loglevel=loglevel, format=fmt)
+    logging.basicConfig(level=loglevel, format=fmt)
     self._logger = logging.getLogger(os.path.basename(sys.argv[0]))
     sopts, devopts = self._parse_args(cmdline)
     self._host = sopts.host
