@@ -90,7 +90,7 @@ class Device(tool.Tool):
     # expand command to perform the uhubctl action.
     cmd = cmd + ['-a', str(action_number), '-r', str(self.REPS)]
     try:
-      subprocess.check_output(cmd)
+      subprocess.check_output(cmd, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:
       self.error('Error performing the uhubctl command. ran: "%s". %s.',
                  ' '.join(cmd), str(e))
@@ -107,7 +107,7 @@ class Device(tool.Tool):
     """
     cmd = ['sudo', 'uhubctl']
     try:
-      subprocess.check_output(cmd)
+      subprocess.check_output(cmd, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:
       self.error('uhubctl not available. Be sure to run as sudo. %s',
                  str(e))
@@ -116,7 +116,7 @@ class Device(tool.Tool):
       # casting port to str to ensure we don't accidently pass an int.
       cmd = cmd + ['-l', hub, '-p', str(port)]
       try:
-        subprocess.check_output(cmd)
+        subprocess.check_output(cmd, stderr=subprocess.STDOUT)
       except subprocess.CalledProcessError as e:
         self.error('hub %s with port %s unknown to uhubctl. '
                    'Be sure the hub is a supported smart hub. %s', hub, port,
