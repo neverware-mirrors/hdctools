@@ -22,8 +22,11 @@
   <control>
     <name>power_state</name>
     <doc>Used to turn the DUT off and on</doc>
+    <!-- b/131856041: Kukui tablets boot only after power button
+	 pressed > 1.0s.  -->
     <params clobber_ok="" shutdown_delay="3.0" reset_recovery="0.6"
-            drv="kukui_power" warm_reset_can_hold_ap="no" />
+            drv="cros_ec_softrec_power" warm_reset_can_hold_ap="no"
+            usb_power_restore="yes" power_key="press"/>
   </control>
   <!-- lid open has to go through the EC always on kukui irrespective of
        servo type. -->

@@ -41,6 +41,9 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
   # Time in seconds to wait after booting the AP to reboot the EC.
   _RESET_DELAY = 1
 
+  # Interface name for USB3 power enabled.
+  _USB3_PWR_EN = 'usb3_pwr_en'
+
   def __init__(self, interface, params):
     """Constructor
 
@@ -64,11 +67,47 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
     self._need_ap_off_in_ro = ('yes' == self._params.get(
         'need_ap_off_in_ro', 'no'))
     self._pb_init_idle = ('yes' == self._params.get('pb_init_idle', 'no'))
+    self._power_key = self._params.get('power_key', 'short_press')
+    self._usb_power_restore = (
+        ('yes' == self._params.get('usb_power_restore', 'no'))
+        and interface._syscfg.is_control(self._USB3_PWR_EN))
+    self._on = 'on'
+    self._off = 'off'
 
+  def _usb3_pwr_disable(self):
+    """Disables the USB 3 power (if available and turned on) by turning it off.
+
+    Returns:
+      True if disabled (i.e., need to restore later), otherwise False.
+    """
+    if not self._usb_power_restore:
+      return False
+
+    # Some FAFT tests (e.g, platform_ServoPowerStateController*) will set
+    # usb3_pwr_en to off to test booting system into recovery mode (without
+    # booting from USB) so we want to reset only when usb3_pwr_en is turned on.
+    state = self._interface.get(self._USB3_PWR_EN)
+    self._logger.debug('%s state: %s', self._USB3_PWR_EN, state);
+    if state != self._on:
+      return False
+
+    self._logger.debug('Reset %s to %s', self._USB3_PWR_EN, self._off)
+    self._interface.set(self._USB3_PWR_EN, self._off)
+    return True
+
+  def _usb3_pwr_restore(self):
+    """Returns (turns on) USB3 power."""
+    self._logger.debug('Set %s to %s', self._USB3_PWR_EN, self._on)
+    self._interface.set(self._USB3_PWR_EN, self._on)
 
   def _power_on_ap(self):
     """Power on the AP after initializing recovery state."""
-    self._interface.set('power_key', 'short_press')
+    need_to_restore = self._usb3_pwr_disable()
+
+    self._interface.set('power_key', self._power_key)
+
+    if need_to_restore:
+      self._usb3_pwr_restore()
 
   def _power_on_bytype(self, rec_mode, rec_type=_REC_TYPE_REC_ON):
     self._interface.set('ec_uart_regexp', 'None')

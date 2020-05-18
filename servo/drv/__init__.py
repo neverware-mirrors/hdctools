@@ -44,7 +44,6 @@ import kb
 import kb_handler_init
 import keyboard_handlers
 import kitty_power
-import kukui_power
 import larvae_adc
 import lcm2004
 import link_power
