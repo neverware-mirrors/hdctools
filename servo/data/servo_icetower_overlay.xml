@@ -5,9 +5,6 @@
     <name>servo_fpmcu_dev_board_common_overlay.xml</name>
   </include>
   <include>
-    <name>dragonclaw_inas.xml</name>
-  </include>
-  <include>
     <name>servo_fpmcu_dev_board_uart_common_overlay.xml</name>
   </include>
 </root>

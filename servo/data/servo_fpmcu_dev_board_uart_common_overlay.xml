@@ -1,27 +1,42 @@
 <?xml version="1.0"?>
 <root>
-  <include>
-    <!-- See this file for documentation -->
-    <name>servo_fpmcu_dev_board_common_overlay.xml</name>
-  </include>
-  <include>
-    <name>dragontalon_inas.xml</name>
-  </include>
-  <!-- FP MCU is also named 'usbpd' for compatibility with previous scripts -->
+  <!--
+  Two UARTs connected to the FPMCU.
+  Servo's UART1 (interface 7) is the FPMCU console.
+  Servo's UART2 (interface 8) is the FPMCU UART normally connected to the AP.
+
+  FPMCU is also named 'usbpd' for compatibility with previous scripts.
+  -->
+
   <!-- FP MCU UART Controls -->
   <control>
-    <name>uart2_pty</name>
-    <alias>raw_fpmcu_uart_pty,raw_usbpd_uart_pty</alias>
-    <doc>Pseudo-terminal (pty) thats connnected to FP MCU's uart
+    <name>uart1_pty</name>
+    <alias>raw_fpmcu_uart_pty</alias>
+    <doc>Pseudo-terminal (pty) that's connected to FP MCU's console UART
       console</doc>
+    <params cmd="get" subtype="pty" interface="7" drv="uart"
+        clobber_ok=""></params>
+  </control>
+  <control>
+    <name>uart2_pty</name>
+    <alias>raw_usbpd_uart_pty</alias>
+    <doc>Pseudo-terminal (pty) that's connected to FP MCU's AP UART</doc>
     <params cmd="get" subtype="pty" interface="8" drv="uart"
         clobber_ok=""></params>
   </control>
   <!-- EC-3PO console interpreter for FP MCU -->
   <control>
-    <name>ec3po_fpmcu_uart_pty</name>
-    <alias>ec3po_usbpd_uart_pty,fpmcu_uart_pty,usbpd_uart_pty</alias>
+    <name>ec3po_fpmcu_uart1_pty</name>
+    <alias>fpmcu_uart_pty</alias>
     <doc>FP MCU UART console provided via EC-3PO console
+      interpreter.</doc>
+    <params cmd="get" subtype="pty" interface="10" drv="uart">
+    </params>
+  </control>
+  <control>
+    <name>ec3po_fpmcu_uart2_pty</name>
+    <alias>ec3po_usbpd_uart_pty,usbpd_uart_pty</alias>
+    <doc>FP MCU UART AP provided via EC-3PO console
       interpreter.</doc>
     <params cmd="get" subtype="pty" interface="9" drv="uart">
     </params>
@@ -35,35 +50,70 @@
         subtype="interp_connect" clobber_ok=""></params>
   </control>
   <control>
+    <name>fpmcu_ec3po_interp_connect_1</name>
+    <doc>State indicating if interpreter is listening to the EC
+      UART.</doc>
+    <params interface="10" drv="ec3po_driver" map="onoff" init="off"
+        subtype="interp_connect" clobber_ok=""></params>
+  </control>
+  <control>
     <name>cpu_ec3po_interp_connect</name>
     <doc>Turn off the cpu ec3po interpreter </doc>
     <params map="alwaysoff" init="off" clobber_ok=""></params>
   </control>
   <control>
-    <name>uart2_baudrate</name>
-    <alias>fpmcu_uart_baudrate,usbpd_uart_baudrate</alias>
+    <name>uart1_baudrate</name>
+    <alias>fpmcu_uart_baudrate</alias>
     <doc>Baudrate for FP MCU's uart console</doc>
+    <params drv="uart" subtype="props" line_prop="baudrate"
+        clobber_ok="" interface="7"></params>
+  </control>
+  <control>
+    <name>uart1_parity</name>
+    <alias>fpmcu_uart_parity</alias>
+    <doc>Parity for FP MCU's uart console</doc>
+    <params drv="uart" subtype="props" line_prop="parity"
+        clobber_ok="" interface="7" map="uart_parity"></params>
+  </control>
+  <control>
+    <name>uart1_sbits</name>
+    <alias>fpmcu_uart_sbits</alias>
+    <doc>Number of stop bits for FP MCU's uart console</doc>
+    <params drv="uart" subtype="props" line_prop="sbits"
+        clobber_ok="" interface="7" map="uart_sbits"></params>
+  </control>
+  <control>
+    <name>uart1_bits</name>
+    <alias>fpmcu_uart_bits</alias>
+    <doc>Number of data bits for FP MCU's uart console</doc>
+    <params drv="uart" subtype="props" line_prop="bits" clobber_ok=""
+        interface="7" map="uart_bits"></params>
+  </control>
+  <control>
+    <name>uart2_baudrate</name>
+    <alias>usbpd_uart_baudrate</alias>
+    <doc>Baudrate for FP MCU's uart to AP</doc>
     <params drv="uart" subtype="props" line_prop="baudrate"
         clobber_ok="" interface="8"></params>
   </control>
   <control>
     <name>uart2_parity</name>
-    <alias>fpmcu_uart_parity,usbpd_uart_parity</alias>
-    <doc>Parity for FP MCU's uart console</doc>
+    <alias>usbpd_uart_parity</alias>
+    <doc>Parity for FP MCU's uart to AP</doc>
     <params drv="uart" subtype="props" line_prop="parity"
         clobber_ok="" interface="8" map="uart_parity"></params>
   </control>
   <control>
     <name>uart2_sbits</name>
-    <alias>fpmcu_uart_sbits,usbpd_uart_sbits</alias>
-    <doc>Number of stop bits for FP MCU's uart console</doc>
+    <alias>usbpd_uart_sbits</alias>
+    <doc>Number of stop bits for FP MCU's uart to AP</doc>
     <params drv="uart" subtype="props" line_prop="sbits"
         clobber_ok="" interface="8" map="uart_sbits"></params>
   </control>
   <control>
     <name>uart2_bits</name>
-    <alias>fpmcu_uart_bits,usbpd_uart_bits</alias>
-    <doc>Number of data bits for FP MCU's uart console</doc>
+    <alias>usbpd_uart_bits</alias>
+    <doc>Number of data bits for FP MCU's uart to AP</doc>
     <params drv="uart" subtype="props" line_prop="bits" clobber_ok=""
         interface="8" map="uart_bits"></params>
   </control>
@@ -119,9 +169,15 @@
   </control>
   <!-- FP MCU UART Buffers & VREF Controls -->
   <control>
+    <name>uart1_en</name>
+    <alias>fpmcu_uart_en</alias>
+    <doc>Enable communication with FP MCU's console UART.</doc>
+    <params clobber_ok="" init="on"></params>
+  </control>
+  <control>
     <name>uart2_en</name>
-    <alias>fpmcu_uart_en,usbpd_uart_en</alias>
-    <doc>Enable communication with FP MCU's uart console.</doc>
+    <alias>usbpd_uart_en</alias>
+    <doc>Enable communication with FP MCU's AP UART.</doc>
     <params clobber_ok="" init="on"></params>
   </control>
 </root>
