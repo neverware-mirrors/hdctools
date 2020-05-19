@@ -31,8 +31,7 @@
   <control>
     <name>power_state</name>
     <doc>Used to turn the DUT off and on</doc>
-    <params clobber_ok="" cmd="set" drv="cros_ec_softrec_power"
-    need_ap_off_in_ro="yes"/>
+    <params clobber_ok="" cmd="set" drv="cros_ec_softrec_power"/>
   </control>
   <control>
     <name>dev_mode</name>

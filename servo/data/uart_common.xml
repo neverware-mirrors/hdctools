@@ -165,6 +165,12 @@
     input_type="str"></params>
   </control>
   <control>
+    <name>ec_feat</name>
+    <doc>The feature flags supported by the EC.</doc>
+    <params cmd="get" subtype="feat" interface="10" drv="ec"
+    input_type="str"></params>
+  </control>
+  <control>
     <name>cpu_uart_capture</name>
     <doc>cpu_uart_capture</doc>
     <params subtype="uart_capture" interface="11" drv="uart"

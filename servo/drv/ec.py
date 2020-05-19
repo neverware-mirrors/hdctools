@@ -554,3 +554,15 @@ class ec(pty_driver.ptyDriver):
     if result is None:
       raise ecError('Cannot retrieve the flash memory size of EC.')
     return result[1]
+
+  def _Get_feat(self):
+    """Retrieves the EC feature flags encoded as a hexadecimal."""
+    self._limit_channel()
+    try:
+      result = self._issue_cmd_get_results(
+          'feat', ['0-31: (0x[0-9a-f]{8})', '32-63: (0x[0-9a-f]{8})'])
+    except pty_driver.ptyError:
+      raise ecError('Cannot retrieve the feature flags on EC console.')
+    finally:
+      self._restore_channel()
+    return hex((int(result[1][1], 16) << 32) | int(result[0][1], 16))

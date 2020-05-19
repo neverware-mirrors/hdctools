@@ -4,6 +4,7 @@
 import time
 
 import cros_ec_power
+import ec
 
 
 class crosEcSoftrecPower(cros_ec_power.CrosECPower):
@@ -44,6 +45,9 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
   # Interface name for USB3 power enabled.
   _USB3_PWR_EN = 'usb3_pwr_en'
 
+  # EC feature bit for EFS2.
+  _EC_FEATURE_EFS2 = 1 << 38
+
   def __init__(self, interface, params):
     """Constructor
 
@@ -64,8 +68,6 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
         'wait_ext_is_fake', 'no'))
     self._role_swap_delay = float(
         self._params.get('role_swap_delay', 1.0))
-    self._need_ap_off_in_ro = ('yes' == self._params.get(
-        'need_ap_off_in_ro', 'no'))
     self._pb_init_idle = ('yes' == self._params.get('pb_init_idle', 'no'))
     self._power_key = self._params.get('power_key', 'short_press')
     self._usb_power_restore = (
@@ -118,7 +120,14 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
         # Note that this only seems to work reliably for ARM devices.
         self._interface.set('warm_reset', 'on')
 
-      ap_off_option = 'ap-off-in-ro' if self._need_ap_off_in_ro else 'ap-off'
+      try:
+        efs2 = bool(int(self._interface.get('ec_feat'), 16) &
+                    crosEcSoftrecPower._EC_FEATURE_EFS2)
+      except ec.ecError:
+        # Assume EFS2 is unsupported if the EC doesn't support the feat
+        # command.
+        efs2 = False
+      ap_off_option = 'ap-off-in-ro' if efs2 else 'ap-off'
       try:
         if self._wait_ext_is_fake:
           raise Exception("wait-ext isn't supported")
