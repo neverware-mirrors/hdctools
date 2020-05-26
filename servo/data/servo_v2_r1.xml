@@ -24,7 +24,7 @@
     <name>image_usbkey_dev</name>
     <doc>Get USB dev attached to this servo</doc>
     <params subtype="image_usbkey_dev" interface="servo"
-    drv="usb_image_manager" hub_port="6" usb_power_off_delay="2"
+    drv="usb_image_manager" hub_ports="6,2" usb_power_off_delay="2"
     error_amendment="Make sure you are using the usb port sticking veritically
     out of the servo v2, close to the host usb micro.">
     </params>

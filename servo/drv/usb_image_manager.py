@@ -58,8 +58,15 @@ class usbImageManager(hw_driver.HwDriver):
     self._poweroff_delay = params.get('usb_power_off_delay', 0)
     if self._poweroff_delay:
       self._poweroff_delay = float(self._poweroff_delay)
-    # This is required to determine if the usbkey is connected to the host
-    self._image_usbkey_hub_port = params.get('hub_port', None)
+    # This is required to determine if the usbkey is connected to the host.
+    # The |hub_ports| is a comma-seperated string of usb hub port numbers
+    # that the image usbkey enumerates under for a given servo device.
+    # NOTE: initialization here is shared among multiple controls, some of which
+    # do not use the hub_ports logic. Do not raise error here if the param
+    # is not available, but rather inside the controls that leverage it.
+    self._image_usbkey_hub_ports = None
+    if 'hub_ports' in params:
+      self._image_usbkey_hub_ports = params.get('hub_ports').split(',')
     # Flag to indicate whether the usb port supports having a hub attached to
     # it. In that case, the image will be searched on the |STORAGE_ON_HUB_PORT|
     # of the hub.
@@ -123,7 +130,8 @@ class usbImageManager(hw_driver.HwDriver):
       USB disk path if one and only one USB disk path is found, otherwise an
       empty string.
     """
-
+    if self._image_usbkey_hub_ports is None:
+      raise UsbImageManagerError('hub_ports need to be defined in params.')
     servod = self._interface
     # When the user is requesting the usb_dev they most likely intend for the
     # usb to the facing the servo, and be powered. Enforce that.
@@ -134,21 +142,17 @@ class usbImageManager(hw_driver.HwDriver):
     usb_id = (servod._vendor, servod._product, servod._serialnames['main'])
     self_usb = usb_hierarchy.Hierarchy.GetUsbDeviceSysfsPath(*usb_id)
     hub_on_servo = usb_hierarchy.Hierarchy.GetSysfsParentHubStub(self_usb)
-    # Image usb is at hub port |self._image_usbkey_hub_port|
-    image_usbkey_sysfs = '%s.%s' % (hub_on_servo, self._image_usbkey_hub_port)
-    # Possible image locations can be multiple places if a hub is allowed.
-    # In that case, first check if the hub location exists before defaulting to
-    # the non hub logic.
-    image_location_candidates = [image_usbkey_sysfs]
+    # Image usb is one of the hub ports |self._image_usbkey_hub_ports|
+    image_location_candidates = ['%s.%s' % (hub_on_servo, p) for p in
+                                 self._image_usbkey_hub_ports]
     if self._supports_hub_on_port:
       # Here the config says that |image_usbkey_sysfs| might actually have a hub
       # and not storage attached to it. In that case, the |STORAGE_ON_HUB_PORT|
       # on that hub will house the storage.
-      storage_on_hub_sysfs = '%s.%d' % (image_usbkey_sysfs, STORAGE_ON_HUB_PORT)
-      # Checking the hub path first should make things slightly faster as it can
-      #
-      image_location_candidates.insert(0, storage_on_hub_sysfs)
-    self._logger.debug('usb image dev file should be at %s', image_usbkey_sysfs)
+      image_location_candidates.extend(['%s.%d' % (path, STORAGE_ON_HUB_PORT)
+                                        for path in image_location_candidates])
+    self._logger.debug('usb image dev file candidates: %s',
+                       ', '.join(image_location_candidates))
     # Let the device settle first before pushing out any data onto it.
     subprocess.call(['/bin/udevadm', 'settle', '-t',
                      str(self._SETTLE_TIMEOUT_S)])
@@ -178,7 +182,8 @@ class usbImageManager(hw_driver.HwDriver):
     # Split and join to help with error message formatting from XML that might
     # introduce multiple white-spaces.
     self._logger.warn(' '.join(self._error_msg.split()))
-    self._logger.warn('Stick should be at %s.', image_usbkey_sysfs)
+    self._logger.warn('Stick should be at one of the usb image dev file '
+                      'candidates: %s', ', '.join(image_location_candidates))
     if self._supports_hub_on_port:
       self._logger.warn('If using a hub on the image key port, please make '
                         'sure to use port %d on the hub. This should be at %s.',
