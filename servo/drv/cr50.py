@@ -63,7 +63,7 @@ class cr50(pty_driver.ptyDriver):
     self._interface = interface
     if not hasattr(self._interface, '_ec_uart_bitbang_props'):
       self._interface._ec_uart_bitbang_props = {
-          'enabled': False,
+          'enabled': 0,
           'parity': None,
           'baudrate': None
       }
@@ -353,7 +353,7 @@ class cr50(pty_driver.ptyDriver):
                        "'on', or 'off'." % value)
 
   def _Get_ec_uart_bitbang_en(self):
-    return self._interface._ec_uart_bitbang_props['enabled']
+    return int(self._interface._ec_uart_bitbang_props['enabled'])
 
   def _Set_ec_uart_bitbang_en(self, value):
     if value:
