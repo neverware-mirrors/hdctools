@@ -30,13 +30,13 @@ class sarienPower(power_state.PowerStateDriver):
   def _reset_cycle(self):
     """Force a power cycle using cold reset."""
     self._power_off()
-    self._interface.power_short_press()
+    self._interface.set('power_key', 'short_press')
 
   def _power_on_rec(self):
     """Power on in recovery mode."""
     self._power_off()
     self._interface.set('rec_mode', self.REC_ON)
-    self._interface.power_short_press()
+    self._interface.set('power_key', 'short_press')
     time.sleep(self._RECOVERY_DETECTION_DELAY)
     self._interface.set('rec_mode', self.REC_OFF)
     time.sleep(self._boot_to_rec_screen_delay)
