@@ -30,4 +30,13 @@
     <doc>Used to turn the DUT off and on</doc>
     <params clobber_ok="" cmd="set" drv="cros_ec_softrec_power"/>
   </control>
+  <control>
+    <name>cpu_fw_spi</name>
+    <params clobber_ok=""
+      set_value_1="spi2_vref:pp1800 spi2_buf_en:on spi2_buf_on_flex_en:on
+                   cold_reset:on"
+      set_value_0="spi2_vref:off spi2_buf_en:off spi2_buf_on_flex_en:off
+                   cold_reset:off"
+      />
+  </control>
 </root>
