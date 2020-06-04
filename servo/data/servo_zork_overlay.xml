@@ -42,4 +42,13 @@
     flash b/143179371 -->
     <params clobber_ok="" od="PP" />
   </control>
+  <control>
+    <name>cpu_fw_spi</name>
+    <params clobber_ok=""
+      set_value_1="spi2_vref:pp1800 spi2_buf_en:on spi2_buf_on_flex_en:on
+                   cold_reset:on servo_present:on"
+      set_value_0="spi2_vref:off spi2_buf_en:off spi2_buf_on_flex_en:off
+                   cold_reset:off servo_present:off"
+      />
+  </control>
 </root>
