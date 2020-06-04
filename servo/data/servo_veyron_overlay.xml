@@ -20,4 +20,13 @@
     <doc>Used to turn fw wp off and on</doc>
     <params clobber_ok="" fw_wp_vref="pp3300"/>
   </control>
+  <control>
+    <name>cpu_fw_spi</name>
+    <params clobber_ok=""
+      set_value_1="warm_reset:on spi2_buf_en:on spi2_buf_on_flex_en:on
+                   spi2_vref:pp3300"
+      set_value_0="spi2_buf_en:off spi2_buf_on_flex_en:off spi2_vref:off
+                   warm_reset:off"
+      />
+  </control>
 </root>
