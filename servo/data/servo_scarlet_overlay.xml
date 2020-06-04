@@ -26,4 +26,13 @@
     <params interface="servo" drv="na" init="not_applicable"
     clobber_ok=""></params>
   </control>
+  <control>
+    <name>cpu_fw_spi</name>
+    <params clobber_ok=""
+      set_value_1="warm_reset:on spi2_buf_en:on spi2_vref:pp1800
+                   spi2_buf_on_flex_en:on"
+      set_value_0="spi2_vref:off warm_reset:off spi2_buf_en:off
+                   spi2_buf_on_flex_en:off"
+      />
+  </control>
 </root>
