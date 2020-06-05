@@ -71,8 +71,6 @@ class usbImageManager(hw_driver.HwDriver):
     # it. In that case, the image will be searched on the |STORAGE_ON_HUB_PORT|
     # of the hub.
     self._supports_hub_on_port = params.get('hub_on_port', False)
-    # Hold the last image path so we can reduce downloads to the usb device.
-    self._image_path = None
     self._error_msg = self._DEFAULT_ERROR_MSG
     if 'error_amendment' in params:
       self._error_msg += ' ' + params['error_amendment']
@@ -217,11 +215,6 @@ class usbImageManager(hw_driver.HwDriver):
     if not usb_dev:
       # No usb dev attached, skip straight to the end.
       errormsg = 'No usb device connected to servo'
-    # Let's check if we downloaded this last time and if so assume the image is
-    # still on the usb device and return True.
-    elif self._image_path == image_path:
-      self._logger.debug('Image already on USB device, skipping transfer')
-      return
     else:
       # There is a usb dev attached. Try to get the image.
       try:
@@ -256,10 +249,7 @@ class usbImageManager(hw_driver.HwDriver):
         subprocess.call(['blockdev', '--rereadpt', usb_dev])
     if errormsg:
       self._logger.error(errormsg)
-      self._image_path = None
       raise UsbImageManagerError(errormsg)
-    # If everything goes smooth, cache the image path
-    self._image_path = image_path
 
   def _Set_make_image_noninteractive(self, usb_dev_partition):
     """Makes the recovery image noninteractive.
