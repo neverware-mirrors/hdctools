@@ -86,21 +86,24 @@ class Instance(tool.Tool):
     self._logger.info('SIGTERM sent to servod instance associated with id %r.',
                       args.id)
     end = time.time() + self._SIGTERM_RETRY_TIMEOUT_S
-    while time.time() < end:
-      try:
+    try:
+      while time.time() < end:
         os.kill(pid, 0)
-      except OSError:
-        # This indicates the process has died and the job here is done
-        self._logger.info('Servod instance associated with id %r turned down.',
-                          args.id)
-        return
-      time.sleep(self._SIGTERM_RETRY_WAIT_S)
-    # Getting here indicates the process did not die within the timeout. Bring
-    # out a bigger hammer.
-    self._logger.info('Servod instance associated with %r (pid %r) did not '
-                      'turn down after SIGTERM. Sending SIGKILL.', args.id,
-                      str(pid))
-    os.kill(pid, signal.SIGKILL)
+        time.sleep(self._SIGTERM_RETRY_WAIT_S)
+    except OSError:
+      # This indicates the process has died and the job here is done
+      self._logger.info('Servod instance associated with id %r turned down.',
+                        args.id)
+    else:
+      # Getting here indicates the process did not die within the timeout. Bring
+      # out a bigger hammer.
+      self._logger.info('Servod instance associated with %r (pid %r) did not '
+                        'turn down after SIGTERM. Sending SIGKILL.', args.id,
+                        str(pid))
+      os.kill(pid, signal.SIGKILL)
+    finally:
+      # Irrespective, the entry needs to be removed.
+      self._scratch.RemoveEntry(args.id)
 
   def rebuild(self, args):
     """Rebuild servodscratch.
