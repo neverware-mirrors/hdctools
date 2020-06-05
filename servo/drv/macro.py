@@ -56,8 +56,8 @@ class macro(hw_driver.HwDriver):
 
     for control, state in self._states[state_name]:
       if not self._has_control(control):
-        logging.warning("Ignore setting non-exist control '%s' to '%s'.",
-                        control, state)
+        logging.info("Ignore setting non-exist control '%s' to '%s'.",
+                     control, state)
         continue
       # TODO(hungte) Support more commands like sleep(ms).
       self._interface.set(control, state)
