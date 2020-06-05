@@ -331,7 +331,7 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
       self._issue_cmd('cc %s' % newcc)
     else:
       raise ValueError("Invalid power role setting: '%s'. Try one of "
-                       "'src' or 'snk'." % value)
+                       "'src' or 'snk'." % role)
 
   def _Set_usbc_role(self, value):
     """Setter of usbc_role.
