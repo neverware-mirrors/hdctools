@@ -39,6 +39,11 @@ class Instance(tool.Tool):
   # Wait period in s to when to wait before polling the servod process again.
   _SIGTERM_RETRY_WAIT_S = .1
 
+  # Timeout to wait for an instance to become available.
+  _WAIT_ACTIVE_DEFAULT_TIMEOUT_S = 30
+  # Polling rate to see if instance has become active.
+  _WAIT_ACTIVE_POLLING_S = 0.2
+
   def __init__(self):
     """Setup scratch to use."""
     super(Instance, self).__init__()
@@ -65,6 +70,35 @@ class Instance(tool.Tool):
       self._logger.info('\n---\n'.join(output_lines))
     else:
       self._logger.info('No entries found.')
+
+  def wait_for_active(self, args):
+    """Return once an instance is active, or on timeout.
+
+    Args:
+      args: args from cmdline argument with id and timeout attributes,
+            id is either a port or serial number used to find servod scratch
+            entry
+            timeout is the time to wait in seconds
+    """
+    timeout = args.timeout
+    if timeout <= 0:
+      self._logger.info('Ignoring negative timeout %d, using default %d.',
+                        timeout, self._WAIT_ACTIVE_DEFAULT_TIMEOUT_S)
+      timeout = self._WAIT_ACTIVE_DEFAULT_TIMEOUT_S
+    end = time.time() + timeout
+    while time.time() < end:
+      try:
+        entry = self._scratch.FindById(args.id)
+        if entry[scratch.ACTIVE_ENTRY_KEY]:
+          # Entry has come up.
+          self._logger.info('Instance associated with id %r ready.', args.id)
+          return
+      except scratch.ScratchError as e:
+        # Forgive errors.
+        self._logger.debug(str(e))
+      time.sleep(self._WAIT_ACTIVE_POLLING_S)
+    self.error('Instance associated with id %r failed to be marked active '
+               'after %ds. Giving up.', args.id, timeout)
 
   def stop(self, args):
     """Stop servod instance found by -i/--identifier arg.
@@ -139,8 +173,14 @@ class Instance(tool.Tool):
                                   help='show information on servod instance')
     stop = subcommands.add_parser('stop',
                                   help='gracefully stop servod instance')
+    wait = subcommands.add_parser('wait-for-active', help='Wait up to servod'
+                                  'instance to become active')
+    # wait allows the user to specify a timeout.
+    wait.add_argument('--timeout', default=self._WAIT_ACTIVE_DEFAULT_TIMEOUT_S,
+                      type=float, help='time in s to wait for instance to '
+                      'become active.')
     # TODO(coconutruben): build out restart function
-    for p in [show, stop]:
+    for p in [show, stop, wait]:
       id_group = p.add_mutually_exclusive_group(required=True)
       id_group.add_argument('-s', '--serial', dest='id',
                             help='serial of servo device on associated servod.')

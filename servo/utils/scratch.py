@@ -14,6 +14,10 @@ import servo.client as client
 SERVO_SCRATCH_DIR = '/tmp/servoscratch'
 
 
+# Key used to store whether the instance is active yet or still coming up.
+ACTIVE_ENTRY_KEY = 'active'
+
+
 class ScratchError(Exception):
   """Error class for servo scratch utility."""
 
@@ -65,7 +69,7 @@ class Scratch(object):
       entry = {'port': int(port),
                'serials': list(serials),
                'pid': int(pid),
-               'active': False}
+               ACTIVE_ENTRY_KEY: False}
     except (ValueError, TypeError):
       raise ScratchError('Entry arguments malformed.')
     entryf = self._EntryF(entry)
@@ -111,10 +115,10 @@ class Scratch(object):
   def MarkActive(self, identifier):
     """Mark entry at |identifier| as active."""
     entry = self.FindById(identifier)
-    if entry['active']:
+    if entry[ACTIVE_ENTRY_KEY]:
       self._logger.info('Entry at %r already marked active.')
     else:
-      entry['active'] = True
+      entry[ACTIVE_ENTRY_KEY] = True
       self._WriteEntry(entry)
 
   def _WriteEntry(self, entry):
