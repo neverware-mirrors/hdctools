@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import collections
 import json
 import os
 import shutil
@@ -28,7 +29,8 @@ class TestScratch(unittest.TestCase):
     # Commonly used test entry
     self._entry = {'pid': self._dpid,
                    'serials': self._dserials,
-                   'port': self._dport}
+                   'port': self._dport,
+                   'active': False}
 
   def tearDown(self):
     """Remove entry directory structure created during the test."""
@@ -65,7 +67,8 @@ class TestScratch(unittest.TestCase):
     # Compare entry loaded with entry saved
     assert entry == {'pid': self._dpid,
                      'serials': self._dserials,
-                     'port': self._dport}
+                     'port': self._dport,
+                     'active': False}
 
   def test_AddEntryNonNumericalPort(self):
     """Verify AddEntry raises ScratchError when port can't be cast to int."""
@@ -120,7 +123,9 @@ class TestScratch(unittest.TestCase):
     serials = ['8000', '237300', 'lolaserial']
     entry2 = {'pid': self._dpid,
               'serials': serials,
-              'port': port}
+              'port': port,
+              'active': False}
+
     entry_files = set(self._manually_add_entry())
     entry2_files = set(self._manually_add_entry(entry2))
     # Ensure there's a file for each serial, and one for the port
@@ -141,6 +146,43 @@ class TestScratch(unittest.TestCase):
     """Verify RemoveEntry quietly ignores removing an unknown identifier."""
     self._manually_add_entry()
     self._scratch.RemoveEntry('badid')
+
+  def test_MarkActive(self):
+    """Marking active marks the entry as active."""
+    self._manually_add_entry()
+    self._scratch.MarkActive(self._dport)
+    entry_from_file = self._scratch.FindById(self._dport)
+    assert entry_from_file['active'] == True
+
+  def test_MarkActiveSerial(self):
+    """Marking active marks the entry as active accessed through serial."""
+    # Take first serial in the default serial list as identifier.
+    serial = self._dserials[0]
+    self._manually_add_entry()
+    self._scratch.MarkActive(serial)
+    # Still access the entry through the port as we want to make sure that
+    # the latch retrieved the right entry (and not a parallel serial entry.
+    entry_from_file = self._scratch.FindById(self._dport)
+    assert entry_from_file['active'] == True
+
+
+  def test_MarkActiveAlreadyActive(self):
+    """Marking already active entry active is a noop."""
+    entry = {'pid': self._dpid,
+             'serials': self._dserials,
+             'port': self._dport,
+             'active': True}
+    self._manually_add_entry(entry)
+    self._scratch.MarkActive(self._dport)
+    entry_from_file = self._scratch.FindById(self._dport)
+    assert entry_from_file['active'] == True
+
+  def test_MarkActiveEntryUnvailable(self):
+    """Marking active an unknown entry fails."""
+    self._manually_add_entry()
+    with self.assertRaises(scratch.ScratchError):
+      # Adjust the default port to ensure that no entry can be found.
+      self._scratch.MarkActive(self._dport + 10)
 
   def test_FindByIdPort(self):
     """Verify FindById works using ports."""
@@ -181,10 +223,10 @@ class TestScratch(unittest.TestCase):
   def test_GetAllEntries(self):
     """Verify GetAllEntries() retrives all entries."""
     # Dictionary to hold entries added
-    mentries = {}
-    mentries[9999] = {'port': 9999, 'serials': ['1999'], 'pid': 1234}
-    mentries[9998] = {'port': 9998, 'serials': ['1998'], 'pid': 1235}
-    mentries[9997] = {'port': 9997, 'serials': ['1997'], 'pid': 1236}
+    mentries = collections.defaultdict(lambda: {'active': False})
+    mentries[9999].update({'port': 9999, 'serials': ['1999'], 'pid': 1234})
+    mentries[9998].update({'port': 9998, 'serials': ['1998'], 'pid': 1235})
+    mentries[9997].update({'port': 9997, 'serials': ['1997'], 'pid': 1236})
     self._manually_add_entry(mentries[9999])
     self._manually_add_entry(mentries[9998])
     self._manually_add_entry(mentries[9997])
@@ -218,7 +260,8 @@ class TestScratch(unittest.TestCase):
     self._manually_add_entry()
     entry2 = {'pid': 12345,
               'serials': ['this-is-not-a-serial'],
-              'port': 9888}
+              'port': 9888,
+              'active': False}
     self._manually_add_entry(entry2)
     self._scratch._Sanitize()
     # The ports are  likely not connected to anything so Sanitize should

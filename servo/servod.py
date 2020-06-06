@@ -560,6 +560,8 @@ class ServodStarter(object):
       sys.exit(1)
     self._watchdog_thread.start()
     self._server_thread.start()
+    # Indicate that servod is running for any process waiting to know.
+    self._scratchutil.MarkActive(self._servo_port)
     signal.pause()
     # Set watchdog thread to end
     self._watchdog_thread.deactivate()

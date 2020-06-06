@@ -38,11 +38,15 @@ class Scratch(object):
       Unless for good reason (test, special setup) scratch should be left as
       its default.
     """
-    self._scratch = scratch
+    self._dir = scratch
     self._logger = logging.getLogger(type(self).__name__)
-    if not os.path.exists(self._scratch):
-      os.makedirs(self._scratch)
+    if not os.path.exists(self._dir):
+      os.makedirs(self._dir)
     self._Sanitize()
+
+  def _EntryF(self, entry):
+    """Generate a filename for |entry|."""
+    return os.path.join(self._dir, str(entry['port']))
 
   def AddEntry(self, port, serials, pid):
     """Register information about servod instance.
@@ -56,21 +60,22 @@ class Scratch(object):
       ScratchError: if port or pid aren't int convertible or serials isn't
       list convertible, if port or any serial in serials already has an entry
     """
-    entryf = os.path.join(self._scratch, str(port))
     # TODO(coconutruben): add cmdline support
     try:
       entry = {'port': int(port),
                'serials': list(serials),
-               'pid': int(pid)}
+               'pid': int(pid),
+               'active': False}
     except (ValueError, TypeError):
       raise ScratchError('Entry arguments malformed.')
+    entryf = self._EntryF(entry)
     if os.path.exists(entryf):
       msg = 'Adding entry for port already in use. Port: %d.' % int(port)
       self._logger.error(msg)
       raise ScratchError(msg)
     serialfs = []
     for serial in entry['serials']:
-      serialf = os.path.join(self._scratch, str(serial))
+      serialf = os.path.join(self._dir, str(serial))
       if os.path.exists(serialf):
         # Add a symlink for each serial pointing back at the original file
         msg = ('Adding entry in %s for serial already in use. Serial: %s.'
@@ -79,11 +84,11 @@ class Scratch(object):
         raise ScratchError(msg)
       serialfs.append(serialf)
 
-    with open(entryf, 'w') as f:
-      json.dump(entry, f)
+    self._WriteEntry(entry)
 
+    # Add the symlinks as well.
     for serialf in serialfs:
-      os.symlink(entryf, serialf)
+      os.symlink(os.path.basename(entryf), serialf)
 
   def RemoveEntry(self, identifier):
     """Remove information about servod instance.
@@ -92,16 +97,31 @@ class Scratch(object):
       identifier: either port where servod is being served, or a serial number
                   of one of the servod devices being served by instance
     """
-    entryf = os.path.realpath(os.path.join(self._scratch,
+    entryf = os.path.realpath(os.path.join(self._dir,
                                            str(identifier)))
     if not os.path.exists(entryf):
       self._logger.warn('No entry available for id: %s. Ignoring.', identifier)
       return
-    for f in os.listdir(self._scratch):
-      fullf = os.path.join(self._scratch, f)
+    for f in os.listdir(self._dir):
+      fullf = os.path.join(self._dir, f)
       if os.path.islink(fullf) and os.path.realpath(fullf) == entryf:
         os.remove(fullf)
     os.remove(entryf)
+
+  def MarkActive(self, identifier):
+    """Mark entry at |identifier| as active."""
+    entry = self.FindById(identifier)
+    if entry['active']:
+      self._logger.info('Entry at %r already marked active.')
+    else:
+      entry['active'] = True
+      self._WriteEntry(entry)
+
+  def _WriteEntry(self, entry):
+    """Write entry to file."""
+    entryf = self._EntryF(entry)
+    with open(entryf, 'w') as f:
+      json.dump(entry, f)
 
   def GetAllEntries(self):
     """Find and load servod instance info for all registered servod instances.
@@ -110,8 +130,8 @@ class Scratch(object):
       List of dictionaries containing 'port', 'serials', and 'pid' of instance
     """
     entries = []
-    for f in os.listdir(self._scratch):
-      entryf = os.path.join(self._scratch, f)
+    for f in os.listdir(self._dir):
+      entryf = os.path.join(self._dir, f)
       if os.path.islink(entryf):
         continue
       with open(entryf, 'r') as f:
@@ -173,7 +193,7 @@ class Scratch(object):
       ScratchError: if no entry found under |indentifier| or if entry found
                     is invalid json
     """
-    entryf = os.path.join(self._scratch, str(identifier))
+    entryf = os.path.join(self._dir, str(identifier))
     if not os.path.exists(entryf):
       raise ScratchError(self._NO_FOUND_WARNING % identifier)
     with open(entryf, 'r') as f:
