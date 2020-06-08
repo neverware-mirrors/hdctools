@@ -104,7 +104,7 @@ class Scratch(object):
     entryf = os.path.realpath(os.path.join(self._dir,
                                            str(identifier)))
     if not os.path.exists(entryf):
-      self._logger.warn('No entry available for id: %s. Ignoring.', identifier)
+      self._logger.info('No entry available for id: %s. Ignoring.', identifier)
       return
     for f in os.listdir(self._dir):
       fullf = os.path.join(self._dir, f)
