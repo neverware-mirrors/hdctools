@@ -39,9 +39,6 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
   # host event.
   _RECOVERY_DETECTION_DELAY = 1
 
-  # Time in seconds to wait after booting the AP to reboot the EC.
-  _RESET_DELAY = 1
-
   # Interface name for USB3 power enabled.
   _USB3_PWR_EN = 'usb3_pwr_en'
 
@@ -69,6 +66,9 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
     self._role_swap_delay = float(
         self._params.get('role_swap_delay', 1.0))
     self._pb_init_idle = ('yes' == self._params.get('pb_init_idle', 'no'))
+    # Time in seconds to wait after booting the AP to reboot the EC.
+    self._reset_delay = float(
+        self._params.get('reset_delay', 1.0))
     self._power_key = self._params.get('power_key', 'short_press')
     self._usb_power_restore = (
         ('yes' == self._params.get('usb_power_restore', 'no'))
@@ -270,6 +270,6 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
       if dut_was_off:
         # Boot the AP so the EC will boot the AP again after it reboots.
         self._power_on(self.REC_OFF)
-        time.sleep(self._RESET_DELAY)
+        time.sleep(self._reset_delay)
 
     return super(crosEcSoftrecPower, self)._reset_cycle()
