@@ -143,12 +143,14 @@ class usbImageManager(hw_driver.HwDriver):
     # Image usb is one of the hub ports |self._image_usbkey_hub_ports|
     image_location_candidates = ['%s.%s' % (hub_on_servo, p) for p in
                                  self._image_usbkey_hub_ports]
+    hub_location_candidates = []
     if self._supports_hub_on_port:
       # Here the config says that |image_usbkey_sysfs| might actually have a hub
       # and not storage attached to it. In that case, the |STORAGE_ON_HUB_PORT|
       # on that hub will house the storage.
-      image_location_candidates.extend(['%s.%d' % (path, STORAGE_ON_HUB_PORT)
-                                        for path in image_location_candidates])
+      hub_location_candidates = ['%s.%d' % (path, STORAGE_ON_HUB_PORT)
+                                 for path in image_location_candidates]
+      image_location_candidates.extend(hub_location_candidates)
     self._logger.debug('usb image dev file candidates: %s',
                        ', '.join(image_location_candidates))
     # Let the device settle first before pushing out any data onto it.
@@ -184,8 +186,9 @@ class usbImageManager(hw_driver.HwDriver):
                       'candidates: %s', ', '.join(image_location_candidates))
     if self._supports_hub_on_port:
       self._logger.warn('If using a hub on the image key port, please make '
-                        'sure to use port %d on the hub. This should be at %s.',
-                        STORAGE_ON_HUB_PORT, storage_on_hub_sysfs)
+                        'sure to use port %d on the hub. This should be at '
+                        'one of: %s.', STORAGE_ON_HUB_PORT,
+                        ', '.join(hub_location_candidates))
     return ''
 
   def _Get_download_to_usb_dev(self):
