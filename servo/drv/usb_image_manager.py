@@ -127,6 +127,9 @@ class usbImageManager(hw_driver.HwDriver):
     Returns:
       USB disk path if one and only one USB disk path is found, otherwise an
       empty string.
+
+    Raises:
+      UsbImageManagerError: if 'hub_ports' was not defined in params
     """
     if self._image_usbkey_hub_ports is None:
       raise UsbImageManagerError('hub_ports need to be defined in params.')
