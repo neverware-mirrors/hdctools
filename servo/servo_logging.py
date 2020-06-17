@@ -26,13 +26,13 @@ All instances on the same port are in the same directory.
 # style.
 
 import collections
+import datetime
 import logging
 import logging.handlers
 import os
 import re
 import sys
 import tarfile
-import time
 
 
 # Format strings used for servod logging.
@@ -98,10 +98,7 @@ LINK_PREFIX = 'latest'
 TS_FILE = 'ts'
 
 # Format string for the timestamps used instance differentiation.
-TS_FORMAT = '%Y-%m-%d--%H-%M-%S'
-
-# The format string for the millisecond component in the ts.
-TS_MS_FORMAT = '%.3f'
+TS_FORMAT = '%Y-%m-%d--%H-%M-%S.%f'
 
 
 # pylint: disable=g-bad-exception-name
@@ -129,9 +126,9 @@ def _generateTs():
   Returns:
     formatted timestamp of time when called
   """
-  raw_ts = time.time()
-  return (time.strftime(TS_FORMAT, time.gmtime(raw_ts)) +
-          (TS_MS_FORMAT % (raw_ts % 1))[1:])
+  # servo logging uses milliseconds, and %f returns microseconds. Remove the
+  # last three digits.
+  return datetime.datetime.now().strftime(TS_FORMAT)[:-3]
 
 
 def _loglevelFromF(f):
