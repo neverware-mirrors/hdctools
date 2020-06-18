@@ -35,6 +35,8 @@ def main():
   parser = argparse.ArgumentParser(description='Image a c2d2 device')
   parser.add_argument('-s', '--serialno', type=str,
                       help='serial number to program', default=None)
+  parser.add_argument('--no_flash', action='store_false', help='Skip DFU step',
+                      dest='flash', default=True)
   args = parser.parse_args()
 
   serialno = args.serialno
@@ -54,11 +56,12 @@ def main():
     c.setup_logfile(LOGNAME, serialno)
     c.log('Scanned sn %s' % serialno)
 
-    c.log('\n\n************************************************\n')
-    c.log('Plug in c2d2 via OTG adapter')
-    c.wait_for_usb(STM_DFU_VIDPID)
-    c.log('Found DFU target')
-    c.do_dfu(c.full_servo_bin_path(servo_updater.BOARD_C2D2))
+    if args.flash:
+      c.log('\n\n************************************************\n')
+      c.log('Plug in c2d2 via OTG adapter')
+      c.wait_for_usb(STM_DFU_VIDPID)
+      c.log('Found DFU target')
+      c.do_dfu(c.full_servo_bin_path(servo_updater.BOARD_C2D2))
 
     c.log('\n\n************************************************\n')
     c.log('Plug in c2d2 via normal cable')
