@@ -9,4 +9,9 @@
     <params interface="servo" drv="na" init="not_applicable"
     clobber_ok=""></params>
   </control>
+  <control>
+    <name>rec_mode</name>
+    <params subtype="rec_mode" ccd_cr50_interface="9" ccd_cr50_drv="cr50"
+    map="onoff_i" clobber_ok="" init="off"></params>
+  </control>
 </root>

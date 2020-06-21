@@ -84,12 +84,6 @@
     clobber_ok=""></params>
   </control>
   <control>
-    <name>rec_mode</name>
-    <doc>Google recovery mode</doc>
-    <params subtype="rec_mode" interface="9" drv="cr50"
-    map="onoff_i" clobber_ok="" init="off"></params>
-  </control>
-  <control>
     <name>ccd_keepalive_en</name>
     <doc>Enable/disable keepalive on CCD</doc>
     <params subtype="ccd_keepalive_en" interface="9" drv="cr50"
