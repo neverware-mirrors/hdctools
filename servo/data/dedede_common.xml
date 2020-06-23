@@ -1,0 +1,19 @@
+<root>
+  <include>
+    <name>cpu_fw_spi_pp3300.xml</name>
+  </include>
+  <include>
+    <name>cr50.xml</name>
+  </include>
+  <include>
+    <name>x86_ec_common.xml</name>
+  </include>
+  <!-- ******** Controls ******** -->
+  <control>
+    <name>power_state</name>
+    <doc>Used to turn the DUT off and on</doc>
+    <params drv="cros_ec_softrec_power" clobber_ok=""
+    shutdown_delay="11.0" boot_to_rec_screen_delay="10.0"
+    warm_reset_can_hold_ap="no"/>
+  </control>
+</root>
