@@ -29,6 +29,26 @@ class TestSystemConfig(unittest.TestCase):
     """Helper to add a map to the SystemConfig."""
     self.syscfg.syscfg_dict['map'][map_name] = {'map_params': params}
 
+  def _AddNAControl(self, name, extra_params={}):
+    # pylint: disable=dangerous-default-value
+    """Helper to add an 'N/A' control to the SystemConfig.
+
+    Add control |name| with some default params:
+      - drv: na
+      - interface: na
+
+    Args:
+      name: control name
+      extra_params: dict of extra parameters to add
+    """
+    base_params = {'drv': 'na',
+                   'interface': 'na'}
+    base_params.update(extra_params)
+    control_entry = {'doc': '',
+                     'get_params': base_params,
+                     'set_params': base_params}
+    self.syscfg.syscfg_dict[system_config.CONTROL_TAG][name] = control_entry
+
   def test_ResolveValStandardInt(self):
     """A string containing an int gets returned as an int."""
     input_str = '1'
@@ -154,6 +174,45 @@ class TestSystemConfig(unittest.TestCase):
     self.assertEqual(expected_resolved_val, resolved_val)
     # Ensure they have the same type.
     self.assertEqual(type(expected_resolved_val), type(resolved_val))
+
+  def test_TagsForTaggedControl(self):
+    """Multiple tagged controls will be found using their tag."""
+    tagged_controls = ['test1', 'test2', 'test3']
+    tag = 'testtag'
+    for control in tagged_controls:
+      # Pass the tag in as extra params
+      self._AddNAControl(control, {'tags': tag})
+    self.syscfg.finalize()
+    found_tagged_controls = self.syscfg.get_controls_for_tag(tag)
+    # Assert that the same controls are found that were fed in.
+    assert sorted(found_tagged_controls) == sorted(tagged_controls)
+
+  def test_MultipleTagsForTaggedControl(self):
+    """Multiple tagged controls will be found using all their tag."""
+    tagged_controls = ['test1', 'test2', 'test3']
+    tags = 'testtag, testtag2'
+    for control in tagged_controls:
+      self._AddNAControl(control, {'tags': tags})
+    self.syscfg.finalize()
+    # Split tags into individual tags using helper.
+    for tag in system_config.SystemConfig.tag_string_to_tags(tags):
+      found_tagged_controls = self.syscfg.get_controls_for_tag(tag)
+      # Assert that the same controls are found that were fed in.
+      assert sorted(found_tagged_controls) == sorted(tagged_controls)
+
+  def test_TagUnkown(self):
+    """System returns an empty list if the tag is unknown."""
+    tagged_controls = ['test1', 'test2', 'test3']
+    tag = 'testtag'
+    for control in tagged_controls:
+      # Pass the tag in as extra params
+      self._AddNAControl(control, {'tags': tag})
+    self.syscfg.finalize()
+    unknown_tag = 'unknown'
+    found_tagged_controls = self.syscfg.get_controls_for_tag(unknown_tag)
+    # Assert that no controls were found.
+    assert not found_tagged_controls
+
 
 if __name__ == '__main__':
   unittest.main()

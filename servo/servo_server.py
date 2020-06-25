@@ -159,6 +159,7 @@ class Servod(object):
 
     self.init_servo_interfaces(vendor, product, serialname, interfaces)
     servo_postinit.post_init(self)
+    self._syscfg.finalize()
 
   def reinitialize(self):
     """Reinitialize all interfaces that support reinitialization"""

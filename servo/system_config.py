@@ -79,6 +79,8 @@ class SystemConfig(object):
   </sequence>
 
   Public Attributes:
+    control_tags: a dictionary of each base control and their tags if any
+    aliases: a dictionary of an alias mapped to its base control name
     syscfg_dict: 3-deep dictionary created when parsing system files.  Its
         organized as [tag][name][type] where:
         tag: map | control | sequence
@@ -98,6 +100,8 @@ class SystemConfig(object):
     """SystemConfig constructor."""
     self._logger = logging.getLogger('SystemConfig')
     self._logger.debug('')
+    self.control_tags = collections.defaultdict(list)
+    self.aliases = {}
     self.syscfg_dict = collections.defaultdict(dict)
     self.hwinit = []
     self._loaded_xml_files = []
@@ -126,6 +130,11 @@ class SystemConfig(object):
     if os.path.isfile(fullname):
       return fullname
     return None
+
+  @staticmethod
+  def tag_string_to_tags(tag_str):
+    """Helper to split tag string into individual tags."""
+    return tag_str.split(',')
 
   def get_all_cfg_names(self):
     """Return all XML config file names.
@@ -332,6 +341,47 @@ class SystemConfig(object):
             if name_prefix:
               aliasname = name_prefix + aliasname
             self.syscfg_dict[tag][aliasname] = self.syscfg_dict[tag][name]
+            # Also store what the alias relationship
+            self.aliases[aliasname] = name
+
+  def finalize(self):
+    """Finalize setup, Call this after no more config files will be added.
+
+    Note: this can be called repeatedly, and will overwrite the previous
+    results.
+
+    - Sets up tags for each control, if provided
+    """
+    self.control_tags.clear()
+    # Tags are only stored for the primary control name, not their aliases.
+    base_controls = [control for control in self.syscfg_dict[CONTROL_TAG]
+                     if control not in self.aliases]
+    for control in base_controls:
+      # Tags are only read out of the get dict for now. If a control defines
+      # seperate get and set dicts, please make sure to define the tags in the
+      # get dict.
+      get_dict = self.syscfg_dict[CONTROL_TAG][control]['get_params']
+      if 'tags' in get_dict:
+        tags = SystemConfig.tag_string_to_tags(get_dict['tags'])
+        for tag in tags:
+          self.control_tags[tag].append(control)
+
+  def get_controls_for_tag(self, tag):
+    """Get list of controls for a given tag.
+
+    Args:
+      tag: str, tag to query
+
+    Returns:
+      list of controls with that tag, or an empty list if no such tag, or
+      controls under that tag
+    """
+    # Checking here ensures that we do not generate an empty list (as it's a
+    # default dict)
+    if tag not in self.control_tags:
+      self._logger.info('Tag %s unknown.', tag)
+      return []
+    return self.control_tags[tag]
 
   def lookup_control_params(self, name, is_get=True):
     """Lookup & return control parameter dictionary.
