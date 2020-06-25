@@ -29,6 +29,16 @@
     <params clobber_ok="" fw_wp_vref="pp3300"/>
   </control>
   <control>
+    <name>cpu_fw_spi</name>
+    <params clobber_ok=""
+      set_value_1="ec_uart_cmd:apshutdown
+                   spi2_vref:pp3300 spi2_buf_en:on spi2_buf_on_flex_en:on
+                   spi_hold:off"
+      set_value_0="spi2_vref:off spi2_buf_en:off spi2_buf_on_flex_en:off
+                   spi_hold:off ec_uart_cmd:powerb"
+      />
+  </control>
+  <control>
     <name>ec_chip</name>
     <doc>EC chip name (read-only)</doc>
     <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
