@@ -10,7 +10,9 @@ import re
 import xml.etree.ElementTree
 
 # valid tags in system config xml.  Any others will be ignored
-SYSCFG_TAG_LIST = ['map', 'control']
+MAP_TAG = 'map'
+CONTROL_TAG = 'control'
+SYSCFG_TAG_LIST = [MAP_TAG, CONTROL_TAG]
 ALLOWABLE_INPUT_TYPES = {'float': float, 'int': int, 'str': str}
 
 
@@ -207,7 +209,7 @@ class SystemConfig(object):
         element_str = xml.etree.ElementTree.tostring(element)
         try:
           name = element.find('name').text
-          if tag == 'control' and name_prefix:
+          if tag == CONTROL_TAG and name_prefix:
             name = name_prefix + name
         except AttributeError:
           # TODO(tbroch) would rather have lineno but dumping element seems
@@ -252,7 +254,7 @@ class SystemConfig(object):
               params.attrib['interface'] = interface_id + interface_increment
 
         if len(params_list) == 2:
-          assert tag != 'map', 'maps have only one params entry'
+          assert tag != MAP_TAG, 'maps have only one params entry'
           for params in params_list:
             if 'cmd' not in params.attrib:
               raise SystemConfigError('%s %s multiple params but no cmd\n%s' %
@@ -282,18 +284,18 @@ class SystemConfig(object):
 
         # Save the control name to the params dicts, such that the driver can
         # refer to it.
-        if tag == 'control':
+        if tag == CONTROL_TAG:
           get_dict['control_name'] = name
           set_dict['control_name'] = name
 
         clobber_ok = ('clobber_ok' in set_dict or 'clobber_ok' in get_dict)
-        if (tag == 'control' and name in self.syscfg_dict[tag] and
+        if (tag == CONTROL_TAG and name in self.syscfg_dict[tag] and
             not clobber_ok):
           raise SystemConfigError(
               "Duplicate %s %s without 'clobber_ok' key\n%s" % (tag, name,
                                                                 element_str))
 
-        if tag == 'map':
+        if tag == MAP_TAG:
           self.syscfg_dict[tag][name] = {'doc': doc, 'map_params': get_dict}
           if alias:
             raise SystemConfigError('No aliases for maps allowed')
@@ -349,14 +351,14 @@ class SystemConfig(object):
       NameError: if control name not found
       SystemConfigError: if error encountered identifying parameters
     """
-    if name not in self.syscfg_dict['control']:
+    if name not in self.syscfg_dict[CONTROL_TAG]:
       raise NameError('No control named %s. All controls:\n%s' %
                       (name,
-                       ','.join(sorted(self.syscfg_dict['control']))))
+                       ','.join(sorted(self.syscfg_dict[CONTROL_TAG]))))
     if is_get:
-      return self.syscfg_dict['control'][name]['get_params']
+      return self.syscfg_dict[CONTROL_TAG][name]['get_params']
     else:
-      return self.syscfg_dict['control'][name]['set_params']
+      return self.syscfg_dict[CONTROL_TAG][name]['set_params']
 
   def is_control(self, name):
     """Determine if name is a control or not.
@@ -367,7 +369,7 @@ class SystemConfig(object):
     Returns:
       boolean, True if name is control, False otherwise
     """
-    return name in self.syscfg_dict['control']
+    return name in self.syscfg_dict[CONTROL_TAG]
 
   def get_control_docstring(self, name):
     """Get controls doc string.
@@ -378,7 +380,7 @@ class SystemConfig(object):
     Returns:
       doc string of the control
     """
-    return self.syscfg_dict['control'][name]['doc']
+    return self.syscfg_dict[CONTROL_TAG][name]['doc']
 
   def _lookup(self, tag, name_str):
     """Lookup the tag name_str and return dictionary or None if not found.
@@ -417,7 +419,7 @@ class SystemConfig(object):
     # its a map
     err = 'Unknown error formatting input value.'
     if 'map' in params:
-      map_dict = self._lookup('map', params['map'])
+      map_dict = self._lookup(MAP_TAG, params['map'])
       if map_dict is None:
         raise SystemConfigError("Map %s isn't defined" % params['map'])
       try:
@@ -485,7 +487,7 @@ class SystemConfig(object):
       return value
     reformat_value = str(value)
     if 'map' in params:
-      map_dict = self._lookup('map', params['map'])
+      map_dict = self._lookup(MAP_TAG, params['map'])
       if map_dict:
         for keyname, val in map_dict['map_params'].items():
           if val == reformat_value:
@@ -520,7 +522,7 @@ class SystemConfig(object):
       tag_list = [tag]
     for tag in sorted(tag_list):
       prefix_str = ''
-      if tag == 'control' and prefix:
+      if tag == CONTROL_TAG and prefix:
         prefix_str = '%s.' % prefix
       rsp.append('*************')
       rsp.append('* ' + tag.upper())
@@ -532,7 +534,7 @@ class SystemConfig(object):
         item_dict = self.syscfg_dict[tag][name]
         padded_name = '%-*s' % (max_len, '%s%s' % (prefix_str, name))
         rsp.append('%s DOC: %s' % (padded_name, item_dict['doc']))
-        if tag == 'map':
+        if tag == MAP_TAG:
           rsp.append('%s MAP: %s' % (dashes, str(item_dict['map_params'])))
         else:
           rsp.append('%s GET: %s' % (dashes, str(item_dict['get_params'])))
