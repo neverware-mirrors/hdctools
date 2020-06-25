@@ -254,6 +254,7 @@ class ServoINAConfigGenerator(INAConfigGenerator):
       mv_ctrl_docstring = ('Bus Voltage of %s rail in millivolts on i2c_mux:%s'
                            % (name, params_base['mux']))
       mv_ctrl_params = {'subtype' : 'millivolts',
+                        'tags'    : 'bus_voltage_rail',
                         'nom'     : nom}
       mv_ctrl_params.update(params_base)
       control_generators.append(ServoControlGenerator(name + '_mv',
@@ -263,6 +264,7 @@ class ServoINAConfigGenerator(INAConfigGenerator):
       shuntmv_ctrl_docstring = ('Shunt Voltage of %s rail in millivolts '
                                 'on i2c_mux:%s' % (name, params_base['mux']))
       shuntmv_ctrl_params = {'subtype'  : 'shuntmv',
+                             'tags'     : 'shunt_voltage_rail',
                              'nom'      : nom}
       shuntmv_ctrl_params.update(params_base)
       control_generators.append(ServoControlGenerator(name + '_shuntmv',
@@ -276,7 +278,8 @@ class ServoINAConfigGenerator(INAConfigGenerator):
       if is_calib:
         ma_ctrl_docstring = ('Current of %s rail in milliamps '
                              'on i2c_mux:%s' % (name, params_base['mux']))
-        ma_ctrl_params = {'subtype' : 'milliamps'}
+        ma_ctrl_params = {'subtype' : 'milliamps',
+                          'tags'    : 'current_rail'}
         ma_ctrl_params.update(params_base)
         control_generators.append(ServoControlGenerator(name + '_ma',
                                                        ma_ctrl_docstring,
@@ -284,7 +287,8 @@ class ServoINAConfigGenerator(INAConfigGenerator):
 
         mw_ctrl_docstring = ('Power of %s rail in milliwatts '
                              'on i2c_mux:%s' % (name, params_base['mux']))
-        mw_ctrl_params = {'subtype' : 'milliwatts'}
+        mw_ctrl_params = {'subtype' : 'milliwatts',
+                          'tags'    : 'power_rail'}
         mw_ctrl_params.update(params_base)
         control_generators.append(ServoControlGenerator(name + '_mw',
                                                        mw_ctrl_docstring,

@@ -9,6 +9,11 @@ import os
 import hw_driver
 import servo.servo_logging
 
+
+class metadataError(hw_driver.HwDriverError):
+  """Error class for metadata information."""
+
+
 class servoMetadata(hw_driver.HwDriver):
   """Class to access loglevel controls."""
 
@@ -38,6 +43,12 @@ class servoMetadata(hw_driver.HwDriver):
     xml_files = self._interface._syscfg._loaded_xml_files
     # See system_config.py for schema, but entry[0] is the file name
     return [entry[0] for entry in xml_files]
+
+  def _Get_tagged_controls(self):
+    """Retrieve all controls under a certain tag."""
+    if 'tag' not in self._params:
+      raise metadataError('tag needs to be specified in params.')
+    return self._interface._syscfg.get_controls_for_tag(self._params['tag'])
 
   def _Set_rotate_logs(self, _):
     """Force a servo log rotation."""

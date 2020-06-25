@@ -205,13 +205,13 @@ class OnboardINAPowerTracker(HighResServodPowerTracker):
                                                  sample_rate=sample_rate,
                                                  tag='onboard',
                                                  title='Onboard INA')
-    inas = self._sclient.get('raw_calib_rails')
-    if not inas:
+    self._ctrls = self._sclient.get('power_rails')
+    if not self._ctrls:
       raise PowerTrackerError('No onboard INAs found.')
-    self._ctrls = ['%s_mw' % ina for ina in inas]
     self._logger.debug('Following power rail commands found: %s',
                        ', '.join(self._ctrls))
-    self._pwr_cfg_ctrls = ['%s_cfg_reg' % ina for ina in inas]
+    self._pwr_cfg_ctrls = [ina.replace('_mw', '_cfg_rails') for ina in
+                           self._ctrls]
 
   def prepare(self, fast=False, powerstate=UNKNOWN_POWERSTATE):
     """prepare onboard INA measurement by configuring INAs for powerstate."""
