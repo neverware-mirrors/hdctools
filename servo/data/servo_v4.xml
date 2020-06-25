@@ -342,7 +342,7 @@
     matched results with the regular expression of
     servo_v4_uart_regexp.</doc>
     <params subtype="uart_cmd" interface="26" drv="uart" input_type="str"
-    clobber_ok=""></params>
+    clobber_ok="" tags="servo_cmd_ctrl"></params>
   </control>
   <control>
     <name>servo_v4_uart_timeout</name>

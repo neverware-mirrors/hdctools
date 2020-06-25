@@ -133,4 +133,10 @@
     <params  map="onoff" init="on" drv="kb_handler_init" interface="servo"
       subtype="init_default_keyboard" handler_type="ChromeEC"></params>
   </control>
+  <control>
+    <name>servo_console_command_controls</name>
+    <doc>List of all controls to issue commands to servo device consoles</doc>
+    <params drv="servo_metadata" interface="servo" tag="servo_cmd_ctrl"
+    subtype="tagged_controls"></params>
+  </control>
 </root>
