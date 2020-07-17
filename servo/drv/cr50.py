@@ -12,6 +12,7 @@ Provides the following Cr50 controlled function:
 import functools
 import logging
 import re
+import time
 
 import pty_driver
 
@@ -47,6 +48,10 @@ class cr50(pty_driver.ptyDriver):
   call _Get_kbd_en.
   """
 
+  # Retry mechanism for prompt detection in case of spurious printfs.
+  PROMPT_DETECTION_TRIES = 3
+  PROMPT_DETECTION_INTERVAL = 1
+
   def __init__(self, interface, params):
     """Constructor.
 
@@ -76,13 +81,22 @@ class cr50(pty_driver.ptyDriver):
     already up, we should see '>' almost immediately. If cr50 is in deep
     sleep, wait for console enabled.
     """
-    try:
-      super(cr50, self)._issue_cmd_get_results('\n\n',
-                                               ['(>|Console is enabled)'])
-    except pty_driver.ptyError as e:
-      self._logger.warn('Consider checking whether the servo device has '
-                        'read/write access to the Cr50 UART console.')
-      raise cr50Error('cr50 uart is unresponsive')
+    trys_left = self.PROMPT_DETECTION_TRIES
+    while trys_left > 0:
+        trys_left -= 1
+        try:
+          super(cr50, self)._issue_cmd_get_results('\n\n',
+                                                   ['(>|Console is enabled)'])
+          break
+        except pty_driver.ptyError as e:
+          logging.debug("cr50 prompt detection failed, %d attempts left.", trys_left)
+          if trys_left <= 0:
+              self._logger.warn('Consider checking whether the servo device has '
+                                'read/write access to the Cr50 UART console.')
+              raise cr50Error('cr50 uart is unresponsive')
+          else:
+              time.sleep(self.PROMPT_DETECTION_INTERVAL)
+
     return super(cr50, self)._issue_cmd_get_results(cmds, regex_list,
                                                     flush=flush,
                                                     timeout=timeout)
