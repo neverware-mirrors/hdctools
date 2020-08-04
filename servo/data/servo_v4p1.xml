@@ -1,0 +1,425 @@
+<?xml version="1.0"?>
+<root>
+  <include>
+    <name>common.xml</name>
+  </include>
+  <include>
+    <name>servo_v4_inas.xml</name>
+  </include>
+  <include>
+    <name>usb_image_management.xml</name>
+  </include>
+  <map>
+    <name>onoff_pwrsrc_sel</name>
+    <doc>Source DUT Type-C power from input Type-C or host USB.
+    Default is typec</doc>
+    <params host="0" typec="1"></params>
+  </map>
+  <map>
+    <name>onoff_sbu_uart_sel</name>
+    <doc>Select between CCD or UART on SBU. Default is CCD</doc>
+    <params ccd="0" uart="1"></params>
+  </map>
+  <map>
+    <name>onoff_fastboot_duthub_sel</name>
+    <doc>Select between DUT as host or device. Default is
+    host</doc>
+    <params device="0" host="1"></params>
+  </map>
+  <map>
+    <name>onoff_sd_usb_sel</name>
+    <doc>Select between sd and usb. Default is sd</doc>
+    <params usb="0" sd="1"></params>
+  </map>
+  <map>
+    <name>onoff_uservo_fastboot_sel</name>
+    <doc>Select between uservo and fastboot passthrough. Default is
+    uservo</doc>
+    <params uservo="0" fastboot="1"></params>
+  </map>
+  <map>
+    <name>usbkey</name>
+    <doc>Determines whether DUT or host sees USB port</doc>
+    <params servo_sees_usbkey="0" dut_sees_usbkey="1"></params>
+  </map>
+  <map>
+    <name>servo_v4p1_cc_map</name>
+    <doc>Enable CC and power config for various CCD modes</doc>
+    <params usbsnk="0" ccd="1" rpusb="2" rpchg="3" disconnect="4"
+     usbchg="5"></params>
+  </map>
+  <map>
+    <name>servo_v4p1_type_map</name>
+    <doc>Identify type-A and type-C servos</doc>
+    <params type-a="0" type-c="1"></params>
+  </map>
+
+  <!-- GPIO on chip settings -->
+  <control>
+    <name>fastboot_duthub_mux_sel</name>
+    <alias>dut_is_host_or_device</alias>
+    <doc>FASTBOOT_DUTHUB_MUX_SEL: Select DUT USB routed as device
+    to host, or as host to duthub</doc>
+    <params interface="26" drv="ec3po_gpio" subtype="single"
+     name="FASTBOOT_DUTHUB_MUX_SEL" map="onoff_fastboot_duthub_sel"
+     init="host"></params>
+  </control>
+  <control>
+    <name>sbu_mux_enable</name>
+    <doc>SBU_MUX_EN: enable DUT's SBU routing</doc>
+    <params interface="26" drv="ec3po_gpio" subtype="single"
+     name="SBU_MUX_EN" map="onoff"></params>
+  </control>
+  <control>
+    <name>dut_usb_mux_enable</name>
+    <doc>FASTBOOT_DUTHUB_MUX_EN_L: enable DUT's USB interface</doc>
+    <params interface="26" drv="ec3po_gpio" subtype="single"
+     name="FASTBOOT_DUTHUB_MUX_EN_L" map="onoff_i" init="on"></params>
+  </control>
+  <control>
+    <name>dut_hub_usb_reset</name>
+    <alias>dut_hub1_rst1</alias>
+    <doc>DUT_HUB_USB_RESET_L: reset dut's usb hub</doc>
+    <params interface="26" drv="ec3po_gpio" subtype="single"
+     name="DUT_HUB_USB_RESET_L" map="onoff_i" init="off"></params>
+  </control>
+  <control>
+    <name>at_hwb</name>
+    <doc>ATMEL_HWB_L: enable DFU programming of atmega</doc>
+    <params interface="26" drv="ec3po_gpio" subtype="single"
+     name="ATMEL_HWB_L" map="onoff_i" init="off"></params>
+  </control>
+  <control>
+    <name>uservo_pwr_fault</name>
+    <doc>USERVO_FAULT_L</doc>
+    <params interface="26" drv="ec3po_gpio" subtype="single"
+     name="USERVO_FAULT_L" map="onoff_i"></params>
+  </control>
+  <control>
+    <name>usb3_pwr_fault</name>
+    <doc>USB_FAULT_L</doc>
+    <params interface="26" drv="ec3po_gpio" subtype="single"
+     name="USB_FAULT_L" map="onoff_i"></params>
+  </control>
+
+  <!-- GPIO on expander settings -->
+  <control>
+    <name>sbu_uart_sel</name>
+    <doc>SBU_UART_SEL: Select between CCD or UART on SBU</doc>
+    <params interface="23" drv="tca6416" slv="0x21" port="0"
+    offset="0" map="onoff_sbu_uart_sel" init="ccd"></params>
+  </control>
+  <control>
+    <name>atmega_rst</name>
+    <doc>ATMEL_RESET_L: reset atmega</doc>
+    <params interface="23" drv="tca6416" slv="0x21" port="0"
+    offset="1" map="onoff_i" init="off"></params>
+  </control>
+  <control>
+    <name>sbu_flip_sel</name>
+    <doc>SBU_FLIP_SEL: Flip SBU lines based on cable
+    rotation.</doc>
+    <params interface="23" drv="tca6416" slv="0x21" port="0"
+    offset="2" map="onoff"></params>
+  </control>
+  <control>
+    <name>usb3_mux_sel</name>
+    <alias>usb_mux_sel1,image_usbkey_mux</alias>
+    <doc>USB3.0_TYPEA_MUX_SEL</doc>
+    <params interface="23" drv="tca6416" slv="0x21" port="0"
+    offset="3" map="usbkey" init="dut_sees_usbkey"></params>
+  </control>
+  <control>
+    <name>usb3_mux_en</name>
+    <alias>usb_mux_oe1</alias>
+    <doc>USB3.0_TYPEA_MUX_EN_L</doc>
+    <params interface="23" drv="tca6416" slv="0x21" port="0"
+    offset="4" map="onoff_i" init="on"></params>
+  </control>
+  <control>
+    <name>usb3_pwr_en</name>
+    <alias>prtctl4_pwren,image_usbkey_pwr</alias>
+    <doc>USB3.0_TYPE_A_PWR_EN</doc>
+    <params interface="23" drv="tca6416" slv="0x21" port="0"
+    offset="5" map="onoff" init="on"></params>
+  </control>
+  <control>
+    <name>uservo_pwr_en</name>
+    <doc>USERVO_POWER_EN</doc>
+    <params interface="23" drv="tca6416" slv="0x21" port="0"
+    offset="7" map="onoff" init="on"></params>
+  </control>
+  <control>
+    <name>uservo_fastboot_mux_sel</name>
+    <doc>USERVO_FASTBOOT_MUX_SEL</doc>
+    <params interface="23" drv="tca6416" slv="0x21" port="1"
+    offset="0" map="onoff_uservo_fastboot_sel" init="uservo">
+    </params>
+  </control>
+  <control>
+    <name>aux_usbkey_pwr</name>
+    <params interface="23" drv="tca6416" slv="0x21" port="1"
+    offset="1" map="onoff" init="on"></params>
+  </control>
+  <control>
+    <name>aux_usbkey_mux</name>
+    <params interface="23" drv="tca6416" slv="0x21" port="1"
+    offset="2" map="usbkey" init="dut_sees_usbkey"></params>
+  </control>
+
+  <control>
+    <name>image_usbkey_dev</name>
+    <doc>Get USB dev attached to this servo</doc>
+    <params subtype="image_usbkey_dev" interface="servo" drv="usb_image_manager"
+      hub_ports="2" usb_power_off_delay="2" hub_on_port="True"
+      error_amendment="Make sure you are using the usb port next to the
+      ethernet adapter."></params>
+  </control>
+
+  <control>
+    <name>servo_v4p1_dut_cc1_mv</name>
+    <doc>DUT CC1 voltage level</doc>
+    <params cmd="get" subtype="adc" adc_name="DUT_CC1_PD" interface="26"
+      drv="ec3po_servo_v4"></params>
+  </control>
+
+  <control>
+    <name>servo_v4p1_dut_cc2_mv</name>
+    <doc>DUT CC2 voltage level</doc>
+    <params cmd="get" subtype="adc" adc_name="DUT_CC2_PD" interface="26"
+      drv="ec3po_servo_v4"></params>
+  </control>
+
+  <control>
+    <name>servo_v4p1_chg_cc1_mv</name>
+    <doc>Charge port CC1 voltage level</doc>
+    <params cmd="get" subtype="adc" adc_name="CHG_CC1_PD" interface="26"
+      drv="ec3po_servo_v4"></params>
+  </control>
+
+  <control>
+    <name>servo_v4p1_chg_cc2_mv</name>
+    <doc>Charge port CC2 voltage level</doc>
+    <params cmd="get" subtype="adc" adc_name="CHG_CC2_PD" interface="26"
+      drv="ec3po_servo_v4"></params>
+  </control>
+
+  <control>
+    <name>servo_v4p1_sbu1_mv</name>
+    <doc>SBU1 voltage level</doc>
+    <params cmd="get" subtype="adc" adc_name="SBU1_DET" interface="26"
+      drv="ec3po_servo_v4"></params>
+  </control>
+
+  <control>
+    <name>servo_v4p1_sbu2_mv</name>
+    <doc>SBU2 voltage level</doc>
+    <params cmd="get" subtype="adc" adc_name="SBU2_DET" interface="26"
+      drv="ec3po_servo_v4"></params>
+  </control>
+  <control>
+    <name>macaddr</name>
+    <doc>cached mac address for NIC on servo v4</doc>
+    <params subtype="macaddr" interface="26" drv="ec3po_servo_v4"
+      input_type="str"></params>
+  </control>
+  <control>
+    <name>servo_v4p1_version</name>
+    <doc>current fw version</doc>
+    <params cmd="get" subtype="version" interface="26" drv="ec3po_servo_v4"
+        map="print" init="print"></params>
+  </control>
+  <control>
+    <name>servo_v4p1_latest_version</name>
+    <doc>latest released fw version</doc>
+    <params cmd="get" subtype="latest_version" interface="26"
+      drv="ec3po_servo_v4"></params>
+  </control>
+  <control>
+    <name>active_v4p1_device</name>
+    <doc>shows the active servo device servo_micro or ccd_cr50</doc>
+    <params drv="active_v4_device" interface="servo" input_type="str"
+      subtype="device"></params>
+  </control>
+  <control>
+    <name>init_usb_keyboard</name>
+    <doc>initialize usb keyboard handler</doc>
+    <params map="onoff" init="off" drv="kb_handler_init" interface="servo"
+      subtype="init_usb_keyboard"></params>
+  </control>
+
+  <!-- UART and CONSOLE settings -->
+  <control>
+    <name>raw_servo_v4p1_uart_pty</name>
+    <alias>raw_servo_v4_uart_pty</alias>
+    <doc>Servo V4's stm32 console.</doc>
+    <params cmd="get" subtype="pty" interface="22" drv="uart">
+    </params>
+  </control>
+  <control>
+    <name>dut_pty</name>
+    <doc>UART routed to DUT's SBU lines.</doc>
+    <params cmd="get" subtype="pty" interface="24" drv="uart">
+    </params>
+  </control>
+  <control>
+    <name>atmega_pty</name>
+    <doc>UART routed to atmega mcu for keyboard emulator.</doc>
+    <params cmd="get" subtype="pty" interface="25" drv="uart">
+    </params>
+  </control>
+  <!-- EC-3PO console interpreter linkup -->
+  <control>
+    <name>ec3po_servo_v4p1_uart</name>
+    <alias>servo_v4p1_uart_pty</alias>
+    <doc>Servo v4 console provided via EC-3PO console
+    interpreter.</doc>
+    <params cmd="get" subtype="pty" interface="26" drv="uart">
+    </params>
+  </control>
+  <control>
+    <name>servo_v4p1_ec3po_interp_connect</name>
+    <doc>State indicating if interpreter is listening to the servo
+    console.</doc>
+    <params interface="26" drv="ec3po_driver" map="onoff" init="on"
+    subtype="interp_connect"></params>
+  </control>
+  <control>
+    <name>servo_v4p1_uart_raw_debug</name>
+    <doc>Turn on per-message-received logs to the servo v4 console
+      messages.</doc>
+    <params interface="26" drv="ec3po_driver" map="onoff" init="off"
+    subtype="raw_debug"></params>
+  </control>
+  <control>
+    <name>servo_v4p1_uart_timestamp</name>
+    <doc>Add timestamps to the servo v4 console messages</doc>
+    <params interface="26" drv="ec3po_driver" map="onoff" init="on"
+    subtype="timestamp"></params>
+  </control>
+  <control>
+    <name>servo_v4p1_loglevel</name>
+    <doc>servo v4 console loglevel</doc>
+    <params interface="26" drv="ec3po_driver" input_type="str"
+    subtype="loglevel"></params>
+  </control>
+  <!-- Servo V4 Console Automation Controls -->
+  <control>
+    <name>servo_v4p1_uart_cmd</name>
+    <doc>Set to send command to the servo v4 console. Get to obtain the
+    matched results with the regular expression of
+    servo_v4p1_uart_regexp.</doc>
+    <params subtype="uart_cmd" interface="26" drv="uart" input_type="str"
+    clobber_ok=""></params>
+  </control>
+  <control>
+    <name>servo_v4p1_uart_timeout</name>
+    <doc>Timeout value for waiting servo v4 console response of issuing
+    an EC command.</doc>
+    <params subtype="uart_timeout" interface="26" drv="uart"
+    input_type="float"></params>
+  </control>
+  <control>
+    <name>servo_v4p1_uart_multicmd</name>
+    <doc>Set to send multiple commands to the servo v4 console.</doc>
+    <params interface="26" drv="na" cmd="get" clobber_ok=""></params>
+    <params subtype="uart_multicmd" interface="26" drv="uart" input_type="str"
+    cmd="set" clobber_ok=""></params>
+  </control>
+  <control>
+    <name>servo_v4p1_uart_regexp</name>
+    <doc>List of regular expressions to match the response of
+    servo_v4p1_uart_cmd.</doc>
+    <params subtype="uart_regexp" interface="26" drv="uart"
+    input_type="str" clobber_ok=""></params>
+  </control>
+  <control>
+    <name>servo_v4p1_uart_capture</name>
+    <doc>enable servo v4 console capture</doc>
+    <params subtype="uart_capture" interface="26" drv="uart"
+    map="onoff" clobber_ok=""></params>
+  </control>
+  <control>
+    <name>servo_v4p1_uart_stream</name>
+    <doc>servo v4 console stream collected while servo_v4p1_uart_capture on</doc>
+    <params cmd="get" subtype="uart_stream" interface="26" drv="uart"
+    clobber_ok=""></params>
+  </control>
+  <!-- DTS mode control -->
+  <control>
+    <name>servo_v4p1_dts_mode</name>
+    <doc>Enable/disable DTS mode on servo_v4p1</doc>
+    <params subtype="servo_v4_dts_mode" interface="26" drv="ec3po_servo_v4"
+    input_type="str" init="on"></params>
+  </control>
+  <control>
+    <name>ada_srccaps</name>
+    <doc>SrcCap of the adapter connected to servo_v4</doc>
+    <params subtype="ada_srccaps" interface="26" drv="ec3po_servo_v4"
+    input_type="str" cmd="get"></params>
+  </control>
+  <control>
+    <name>servo_v4p1_role</name>
+    <doc>Power role for DUT port on servo_v4</doc>
+    <params subtype="servo_v4_power_role" interface="26" drv="ec3po_servo_v4"
+    input_type="str"></params>
+  </control>
+  <control>
+    <name>servo_v4p1_pd_comm</name>
+    <doc>PD communication for DUT port on servo_v4</doc>
+    <params subtype="servo_v4_pd_comm" interface="26" drv="ec3po_servo_v4"
+    input_type="str"></params>
+  </control>
+  <map>
+    <name>pdrole</name>
+    <doc>map for USB-PD port role (will be deprecated by pdpr)</doc>
+    <params sink="0" src5v="1" src12v="2" src20v="3"></params>
+  </map>
+  <map>
+    <name>pdpr</name>
+    <doc>map for USB-PD port power role</doc>
+    <params sink="0" src5v="5" src9v="9" src10v="10" src12v="12" src15v="15"
+    src20v="20"></params>
+  </map>
+  <map>
+    <name>polarity</name>
+    <doc>map for USB-C polarity</doc>
+    <params cc1="0" cc2="1"></params>
+  </map>
+  <control>
+    <name>usbc_role</name>
+    <doc>USB-PD port role (will be deprecated by usbc_pr)</doc>
+    <params interface="26" drv="ec3po_servo_v4" subtype="usbc_role"
+    map="pdrole"></params>
+  </control>
+  <control>
+    <name>usbc_pr</name>
+    <doc>USB-PD port power role</doc>
+    <params interface="26" drv="ec3po_servo_v4" subtype="usbc_pr"
+    map="pdpr"></params>
+  </control>
+  <control>
+    <name>usbc_polarity</name>
+    <doc>USB-C polarity</doc>
+    <params interface="26" drv="ec3po_servo_v4" subtype="usbc_polarity"
+    map="polarity"></params>
+  </control>
+  <control>
+    <name>fw_wp_state</name>
+    <doc>Used to turn fw wp off and on</doc>
+    <params clobber_ok="" init="force_off"></params>
+  </control>
+  <!-- Controls used by PD FAFT -->
+  <control>
+    <name>ppdut5_mv</name>
+    <remap>vbus_voltage</remap>
+  </control>
+  <control>
+    <name>ppdut5_ma</name>
+    <remap>vbus_current</remap>
+  </control>
+  <control>
+    <name>ppdut5_mw</name>
+    <remap>vbus_power</remap>
+  </control>
+</root>
