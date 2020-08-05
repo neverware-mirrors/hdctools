@@ -739,7 +739,7 @@ class USBkm232Handler(_BaseHandler):
     super(USBkm232Handler, self).close()
 
   def _test_atmega(self):
-    """Send and receive a dummy key from teh atmega to verify it is present.
+    """Send and receive a key from the atmega to verify it is present.
 
        Returns:
          Raises exception if no correct response is received.

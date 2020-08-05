@@ -172,7 +172,7 @@ class ServodStarter(object):
     if sopts.dual_v4:
       # Leave the right breadcrumbs for servo_postinit to know whether to setup
       # a dual instance or not.
-      os.environ[servo_postinit.DUAL_V4_VAR] = servo_postinit.DUAL_V4_VAR_DUMMY
+      os.environ[servo_postinit.DUAL_V4_VAR] = servo_postinit.DUAL_V4_VAR_EMPTY
 
     # Servod needs to be running in the chroot without PID namespaces in order
     # to freeze terminals when reading from the UARTs.
@@ -337,7 +337,7 @@ class ServodStarter(object):
                                'files')
     dev_pars.add_argument('-i', '--interfaces', type=str, default='',
                           help='ordered space-delimited list of interfaces. '
-                               'Valid choices are gpio|i2c|uart|gpiouart|dummy')
+                               'Valid choices are gpio|i2c|uart|gpiouart|empty')
     dev_pars.add_argument('-u', '--usbkm232', type=str,
                           help='path to USB-KM232 device which allow for '
                                'sending keyboard commands to DUTs that do not '

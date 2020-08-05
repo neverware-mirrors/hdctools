@@ -75,7 +75,7 @@ class Servod(object):
     interface_list_len = len(self._interface_list)
     if interfaces_len > interface_list_len:
       # Fill with dummies.
-      self._interface_list += [_interface.dummy.Dummy()] * (interfaces_len -
+      self._interface_list += [_interface.empty.Empty()] * (interfaces_len -
                                                             interface_list_len)
 
     for i, interface_data in enumerate(interfaces):
@@ -84,8 +84,8 @@ class Servod(object):
         # Store interface index for those that care about it.
         interface_data['index'] = i
       elif type(interface_data) is str:
-        if interface_data in ['dummy', 'ftdi_dummy']:
-          # 'dummy' reserves the interface for future use.  Typically the
+        if interface_data in ['empty', 'ftdi_empty']:
+          # 'empty' reserves the interface for future use.  Typically the
           # interface will be managed by external third-party tools like
           # openOCD for JTAG or flashrom for SPI.  In the case of servo V4,
           # it serves as a placeholder for servo micro interfaces.
@@ -515,7 +515,7 @@ class Servod(object):
     Returns:
       This function is called across RPC and as such is expected to return
       something unless transferring 'none' across is allowed. Hence adding a
-      dummy return value to make things simpler.
+      mock return value to make things simpler.
     """
     for control_name, value in self._syscfg.hwinit:
       try:
@@ -544,7 +544,7 @@ class Servod(object):
     return True
 
   def echo(self, echo):
-    """Dummy echo function for testing/examples.
+    """Mock echo function for testing/examples.
 
     Args:
       echo: string to echo back to client

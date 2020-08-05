@@ -20,7 +20,7 @@ import utils.usb_hierarchy as usb_hierarchy
 POST_INIT = collections.defaultdict(dict)
 
 DUAL_V4_VAR = 'DUAL_V4_CFG'
-DUAL_V4_VAR_DUMMY = 'dummy'
+DUAL_V4_VAR_EMPTY = 'empty'
 
 class ServoPostInitError(Exception):
   """Exception class for ServoPostInit."""
@@ -280,7 +280,7 @@ class ServoV4PostInit(BasePostInit):
             if isinstance(interface, dict) and 'raw_pty' in interface:
               interface['raw_pty'] = ccd_prefix + interface['raw_pty']
           # Need to shift the interfaces properly.
-          interfaces = ['dummy'] * ccd_shift + interfaces
+          interfaces = ['empty'] * ccd_shift + interfaces
           self.servod._version += '_and_ccd_cr50'
           self.init_servo_interfaces(ccd, interfaces)
         self.add_servo_serial(ccd, self.servod.CCD_SERIAL)

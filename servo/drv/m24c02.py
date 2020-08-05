@@ -208,7 +208,7 @@ class m24c02(hw_driver.HwDriver):
       EepromError: If text exceeds EEPROM size.
     """
     try:
-      offset, dummy = self._device.get()
+      offset, empty = self._device.get()
       self._write_bytes(offset, text)
     except ValueError as e:
       raise EepromError(str(e) + m24c02.HELP_TEXT)

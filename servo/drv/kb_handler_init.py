@@ -98,7 +98,7 @@ class kbHandlerInit(hw_driver.HwDriver):
           self._logger.warn('The servo setup does not have a usb keyboard '
                             'emulator. Will not throw an error, but note '
                             'that the keyboard controls will fail, as only '
-                            'dummy noop keyboard could be setup.')
+                            'noop keyboard could be setup.')
           self._servo._keyboard = keyboard_handlers.NoopHandler()
       else:
         # The main keyboard is a normal keyboard handler.

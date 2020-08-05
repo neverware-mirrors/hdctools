@@ -11,7 +11,7 @@ import bbgpio
 import bbi2c
 import bbuart
 import common as c
-import dummy
+import empty
 import ec3po_interface
 import ftdigpio
 import ftdii2c
@@ -40,7 +40,7 @@ _interfaces = [
     # Other interfaces
     ec3po_interface.EC3PO,
     i2cbus.I2CBus,
-    dummy.Dummy
+    empty.Empty
 ]
 
 # Generate a look-up table for these interface names to factory method.

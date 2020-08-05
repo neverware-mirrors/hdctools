@@ -97,7 +97,7 @@
   </control>
   <control>
     <name>cpu_fw_spi</name>
-    <doc>Enable SPI mode for flashing CPU firmware (dummy in CCD)</doc>
+    <doc>Enable SPI mode for flashing CPU firmware (fake in CCD)</doc>
     <params interface="servo" drv="na"/>
   </control>
   <!-- cr50 UART Buffers & VREF Controls -->

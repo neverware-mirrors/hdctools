@@ -13,7 +13,7 @@ SERVO_ID_DEFAULTS = [(0x0403, 0x6014), (0x18d1, 0x5001), (0x18d1, 0x5002),
 
 # servo v1
 INTERFACE_DEFAULTS[0x18d1][0x5001] = \
-  ['dummy',
+  ['empty',
    'ftdi_gpio',
    'ftdi_i2c',
    'ftdi_gpio',
@@ -21,20 +21,20 @@ INTERFACE_DEFAULTS[0x18d1][0x5001] = \
     ]
 
 # servo V2
-# Dummy interface 1 == JTAG via openocd
-# Dummy interface 5,6 == SPI via flashrom
+# Empty interface 1 == JTAG via openocd
+# Empty interface 5,6 == SPI via flashrom
 # ec3po_uart interface 9,10 == usbpd console, ec console. Applicable to servo v3
 # as well.
 SERVO_V2_DEFAULTS = [(0x18d1, 0x5002)]
 for vid, pid in SERVO_V2_DEFAULTS:
   INTERFACE_DEFAULTS[vid][pid] = \
-    ['dummy',
-     'ftdi_dummy',                      # 1
+    ['empty',
+     'ftdi_empty',                      # 1
      'ftdi_i2c',                        # 2
      'ftdi_uart',                       # 3: uart3/legacy
      'ftdi_uart',                       # 4: ATMEGA
-     'ftdi_dummy',                      # 5
-     'ftdi_dummy',                      # 6
+     'ftdi_empty',                      # 5
+     'ftdi_empty',                      # 6
      'ftdi_uart',                       # 7: EC
      'ftdi_uart',                       # 8: AP
      {'name': 'ec3po_uart',             # 9: EC3PO(USBPD)
@@ -49,7 +49,7 @@ for vid, pid in SERVO_V2_DEFAULTS:
 SERVO_V3_DEFAULTS = [(0x18d1, 0x5004)]
 for vid, pid in SERVO_V3_DEFAULTS:
   INTERFACE_DEFAULTS[vid][pid] = \
-    ['dummy',
+    ['empty',
      'bb_gpio',                          # 1
      {'name': 'dev_i2c', 'bus_num': 1},  # 2
      {'name': 'bb_uart', 'uart_num': 5,  # 3: uart3/legacy
@@ -60,7 +60,7 @@ for vid, pid in SERVO_V3_DEFAULTS:
      {'name': 'dev_i2c', 'bus_num': 2},  # 6
      {'name': 'bb_uart', 'uart_num': 1}, # 7: EC
      {'name': 'bb_uart', 'uart_num': 2}, # 8: AP
-     'dummy',                            # 9
+     'empty',                            # 9
      {'name': 'ec3po_uart',              #10: EC3PO(EC)
       'raw_pty': 'raw_ec_uart_pty', 'source': 'EC'},
      {'name': 'ec3po_uart',              #11: EC3PO(AP)
@@ -73,32 +73,32 @@ INTERFACE_DEFAULTS[0x0403][0x6014] = INTERFACE_DEFAULTS[0x18d1][0x5004]
 RAIDEN_DEFAULTS = [(0x18d1, 0x500f)]
 for vid, pid in RAIDEN_DEFAULTS:
   INTERFACE_DEFAULTS[vid][pid] = \
-    ['dummy',
+    ['empty',
      {'name': 'stm32_uart', 'interface': 0}, # 1: EC_PD
      {'name': 'stm32_uart', 'interface': 1}, # 2: AP
-     'dummy',                                # 3
-     'dummy',                                # 4
-     'dummy',                                # 5
-     'dummy',                                # 6
-     'dummy',                                # 7
-     'dummy',                                # 8
-     'dummy',                                # 9
+     'empty',                                # 3
+     'empty',                                # 4
+     'empty',                                # 5
+     'empty',                                # 6
+     'empty',                                # 7
+     'empty',                                # 8
+     'empty',                                # 9
      {'name': 'ec3po_uart',                  #10: dut ec console
       'raw_pty': 'raw_ec_uart_pty', 'source': 'EC'},
-     'dummy',                                #11
+     'empty',                                #11
     ]
 
 # cr50 CCD
 CCD_DEFAULTS = [(0x18d1, 0x5014)]
 for vid, pid in CCD_DEFAULTS:
   INTERFACE_DEFAULTS[vid][pid] = \
-    ['dummy',
+    ['empty',
      {'name': 'stm32_uart', 'interface': 0}, # 1: Cr50 console
      {'name': 'stm32_i2c', 'interface': 5},  # 2: i2c
-     'dummy',                                # 3
-     'dummy',                                # 4
-     'dummy',                                # 5
-     'dummy',                                # 6
+     'empty',                                # 3
+     'empty',                                # 4
+     'empty',                                # 5
+     'empty',                                # 6
      {'name': 'stm32_uart', 'interface': 2}, # 7: EC/PD
      {'name': 'stm32_uart', 'interface': 1}, # 8: AP
      {'name': 'ec3po_uart',                  # 9: EC3PO(Cr50)
@@ -113,8 +113,8 @@ for vid, pid in CCD_DEFAULTS:
 SWEETBERRY_ID_DEFAULTS = [(0x18d1, 0x5020)]
 for vid, pid in SWEETBERRY_ID_DEFAULTS:
   INTERFACE_DEFAULTS[vid][pid] = \
-    ['dummy',
-     'dummy',
+    ['empty',
+     'empty',
      {'name': 'stm32_i2c', 'interface': 3},  # 2: i2c
      {'name': 'stm32_uart', 'interface': 0}, # 3: sweetberry console
     ]
@@ -125,12 +125,12 @@ SERVO_ID_DEFAULTS.extend(SWEETBERRY_ID_DEFAULTS)
 SERVO_MICRO_DEFAULTS = [(0x18d1, 0x501a)]
 for vid, pid in SERVO_MICRO_DEFAULTS:
   INTERFACE_DEFAULTS[vid][pid] = \
-    ['dummy',
+    ['empty',
      {'name': 'stm32_uart', 'interface': 0}, # 1: PD/Cr50 console
      {'name': 'stm32_i2c', 'interface': 4},  # 2: i2c
      {'name': 'stm32_uart', 'interface': 3}, # 3: servo console
-     'dummy',                                # 4: dummy
-     'dummy',                                # 5: dummy
+     'empty',                                # 4: empty
+     'empty',                                # 5: empty
      {'name': 'ec3po_uart',                  # 6: servo console
       'raw_pty': 'raw_servo_micro_uart_pty', 'source': 'servo_micro'},
      {'name': 'stm32_uart', 'interface': 6}, # 7: uart1/EC console
@@ -147,12 +147,12 @@ for vid, pid in SERVO_MICRO_DEFAULTS:
 C2D2_DEFAULTS = [(0x18d1, 0x5041)]
 for vid, pid in C2D2_DEFAULTS:
   INTERFACE_DEFAULTS[vid][pid] = \
-    ['dummy',
+    ['empty',
      {'name': 'stm32_uart', 'interface': 0}, # 1: H1 console
      {'name': 'stm32_i2c',  'interface': 4}, # 2: i2c
      {'name': 'stm32_uart', 'interface': 3}, # 3: servo console
-     'dummy',                                # 4: dummy
-     'dummy',                                # 5: dummy
+     'empty',                                # 4: empty
+     'empty',                                # 5: empty
      {'name': 'ec3po_uart',                  # 6: servo console
       'raw_pty': 'raw_c2d2_uart_pty', 'source': 'c2d2'},
      {'name': 'stm32_uart', 'interface': 6}, # 7: uart1/EC console
@@ -185,14 +185,14 @@ SERVO_V4_CONFIGS = {
 }
 for vid, pid in SERVO_V4_DEFAULTS:
   # Interface #0 is reserved for no use.
-  INTERFACE_DEFAULTS[vid][pid] = ['dummy']
+  INTERFACE_DEFAULTS[vid][pid] = ['empty']
 
-  # Dummy slots for servo micro/CCD use (interface #1-20).
-  INTERFACE_DEFAULTS[vid][pid] += ['dummy'] * SERVO_V4_SLOT_SIZE
+  # Empty slots for servo micro/CCD use (interface #1-20).
+  INTERFACE_DEFAULTS[vid][pid] += ['empty'] * SERVO_V4_SLOT_SIZE
 
   # Servo v4 interfaces.
   INTERFACE_DEFAULTS[vid][pid] += \
-    ['dummy',                                #21: just nothing.
+    ['empty',                                #21: just nothing.
      {'name': 'stm32_uart', 'interface': 0}, #22: servo console.
      {'name': 'stm32_i2c', 'interface': 2},  #23: i2c
      {'name': 'stm32_uart', 'interface': 3}, #24: dut sbu uart
@@ -202,10 +202,10 @@ for vid, pid in SERVO_V4_DEFAULTS:
     ]
 
   # Buffer slots for servo v4 (interface #27-40).
-  INTERFACE_DEFAULTS[vid][pid] += ['dummy'] * (40 - 27 + 1)
+  INTERFACE_DEFAULTS[vid][pid] += ['empty'] * (40 - 27 + 1)
 
   # Slots for relocating Hammer interfaces.
-  INTERFACE_DEFAULTS[vid][pid] += ['dummy'] * SERVO_V4_SLOT_SIZE
+  INTERFACE_DEFAULTS[vid][pid] += ['empty'] * SERVO_V4_SLOT_SIZE
 
 SERVO_ID_DEFAULTS.extend(SERVO_V4_DEFAULTS)
 
@@ -213,9 +213,9 @@ SERVO_ID_DEFAULTS.extend(SERVO_V4_DEFAULTS)
 MINISERVO_ID_DEFAULTS = [(0x403, 0x6001), (0x18d1, 0x5000)]
 for vid, pid in MINISERVO_ID_DEFAULTS:
   INTERFACE_DEFAULTS[vid][pid] = \
-    ['dummy',
+    ['empty',
      'ftdi_gpiouart', # occupies 2 slots
-     'dummy',         # reserved for the above ftdi_gpiouart
+     'empty',         # reserved for the above ftdi_gpiouart
      {'name': 'ec3po_uart', 'raw_pty': 'raw_ec_uart_pty', 'source': 'EC'},
     ]
 
@@ -225,9 +225,9 @@ SERVO_ID_DEFAULTS.extend(MINISERVO_ID_DEFAULTS)
 TOAD_ID_DEFAULTS = [(0x403, 0x6015)]
 for vid, pid in TOAD_ID_DEFAULTS:
   INTERFACE_DEFAULTS[vid][pid] = \
-    ['dummy',
+    ['empty',
      'ftdi_gpiouart', # occupies 2 slots
-     'dummy',         # reserved for the above ftdi_gpiouart
+     'empty',         # reserved for the above ftdi_gpiouart
      {'name': 'ec3po_uart', 'raw_pty': 'raw_ec_uart_pty', 'source': 'EC'},
     ]
 
@@ -237,9 +237,9 @@ SERVO_ID_DEFAULTS.extend(TOAD_ID_DEFAULTS)
 RESTON_ID_DEFAULTS = [(0x18d1, 0x5007)]
 for vid, pid in RESTON_ID_DEFAULTS:
   INTERFACE_DEFAULTS[vid][pid] = \
-    ['dummy',
+    ['empty',
      'ftdi_gpiouart', # occupies 2 slots
-     'dummy',         # reserved for the above ftdi_gpiouart
+     'empty',         # reserved for the above ftdi_gpiouart
      {'name': 'ec3po_uart', 'raw_pty': 'raw_ec_uart_pty', 'source': 'EC'},
     ]
 
@@ -249,9 +249,9 @@ SERVO_ID_DEFAULTS.extend(RESTON_ID_DEFAULTS)
 FRUITPIE_ID_DEFAULTS = [(0x18d1, 0x5009)]
 for vid, pid in FRUITPIE_ID_DEFAULTS:
   INTERFACE_DEFAULTS[vid][pid] = \
-    ['dummy',
+    ['empty',
      'ftdi_gpiouart', # occupies 2 slots
-     'dummy',         # reserved for the above ftdi_gpiouart
+     'empty',         # reserved for the above ftdi_gpiouart
      {'name': 'ec3po_uart', 'raw_pty': 'raw_ec_uart_pty', 'source': 'EC'},
     ]
 
@@ -261,9 +261,9 @@ SERVO_ID_DEFAULTS.extend(FRUITPIE_ID_DEFAULTS)
 PLANKTON_ID_DEFAULTS = [(0x18d1, 0x500c)]
 for vid, pid in PLANKTON_ID_DEFAULTS:
   INTERFACE_DEFAULTS[vid][pid] = \
-    ['dummy',
+    ['empty',
      'ftdi_gpiouart', # occupies 2 slots
-     'dummy',         # reserved for the above ftdi_gpiouart
+     'empty',         # reserved for the above ftdi_gpiouart
      {'name': 'ec3po_uart', 'raw_pty': 'raw_ec_uart_pty', 'source': 'EC'},
     ]
 
@@ -273,11 +273,11 @@ SERVO_ID_DEFAULTS.extend(PLANKTON_ID_DEFAULTS)
 FLUFFY_ID_DEFAULTS = [(0x18d1, 0x503b)]
 for vid, pid in FLUFFY_ID_DEFAULTS:
   # Interface #0 is reserved for no use.
-  INTERFACE_DEFAULTS[vid][pid] = ['dummy']
+  INTERFACE_DEFAULTS[vid][pid] = ['empty']
 
-  # Dummy slots for servo micro/CCD, servo v4, and servo micro relocation use
+  # Empty slots for servo micro/CCD, servo v4, and servo micro relocation use
   # (interface #1-60).
-  INTERFACE_DEFAULTS[vid][pid] += ['dummy'] * SERVO_V4_SLOT_SIZE * 3
+  INTERFACE_DEFAULTS[vid][pid] += ['empty'] * SERVO_V4_SLOT_SIZE * 3
 
   INTERFACE_DEFAULTS[vid][pid] += \
     [
