@@ -4,7 +4,7 @@
     <name>common.xml</name>
   </include>
   <include>
-    <name>servo_v4_inas.xml</name>
+    <name>servo_v4p1_inas.xml</name>
   </include>
   <include>
     <name>usb_image_management.xml</name>
