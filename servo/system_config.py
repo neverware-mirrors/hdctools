@@ -230,6 +230,8 @@ class SystemConfig(object):
 
         if remap:
           try:
+            if name_prefix:
+              remap = name_prefix + remap
             self.syscfg_dict[tag][remap] = self.syscfg_dict[tag][name]
           except KeyError:
             # Sometimes the remap control doesn't exist (e.g. fw_up in servo
