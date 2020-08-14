@@ -98,7 +98,7 @@ class ec(pty_driver.ptyDriver):
         The string of the active EC copy, e.g. "RO", "RW", "RW_B".
     """
     self._limit_channel()
-    result = self._issue_cmd_get_results('sysinfo', ['Copy:\s+(\S+)'])[0]
+    result = self._issue_cmd_get_results('sysinfo', ['Copy:\s+(\S+)\s'])[0]
     self._restore_channel()
     if result is None:
       raise ecError('Cannot retrieve the active copy result on EC console.')
