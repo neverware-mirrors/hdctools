@@ -6,6 +6,7 @@
 from __future__ import print_function
 
 # pylint: disable=cros-logging-import
+import collections
 import ctypes
 import errno
 import functools
@@ -24,6 +25,8 @@ from ec3po import console
 from ec3po import interpreter
 from ec3po import threadproc_shim
 import uart
+
+DeviceInfo = collections.namedtuple('DeviceInfo', ('vid', 'pid', 'serialname'))
 
 
 def _RunCallbacks(*callbacks):
@@ -96,20 +99,21 @@ class EC3PO(uart.Uart):
   This includes both the interpreter and the console objects for one UART.
   """
 
-  def __init__(self, raw_ec_uart, source_name, device):
+  def __init__(self, raw_ec_uart, source_name, device_info):
     """Provides the interface to the EC-3PO console interpreter.
 
     Args:
       raw_ec_uart: A string representing the actual PTY of the EC UART.
       source_name: A user friendly name documenting the source of this PTY.
-      device: A tuple of the USB device info (vid, pid, serialname)
+      device_info: A DeviceInfo tuple of the USB device info
+          (vid, pid, serialname)
     """
     # Run Fuart init.
     uart.Uart.__init__(self, logger_name='%s - EC3PO Interface' % source_name)
     # Create the console and interpreter passing in the raw EC UART PTY.
     self._raw_ec_uart = raw_ec_uart
     self._source = source_name
-    self._device = device
+    self._device_info = device_info
 
     # Create some pipes to communicate between the interpreter and the console.
     # The command pipe is bidirectional.
@@ -236,12 +240,12 @@ class EC3PO(uart.Uart):
   @staticmethod
   def Build(index, vid, pid, sid, interface_data, servod):
     """Factory method to implement the interface."""
-    device = (vid, pid, sid)
+    device_info = DeviceInfo(vid, pid, sid)
     raw_uart_name = interface_data['raw_pty']
     raw_uart_source = interface_data['source']
     if servod._syscfg.is_control(raw_uart_name):
       raw_ec_uart = servod.get(raw_uart_name)
-      return EC3PO(raw_ec_uart, raw_uart_source, device)
+      return EC3PO(raw_ec_uart, raw_uart_source, device_info)
     else:
       # The overlay doesn't have the raw PTY defined, therefore we can skip
       # initializing this interface since no control relies on it.
@@ -256,7 +260,7 @@ class EC3PO(uart.Uart):
 
   def get_device_info(self):
     """Get the usb device information."""
-    return self._device
+    return self._device_info
 
   def get_pty(self):
     """Gets the path of the served PTY."""

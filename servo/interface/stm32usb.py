@@ -2,11 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Allows creation of an interface via stm32 usb."""
+import collections
 import threading
 import time
 
 import common as c
 import usb
+
+DeviceInfo = collections.namedtuple('DeviceInfo', ('vid', 'pid', 'serialname'))
 
 
 class SusbError(c.InterfaceError):
@@ -107,7 +110,7 @@ class Susb():
 
   def get_device_info(self):
     """Returns a tuple (vid, pid, serialname)."""
-    return (self._vendor, self._product, self._serialname)
+    return DeviceInfo(self._vendor, self._product, self._serialname)
 
   def _find_device(self):
     """Set up the usb endpoint"""
