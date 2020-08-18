@@ -49,6 +49,11 @@
      usbchg="5"></params>
   </map>
   <map>
+    <name>reinit_dut_usb3_en</name>
+    <doc>USB3 to DUT: Enable, disable, or use automatic selection logic due to http://b/160426972</doc>
+    <params off="0" on="1" automatic="2"></params>
+  </map>
+  <map>
     <name>servo_v4_type_map</name>
     <doc>Identify type-A and type-C servos</doc>
     <params type-a="0" type-c="1"></params>
@@ -207,6 +212,21 @@
     <doc>Enable Parade USB3 mux on DUT type-c</doc>
     <params interface="23" drv="ps8742" slv="0x10" port="1"
     subtype="usb3" map="onoff" init="off"></params>
+  </control>
+
+  <control>
+    <name>reinit_dut_usb3_en</name>
+    <doc>Reinitialize DUT-facing USB3 mux. This is a wrapper around dut_usb3_en.
+    When this results in a change in dut_usb3_en value, and dut_hub_usb_reset is
+    off, this will toggle on dut_hub_usb_reset briefly to force DUT USB
+    reinitialization.  When this is set to special value automatic, then
+    dut_usb3_en:on or dut_usb3_en:off is selected based on
+    Servo v4 serial number.  See:
+    https://issuetracker.google.com/160426972
+    https://issuetracker.google.com/163418494</doc>
+    <params interface="servo" drv="servo_v4" subtype="reinit_dut_usb3_en"
+    map="reinit_dut_usb3_en" automatic_default="off" usb_reset_ms="500">
+    </params>
   </control>
 
   <control>

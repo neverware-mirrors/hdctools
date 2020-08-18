@@ -67,6 +67,7 @@ import ps8742
 import pty_driver
 import sarien_power
 import servo_metadata
+import servo_v4
 import servo_watchdog
 import sleep
 import storm_power
