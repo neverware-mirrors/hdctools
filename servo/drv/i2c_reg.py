@@ -33,7 +33,7 @@ class I2cReg(object):
       reg_len: length of register in bytes
       msb_first: if True, most significant byte is first
       no_read: if True, do NOT read value after a write is performed
-      use_reg_cache: i2c device remembers last register index internally 
+      use_reg_cache: i2c device remembers last register index internally
           don't re-write if it matches
 
     Raises:
@@ -71,7 +71,7 @@ class I2cReg(object):
 
     Args:
       See constructor
-    
+
     Returns:
       instance of I2cReg object
     """
@@ -86,7 +86,7 @@ class I2cReg(object):
 
   def _read_reg(self, reg):
     """Read the register.
-    
+
     Args:
       reg: i2c register to read
 
@@ -159,7 +159,7 @@ class I2cReg(object):
       reg: register index to access on i2c device
       wlist: list of bytes to write
       rcnt: number of bytes to read
-    
+
     Returns:
       list of c_ubyte's read from i2c device.
     """

@@ -48,9 +48,9 @@ class HwDriver(object):
 
           params dictionary can have k=v pairs necessary to communicate with the
           underlying hardware.  Notables are:
-            width: integer of width of the control in bits.  
+            width: integer of width of the control in bits.
                 Default: 1
-            offset: integer of position of bit(s) with respect to lsb. 
+            offset: integer of position of bit(s) with respect to lsb.
                 Default: 0
             map: name string of map dictionary to use for unmapping / remapping
             fmt: function name string to call to format the result.
@@ -150,7 +150,7 @@ class HwDriver(object):
   def _create_hw_value(self, logical_value):
     """Create hardware value using mask & offset.
 
-    hw_value = (logical_value << offset) & mask 
+    hw_value = (logical_value << offset) & mask
 
     In MOST cases, subclass drivers should use this for data going to value
     argument in set method.

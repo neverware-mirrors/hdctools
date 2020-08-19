@@ -31,7 +31,7 @@ class gpio(hw_driver.HwDriver):
 
   def get(self):
     """Get value for gpio driver
-    
+
     Returns:
       integer value from gpio
 
