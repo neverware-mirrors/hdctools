@@ -1,33 +1,35 @@
-#!/usr/bin/env python2
 # Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
 """Convenience module to import all available drivers.
 
 Details of the drivers can be found in hw_driver.py
 """
+
 import active_v4_device
 import ad5248
 import alex_power
+import ap
 import beltino_power
 import cr50
 import cr50_i2c
 import cros_chip
+import cros_ec_hardrec_pbinitidle_power
 import cros_ec_hardrec_power
 import cros_ec_pd_softrec_power
 import cros_ec_power
 import cros_ec_softrec_power
-import cros_ec_hardrec_pbinitidle_power
 import daisy_ec
 import daisy_power
 import ec
-import ec_lm4
 import ec3po_c2d2
-import ec3po_gpio
 import ec3po_driver
+import ec3po_gpio
 import ec3po_servo
 import ec3po_servo_micro
 import ec3po_servo_v4
+import ec_lm4
 import fluffy
 import ftdii2c_cmd
 import fw_wp_ccd
@@ -47,12 +49,11 @@ import kitty_power
 import larvae_adc
 import lcm2004
 import link_power
-import ap
 import loglevel
 import ltc1663
 import lumpy_power
-import macro
 import m24c02
+import macro
 import na
 import parrot_ec
 import parrot_power
