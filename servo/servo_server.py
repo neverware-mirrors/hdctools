@@ -13,6 +13,7 @@ except ImportError:
   # Remove once fully moved to python3.
 import time
 import usb
+import weakref
 
 import drv as servo_drv
 import interface as _interface
@@ -315,7 +316,7 @@ class Servod(object):
       raise ServodError('No drv/interface for control %r found' % control_name)
 
     if interface_id == 'servo':
-      interface = self
+      interface = weakref.proxy(self)
     else:
       index = int(interface_id)
       interface = self._interface_list[index]
