@@ -62,7 +62,6 @@ import pca9546
 import pca95xx
 import plankton
 import power_kb
-import power_tools
 import ps8742
 import pty_driver
 import sarien_power
