@@ -5,10 +5,10 @@ include $(HDCTOOLS_DIR)/defs/definitions.mk
 
 SUBDIRS		=
 SUBDIRS_INSTALL	=
-XML_SRC		= $(notdir $(wildcard $(HDCTOOLS_SOURCE_DIR)/*.xml))
-XML_DST		= $(addprefix $(THIS_BUILD_DIR)/,$(XML_SRC))
 PYTHON_SRC	= $(notdir $(wildcard $(HDCTOOLS_SOURCE_DIR)/*.py))
 PYTHON_DST	= $(addprefix $(THIS_BUILD_DIR)/, $(PYTHON_SRC))
+XML_SRC		= $(notdir $(wildcard $(HDCTOOLS_SOURCE_DIR)/*.xml))
+XML_DST		= $(addprefix $(THIS_BUILD_DIR)/,$(XML_SRC))
 
 all: $(PYTHON_DST) $(XML_DST)
 
