@@ -57,6 +57,22 @@ device on and off.
 
 Follow the general [using Servo] instructions.
 
+## Yoshi Flex Cable
+
+The Yoshi Flex cable is used to connect Servo v2 to a servo header. The
+standard cable does not work with Serial Wire Debug ([SWD]), but a simple rework
+can be performed to support [SWD].
+
+Standard Yoshi Flex    | Yoshi Flex Reworked to Support [SWD]
+---------------------- | -------------------------------------
+![Standard Yoshi Flex] | ![Yoshi Flex Reworked to Support SWD]
+
+Rework steps:
+
+*   Remove R18 and R19
+*   Wire from Pin 6 of U21 to right side of R18
+*   Wire from Pin 6 of U21 to right side of R19
+
 ## Images
 
 ![servo v2 top](https://www.chromium.org/_/rsrc/1410554530438/chromium-os/servo/servo_v2_top.jpg)
@@ -83,3 +99,6 @@ the one relevant to your board.
 [servo_v2_schematic]: https://www.chromium.org/chromium-os/servo/810-10010-03_20120227_servo_SCH_0.pdf
 [servo_v2_diagram_layout]: https://commondatastorage.googleapis.com/chromeos-localmirror/distfiles/chromium_os_servo_v2.tar.gz
 [using Servo]: ./servo.md#using-servo
+[Standard Yoshi Flex]: ./images/yoshi_flex.jpg
+[Yoshi Flex Reworked to Support SWD]: ./images/yoshi_flex_swd_rework.jpg
+[SWD]: https://developer.arm.com/architectures/cpu-architecture/debug-visibility-and-trace/coresight-architecture/serial-wire-debug
