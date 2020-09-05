@@ -114,6 +114,16 @@ class ptyDriver(hw_driver.HwDriver):
         self._logger.debug('pty read returned EAGAIN')
         break
 
+  # Remove non-ASCII characters from the results.
+  def _delete_ugly_chars(self, result):
+    if result is None:
+      return None
+
+    if isinstance(result, str):
+      return result.encode('ascii', errors='ignore')
+
+    return tuple(map(self._delete_ugly_chars, result))
+
   def _send(self, cmds, rate=0.01, flush=True):
     """Send command to EC or AP.
 
@@ -199,6 +209,7 @@ class ptyDriver(hw_driver.HwDriver):
             # Create a tuple which contains the entire matched string and all
             # the subgroups of the match.
             result = match.group(*range(lastindex + 1)) if match else None
+            result = self._delete_ugly_chars(result)
             result_list.append(result)
             self._logger.debug('Result: %s' % str(result))
       except pexpect.TIMEOUT:
@@ -211,9 +222,9 @@ class ptyDriver(hw_driver.HwDriver):
           output = self._child.before
           # Reformat output a bit so that the logs don't get messed up.
           output = output.replace('\n', ', ').replace('\r', '')
-          # Escape the characters in the string so that the server does not
+          # ASCIIfy the characters in the string so that the server does not
           # struggle marshaling the data across.
-          output = output.encode('unicode_escape', errors='replace')
+          output = self._delete_ugly_chars(output)
           msg = 'Timeout waiting for response. There was output: %s' % output
         else:
           msg = 'No data was sent from the pty.'
@@ -252,6 +263,7 @@ class ptyDriver(hw_driver.HwDriver):
             # Create a tuple which contains the entire matched string and all
             # the subgroups of the match.
             result = match.group(*range(lastindex + 1)) if match else None
+            result = self._delete_ugly_chars(result)
             result_list.append(result)
             self._logger.debug('Got result: %s' % str(result))
           except pexpect.TIMEOUT:
