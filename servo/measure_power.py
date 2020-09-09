@@ -210,7 +210,7 @@ class OnboardINAPowerTracker(HighResServodPowerTracker):
       raise PowerTrackerError('No onboard INAs found.')
     self._logger.debug('Following power rail commands found: %s',
                        ', '.join(self._ctrls))
-    self._pwr_cfg_ctrls = [ina.replace('_mw', '_cfg_rails') for ina in
+    self._pwr_cfg_ctrls = [ina.replace('_mw', '_cfg_reg') for ina in
                            self._ctrls]
 
   def prepare(self, fast=False, powerstate=UNKNOWN_POWERSTATE):
