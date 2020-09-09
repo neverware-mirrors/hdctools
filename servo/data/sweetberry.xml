@@ -9,4 +9,20 @@
     <params cmd="get" subtype="pty" interface="3" drv="uart">
     </params>
   </control>
+  <!-- These controls are overwrites to avoid errors in dut-power.
+    It's a short-term fix to avoid harmless error messages that might
+    confuse the user.
+    TODO(coconutruben): remove these once dut-power is designed to
+    handle sweetberry differently i.e. not query it for dut info.
+    -->
+  <control>
+    <name>ec_system_powerstate</name>
+    <doc>N/A on sweetberry boards.</doc>
+    <params clobber_ok="" drv="na"></params>
+  </control>
+  <control>
+    <name>ec_board</name>
+    <doc>N/A on sweetberry boards.</doc>
+    <params clobber_ok="" drv="na"></params>
+  </control>
 </root>

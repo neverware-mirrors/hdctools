@@ -342,7 +342,9 @@ class PowerMeasurement(object):
     self._board = 'unknown'
     if not fast:
       try:
-        self._board = self._sclient.get('ec_board')
+        board = self._sclient.get('ec_board')
+        if board != 'not_applicable':
+          self._board = board
       except client.ServoClientError:
         self._logger.warn('Failed to get ec_board, setting to unknown.')
     self._processing_done = False
