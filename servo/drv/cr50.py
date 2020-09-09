@@ -499,7 +499,7 @@ class cr50(pty_driver.ptyDriver):
   def _Get_ccd_state_flags(self):
     """Getter of the cr50 ccd state flags."""
     result = self._issue_cmd_get_results(
-        'ccdstate', ['State flags:([\S ]+)[\n\r]'])[0][1]
+        'ccdstate', ['State flags:([\S ]*)[\n\r]'])[0][1]
     if result is None:
       raise cr50Error('Cannot retrieve the ccd state flags on cr50 console.')
     return result
