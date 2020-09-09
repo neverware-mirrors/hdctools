@@ -38,4 +38,9 @@
     <doc>short hand configs for keypress durations</doc>
     <params tab="0.1" short_press="1.2" press="1.2" long_press="6"></params>
   </map>
+  <control>
+    <name>ec_system_powerstate</name>
+    <doc>N/A on sarien boards.</doc>
+    <params clobber_ok="" drv="na"></params>
+  </control>
 </root>

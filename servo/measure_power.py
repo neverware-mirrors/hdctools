@@ -446,7 +446,10 @@ class PowerMeasurement(object):
     if not self._fast and powerstate == UNKNOWN_POWERSTATE:
       try:
         ecpowerstate = self._sclient.get('ec_system_powerstate')
-        powerstate = ecpowerstate
+        if ecpowerstate != 'not_applicable':
+          # Skip setting the power_state if the ec control does not
+          # provide real information.
+          powerstate = ecpowerstate
       except client.ServoClientError:
         self._logger.warn('Failed to get powerstate from EC.')
     for power_tracker in self._power_trackers:
