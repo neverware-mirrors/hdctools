@@ -139,4 +139,10 @@
     <params drv="servo_metadata" interface="servo" tag="servo_cmd_ctrl"
     subtype="tagged_controls"></params>
   </control>
+  <control>
+    <name>servo_mcu_panicinfo</name>
+    <doc>List of available rail controls to measure power.</doc>
+    <params drv="servo_metadata" subtype="tagged_controls" interface="servo"
+    tag="servo_mcu_panicinfo"/>
+  </control>
 </root>

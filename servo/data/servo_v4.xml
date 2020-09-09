@@ -441,6 +441,14 @@
     <doc>Used to turn fw wp off and on</doc>
     <params clobber_ok="" init="force_off"></params>
   </control>
+  <!-- Debug helper controls -->
+  <control>
+    <name>servo_v4_panicinfo</name>
+    <doc>Get panicinfo output for servo micro.</doc>
+    <params interface="6" drv="ec" subtype="output" cmd="panicinfo"
+    regex="panicinfo(.*)>" group="1" tags="servo_mcu_panicinfo"
+    formatting="strip"/>
+  </control>
   <!-- Controls used by PD FAFT -->
   <control>
     <name>ppdut5_mv</name>

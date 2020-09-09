@@ -78,6 +78,74 @@ class ec(pty_driver.ptyDriver):
 
     self._issue_cmd('chan restore')
 
+  def _process_output(self, pre_result):
+    """Helper to perform extra formatting out the output of |_Get_output|.
+
+    Formatting is defined in the param 'formatting' and comma separated. It
+    is performed in sequence. Supported formatting operations are.
+    - strip: strips white-space and new-lines as the end
+    - splitlines: split the output by lines and leave as list
+    - splitlines_str: split the output by lines and concat as str with
+      whitespace
+
+    Args:
+      pre_result: str, the output to format
+
+    Returns:
+      result, str, after processing from |pre_result|
+
+    """
+    if 'formatting' in self._params:
+      requests = self._params['formatting'].split(',')
+      for request in requests:
+        if request == 'strip':
+          pre_result = pre_result.strip()
+        elif request == 'splitlines':
+          pre_result = pre_result.splitlines()
+        elif request == 'splitlines_str':
+          pre_result = ' '.join(pre_result.splitlines())
+        else:
+          self._logger.debug('ec output formatting %r unknown. Ignoring.',
+                             request)
+    return pre_result
+
+  def _Get_output(self):
+    """Generic get from EC console, using |self._params| for cmd and regex.
+
+    The required parts to use this abstraction is to provide
+    - the console command
+    - the regex
+    - the group (or 0 if no group) in the regex to report
+
+    The following are _optional_ formatting rules to provide in the formatting
+    component, separated by a comma. Unknown requests are logged and ignored.
+
+    Returns:
+      result of requested cmd after matching with regex and processing
+
+    Raises:
+      ecError: if a required attribute is missing: 'cmd', 'regex', 'group'
+      ecError: if the output from the cmd matched with the regex is None
+    """
+    for req in ['cmd', 'regex', 'group']:
+      if req not in self._params:
+        raise ecError('%r required for |output|' % req)
+    cmd = self._params['cmd']
+    regex = self._params['regex']
+    group = int(self._params['group'])
+    self._limit_channel()
+    result = self._issue_cmd_get_results(cmd, [regex])
+    self._restore_channel()
+    if result is None:
+      raise ecError('Failed to retrieve output for %r matching regex %r' %
+                    (cmd, regex))
+    # Extract the requested group. This control does not support a list of regex
+    # but rather just expects one regex. Therefore we access the 1st element of
+    # the result (result[0]) always.
+    pre_result = result[0][group]
+    result = self._process_output(pre_result)
+    return result
+
   def _Get_board(self):
     """Getter of board.
 

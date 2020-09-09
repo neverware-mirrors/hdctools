@@ -469,6 +469,14 @@
     <doc>Fake control. No way to change it.</doc>
     <params interface="9" drv="na" input_type="str" clobber_ok="" />
   </control>
+  <!-- Debug helper controls -->
+  <control>
+    <name>servo_micro_panicinfo</name>
+    <doc>Get panicinfo output for servo micro.</doc>
+    <params interface="6" drv="ec" subtype="output" cmd="panicinfo"
+    regex="panicinfo(.*)>" group="1" tags="servo_mcu_panicinfo"
+    formatting="strip"/>
+  </control>
   <!-- ITE EC firmware flashing support -->
   <control>
     <name>enable_ite_dfu</name>
