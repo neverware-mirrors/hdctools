@@ -225,7 +225,7 @@
     https://issuetracker.google.com/160426972
     https://issuetracker.google.com/163418494</doc>
     <params interface="servo" drv="servo_v4" subtype="reinit_dut_usb3_en"
-    map="reinit_dut_usb3_en" automatic_default="off" init="automatic"
+    map="reinit_dut_usb3_en" automatic_default="on" init="automatic"
     usb_reset_ms="500"></params>
   </control>
 
