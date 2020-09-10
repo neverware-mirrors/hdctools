@@ -211,7 +211,7 @@
     <name>dut_usb3_en</name>
     <doc>Enable Parade USB3 mux on DUT type-c</doc>
     <params interface="23" drv="ps8742" slv="0x10" port="1"
-    subtype="usb3" map="onoff" init="off"></params>
+    subtype="usb3" map="onoff"></params>
   </control>
 
   <control>
@@ -225,8 +225,8 @@
     https://issuetracker.google.com/160426972
     https://issuetracker.google.com/163418494</doc>
     <params interface="servo" drv="servo_v4" subtype="reinit_dut_usb3_en"
-    map="reinit_dut_usb3_en" automatic_default="off" usb_reset_ms="500">
-    </params>
+    map="reinit_dut_usb3_en" automatic_default="off" init="automatic"
+    usb_reset_ms="500"></params>
   </control>
 
   <control>
