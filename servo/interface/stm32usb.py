@@ -247,4 +247,6 @@ class Susb():
 
   def __del__(self):
     """Sgpio destructor."""
+    if self._dev:
+      usb.util.dispose_resources(self._dev)
     self._logger.debug('Close')
