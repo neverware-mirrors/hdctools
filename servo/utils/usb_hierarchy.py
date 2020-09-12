@@ -6,6 +6,7 @@
 """USB hierarchy class and helpers."""
 
 import collections
+import fcntl
 import os
 import re
 
@@ -37,6 +38,12 @@ class Hierarchy(object):
   PID_FILE = 'idProduct'
   # Name of sysfs file containing the serial number.
   SERIAL_FILE = 'serial'
+  # Value to write into the dev-file to trigger a reset.
+  # Source of the macro vales:
+  # elixir.bootlin.com/linux/v5.8-rc4/source/include/uapi/linux/usbdevice_fs.h
+  # Source of the macro calculation:
+  # elixir.bootlin.com/linux/v5.8-rc4/source/include/uapi/asm-generic/ioctl.h
+  USBDEVFS_RESET = ord('U') << 8 | 20
 
   @classmethod
   def MockUsbSysfsPathForTest(cls, mock_dir):
@@ -55,6 +62,35 @@ class Hierarchy(object):
   def __init__(self):
     # Get the current USB sysfs hierarchy.
     self.RefreshHierarchy()
+
+  @staticmethod
+  def ResetDeviceSysfs(sysfs_path):
+    """Perform ioctl reset on the usb device.
+
+    Args:
+      path: /sys/bus/usb/devices path of the device
+
+    Raises:
+      HierarchyError: if |sysfs_path| does not exist
+      HierarchyError: any issue writing to the device file
+    """
+    if not os.path.exists(sysfs_path):
+      raise HierarchyError('No device at %r' % sysfs_path)
+    busnum = Hierarchy.BusNumFromSysfs(sysfs_path)
+    devnum = Hierarchy.DevNumFromSysfs(sysfs_path)
+    dev_path = '/dev/bus/usb/%03d/%03d' % (busnum, devnum)
+    if not os.path.exists(dev_path):
+      raise HierarchyError('No device at %r but expected.' % dev_path)
+    try:
+      with open(dev_path, 'w') as f:
+        fcntl.ioctl(f, Hierarchy.USBDEVFS_RESET, 0)
+    except Exception as e:
+      # We want to repackage any issue here as HierarchyError to allow for
+      # more robust code.
+      raise HierarchyError('Unhandled issue resetting device at busnum: %d '
+                           'devnum: %d sysfs_path: %r. %s' % (busnum, devnum,
+                                                              sysfs_path,
+                                                              str(e)))
 
   @staticmethod
   def GetAllUsbDevices(vid_pid_list=None):
