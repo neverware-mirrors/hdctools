@@ -31,7 +31,7 @@
     <name>ec_chip</name>
     <doc>EC chip name (read-only)</doc>
     <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
-    drv="cros_chip" chip="ite_spi"/>
+    drv="cros_chip" chip="ite_spi_ccd_i2c"/>
   </control>
   <control>
     <name>cpu_fw_spi</name>
