@@ -80,7 +80,11 @@ Start a servod instance in chroot to talk to the Servo or Sweetberry that is
 attached to the DUT:
 
 ```bash
+# For setup with on-board INA chip
 (chroot) $ sudo servod --board $BOARD --config $CONFIG_FILE.xml
+
+# For setup with sweetberry only
+(chroot) $ sudo servod --config $CONFIG_FILE.xml
 ```
 
 Note that `$CONFIG_FILE.xml` is generated in the previous step. Both `dut-power`
@@ -93,6 +97,9 @@ Recommended, for users who only want measurements in power.
 
 ```bash
 (chroot) $ dut-power [arguments]
+
+# Example arguments for setup with sweetberry only
+(chroot) $ dut-power --vbat-rate 0 -t 5
 ```
 
 `dut-power` queries the selected servod to read power measurements from the
