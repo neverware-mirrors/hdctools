@@ -336,7 +336,8 @@ class I2cPseudoAdapter(object):
       data = None
     else:
       parts = line.split(_HEADER_SEP_CHAR, 6)
-      if len(parts) < 5:
+      if len(parts) < 7:
+        # The data field is absent, handle it the same as an empty data field.
         data = b''
       else:
         data = b''.join(
