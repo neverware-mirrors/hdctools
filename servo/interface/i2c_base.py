@@ -46,14 +46,15 @@ class BaseI2CBus(interface.Interface):
     self.__logger = logging.getLogger('i2c_base')
     self.__lock = threading.Lock()
     self.__pseudo_adap = None
-    self.reinit()
+    self.__reinit()
 
   # This exists to reinitialize the I2C pseudo controller after FTDI I2C
   # reinitialization, which is a hack supported for iteflash using Servo v2.
+  # Otherwise, __reinit() would just be part of __init__().
   def init(self):
-    self.reinit()
+    self.__reinit()
 
-  def reinit(self):
+  def __reinit(self):
     with self.__lock:
       if self.__pseudo_adap is not None:
         self.__do_close()
