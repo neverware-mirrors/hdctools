@@ -133,4 +133,30 @@
     <doc>Cr50 testlab state</doc>
     <params clobber_ok="" init="open"></params>
   </control>
+  <!-- I2C pseudo adapter controller -->
+  <control>
+    <name>ccd_cr50_i2c_pseudo_is_started</name>
+    <doc>Check if the CR50 CCD I2C pseudo adapter has been started.</doc>
+    <params cmd="get" drv="i2c_pseudo" subtype="is_started" interface="2">
+    </params>
+  </control>
+  <control>
+    <name>ccd_cr50_i2c_pseudo_is_running</name>
+    <doc>Check if the CR50 CCD I2C pseudo adapter I/O thread is running.
+    </doc>
+    <params cmd="get" drv="i2c_pseudo" subtype="is_running" interface="2">
+    </params>
+  </control>
+  <control>
+    <name>ccd_cr50_i2c_pseudo_adapter_num</name>
+    <doc>Get the I2C adapter number of the CR50 CCD I2C pseudo adapter.</doc>
+    <params cmd="get" drv="i2c_pseudo" subtype="i2c_adapter_num" interface="2">
+    </params>
+  </control>
+  <control>
+    <name>ccd_cr50_i2c_pseudo_id</name>
+    <doc>Get the I2C pseudo ID of the CR50 CCD I2C pseudo adapter.</doc>
+    <params cmd="get" drv="i2c_pseudo" subtype="i2c_pseudo_id" interface="2">
+    </params>
+  </control>
 </root>

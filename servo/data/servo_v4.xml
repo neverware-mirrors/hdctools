@@ -482,4 +482,30 @@
     <name>ppdut5_mw</name>
     <remap>vbus_power</remap>
   </control>
+  <!-- I2C pseudo adapter controller -->
+  <control>
+    <name>servo_v4_i2c_pseudo_is_started</name>
+    <doc>Check if the Servo v4 I2C pseudo adapter has been started.</doc>
+    <params cmd="get" drv="i2c_pseudo" subtype="is_started" interface="23">
+    </params>
+  </control>
+  <control>
+    <name>servo_v4_i2c_pseudo_is_running</name>
+    <doc>Check if the Servo v4 I2C pseudo adapter I/O thread is running.
+    </doc>
+    <params cmd="get" drv="i2c_pseudo" subtype="is_running" interface="23">
+    </params>
+  </control>
+  <control>
+    <name>servo_v4_i2c_pseudo_adapter_num</name>
+    <doc>Get the I2C adapter number of the Servo v4 I2C pseudo adapter.</doc>
+    <params cmd="get" drv="i2c_pseudo" subtype="i2c_adapter_num" interface="23">
+    </params>
+  </control>
+  <control>
+    <name>servo_v4_i2c_pseudo_id</name>
+    <doc>Get the I2C pseudo ID of the Servo v4 I2C pseudo adapter.</doc>
+    <params cmd="get" drv="i2c_pseudo" subtype="i2c_pseudo_id" interface="23">
+    </params>
+  </control>
 </root>

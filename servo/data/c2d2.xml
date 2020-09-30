@@ -181,4 +181,30 @@
     <params subtype="i2c_speed" interface="6" bus="ec" drv="ec3po_c2d2"
     input_type="int" clobber_ok=""></params>
   </control>
+  <!-- I2C pseudo adapter controller -->
+  <control>
+    <name>c2d2_i2c_pseudo_is_started</name>
+    <doc>Check if the C2D2 I2C pseudo adapter has been started.</doc>
+    <params cmd="get" drv="i2c_pseudo" subtype="is_started" interface="2">
+    </params>
+  </control>
+  <control>
+    <name>c2d2_i2c_pseudo_is_running</name>
+    <doc>Check if the C2D2 I2C pseudo adapter I/O thread is running.
+    </doc>
+    <params cmd="get" drv="i2c_pseudo" subtype="is_running" interface="2">
+    </params>
+  </control>
+  <control>
+    <name>c2d2_i2c_pseudo_adapter_num</name>
+    <doc>Get the I2C adapter number of the C2D2 I2C pseudo adapter.</doc>
+    <params cmd="get" drv="i2c_pseudo" subtype="i2c_adapter_num" interface="2">
+    </params>
+  </control>
+  <control>
+    <name>c2d2_i2c_pseudo_id</name>
+    <doc>Get the I2C pseudo ID of the C2D2 I2C pseudo adapter.</doc>
+    <params cmd="get" drv="i2c_pseudo" subtype="i2c_pseudo_id" interface="2">
+    </params>
+  </control>
 </root>

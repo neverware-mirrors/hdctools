@@ -37,6 +37,7 @@ import fw_wp_servoflex
 import fw_wp_state
 import gpio
 import hw_driver
+import i2c_pseudo
 import i2c_reg
 import ina219
 import ina231
