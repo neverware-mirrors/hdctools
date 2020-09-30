@@ -172,6 +172,7 @@ class I2cPseudoAdapter(object):
 
       self._logger.info('finished starting I2C pseudo adapter')
 
+  @property
   def i2c_bus(self):
     """Get the i2c_base.BaseI2CBus implementation this object is using.
 
@@ -180,6 +181,7 @@ class I2cPseudoAdapter(object):
     """
     return self._i2c_bus
 
+  @property
   def controller_device_path(self):
     """Get the i2c-pseudo controller device file this object is using.
 
@@ -188,6 +190,7 @@ class I2cPseudoAdapter(object):
     """
     return self._controller_device_path
 
+  @property
   def i2c_pseudo_id(self):
     """Get the i2c-pseudo controller ID.
 
@@ -197,6 +200,7 @@ class I2cPseudoAdapter(object):
     """
     return self._i2c_pseudo_id
 
+  @property
   def i2c_adapter_num(self):
     """Get the Linux I2C adapter number.
 
@@ -206,6 +210,7 @@ class I2cPseudoAdapter(object):
     """
     return self._i2c_adapter_num
 
+  @property
   def is_running(self):
     """Check whether the pseudo controller is running.
 
