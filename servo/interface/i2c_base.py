@@ -68,7 +68,7 @@ class BaseI2CBus(interface.Interface):
 
       pseudo_ctrlr_path = i2c_pseudo.default_controller_path()
       if not os.path.exists(pseudo_ctrlr_path):
-        self.__logger.info('path %r not found, not starting I2C pseudo adapter'
+        self.__logger.info('path %r not found, cannot start I2C pseudo adapter'
                            % (pseudo_ctrlr_path,))
         return
       # TODO(b/79684405): This circular reference is less than ideal.  Find a
@@ -79,6 +79,15 @@ class BaseI2CBus(interface.Interface):
       self.__pseudo_adap = i2c_pseudo.I2cPseudoAdapter(
           pseudo_ctrlr_path, weakref.proxy(self))
       self.__pseudo_adap.start()
+
+  @property
+  def pseudo_adap(self):
+    """Get the I2C pseudo adapter object for this I2C bus.
+
+    Returns:
+      None or i2c_pseudo.I2cPseudoAdapter
+    """
+    return self.__pseudo_adap
 
   def multi_wr_rd(self, transactions):
     """Allows for multiple write/read/write+read I2C transactions.
