@@ -37,9 +37,9 @@ _EPOLL_EVENTMASK_NO_WRITES = select.EPOLLIN | select.EPOLLERR | select.EPOLLHUP
 _EPOLL_EVENTMASK_WITH_WRITES = _EPOLL_EVENTMASK_NO_WRITES | select.EPOLLOUT
 
 # This value is guaranteed per include/uapi/linux/i2c.h
-I2C_M_RD = 0x0001
+_I2C_M_RD = 0x0001
 # This value is implicitly subject to change.
-I2C_M_RECV_LEN = 0x0400
+_I2C_M_RECV_LEN = 0x0400
 
 
 def default_controller_path():
@@ -279,8 +279,8 @@ class I2cPseudoAdapter(object):
 
     for xfer_id, idx, addr, flags, length, data in self._xfer_reqs:
       # This option is not supported by the self._servo_i2c_bus interface.
-      assert not flags & I2C_M_RECV_LEN
-      if flags & I2C_M_RD:
+      assert not flags & _I2C_M_RECV_LEN
+      if flags & _I2C_M_RD:
         read_idx = idx
         read_count = length
         read_flags = flags
@@ -332,7 +332,7 @@ class I2cPseudoAdapter(object):
     flags = int(flags, base=0)
     length = int(length, base=0)
 
-    if flags & I2C_M_RD:
+    if flags & _I2C_M_RD:
       data = None
     else:
       parts = line.split(_HEADER_SEP_CHAR, 6)
