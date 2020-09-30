@@ -64,39 +64,39 @@ class I2cPseudoAdapter(object):
     It is safe to use the public interface from multiple threads concurrently.
 
   Usage:
-    adap = I2cPseudoAdapter.make_with_default_path(servo_i2c_bus)
+    adap = I2cPseudoAdapter.make_with_default_path(i2c_bus)
     i2c_id = adap.start()
     ...
     adap.shutdown()
   """
 
   @staticmethod
-  def make_with_default_path(servo_i2c_bus):
+  def make_with_default_path(i2c_bus):
     """Make an instance using the default i2c-pseudo controller device path.
 
     Args:
-      servo_i2c_bus: implementation of i2c_base.BaseI2CBus
+      i2c_bus: implementation of i2c_base.BaseI2CBus
 
     Returns:
       I2cPseudoAdapter
     """
-    return I2cPseudoAdapter(default_controller_path(), servo_i2c_bus)
+    return I2cPseudoAdapter(default_controller_path(), i2c_bus)
 
-  def __init__(self, controller_device_path, servo_i2c_bus):
+  def __init__(self, controller_device_path, i2c_bus):
     """Initializer.  Does NOT create the pseudo adapter.
 
     Args:
       controller_device_path: bytes or str - path to the i2c-pseudo controller
           device file
-      servo_i2c_bus: implementation of i2c_base.BaseI2CBus
+      i2c_bus: implementation of i2c_base.BaseI2CBus
     """
     self._logger = logging.getLogger('i2c_pseudo')
     self._logger.info(
         'attempting to initialize (not start yet!) I2C pseudo adapter '
-        'controller_device_path=%r servo_i2c_bus=%r' %
-        (controller_device_path, servo_i2c_bus))
+        'controller_device_path=%r i2c_bus=%r' %
+        (controller_device_path, i2c_bus))
 
-    self._servo_i2c_bus = servo_i2c_bus
+    self._i2c_bus = i2c_bus
     self._controller_device_path = controller_device_path
 
     self._device_fd = None
@@ -172,13 +172,13 @@ class I2cPseudoAdapter(object):
 
       self._logger.info('finished starting I2C pseudo adapter')
 
-  def servo_i2c_bus(self):
+  def i2c_bus(self):
     """Get the i2c_base.BaseI2CBus implementation this object is using.
 
     Returns:
       i2c_base.BaseI2CBus
     """
-    return self._servo_i2c_bus
+    return self._i2c_bus
 
   def controller_device_path(self):
     """Get the i2c-pseudo controller device file this object is using.
@@ -278,7 +278,7 @@ class I2cPseudoAdapter(object):
     errnum = 0
 
     for xfer_id, idx, addr, flags, length, data in self._xfer_reqs:
-      # This option is not supported by the self._servo_i2c_bus interface.
+      # This option is not supported by the self._i2c_bus interface.
       assert not flags & _I2C_M_RECV_LEN
       if flags & _I2C_M_RD:
         read_idx = idx
@@ -293,10 +293,9 @@ class I2cPseudoAdapter(object):
         write_flags = flags
 
     try:
-      retval = self._servo_i2c_bus.wr_rd(addr, write_list, read_count)
+      retval = self._i2c_bus.wr_rd(addr, write_list, read_count)
     except (OSError, IOError) as error:
-      self._logger.exception(
-          'self._servo_i2c_bus.wr_rd() raised %s' % (error,))
+      self._logger.exception('self._i2c_bus.wr_rd() raised %s' % (error,))
       errnum = error.errno or 1
 
     writes = []
