@@ -79,6 +79,23 @@ Rework steps:
 
 ![servo v2 bottom](https://www.chromium.org/_/rsrc/1410554549536/chromium-os/servo/servo_v2_bot.jpg)
 
+## Known Issues
+
+### Cr50 UART Support
+
+On Servo v2, by default the Cr50/USBPD UART is not enabled and requires a
+[rework]. If this is not done, any Cr50 controls will fail with a timeout since
+the console is not hooked up.
+
+Something like the following might show up on initialization:
+
+```
+cr50 - WARNING - Consider checking whether the servo device has read/write access to the Cr50 UART console.
+Servod - ERROR - Problem initializing cr50_version -> print
+```
+
+This issue can be solved by a [rework].
+
 ## Rework
 
 Servo v2 reworks are needed to flash the PD MCU on certain boards and access
@@ -102,3 +119,4 @@ the one relevant to your board.
 [Standard Yoshi Flex]: ./images/yoshi_flex.jpg
 [Yoshi Flex Reworked to Support SWD]: ./images/yoshi_flex_swd_rework.jpg
 [SWD]: https://developer.arm.com/architectures/cpu-architecture/debug-visibility-and-trace/coresight-architecture/serial-wire-debug
+[rework]: https://docs.google.com/presentation/d/16yYj_nLk4k9zc6iqWWuj2twc9uX5X639QbWtgik7J90/edit

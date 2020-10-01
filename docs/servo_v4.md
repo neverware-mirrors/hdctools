@@ -371,6 +371,18 @@ Run [`servod`] as normal, [CCD] should be enabled now.
     A-A cable plugged into an OTG cable. USB ID is tied to BOOT0 indicator on
     the STM32 part.
 
+### Interop Problems with Some Switches
+
+See http://b/112187276.
+
+Your network switch port will get hosed (some TX buffer fills up and starts
+dropping things) if you have Servo v4 connected to most switches and unplug the
+servo's USB connection, or power off the DUT fully, after the servo's NIC has
+an IP. This behavior is not reproducible with a [GS108Tv2], so the workaround is
+to use a [GS108Tv2].
+
+[GS108Tv2]: https://www.amazon.com/NETGEAR-Ethernet-Unmanaged-Lifetime-Protection/dp/B003KP8VSK/
+
 ## Bugs
 
 File bug or feature requests [here][Bug].

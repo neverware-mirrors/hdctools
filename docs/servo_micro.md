@@ -57,6 +57,34 @@ devices. Adding this flag to the `flashrom` command will cause an error.
 *   If a Servo Micro is plugged into a DUT without being plugged into a host
     machine, it can cause undefined behavior on the DUT.
 
+### Uart Failures
+
+See https://crbug.com/936182.
+
+On Servo micro (and perhaps other STM based Servos (v4)) the UART can become
+inoperable and require the USB port to be reset to recover.
+
+This will manifest itself as failures like:
+
+```
+Servod - ERROR - Problem initializing SERVO_JTAG_TDI -> off
+```
+
+or
+
+```
+Problem with ['servo_v4_version'] :: Timeout waiting for response
+```
+
+### Overcurrent and Brownouts
+
+See https://crbug.com/1016051.
+
+Some device configurations (verified on cyan boards) are able to draw excessive
+current from the Servo Micro, putting the hardware in a non-responsive state.
+Brownout detection has been enabled to escape this condition by rebooting the
+servos impacted. Impacted DUTs may require deployment using [Servo v2].
+
 ## Updating Firmware
 
 Servo Micro can be updated to the latest stable firmware using the
@@ -130,6 +158,7 @@ wires on and use a standard FTDI pin header 3.3V cable.
 [Servo v4 Type-A]: ./servo_v4.md
 [Servo Micro CCD]: https://chromium.googlesource.com/chromiumos/platform/ec/+/master/board/servo_micro/ccd.md
 [`servod`]: ./servod.md
+[Servo v2]: ./servo_v2.md
 
 <!-- Images -->
 
