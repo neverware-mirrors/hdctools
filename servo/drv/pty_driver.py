@@ -120,7 +120,7 @@ class ptyDriver(hw_driver.HwDriver):
       return None
 
     if isinstance(result, str):
-      return result.encode('ascii', errors='ignore')
+      return ''.join(i for i in result if ord(i)<128)
 
     return tuple(map(self._delete_ugly_chars, result))
 
