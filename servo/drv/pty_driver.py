@@ -3,13 +3,16 @@
 # found in the LICENSE file.
 
 import ast
+import codecs
 import contextlib
 import errno
 import os
+import string
+import time
+from encodings import charmap
+
 import pexpect
 from pexpect import fdpexpect
-import re
-import time
 
 import hw_driver
 import servo.terminal_freezer
@@ -28,6 +31,25 @@ UART_PARAMS = {
     'uart_regexp': None,
     'uart_timeout': DEFAULT_UART_TIMEOUT
 }
+
+# Map used to convert incoming binary data into text, via charmap.
+# The key is a byte (integer); the value can be a number or a Unicode string.
+DECODING_MAP = codecs.make_identity_dict(range(256))
+_PRESERVED_CHARS = set(map(ord, '\r\n\t\b'))
+
+for char_num in range(0, 32):
+  # chr(0) through chr(31): control characters (not allowed in xmlrpc)
+  if char_num in _PRESERVED_CHARS:
+    DECODING_MAP[char_num] = char_num
+  else:
+    DECODING_MAP[char_num] = u'\\x%02x' % char_num
+
+# chr(32) through chr(126) are printable, already included in the identity dict.
+# printable: space (32), punctuation, digits, uppercase, lowercase.
+
+for char_num in range(127, 256):
+  # chr(127) through chr(255): delete, then control characters, then latin-1
+  DECODING_MAP[char_num] = u'\\x%02x' % char_num
 
 
 class ptyDriver(hw_driver.HwDriver):
@@ -50,6 +72,8 @@ class ptyDriver(hw_driver.HwDriver):
     # setting anything for the ec uart to affect the ap uart state.
     if not hasattr(self._interface, '_uart_state'):
         self._interface._uart_state = UART_PARAMS.copy()
+
+    self.decoder = charmap.IncrementalDecoder('replace', DECODING_MAP)
 
   @contextlib.contextmanager
   def _open(self):
@@ -114,15 +138,32 @@ class ptyDriver(hw_driver.HwDriver):
         self._logger.debug('pty read returned EAGAIN')
         break
 
-  # Remove non-ASCII characters from the results.
-  def _delete_ugly_chars(self, result):
-    if result is None:
+  def _convert_byte_string(self, byte_str):
+    """Convert the given byte string into unicode, escaping certain characters
+
+    @type byte_str: bytes
+    @rtype: unicode
+    """
+    if not byte_str:
+      return u''
+    return self.decoder.decode(byte_str)
+
+  def _convert_match_groups(self, match):
+    """Convert (and escape binary) the given match into a result tuple.
+
+    The tuple contains the entire match string, followed by the subgroups.
+    An example result: ('whole string', 'whole', 'string')
+
+    @rtype: tuple | None
+    """
+    if not match:
       return None
-
-    if isinstance(result, str):
-      return result.encode('ascii', errors='ignore')
-
-    return tuple(map(self._delete_ugly_chars, result))
+    results = []
+    last_index = match.lastindex or 0
+    for i in range(0, last_index + 1):
+      group = self._convert_byte_string(match.group(i))
+      results.append(group)
+    return tuple(results)
 
   def _send(self, cmds, rate=0.01, flush=True):
     """Send command to EC or AP.
@@ -205,26 +246,24 @@ class ptyDriver(hw_driver.HwDriver):
           for regex in regex_list:
             self._child.expect(regex, timeout)
             match = self._child.match
-            lastindex = match.lastindex if match and match.lastindex else 0
-            # Create a tuple which contains the entire matched string and all
-            # the subgroups of the match.
-            result = match.group(*range(lastindex + 1)) if match else None
-            result = self._delete_ugly_chars(result)
+            if match:
+              result = self._convert_match_groups(match)
+            else:
+              result = None
             result_list.append(result)
             self._logger.debug('Result: %s' % str(result))
       except pexpect.TIMEOUT:
-        self._logger.debug('Before: ^%s^' % self._child.before)
-        self._logger.debug('After: ^%s^' % self._child.after)
-        if self._child.before:
+        output = self._convert_byte_string(str(self._child.before))
+        after = self._convert_byte_string(str(self._child.after))
+        # Escape before logging, to avoid dumping binary into the log files.
+        self._logger.debug('Before: ^%s^' % output)
+        self._logger.debug('After: ^%s^' % after)
+        if output:
           # TODO(crbug.com/1043408): this needs more granular error detection
           # to distinguish whether the console is read-only, or if the control
           # itself had an error on the EC console.
-          output = self._child.before
-          # Reformat output a bit so that the logs don't get messed up.
+          # Reformat output so the exception message is a single line
           output = output.replace('\n', ', ').replace('\r', '')
-          # ASCIIfy the characters in the string so that the server does not
-          # struggle marshaling the data across.
-          output = self._delete_ugly_chars(output)
           msg = 'Timeout waiting for response. There was output: %s' % output
         else:
           msg = 'No data was sent from the pty.'
@@ -259,11 +298,10 @@ class ptyDriver(hw_driver.HwDriver):
           try:
             self._child.expect(regex, timeout=0.1)
             match = self._child.match
-            lastindex = match.lastindex if match and match.lastindex else 0
-            # Create a tuple which contains the entire matched string and all
-            # the subgroups of the match.
-            result = match.group(*range(lastindex + 1)) if match else None
-            result = self._delete_ugly_chars(result)
+            if match:
+              result = self._convert_match_groups(match)
+            else:
+              result = None
             result_list.append(result)
             self._logger.debug('Got result: %s' % str(result))
           except pexpect.TIMEOUT:
