@@ -341,7 +341,7 @@ Open CCD in the Cr50 console:
 Press power button when prompted. It should take around 5 minutes.
 
 *** note
-If you get an an access denied error when attempting `ccd open`, you likely do
+If you get an access denied error when attempting `ccd open`, you likely do
 not have developer mode enabled.
 ***
 
