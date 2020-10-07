@@ -1,0 +1,11 @@
+<root>
+  <include>
+    <name>dedede_common.xml</name>
+  </include>
+ <control>
+    <name>ec_chip</name>
+    <doc>EC chip name (read-only)</doc>
+    <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
+    drv="cros_chip" chip="npcx_uut" chip_for_ccd_cr50="npcx_uut"/>
+ </control>
+</root>
