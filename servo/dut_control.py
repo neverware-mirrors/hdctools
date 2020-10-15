@@ -44,7 +44,7 @@ def _build_parser():
       '%(prog)s allows users to set and get various controls on a DUT system '
       'via the servo debug & control board. This client communicates to the '
       'board via a socket connection to the servo server.')
-  examples = [('',
+  examples = [('--get-all',
                'gets value for all controls'),
               ('--verbose', 'gets value for all controls verbosely'),
               ('i2c_mux', 'gets value for i2c_mux control. If the exact control'
