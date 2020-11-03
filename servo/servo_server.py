@@ -35,6 +35,7 @@ class Servod(object):
   # This is the key to get the main serial used in the _serialnames dict.
   MAIN_SERIAL = 'main'
   SERVO_MICRO_SERIAL = 'servo_micro'
+  C2D2_SERIAL = 'c2d2'
   CCD_SERIAL = 'ccd'
 
   # Timeout to wait for interfaces to become available again if reinitialization

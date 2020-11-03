@@ -23,8 +23,48 @@ POST_INIT = collections.defaultdict(dict)
 DUAL_V4_VAR = 'DUAL_V4_CFG'
 DUAL_V4_VAR_EMPTY = 'empty'
 
+
+ServoType = collections.namedtuple('ServoType', [
+    # str - String to use in servod DUT control names.
+    'control_prefix',
+    # str - Servo controls config file name (not full path).
+    'cfg_file_name',
+    # str - Key for Servod serial name dict.
+    'serial_key',
+    # [(int, int)] - List of USB VID + PID pairs.
+    'vid_pid_pairs',
+])
+
+
+DEBUG_HEADER_SERVO_TYPES = [
+    ServoType(
+        control_prefix='servo_micro',
+        cfg_file_name='servo_micro.xml',
+        serial_key='servo_micro',
+        vid_pid_pairs=servo_interfaces.SERVO_MICRO_DEFAULTS,
+    ),
+    ServoType(
+        control_prefix='c2d2',
+        cfg_file_name='c2d2.xml',
+        serial_key='c2d2',
+        vid_pid_pairs=servo_interfaces.C2D2_DEFAULTS,
+    ),
+]
+
+
+CCD_SERVO_TYPES = [
+    ServoType(
+        control_prefix='ccd_cr50',
+        cfg_file_name='ccd_cr50.xml',
+        serial_key='ccd',
+        vid_pid_pairs=servo_interfaces.CCD_DEFAULTS,
+    ),
+]
+
+
 class ServoPostInitError(Exception):
   """Exception class for ServoPostInit."""
+
 
 class BasePostInit(object):
   """Base Class for Post Init classes."""
@@ -48,10 +88,7 @@ class ServoV4PostInit(BasePostInit):
   process.
   """
 
-  SERVO_MICRO_CFG = 'servo_micro.xml'
-  # Only support CR50 CCD.
-  CCD_CFG = 'ccd_cr50.xml'
-
+  # TODO(b/154436412): Support servo_v4p1.
   def get_servo_v4_usb_device(self):
     """Return associated servo v4 usb.core.Device object.
 
@@ -66,23 +103,6 @@ class ServoV4PostInit(BasePostInit):
           d_serial == self.servod.get_serial_number(self.servod.MAIN_SERIAL)):
         return d
     return None
-
-  def get_servo_micro_devices(self):
-    """Return all servo micros detected.
-
-    Returns:
-      List of servo micro devices as usb.core.Device objects.
-    """
-    vid_pid_list = servo_interfaces.SERVO_MICRO_DEFAULTS
-    return usb_hierarchy.Hierarchy.GetAllUsbDevices(vid_pid_list)
-
-  def get_ccd_devices(self):
-    """Return all CCD USB devices detected.
-
-    Returns:
-      List of CCD USB devices as usb.core.Device objects.
-    """
-    return usb_hierarchy.Hierarchy.GetAllUsbDevices(servo_interfaces.CCD_DEFAULTS)
 
   def prepend_config(self, new_cfg_file, remove_head=False, name_prefix=None,
                      interface_increment=0):
@@ -176,117 +196,122 @@ class ServoV4PostInit(BasePostInit):
     # Snapshot the USB hierarchy at this moment.
     hierarchy = usb_hierarchy.Hierarchy()
 
-    main_micro_found = False
+    found_debug_header_servo = False
     # We want to check if we have one/multiple servo micros connected to
     # this servo v4 and if so, initialize it and add it to the servod instance.
     servo_v4 = self.get_servo_v4_usb_device()
-    servo_micro_candidates = self.get_servo_micro_devices()
     # Save the board config in case we need to readd it with a prefix.
     board_config = self.servod._syscfg.get_board_cfg()
-    for servo_micro in servo_micro_candidates:
-      # The servo_micro and the STM chip of servo v4 share the same internal hub
-      # on servo v4 board. Check the USB hierarchy to find the servo_micro
-      # behind.
-      if hierarchy.DevOnDevHub(servo_v4, servo_micro):
-        default_slot = servo_interfaces.SERVO_V4_SLOT_POSITIONS['default']
-        slot_size = servo_interfaces.SERVO_V4_SLOT_SIZE
-        backup_interfaces = self.servod.get_servo_interfaces(
-            default_slot, slot_size)
 
-        self.prepend_config(self.SERVO_MICRO_CFG)
-        self.init_servo_interfaces(servo_micro)
-        # Interfaces change; clear the cached.
-        self.servod.clear_cached_drv()
+    # Find debug header servos, e.g. Servo Micro, C2D2.
+    for servo_type in DEBUG_HEADER_SERVO_TYPES:
+      for servo_usb_device in usb_hierarchy.Hierarchy.GetAllUsbDevices(
+          servo_type.vid_pid_pairs):
+        # The servo_micro/C2D2 and the STM chip of servo v4 share the same
+        # internal hub on servo v4 board. Check the USB hierarchy to find the
+        # servo_micro/C2D2 behind.
+        if hierarchy.DevOnDevHub(servo_v4, servo_usb_device):
+          default_slot = servo_interfaces.SERVO_V4_SLOT_POSITIONS['default']
+          slot_size = servo_interfaces.SERVO_V4_SLOT_SIZE
+          backup_interfaces = self.servod.get_servo_interfaces(
+              default_slot, slot_size)
 
-        board = self.probe_ec_board()
-        if board:
-          # Assume only one base connected
-          if not self.servod._base_board:
-            self.servod._base_board = board
-          else:
-            raise ServoPostInitError('More than one base connected.')
-
-          new_slot = servo_interfaces.SERVO_V4_SLOT_POSITIONS[board]
-          self._logger.info('EC board requiring relocation: %s', board)
-          self._logger.info('Move the servo interfaces from %d to %d',
-                            default_slot, new_slot)
-          self.servod.set_servo_interfaces(new_slot,
-                                           self.servod.get_servo_interfaces(
-                                               default_slot, slot_size))
-          # Restore the original interfaces.
-          self.servod.set_servo_interfaces(default_slot, backup_interfaces)
+          self.prepend_config(servo_type.cfg_file_name)
+          self.init_servo_interfaces(servo_usb_device)
           # Interfaces change; clear the cached.
           self.servod.clear_cached_drv()
 
-          # Load the config with modified control names and interface ids.
-          self.prepend_config(servo_interfaces.SERVO_V4_CONFIGS[board], True,
-                              '%s_' % board, new_slot - 1)
+          board = self.probe_ec_board()
+          if board:
+            # Assume only one base connected
+            if not self.servod._base_board:
+              self.servod._base_board = board
+            else:
+              raise ServoPostInitError('More than one base connected.')
 
-          # Add its serial for record.
-          self.add_servo_serial(
-              servo_micro, self.servod.SERVO_MICRO_SERIAL + '_for_' + board)
-        else:
-          # Append "_with_servo_micro" to the version string. Don't do it on a
-          # base, as the base is optional.
-          self.servod._version += '_with_servo_micro'
-          # This is the main servo-micro.
-          self.add_servo_serial(servo_micro, self.servod.SERVO_MICRO_SERIAL)
-          # Add aliases for the servo micro as well.  This is useful if there
-          # are multiple servo micros.
-          if self.servod._board:
+            new_slot = servo_interfaces.SERVO_V4_SLOT_POSITIONS[board]
+            self._logger.info('EC board requiring relocation: %s', board)
+            self._logger.info('Move the servo interfaces from %d to %d',
+                              default_slot, new_slot)
+            self.servod.set_servo_interfaces(new_slot,
+                                             self.servod.get_servo_interfaces(
+                                                 default_slot, slot_size))
+            # Restore the original interfaces.
+            self.servod.set_servo_interfaces(default_slot, backup_interfaces)
+            # Interfaces change; clear the cached.
+            self.servod.clear_cached_drv()
+
+            # Load the config with modified control names and interface ids.
+            self.prepend_config(servo_interfaces.SERVO_V4_CONFIGS[board], True,
+                                '%s_' % board, new_slot - 1)
+
+            # Add its serial for record.
             self.add_servo_serial(
-                servo_micro,
-                self.servod.SERVO_MICRO_SERIAL + '_for_' + self.servod._board)
-            if self.servod._model:
+                servo_usb_device, servo_type.serial_key + '_for_' + board)
+          else:
+            # Append "_with_servo_micro" or "_with_c2d2" to the version string.
+            # Don't do it on a base, as the base is optional.
+            self.servod._version += '_with_' + servo_type.control_prefix
+            # This is the main servo_micro/c2d2.
+            self.add_servo_serial(servo_usb_device, servo_type.serial_key)
+            # Add aliases for the servo_micro/c2d2 as well.  This is useful if
+            # there are multiple debug header servos.
+            if self.servod._board:
               self.add_servo_serial(
-                  servo_micro,
-                  self.servod.SERVO_MICRO_SERIAL + '_for_' + self.servod._model)
-          main_micro_found = True
+                  servo_usb_device,
+                  servo_type.serial_key + '_for_' + self.servod._board)
+              if self.servod._model:
+                self.add_servo_serial(
+                    servo_usb_device,
+                    servo_type.serial_key + '_for_' + self.servod._model)
+            found_debug_header_servo = True
 
-    if main_micro_found and not DUAL_V4_VAR in os.environ:
+    if found_debug_header_servo and not DUAL_V4_VAR in os.environ:
       return
 
-    # Flag to determine whether a main device has been found - ccd or micro.
-    main_servo_found = main_micro_found
+    # Flag to determine whether a main device has been found,
+    # ccd or servo_micro or c2d2.
+    found_dut_controller = found_debug_header_servo
 
-    # Try to enable CCD iff no main servo-micro is detected.
-    ccd_candidates = self.get_ccd_devices()
-    for ccd in ccd_candidates:
-      # Pick the proper CCD endpoint behind the servo v4.
-      if hierarchy.DevOnDevHub(servo_v4, ccd):
-        if not main_micro_found:
-          self.prepend_config(self.CCD_CFG)
-          self.servod._version += '_with_ccd_cr50'
-          self.init_servo_interfaces(ccd)
-          main_servo_found = True
-        else:
-          ccd_prefix = 'ccd_cr50.'
-          ccd_pos = servo_interfaces.SERVO_V4_SLOT_POSITIONS['secondary_ccd']
-          ccd_shift = ccd_pos - 1
-          # Cache the previous hwinit as the ccd controls should not be hwinit.
-          cached_hwinit = copy.copy(self.servod._syscfg.hwinit)
-          self.servod._syscfg.add_cfg_file(self.CCD_CFG,
-                                           interface_increment=ccd_shift,
-                                           name_prefix=ccd_prefix)
-          if board_config:
-            self.servod._syscfg.add_cfg_file(board_config,
+    # Find Case-Closed Debug (CCD) Servos, e.g. CR50.
+    for servo_type in CCD_SERVO_TYPES:
+      for ccd_usb_device in usb_hierarchy.Hierarchy.GetAllUsbDevices(
+          servo_type.vid_pid_pairs):
+        # Pick the proper CCD endpoint behind the servo v4.
+        if hierarchy.DevOnDevHub(servo_v4, ccd_usb_device):
+          if not found_debug_header_servo:
+            self.prepend_config(servo_type.cfg_file_name)
+            self.servod._version += '_with_' + servo_type.control_prefix
+            self.init_servo_interfaces(ccd_usb_device)
+            found_dut_controller = True
+          else:
+            ccd_prefix = servo_type.control_prefix + '.'
+            ccd_pos = servo_interfaces.SERVO_V4_SLOT_POSITIONS['secondary_ccd']
+            ccd_shift = ccd_pos - 1
+            # Cache the previous hwinit, ccd controls should not be hwinit.
+            cached_hwinit = copy.copy(self.servod._syscfg.hwinit)
+            self.servod._syscfg.add_cfg_file(servo_type.cfg_file_name,
                                              interface_increment=ccd_shift,
                                              name_prefix=ccd_prefix)
+            if board_config:
+              self.servod._syscfg.add_cfg_file(board_config,
+                                               interface_increment=ccd_shift,
+                                               name_prefix=ccd_prefix)
 
-          self.servod._syscfg.hwinit = cached_hwinit
-          vid, pid = (ccd.idVendor, ccd.idProduct)
-          interfaces = servo_interfaces.INTERFACE_DEFAULTS[vid][pid]
-          for interface in interfaces:
-            # Rewrite the ec3po interfaces to use the prefix for the raw uart.
-            if isinstance(interface, dict) and 'raw_pty' in interface:
-              interface['raw_pty'] = ccd_prefix + interface['raw_pty']
-          # Need to shift the interfaces properly.
-          interfaces = ['empty'] * ccd_shift + interfaces
-          self.servod._version += '_and_ccd_cr50'
-          self.init_servo_interfaces(ccd, interfaces)
-        self.add_servo_serial(ccd, self.servod.CCD_SERIAL)
+            self.servod._syscfg.hwinit = cached_hwinit
+            vid, pid = (ccd_usb_device.idVendor, ccd_usb_device.idProduct)
+            interfaces = servo_interfaces.INTERFACE_DEFAULTS[vid][pid]
+            for interface in interfaces:
+              # Rewrite the ec3po interfaces to use the prefix for the raw uart.
+              if isinstance(interface, dict) and 'raw_pty' in interface:
+                interface['raw_pty'] = ccd_prefix + interface['raw_pty']
+            # Need to shift the interfaces properly.
+            interfaces = ['empty'] * ccd_shift + interfaces
+            self.servod._version += '_and_' + servo_type.control_prefix
+            self.init_servo_interfaces(ccd_usb_device, interfaces)
+          self.add_servo_serial(ccd_usb_device, servo_type.serial_key)
 
-    if main_servo_found:
+    if found_dut_controller:
       return
 
     # Fail if we requested board control but don't have an interface for this.
@@ -300,7 +325,7 @@ class ServoV4PostInit(BasePostInit):
       # is valid for both ccd and for servo micro: a controller is missing
       self.servod.set('dut_controller_missing_fault', 'on')
 
-      self._logger.error('No servo micro or CCD detected for board %s',
+      self._logger.error('No Servo Micro, C2D2, or CCD detected for board %s',
           self.servod._board)
       # TODO(guocb): remove below tip when DUTs directionality is stable.
       self._logger.error('Try flipping the USB type C cable if you were using '
@@ -312,9 +337,9 @@ class ServoV4PostInit(BasePostInit):
                           'been requested')
       else:
         raise ServoPostInitError('No device interface '
-                                 '(servo micro or CCD) connected.')
+                                 '(Servo Micro, C2D2, or CCD) connected.')
     else:
-      self._logger.info('No servo micro and CCD detected.')
+      self._logger.info('No Servo Micro / C2D2 and CCD detected.')
 
 
 # Add in servo v4 post init method.
