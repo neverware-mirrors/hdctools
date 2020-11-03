@@ -339,6 +339,7 @@ for board in [
     'sentry',
     'soraka',
     'strago',
+    'strongbad',
     'trogdor',
     'volteer',
     'zoombini',

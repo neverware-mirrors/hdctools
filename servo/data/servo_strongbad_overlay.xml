@@ -1,0 +1,8 @@
+<root>
+  <include>
+    <name>servo_trogdor_overlay.xml</name>
+  </include>
+  <include>
+    <name>detachable.xml</name>
+  </include>
+</root>
