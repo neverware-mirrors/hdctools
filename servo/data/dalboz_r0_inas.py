@@ -4,7 +4,7 @@
 
 # These devices are ina3221 (3-channels/i2c address) devices
 inas = [
-#    drvname,   slv,      name,                 nom,   sense, mux,   is_calib
+#    drvname,   child,      name,                 nom,   sense, mux,   is_calib
     ('ina3221', '0x40:0', 'pp3300_alw',         3.300, 0.002, 'rem', True),
     ('ina3221', '0x40:1', 'pp5000_a',           5.000, 0.002, 'rem', True),
     ('ina3221', '0x40:2', 'pp1800_alw',         1.800, 0.002, 'rem', True),

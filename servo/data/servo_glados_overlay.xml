@@ -150,7 +150,7 @@
     <doc>Enables JTAG buffer on servo flex ... repurposed to
     uart4.</doc>
     <params interface="2" servo_v3_interface="6" drv="pca95xx"
-    subtype="gpio" slv="0x26" offset="3" map="onoff_i" init="on"
+    subtype="gpio" child="0x26" offset="3" map="onoff_i" init="on"
     clobber_ok=""></params>
   </control>
   <control>

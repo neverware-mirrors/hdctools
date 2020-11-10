@@ -55,26 +55,26 @@ class ad5248(hw_driver.HwDriver):
           detailed below.
 
     Mandatory Params:
-      slv: integer, 7-bit i2c slave address
+      child: integer, 7-bit i2c child address
       port: integer, either 0 || 1
       subtype: string, supporting 'rdac', 'r2p5k', 'r10k', 'r50k', and 'r100k'
     Optional Params:
     """
     super(ad5248, self).__init__(interface, params)
-    self._slave = self._get_slave()
+    self._child = self._get_child()
     self._port = self._get_port()
     self._subtype = self._get_subtype()
 
-  def _get_slave(self):
-    """Check and return slave param.
+  def _get_child(self):
+    """Check and return child param.
 
     Returns:
-      slave: 7-bit i2c address.
+      child: 7-bit i2c address.
     """
-    if 'slv' not in self._params:
-      raise Ad5248Error('getting slave address')
-    slave = int(self._params['slv'], 0)
-    return slave
+    if 'child' not in self._params:
+      raise Ad5248Error('getting child address')
+    child = int(self._params['child'], 0)
+    return child
 
   def _get_port(self):
     """Check and return port param.
@@ -114,7 +114,7 @@ class ad5248(hw_driver.HwDriver):
       byte = int(byte, 0)
     if not 0 <= byte <= 255:
       raise Ad5248Error('setting value out of range 0~255')
-    self._interface.wr_rd(self._slave, [self._port << 7, byte])
+    self._interface.wr_rd(self._child, [self._port << 7, byte])
 
   def _set_resistance_value(self, value):
     """Sets real output resistance value of ad5248.
@@ -144,7 +144,7 @@ class ad5248(hw_driver.HwDriver):
     Returns:
       byte: 8-bit value as integer.
     """
-    values = self._interface.wr_rd(self._slave, [self._port << 7], 1)
+    values = self._interface.wr_rd(self._child, [self._port << 7], 1)
     return values[0]
 
   def _get_resistance_value(self):

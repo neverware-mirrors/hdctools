@@ -18,10 +18,10 @@ GPIO:
 
 EEPROM:
   writes:
-   - page write: slave wr + byte addr byte + 1-4 bytes to write
+   - page write: child wr + byte addr byte + 1-4 bytes to write
   reads:
-   - byte N read: slave wr + byte addr byte to set addr
-                  slave rd + read N bytes
+   - byte N read: child wr + byte addr byte to set addr
+                  child rd + read N bytes
 
   Note, EEPROM has an active low write control (WC#) which must be
   asserted to write the device.
@@ -55,19 +55,19 @@ class pca9500(hw_driver.HwDriver):
        below.
 
     Mandatory Params:
-      slv: integer, 7-bit i2c slave address
+      child: integer, 7-bit i2c child address
 
     Optional Params:
       offset: integer, left shift amount for location of gpio
       width: integer, bit width of gpio
 
     Attributes:
-      _slave: integer value of the 7-bit i2c slave address.
+      _child: integer value of the 7-bit i2c child address.
     """
     super(pca9500, self).__init__(interface, params)
-    if 'slv' not in self._params:
-      raise pca9500Error('getting slave address')
-    self._slave = int(self._params['slv'], 0)
+    if 'child' not in self._params:
+      raise pca9500Error('getting child address')
+    self._child = int(self._params['child'], 0)
 
   def _Set_gpio(self, value):
     """Set pca9500 GPIO to value.
@@ -88,7 +88,7 @@ class pca9500(hw_driver.HwDriver):
       hw_value = cur_value & ~mask
     self._logger.debug('new(0x%02x) cur(0x%02x) mask(0x%02x)', hw_value,
                        cur_value, mask)
-    self._interface.wr_rd(self._slave, [hw_value], 0)
+    self._interface.wr_rd(self._child, [hw_value], 0)
 
   def _Get_gpio(self):
     """Get pca9500 GPIO value and return.
@@ -103,13 +103,13 @@ class pca9500(hw_driver.HwDriver):
     """Read the pca9500 control register.
 
     pca9500 has one register for its 8bit GPIO expander functionality.  This
-    control register can be read by peforming a 1 byte read to the slave
+    control register can be read by peforming a 1 byte read to the child
     address.  See datasheet for more detail.
 
     Returns:
       integer value (8bit) of control register.
     """
-    return self._interface.wr_rd(self._slave, [], REG_CTRL_LEN)[0]
+    return self._interface.wr_rd(self._child, [], REG_CTRL_LEN)[0]
 
   def _write_byte_addr(self, byte_addr):
     """Write EEPROM byte address.
@@ -120,7 +120,7 @@ class pca9500(hw_driver.HwDriver):
     Args:
       byte_addr: integer, byte address to be set in EEPROM
     """
-    self._interface.wr_rd(self._slave, [byte_addr], 0)
+    self._interface.wr_rd(self._child, [byte_addr], 0)
 
   def _Set_byte_addr(self, byte_addr):
     """Write the EEPROM's byte address.
@@ -147,8 +147,8 @@ class pca9500(hw_driver.HwDriver):
       '0x00 0x01 0x02 0x03 0x04 0x05'
 
     would turn into I2C page writes of:
-      <slv> 0x10 0x00 0x01 0x02 0x03
-      <slv> 0x14 0x04 0x05
+      <child> 0x10 0x00 0x01 0x02 0x03
+      <child> 0x14 0x04 0x05
 
     Note, as this operation upsets the EEPROM byte address it must be restored
     at the completion of writing.
@@ -177,7 +177,7 @@ class pca9500(hw_driver.HwDriver):
     for i, page in enumerate(page_list):
       page.insert(0, pca9500._byte_addr + (i * PAGE_BYTES))
       try:
-        self._interface.wr_rd(self._slave, page, 0)
+        self._interface.wr_rd(self._child, page, 0)
       except Fi2cError:
         self._logger.error('page write of %i:%s', i, page)
         raise pca9500Error('Setting PCA9500 EEPROM')
@@ -207,7 +207,7 @@ class pca9500(hw_driver.HwDriver):
     error = False
     self._write_byte_addr(0)
     try:
-      byte_list = self._interface.wr_rd(self._slave, [], EEPROM_BYTES)
+      byte_list = self._interface.wr_rd(self._child, [], EEPROM_BYTES)
     except Fi2cError:
       self._logger.error('eeprom read')
       raise pca9500Error('Getting PCA9500 EEPROM')

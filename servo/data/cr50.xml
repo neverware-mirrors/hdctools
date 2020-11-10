@@ -203,7 +203,7 @@
     <alias>cr50_uart_on_flex_en,usbpd_uart_on_flex_en</alias>
     <doc>Enables JTAG buffer on servo flex ... repurposed to uart4.</doc>
     <params interface="2" servo_v3_interface="6" drv="pca95xx" subtype="gpio"
-    slv="0x26" offset="3" map="onoff_i" init="on" clobber_ok=""
+    child="0x26" offset="3" map="onoff_i" init="on" clobber_ok=""
     servo_micro_drv="na"></params>
   </control>
   <control>
@@ -236,7 +236,7 @@
   <control>
     <name>cr50_i2c_ctrl</name>
     <doc>Send a special command to CR50 (write-only)</doc>
-    <params clobber_ok="" interface="2" drv="cr50_i2c" slv="0x78" cmd="set"
+    <params clobber_ok="" interface="2" drv="cr50_i2c" child="0x78" cmd="set"
     map="cr50_i2c_cmds" servo_v3_drv="na" />
   </control>
 </root>

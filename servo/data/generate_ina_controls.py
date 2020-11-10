@@ -92,12 +92,12 @@ class PowerlogINAConfigGenerator(INAConfigGenerator):
     """Dump json formatted INA231 configurations for powerlog configuration.
 
     This uses the same adcs template formate as servod (for compatability)
-    but sweetberry configuration only needs slv, name, sense, and is_calib.
+    but sweetberry configuration only needs child, name, sense, and is_calib.
 
     Args:
       adcs: array of adc elements.  Each array element is a tuple consisting of:
           drvname: string name of adc driver to enumerate to control the adc
-          slv: string formatted '0xAA:B': AA is i2c slv addr and B is i2c port
+          child: string format '0xAA:B': AA is i2c child addr and B is i2c port
           name: string name of the power rail
           nom: float of nominal voltage of power rail
           sense: float of sense resitor size in ohms
@@ -115,9 +115,9 @@ class PowerlogINAConfigGenerator(INAConfigGenerator):
     """
     adc_list = []
     rails = []
-    for (drvname, slv, name, nom, sense, mux, is_calib) in adcs:
+    for (drvname, child, name, nom, sense, mux, is_calib) in adcs:
       if is_calib:
-        addr, port = [int(entry, 0) for entry in slv.split(':')]
+        addr, port = [int(entry, 0) for entry in child.split(':')]
         adc_list.append('  %s' % json.dumps({'name': name,
                                              'rs': float(sense),
                                              'sweetberry': 'A',
@@ -199,7 +199,7 @@ class ServoINAConfigGenerator(INAConfigGenerator):
     Args:
       adcs: array of adc elements.  Each array element is a tuple consisting of:
           drvname: string name of adc driver to enumerate to control the adc.
-          slv: int representing the i2c slave address.
+          child: int representing the i2c child address.
                optional channel/port if ADC (INA3221 only) has multiple channels
                or adc is on a different i2c port (sweetberry only). For example,
                  "0x40"   : address 0x40 ... no channel/port
@@ -219,7 +219,7 @@ class ServoINAConfigGenerator(INAConfigGenerator):
       parsed by servod daemon ( servo/system_config.py )
     """
     control_generators = []
-    for (drvname, slv, name, nom, sense, mux, is_calib) in adcs:
+    for (drvname, child, name, nom, sense, mux, is_calib) in adcs:
       drvpath = os.path.join(self._servo_drv_dir, drvname + '.py')
       if not os.path.isfile(drvpath):
         raise INAConfigGeneratorError('Unable to locate driver for %s at %s'
@@ -229,7 +229,7 @@ class ServoINAConfigGenerator(INAConfigGenerator):
           'type'      : 'get',
           'drv'       : drvname,
           'interface' : interface,
-          'slv'       : slv,
+          'child'       : child,
           'mux'       : mux,
           'rsense'    : sense,
       }
@@ -242,13 +242,13 @@ class ServoINAConfigGenerator(INAConfigGenerator):
         regs = ['cfg', 'shv', 'busv', 'msken']
 
       if ina_type == 'ina3221':
-        (slv, chan_id) = slv.split(':')
-        params_base['slv'] = slv
+        (child, chan_id) = child.split(':')
+        params_base['child'] = child
         params_base['channel'] = chan_id
 
       if drvname == 'sweetberry':
-        (slv, port) = slv.split(':')
-        params_base['slv'] = slv
+        (child, port) = child.split(':')
+        params_base['child'] = child
         params_base['port'] = port
 
       mv_ctrl_docstring = ('Bus Voltage of %s rail in millivolts on i2c_mux:%s'

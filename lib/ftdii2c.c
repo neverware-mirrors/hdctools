@@ -143,8 +143,8 @@ static int fi2c_send_byte_and_check(struct fi2c_context *fic, uint8_t data) {
   return FI2C_ERR_NONE;
 }
 
-static int fi2c_send_slave(struct fi2c_context *fic, int rd) {
-  return fi2c_send_byte_and_check(fic, (fic->slv<<1) | (rd ? 0x1 : 0x0));
+static int fi2c_send_child(struct fi2c_context *fic, int rd) {
+  return fi2c_send_byte_and_check(fic, (fic->child<<1) | (rd ? 0x1 : 0x0));
 }
 
 static int fi2c_wr(struct fi2c_context *fic, uint8_t *wbuf, int wcnt) {
@@ -300,7 +300,7 @@ retry:
     printf("\n");
 #endif
     CHECK_FI2C(fic, fi2c_start_bit_cmds(fic), "(WR) Start bit\n");
-    err = fi2c_send_slave(fic, 0);
+    err = fi2c_send_child(fic, 0);
     if ((err == FI2C_ERR_ACK) || (err == FI2C_ERR_READ)) {
       retry_count++;
       goto retry;
@@ -318,7 +318,7 @@ retry:
   if (rcnt && rbuf && !fic->error && !err) {
     prn_dbg("begin read\n");
     CHECK_FI2C(fic, fi2c_start_bit_cmds(fic), "(RD) Start bit\n");
-    err = fi2c_send_slave(fic, 1);
+    err = fi2c_send_child(fic, 1);
     if ((err == FI2C_ERR_ACK) || (err == FI2C_ERR_READ)) {
       retry_count++;
       goto retry;
@@ -341,7 +341,7 @@ retry:
 WR_RD_DONE:
   if (fic->error || err) {
     prn_error("Slave 0x%02x failed wr_rd with fic->error:%d err:%d\n",
-              fic->slv, fic->error, err);
+              fic->child, fic->error, err);
   }
   tot_retry_count += retry_count;
   prn_dbg("Done.  retry_count = %d, tot_retry_count = %d\n",

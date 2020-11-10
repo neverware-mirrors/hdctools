@@ -7,7 +7,7 @@ config_type='servod'
 revs = [ 0 ]
 
 inas = [
-#    drvname,   slv,      name,            nom,  sense, mux,   is_calib
+#    drvname,   child,      name,            nom,  sense, mux,   is_calib
     ('ina3221', '0x40:0', 'pp1800_brij',   1.80, 0.010, 'rem', True), # R455
     ('ina3221', '0x40:1', 'pp1200_brij',   1.20, 0.010, 'rem', True), # R354
     ('ina3221', '0x40:2', 'pp3300_hub',    3.30, 0.010, 'rem', True), # R108

@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 # These devices are ina3221 (3-channels/i2c address) devices
-#        drvname,   slv,      name,              nom,  sense, mux,   is_calib
+#        drvname,   child,      name,              nom,  sense, mux,   is_calib
 inas = [('ina3221', '0x40:0', 'pp3300_edp_dx',   3.3,  0.020, 'rem', True),
         ('ina3221', '0x40:1', 'pp5000_a',        5.0,  0.002, 'rem', True),
         ('ina3221', '0x40:2', 'pp1800_a',        1.8,  0.020, 'rem', True),

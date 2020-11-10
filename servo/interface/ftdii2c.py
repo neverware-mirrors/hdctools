@@ -41,7 +41,7 @@ class Fi2cContext(ctypes.Structure):
       ('gpio', ftdi_common.Gpio),
       ('clk', ctypes.c_uint),
       ('error', ctypes.c_int),
-      ('slv', ctypes.c_ubyte),
+      ('child', ctypes.c_ubyte),
       ('buf', ctypes.POINTER(ctypes.c_ubyte)),
       ('bufcnt', ctypes.c_int),
       ('bufsize', ctypes.c_int),
@@ -161,12 +161,12 @@ class Fi2c(i2c_base.BaseI2CBus):
     if self._lib.fi2c_setclock(ctypes.byref(self._fic), speed):
       raise Fi2cError('fi2c_setclock')
 
-  def _raw_wr_rd(self, slv, wlist, rcnt):
-    """Write and/or read a slave i2c device.
+  def _raw_wr_rd(self, child, wlist, rcnt):
+    """Write and/or read a child i2c device.
 
     Args:
-      slv: 7-bit address of the slave device
-      wlist: list of bytes to write to the slave.  If list length is zero its
+      child: 7-bit address of the child device
+      wlist: list of bytes to write to the child.  If list length is zero its
           just a read
       rcnt: number of bytes to read from the device.  If zero, its just a write
 
@@ -180,7 +180,7 @@ class Fi2c(i2c_base.BaseI2CBus):
     if rcnt is None:
       rcnt = 0
 
-    self._fic.slv = slv
+    self._fic.child = child
     wcnt = len(wlist)
     wbuf_type = ctypes.c_ubyte * wcnt
     wbuf = wbuf_type()
@@ -196,7 +196,7 @@ class Fi2c(i2c_base.BaseI2CBus):
         ctypes.byref(self._fic), ctypes.byref(wbuf), wcnt, ctypes.byref(rbuf),
         rcnt)
     if err:
-      err_str = 'slave:0x%02x wr:%s rcnt:%d err:%s' % (slv, wlist, rcnt, err)
+      err_str = 'child:0x%02x wr:%s rcnt:%d err:%s' % (child, wlist, rcnt, err)
       raise Fi2cError('fi2c_wr_rd', err_str)
 
     for i, rval in enumerate(rbuf):
@@ -267,19 +267,19 @@ def test():
   fobj.setclock(100000)
 
   wbuf = [0]
-  slv = 0x21
-  rbuf = fobj.wr_rd(slv, wbuf, 1)
-  logging.info('first: i2c read of slv=0x%02x reg=0x%02x == 0x%02x', slv,
+  child = 0x21
+  rbuf = fobj.wr_rd(child, wbuf, 1)
+  logging.info('first: i2c read of child=0x%02x reg=0x%02x == 0x%02x', child,
                wbuf[0], rbuf[0])
   errcnt = 0
   for cnt in range(1000):
     try:
-      rbuf = fobj.wr_rd(slv, [], 1)
+      rbuf = fobj.wr_rd(child, [], 1)
     except:
       errcnt += 1
       logging.error('errs = %d cnt = %d', errcnt, cnt)
 
-  logging.info('last: i2c read of slv=0x%02x reg=0x%02x == 0x%02x', slv,
+  logging.info('last: i2c read of child=0x%02x reg=0x%02x == 0x%02x', child,
                wbuf[0], rbuf[0])
   fobj.close()
 

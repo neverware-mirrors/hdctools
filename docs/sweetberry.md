@@ -21,7 +21,7 @@ Sweetberry with firmware version `sweetberry_v1.1.8453-11bd4c0f4` or higher
 As explained in the [INA docs], sweetberry configuration using raw i2c addresses
 and ports is difficult. Each physical bank on the sweetberry board is wired to
 INAs on different i2c lines (thus using different ports) while some of those
-INAs have the same i2c slave address. Since most use cases in Chrome OS for
+INAs have the same i2c child address. Since most use cases in Chrome OS for
 sweetberry are with a medusa header, the user is more likely to easily know the
 physical bank, and the pins. `generate_ina_controls.py` allows for an
 alternative configuration using the pin numbers as a tuple (e.g. `(1,3)`) and

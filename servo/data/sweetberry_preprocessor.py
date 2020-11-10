@@ -9,11 +9,11 @@ class SweetberryPreprocessorError(Exception):
   pass
 
 class SweetberryPreprocessor(object):
-  """Preprocessor to convert pin-style slv-addr config to i2c-addr style.
+  """Preprocessor to convert pin-style child-addr config to i2c-addr style.
 
   See README.sweetberry.md for details. One j-bank on sweetberry has
   16 pin-tuples. Those are organized in blocks of four. Each block has the same
-  i2c slave addr. Each slot in a block (e.g. 1st in a block) has the same
+  i2c child addr. Each slot in a block (e.g. 1st in a block) has the same
   i2c port. This class enables that conversion.
   """
 
@@ -120,7 +120,7 @@ class SweetberryPreprocessor(object):
 
   @staticmethod
   def Preprocess(inas):
-    """Convert pin-style ina address to i2c slave addr.
+    """Convert pin-style ina address to i2c child addr.
 
     See README.sweetberry.md for details.
 
@@ -130,14 +130,14 @@ class SweetberryPreprocessor(object):
        ...]
 
     Returns:
-      list of new ina configuration tuples with i2c slave addresses.
+      list of new ina configuration tuples with i2c child addresses.
       [('sweetberry', '0x40:3', 'ppvar_some' , 5.0, 0.010, 'j2', False),
        ...]
     """
     #TODO(coconutruben): add an exhaustive unit-test here.
     processed_inas = []
-    for (drvname, slv, name, nom, sense, mux, is_calib) in inas:
-      if type(slv) is tuple:
+    for (drvname, child, name, nom, sense, mux, is_calib) in inas:
+      if type(child) is tuple:
         # mux for tuples has to be 'android' or 'j[2,3,4]'
         if mux == 'android':
           pin_to_channel = SweetberryPreprocessor.android_conn_pin_to_channel
@@ -149,8 +149,8 @@ class SweetberryPreprocessor(object):
         else:
           raise SweetberryPreprocessorError('mux %s not a valid entry for a '
                                             'pin based config.' % mux)
-        sense_chan = pin_to_channel[tuple(sorted(slv))] + chan_offset
+        sense_chan = pin_to_channel[tuple(sorted(child))] + chan_offset
         addr, port = SweetberryPreprocessor.sense_chan_i2c_addr[sense_chan]
-        slv = '0x%02x:%d' % (addr, port)
-      processed_inas.append((drvname, slv, name, nom, sense, mux, is_calib))
+        child = '0x%02x:%d' % (addr, port)
+      processed_inas.append((drvname, child, name, nom, sense, mux, is_calib))
     return processed_inas

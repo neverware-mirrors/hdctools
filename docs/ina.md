@@ -27,7 +27,7 @@ There are up to 3 variables inside the configuration file needed.
     `(type, addr, name, nom, sense, location, calib)`\*
 
     *   **`type`**: one of `ina3221`, `ina219`, `ina231`, `sweetberry`
-    *   **`addr`**: i2c slave address (see sweetberry below for note)
+    *   **`addr`**: i2c child address (see sweetberry below for note)
     *   **`name`**: human readable name used to control measurements later
     *   **`nom`**: nominal voltage of power rail
     *   **`sense`**: sense resistor value in Ohm
@@ -97,12 +97,12 @@ The output is a `servod`-style `.xml` control file, where the driver is
 file pair (`.board` and `.scenario` files). See below at `servod` for the
 controls exposed by the `.xml` file.
 
-Sweetberry is not trivial to manually configure properly with i2c slave address
+Sweetberry is not trivial to manually configure properly with i2c child address
 and the i2c port. This is due to each physical bank using multiple ports, and a
-slave address subset. To facilitate this, on `config_type='sweetberry'` one can
+child address subset. To facilitate this, on `config_type='sweetberry'` one can
 write the `.py` template also by setting:
 
-*   the slv-addr slot to a tuple containing both the pins (e.g. `(1,3))`
+*   the child-addr slot to a tuple containing both the pins (e.g. `(1,3))`
 *   the loc variable slot to the `j` bank: `j2,j3,j4` (see marks on board)
 
 To summarize here are two equivalent rail configurations:

@@ -25,11 +25,11 @@ class cr50I2c(hw_driver.HwDriver):
       params: dictionary of params needed to perform operations on CR50
 
     Mandatory Params:
-      slv: integer, 7-bit i2c slave address
+      child: integer, 7-bit i2c child address
     """
     super(cr50I2c, self).__init__(interface, params)
     self._logger.debug('')
-    self._slave = int(self._params['slv'], 0)
+    self._child = int(self._params['child'], 0)
 
   def set(self, value):
     """send a special command to CR50.
@@ -44,4 +44,4 @@ class cr50I2c(hw_driver.HwDriver):
     if value & ~CMD_MASK:
       raise cr50I2cError("command value 0x%X does not match 0x%X" %
                          (value, CMD_MASK))
-    self._interface.wr_rd(self._slave, [value], 0)
+    self._interface.wr_rd(self._child, [value], 0)

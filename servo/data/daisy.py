@@ -11,7 +11,7 @@ inline = """
     <name>dut_adc_mux</name>
     <doc>4 to 1 mux to steer remote i2c i2c_mux:rem to two sets of
     16 INA219 ADCs. Note they are only on leg0 and leg1</doc>
-    <params interface="2" drv="pca9546" slv="0x70"
+    <params interface="2" drv="pca9546" child="0x70"
     map="dut_adc_mux"></params>
   </control>
 """

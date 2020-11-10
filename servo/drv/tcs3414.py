@@ -74,7 +74,7 @@ MSEC = 1e-3
 SLEEP_MORE_TIME = 5 * MSEC
 
 # Devices shared among driver objects:
-#   (interface instance, slv) => Tcs3414Device instance
+#   (interface instance, child) => Tcs3414Device instance
 tcs3414_devices = {}
 
 
@@ -118,14 +118,14 @@ class tcs3414(hw_driver.HwDriver):
           below.
 
     Mandatory Params:
-      slv: integer, 7-bit i2c slave address
+      child: integer, 7-bit i2c child address
 
     Optional Params:
       N/A
     """
     super(tcs3414, self).__init__(interface, params)
 
-    device_key = (interface, self._get_slave())
+    device_key = (interface, self._get_child())
     if device_key not in tcs3414_devices:
       tcs3414_devices[device_key] = Tcs3414Device()
 
@@ -159,16 +159,16 @@ class tcs3414(hw_driver.HwDriver):
     if v & 0xFF != v:
       raise Tcs3414Error('0x%x is not 8-bit' % v)
 
-  def _get_slave(self):
+  def _get_child(self):
     """Checks and return needed params to call driver.
 
     Returns:
-      slave: 7-bit i2c address
+      child: 7-bit i2c address
     """
-    if 'slv' not in self._params:
-      raise Tcs3414Error('Missing slave address "slv"')
-    slave = int(self._params['slv'], 0)
-    return slave
+    if 'child' not in self._params:
+      raise Tcs3414Error('Missing child address "child"')
+    child = int(self._params['child'], 0)
+    return child
 
   def _write_byte(self, reg, data):
     """Writes one byte to register.
@@ -183,7 +183,7 @@ class tcs3414(hw_driver.HwDriver):
     self._check_8bit(reg)
     self._check_8bit(data)
 
-    self._interface.wr_rd(self._get_slave(), [reg, data], 0)
+    self._interface.wr_rd(self._get_child(), [reg, data], 0)
 
   def _read_word(self, reg):
     """Reads a word by giving a register address.
@@ -196,7 +196,7 @@ class tcs3414(hw_driver.HwDriver):
     """
     self._check_8bit(reg)
 
-    values = self._interface.wr_rd(self._get_slave(), [reg], 2)
+    values = self._interface.wr_rd(self._get_child(), [reg], 2)
     return values[0] + (values[1] << 8)
 
   def _power_on(self):

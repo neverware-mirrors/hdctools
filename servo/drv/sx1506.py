@@ -44,19 +44,19 @@ class sx1506(hw_driver.HwDriver):
 
 
     Mandatory Params:
-      slv: integer, 7-bit i2c slave address
+      child: integer, 7-bit i2c child address
       offset: integer, gpio's bit position from lsb
     Optional Params:
     """
     super(sx1506, self).__init__(interface, params)
-    slave = self._get_slave()
+    child = self._get_child()
     self._i2c_obj = i2c_reg.I2cReg.get_device(
-        self._interface, slave, addr_len=1, reg_len=1, msb_first=True,
+        self._interface, child, addr_len=1, reg_len=1, msb_first=True,
         no_read=False, use_reg_cache=False)
     # Remember what GPIOs we have set.
     global reg_cache
     self._reg_cache = reg_cache
-    self._cacheindex = (self._interface, slave)
+    self._cacheindex = (self._interface, child)
     # Cache REG_DIR
     dir = self._reg_cache.get((self._cacheindex, self.REG_DIR), self.INIT_DIR)
     self._reg_cache[(self._cacheindex, self.REG_DIR)] = dir
@@ -154,13 +154,13 @@ class sx1506(hw_driver.HwDriver):
       self._reg_cache[(self._cacheindex, self.REG_DIR)] = new_dir_reg
       self.write16(self.REG_DIR, new_dir_reg)
 
-  def _get_slave(self):
+  def _get_child(self):
     """Check and return needed params to call driver.
 
     Returns:
-      slave: 7-bit i2c address
+      child: 7-bit i2c address
     """
-    if 'slv' not in self._params:
-      raise Sx1506Error('getting slave address')
-    slave = int(self._params['slv'], 0)
-    return slave
+    if 'child' not in self._params:
+      raise Sx1506Error('getting child address')
+    child = int(self._params['child'], 0)
+    return child

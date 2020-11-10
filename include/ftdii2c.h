@@ -76,7 +76,7 @@ struct fi2c_context {
   // ^--- DO NOT REORDER ---^
   unsigned int clk;
   int error;
-  uint8_t slv;
+  uint8_t child;
   uint8_t *buf;
   int bufcnt;
   int bufsize;

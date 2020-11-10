@@ -121,7 +121,7 @@ class Suart():
 
     tty.setraw(self._ptym, termios.TCSADRAIN)
 
-    # Generate a HUP flag on pty slave fd.
+    # Generate a HUP flag on pty child fd.
     os.fdopen(s).close()
 
     self._rx_thread = threading.Thread(target=self.run_rx_thread, args=[])

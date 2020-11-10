@@ -33,7 +33,7 @@ class pca9537(tca6416.tca6416):
           detailed below.
 
     Mandatory Params:
-      slv: integer, 7-bit i2c slave address
+      child: integer, 7-bit i2c child address
     Optional Params:
     """
     local_params = params.copy()

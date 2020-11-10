@@ -89,10 +89,10 @@ class TPS65090I2c(object):
   # TODO(tbroch) deprecate retry once there are no reports of errors on i2c
   _RETRY_MAX = 1
 
-  def __init__(self, bus, slv=I2C_SLV_DEFAULT):
+  def __init__(self, bus, child=I2C_SLV_DEFAULT):
     """Constructor."""
     self._bus = bus
-    self._slv = slv
+    self._child = child
 
   def _do_cmd(self, cmd):
     """Run command and return results.
@@ -126,7 +126,7 @@ class TPS65090I2c(object):
           index: integer, register index to write byte to
 
         """
-    cmd = '%s %d 0x%x 0x%x b' % (self._GET_CMD, self._bus, self._slv, index)
+    cmd = '%s %d 0x%x 0x%x b' % (self._GET_CMD, self._bus, self._child, index)
     output = self._do_cmd(cmd)
     return int(output, 0)
 
@@ -138,7 +138,7 @@ class TPS65090I2c(object):
           val: integer, byte value to writ to index
         """
     cmd = '%s %d 0x%x 0x%x 0x%x' % \
-        (self._SET_CMD, self._bus, self._slv, index, val)
+        (self._SET_CMD, self._bus, self._child, index, val)
     self._do_cmd(cmd)
 
 

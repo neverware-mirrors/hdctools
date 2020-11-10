@@ -40,7 +40,7 @@ class ltc1663(hw_driver.HwDriver):
     """Constructor.
 
     Note, LTC1663 I2C transaction is ONLY to set the DAC via:
-      <slave address> + <cmd> + <lsb byte> + <msb byte>
+      <child address> + <cmd> + <lsb byte> + <msb byte>
 
     Args:
       interface: interface object to handle low-level communication to control
@@ -48,14 +48,14 @@ class ltc1663(hw_driver.HwDriver):
           devices.
 
     Mandatory Params:
-      slave: integer, 7-bit i2c slave address
+      child: integer, 7-bit i2c child address
       i2c_obj: I2cReg object
     """
     super(ltc1663, self).__init__(interface, params)
     self._logger.debug('')
-    self._slave = int(self._params['slv'], 0)
+    self._child = int(self._params['child'], 0)
     self._i2c_obj = i2c_reg.I2cReg.get_device(
-        self._interface, self._slave, addr_len=1, reg_len=2, msb_first=False,
+        self._interface, self._child, addr_len=1, reg_len=2, msb_first=False,
         no_read=True, use_reg_cache=False)
 
   def set(self, value):

@@ -32,14 +32,14 @@ class ps8742(hw_driver.HwDriver):
           types detailed below.
 
     Mandatory Params:
-      slv: integer, 7-bit i2c slave address
+      child: integer, 7-bit i2c child address
       offset: integer, gpio's bit position from lsb
     Optional Params:
     """
     super(ps8742, self).__init__(interface, params)
-    slave = self._get_slave()
+    child = self._get_child()
     self._i2c_obj = i2c_reg.I2cReg.get_device(
-        self._interface, slave, addr_len=1, reg_len=1, msb_first=True,
+        self._interface, child, addr_len=1, reg_len=1, msb_first=True,
         no_read=False, use_reg_cache=False)
 
   def _Get_usb3(self):
@@ -67,13 +67,13 @@ class ps8742(hw_driver.HwDriver):
       value = value | self.USB_MUX_CTRL_USB3_EN
     self._i2c_obj._write_reg(self.USB_MUX_CTRL, value)
 
-  def _get_slave(self):
+  def _get_child(self):
     """Check and return needed params to call driver.
 
     Returns:
-      slave: 7-bit i2c address
+      child: 7-bit i2c address
     """
-    if 'slv' not in self._params:
-      raise Ps8742Error('getting slave address')
-    slave = int(self._params['slv'], 0)
-    return slave
+    if 'child' not in self._params:
+      raise Ps8742Error('getting child address')
+    child = int(self._params['child'], 0)
+    return child

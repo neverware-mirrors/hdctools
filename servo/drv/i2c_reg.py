@@ -7,8 +7,8 @@ import logging
 
 import hw_driver
 
-# dictionary key'd off (interface, slv) with value == Ina219 instance such that
-# multiple controls that map to same physical IC on same I2C bus share one
+# dictionary key'd off (interface, child) with value == Ina219 instance such
+# that multiple controls that map to same physical IC on same I2C bus share one
 # object.  This caching allows object to keep track of stateful things about the
 # the device such as where the register index is pointing.
 _devices = {}
@@ -21,14 +21,14 @@ class I2cRegError(hw_driver.HwDriverError):
 class I2cReg(object):
   """Provides methods for devices with registered indexing over i2c."""
 
-  def __init__(self, i2c, slave, addr_len=1, reg_len=2, msb_first=True,
+  def __init__(self, i2c, child, addr_len=1, reg_len=2, msb_first=True,
                no_read=False, use_reg_cache=False):
     """I2cReg constructor.
 
     Args:
       i2c: instance provides methods to access device via i2c
-          Must include: wr_rd(slave, bytes to wr, wr_list, bytes to read)
-      slave: 7-bit i2c address of device
+          Must include: wr_rd(child, bytes to wr, wr_list, bytes to read)
+      child: 7-bit i2c address of device
       addr_len: length of register address in bytes
       reg_len: length of register in bytes
       msb_first: if True, most significant byte is first
@@ -41,7 +41,7 @@ class I2cReg(object):
     """
     self._logger = logging.getLogger('I2cReg')
     self._i2c = i2c
-    self._slave = slave
+    self._child = child
     self._addr_len = addr_len
     self._reg_len = reg_len
     self._msb_first = msb_first
@@ -52,21 +52,21 @@ class I2cReg(object):
     # TODO(tboch) fixme addr_len unused
     if self._addr_len != 1:
       raise ValueError('address length must be 1')
-    # 7-bit i2c has 112 valid slaves addresses from 0x8 -> 0x77 only
-    if (slave < 0x8) or (slave > 0x77):
-      raise I2cRegError('slave addr range should be within (8,119)')
+    # 7-bit i2c has 112 valid childs addresses from 0x8 -> 0x77 only
+    if (child < 0x8) or (child > 0x77):
+      raise I2cRegError('child addr range should be within (8,119)')
 
   @classmethod
-  def get_device(cls, i2c, slave, addr_len, reg_len, msb_first, no_read,
+  def get_device(cls, i2c, child, addr_len, reg_len, msb_first, no_read,
                  use_reg_cache):
     """Get device from module dict or create one if it doesn't exist.
 
     This class method allows sharing of objects that have the same i2c bus and
-    slave address.  This makes it possible to keep stateful information about
+    child address.  This makes it possible to keep stateful information about
     the i2c device.  Particularly its register index.  Many i2c devices have
     registered indexing and store there current register index internally.
     Caching it allows this driver to reduce the size of the transaction to the
-    i2c slave by removing the register index when the device is already pointing
+    i2c child by removing the register index when the device is already pointing
     to that register
 
     Args:
@@ -75,11 +75,11 @@ class I2cReg(object):
     Returns:
       instance of I2cReg object
     """
-    key = (i2c, slave)
+    key = (i2c, child)
     if key in _devices:
       return _devices[key]
     else:
-      dev_obj = cls(i2c, slave, addr_len, reg_len, msb_first, no_read,
+      dev_obj = cls(i2c, child, addr_len, reg_len, msb_first, no_read,
                     use_reg_cache)
       _devices[key] = dev_obj
     return dev_obj
@@ -171,7 +171,7 @@ class I2cReg(object):
     else:
       self._logger.debug('Ignoring register index %d is cached' % reg)
 
-    rlist = self._i2c.wr_rd(self._slave, wlist, rcnt)
+    rlist = self._i2c.wr_rd(self._child, wlist, rcnt)
     if self._use_reg_cache:
       self._reg = reg
     return rlist

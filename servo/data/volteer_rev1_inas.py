@@ -5,7 +5,7 @@
 config_type='servod'
 
 inas = [
-#    drvname,   slv,      name,               nom,  sense, mux,   is_calib
+#    drvname,   child,      name,               nom,  sense, mux,   is_calib
     ('ina3221', '0x40:0', 'ppvar_vccin_aux',  1.80, 0.002, 'rem', True), # R571
     ('ina3221', '0x40:1', 'pp1100_dram',      1.10, 0.002, 'rem', True), # R592
     ('ina3221', '0x40:2', 'pp3300_ssd_a',     3.30, 0.005, 'rem', True), # R276

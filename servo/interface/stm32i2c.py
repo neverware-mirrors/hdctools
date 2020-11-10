@@ -34,9 +34,9 @@ class Si2cBus(i2c_base.BaseI2CBus):
 
   Usage:
     bus = Si2cBus()
-    # read 1 byte from slave(0x48) register(0x16)
+    # read 1 byte from child(0x48) register(0x16)
     bus.wr_rd(0x48, [0x16], 1)
-    # write 2 bytes to slave(0x48) register(0x20)
+    # write 2 bytes to child(0x48) register(0x20)
     bus.wr_rd(0x48, [0x20, 0x01, 0x02])
 
   Instance Variables:
@@ -83,14 +83,14 @@ class Si2cBus(i2c_base.BaseI2CBus):
     """The usb device information."""
     return self._susb.get_device_info()
 
-  def _raw_wr_rd(self, slave_address, write_list, read_count=None):
+  def _raw_wr_rd(self, child_address, write_list, read_count=None):
     """Implements hdctools wr_rd() interface.
 
     This function writes byte values list to I2C device, then reads
     byte values from the same device.
 
     Args:
-      slave_address: 7 bit I2C slave address.
+      child_address: 7 bit I2C child address.
       write_list: list of output byte values [0~255].
       read_count: number of byte values to read from device.
 
@@ -106,8 +106,8 @@ class Si2cBus(i2c_base.BaseI2CBus):
     """
     self._logger.debug(
         'Si2c.wr_rd('
-        'port=%d, slave_address=0x%x, write_list=%s, read_count=%s)' %
-        (self._port, slave_address, write_list, read_count))
+        'port=%d, child_address=0x%x, write_list=%s, read_count=%s)' %
+        (self._port, child_address, write_list, read_count))
 
     # Clean up args from python style to correct types.
     if not write_list:
@@ -127,7 +127,7 @@ class Si2cBus(i2c_base.BaseI2CBus):
     # Encode the full write count across the multiple fields involved.
     port_field = self._port | ((write_length >> 4) & 0xF0)
     write_field = write_length & 0xFF
-    cmd = [port_field, slave_address, write_field]
+    cmd = [port_field, child_address, write_field]
 
     # Encode the full read count across the multiple fields involved.
     if read_count <= 0x7F:

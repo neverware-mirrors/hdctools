@@ -4,17 +4,17 @@
     <name>krill_rom_params</name>
     <doc>Get or set EEPROM paramters on Krill</doc>
     <params cmd="get" subtype="rom_params" interface="4" drv="m24c02"
-            slv="0x52"></params>
+            child="0x52"></params>
     <params cmd="set" subtype="rom_params" interface="4" drv="m24c02"
-            slv="0x52" input_type="str"></params>
+            child="0x52" input_type="str"></params>
   </control>
   <control>
     <name>krill_rom_data</name>
     <doc>Get or set EEPROM data on Krill</doc>
     <params cmd="get" subtype="data" interface="4" drv="m24c02"
-            slv="0x52"></params>
+            child="0x52"></params>
     <params cmd="set" subtype="data" interface="4" drv="m24c02"
-            slv="0x52" input_type="str"></params>
+            child="0x52" input_type="str"></params>
   </control>
   <!-- ********** INAs *********** -->
   <!-- INA1 -->
@@ -22,7 +22,7 @@
     <name>krill_ppvar_sys_mv</name>
     <doc>Voltage of whale_ppvar_sys rail in millivolts on
     i2c_mux:rem</doc>
-    <params interface="2" drv="ina219" slv="0x40" mux="rem"
+    <params interface="2" drv="ina219" child="0x40" mux="rem"
     rsense="0.01" type="get" subtype="millivolts" nom="3.3">
     </params>
   </control>
@@ -31,7 +31,7 @@
     <name>krill_pp3300_always_mv</name>
     <doc>Voltage of whale_pp3300_always rail in millivolts on
     i2c_mux:rem</doc>
-    <params interface="2" drv="ina219" slv="0x44" mux="rem"
+    <params interface="2" drv="ina219" child="0x44" mux="rem"
     rsense="0.1" type="get" subtype="millivolts" nom="3.3">
     </params>
   </control>
@@ -40,7 +40,7 @@
     <name>krill_usbc_vbus_mv</name>
     <doc>Voltage of whale_usbc_vbus rail in millivolts on
     i2c_mux:rem</doc>
-    <params interface="2" drv="ina219" slv="0x48" mux="rem"
+    <params interface="2" drv="ina219" child="0x48" mux="rem"
     rsense="0.1" type="get" subtype="millivolts" nom="5.0">
     </params>
   </control>
@@ -49,7 +49,7 @@
     <name>krill_pp3300_out_mv</name>
     <doc>Voltage of whale_pp3300_out rail in millivolts on
     i2c_mux:rem</doc>
-    <params interface="2" drv="ina219" slv="0x4C" mux="rem"
+    <params interface="2" drv="ina219" child="0x4C" mux="rem"
     rsense="0.01" type="get" subtype="millivolts" nom="3.3">
     </params>
   </control>
@@ -58,7 +58,7 @@
     <name>krill_pp1350_mv</name>
     <doc>Voltage of whale_pp1350 rail in millivolts on
     i2c_mux:rem</doc>
-    <params interface="2" drv="ina219" slv="0x41" mux="rem"
+    <params interface="2" drv="ina219" child="0x41" mux="rem"
     rsense="0.02" type="get" subtype="millivolts" nom="1.35">
     </params>
   </control>
@@ -67,7 +67,7 @@
     <name>krill_ppvar_lb_ca0_mv</name>
     <doc>Voltage of whale_ppvar_lb_ca0 rail in millivolts on
     i2c_mux:rem</doc>
-    <params interface="2" drv="ina219" slv="0x45" mux="rem"
+    <params interface="2" drv="ina219" child="0x45" mux="rem"
     rsense="0.1" type="get" subtype="millivolts" nom="5.0">
     </params>
   </control>
@@ -76,7 +76,7 @@
     <name>krill_ppvar_lb_ca1_mv</name>
     <doc>Voltage of whale_ppvar_lb_ca1 rail in millivolts on
     i2c_mux:rem</doc>
-    <params interface="2" drv="ina219" slv="0x49" mux="rem"
+    <params interface="2" drv="ina219" child="0x49" mux="rem"
     rsense="0.1" type="get" subtype="millivolts" nom="5.0">
     </params>
   </control>
@@ -85,7 +85,7 @@
     <name>krill_pp3300_base_mv</name>
     <doc>Voltage of whale_pp3300_base rail in millivolts on
     i2c_mux:rem</doc>
-    <params interface="2" drv="ina219" slv="0x4D" mux="rem"
+    <params interface="2" drv="ina219" child="0x4D" mux="rem"
     rsense="0.1" type="get" subtype="millivolts" nom="3.3">
     </params>
   </control>
@@ -94,7 +94,7 @@
     <name>krill_ppvar_soc_mv</name>
     <doc>Voltage of whale_ppvar_soc rail in millivolts on
     i2c_mux:rem</doc>
-    <params interface="2" drv="ina219" slv="0x42" mux="rem"
+    <params interface="2" drv="ina219" child="0x42" mux="rem"
     rsense="0.1" type="get" subtype="millivolts" nom="3.3">
     </params>
   </control>
@@ -103,7 +103,7 @@
     <name>krill_pp1050_avdd_mv</name>
     <doc>Voltage of whale_pp1050_avdd rail in millivolts on
     i2c_mux:rem</doc>
-    <params interface="2" drv="ina219" slv="0x46" mux="rem"
+    <params interface="2" drv="ina219" child="0x46" mux="rem"
     rsense="0.1" type="get" subtype="millivolts" nom="1.05">
     </params>
   </control>
@@ -112,7 +112,7 @@
     <name>krill_pp2800_rcama_mv</name>
     <doc>Voltage of whale_pp2800_rcama rail in millivolts on
     i2c_mux:rem</doc>
-    <params interface="2" drv="ina219" slv="0x4A" mux="rem"
+    <params interface="2" drv="ina219" child="0x4A" mux="rem"
     rsense="0.05" type="get" subtype="millivolts" nom="2.8">
     </params>
   </control>
@@ -121,7 +121,7 @@
     <name>krill_avddio_1v05_mv</name>
     <doc>Voltage of whale_avvdio_1v05 rail in millivolts on
     i2c_mux:rem</doc>
-    <params interface="2" drv="ina219" slv="0x4E" mux="rem"
+    <params interface="2" drv="ina219" child="0x4E" mux="rem"
     rsense="0.02" type="get" subtype="millivolts" nom="1.05">
     </params>
   </control>
@@ -130,7 +130,7 @@
     <name>krill_pp2800l_fcam_mv</name>
     <doc>Voltage of whale_pp2800l_fcam rail in millivolts on
     i2c_mux:rem</doc>
-    <params interface="2" drv="ina219" slv="0x43" mux="rem"
+    <params interface="2" drv="ina219" child="0x43" mux="rem"
     rsense="0.03" type="get" subtype="millivolts" nom="2.8">
     </params>
   </control>
@@ -139,7 +139,7 @@
     <name>krill_ppvar_charger_sw_mv</name>
     <doc>Voltage of whale_ppvar_charger_sw rail in millivolts on
     i2c_mux:rem</doc>
-    <params interface="2" drv="ina219" slv="0x47" mux="rem"
+    <params interface="2" drv="ina219" child="0x47" mux="rem"
     rsense="0.05" type="get" subtype="millivolts" nom="3.3">
     </params>
   </control>
@@ -148,7 +148,7 @@
     <name>krill_ppvar_vbatt_conn_base_mv</name>
     <doc>Voltage of whale_ppvar_vbatt_conn_base rail in millivolts on
     i2c_mux:rem</doc>
-    <params interface="2" drv="ina219" slv="0x4B" mux="rem"
+    <params interface="2" drv="ina219" child="0x4B" mux="rem"
     rsense="0.02" type="get" subtype="millivolts" nom="3.3">
     </params>
   </control>
@@ -157,64 +157,64 @@
     <name>krill_pp4700_base_mv</name>
     <doc>Voltage of whale_pp4700_base rail in millivolts on
     i2c_mux:rem</doc>
-    <params interface="2" drv="ina219" slv="0x4F" mux="rem"
+    <params interface="2" drv="ina219" child="0x4F" mux="rem"
     rsense="0.05" type="get" subtype="millivolts" nom="4.7">
     </params>
   </control>
-  <!-- BB_I2C slv 0x22 : NXP ioexpander pca9534 on krill -->
+  <!-- BB_I2C child 0x22 : NXP ioexpander pca9534 on krill -->
   <control>
     <name>krill_lid_present_hall</name>
     <doc>Krill lid present hall signal</doc>
-    <params cmd="set" interface="2" drv="pca9537" slv="0x22" port="0"
+    <params cmd="set" interface="2" drv="pca9537" child="0x22" port="0"
             offset="0" width="1" map="onoff_i" init="off"></params>
   </control>
   <control>
     <name>krill_btn_r_volu</name>
     <doc>DUT volume-up button control</doc>
-    <params cmd="set" interface="2" drv="pca9537" slv="0x22" port="0"
+    <params cmd="set" interface="2" drv="pca9537" child="0x22" port="0"
             offset="1" width="1" map="onoff_i" init="off"></params>
   </control>
   <control>
     <name>krill_debug_en</name>
     <doc>Krill debug enable signal</doc>
-    <params cmd="set" interface="2" drv="pca9537" slv="0x22" port="0"
+    <params cmd="set" interface="2" drv="pca9537" child="0x22" port="0"
             offset="2" width="1" map="onoff_i" init="off"></params>
   </control>
   <control>
     <name>krill_charge_done_r</name>
     <doc>Krill charge done signal</doc>
-    <params cmd="set" interface="2" drv="pca9537" slv="0x22" port="0"
+    <params cmd="set" interface="2" drv="pca9537" child="0x22" port="0"
             offset="3" width="1" map="onoff" init="off"></params>
   </control>
   <control>
     <name>krill_charge_en_r</name>
     <doc>Krill charge enable signal</doc>
-    <params cmd="set" interface="2" drv="pca9537" slv="0x22" port="0"
+    <params cmd="set" interface="2" drv="pca9537" child="0x22" port="0"
             offset="4" width="1" map="onoff" init="off"></params>
   </control>
   <control>
     <name>krill_lid_closed_r</name>
     <doc>Krill lid closed signal</doc>
-    <params cmd="set" interface="2" drv="pca9537" slv="0x22" port="0"
+    <params cmd="set" interface="2" drv="pca9537" child="0x22" port="0"
             offset="5" width="1" map="onoff_i" init="off"></params>
   </control>
   <control>
     <name>krill_btn_r_pwr</name>
     <doc>DUT power button control</doc>
-    <params cmd="set" interface="2" drv="pca9537" slv="0x22" port="0"
+    <params cmd="set" interface="2" drv="pca9537" child="0x22" port="0"
             offset="6" width="1" map="onoff_i" init="off"></params>
   </control>
   <control>
     <name>krill_btn_r_vold</name>
     <doc>DUT volume-down button control</doc>
-    <params cmd="set" interface="2" drv="pca9537" slv="0x22" port="0"
+    <params cmd="set" interface="2" drv="pca9537" child="0x22" port="0"
             offset="7" width="1" map="onoff_i" init="off"></params>
   </control>
-  <!-- BB_I2C slv 0x2f : digital potentiometer AD5248 -->
+  <!-- BB_I2C child 0x2f : digital potentiometer AD5248 -->
   <control>
     <name>krill_sleeve_out</name>
     <doc>Krill potentiometer sleeve out resistance control</doc>
-    <params cmd="set" interface="2" drv="ad5248" slv="0x2f" port="0"
+    <params cmd="set" interface="2" drv="ad5248" child="0x2f" port="0"
             subtype="r10k"></params>
   </control>
 </root>

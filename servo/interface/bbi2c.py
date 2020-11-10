@@ -49,13 +49,13 @@ class BBi2c(i2c_base.BaseI2CBus):
     """Name to request interface by in interface config maps."""
     return 'bb_i2c'
 
-  def _write(self, slv, address, wlist):
+  def _write(self, child, address, wlist):
     """Preform a single i2cset write command.
 
     Args:
-      slv: 7-bit address of the slave device.
+      child: 7-bit address of the child device.
       address: data address we are writing to. Will be written to the i2c bus.
-      wlist: list of bytes to write to the slave. List length must be between
+      wlist: list of bytes to write to the child. List length must be between
           0-2 bytes.
 
     Raises:
@@ -63,7 +63,7 @@ class BBi2c(i2c_base.BaseI2CBus):
     """
     # i2cset can write up to 3 bytes to an i2c device in the format of:
     # [1-byte address][0-2 bytes of data]
-    args = ['i2cset', '-y', str(self._bus_num), '0x%02x' % slv, address]
+    args = ['i2cset', '-y', str(self._bus_num), '0x%02x' % child, address]
     if len(wlist) > 2:
       raise BBi2cError('Can only write up to 3 bytes (1-byte register address '
                        'and 2-byte word) per i2cset command. '
@@ -79,14 +79,14 @@ class BBi2c(i2c_base.BaseI2CBus):
       logging.debug(' '.join(args))
       subprocess.check_call(args)
     except subprocess.CalledProcessError:
-      raise BBi2cError('Failed i2c write to slave address: %s data: %s' %
-                       (slv, wlist))
+      raise BBi2cError('Failed i2c write to child address: %s data: %s' %
+                       (child, wlist))
 
-  def _read(self, slv, address, rcnt):
-    """Read from a slave i2c device.
+  def _read(self, child, address, rcnt):
+    """Read from a child i2c device.
 
     Args:
-      slv: 7-bit address of the slave device.
+      child: 7-bit address of the child device.
       address: data address to read.
       rcnt: number of bytes (0-2) to read from the device.
 
@@ -103,15 +103,15 @@ class BBi2c(i2c_base.BaseI2CBus):
       raise BBi2cError('Can only read up to 2 bytes per i2cget command.')
 
     if rcnt == 2:
-      return self._read_two_bytes(slv, address)
+      return self._read_two_bytes(child, address)
 
-    return self._read_one_byte(slv)
+    return self._read_one_byte(child)
 
-  def _read_one_byte(self, slv):
-    """Read one byte from a slave i2c device.
+  def _read_one_byte(self, child):
+    """Read one byte from a child i2c device.
 
     Args:
-      slv: 7-bit address of the slave device.
+      child: 7-bit address of the child device.
 
     Returns:
       list of bytes read from i2c device.
@@ -120,21 +120,22 @@ class BBi2c(i2c_base.BaseI2CBus):
       BBi2cError: If read (i2cget call) fails.
     """
     read_bytes = []
-    args = ['i2cget', '-y', str(self._bus_num), '0x%x' % slv]
+    args = ['i2cget', '-y', str(self._bus_num), '0x%x' % child]
     try:
       logging.debug(' '.join(args))
       read_value = subprocess.check_output(args)
     except subprocess.CalledProcessError:
-      raise BBi2cError('Failed i2c read of 1 byte from slave address: %s' % slv)
+      raise BBi2cError('Failed i2c read of 1 byte from child address: %s' \
+                       % child)
     read_value_int = int(read_value, 0)
     read_bytes.append(read_value_int)
     return read_bytes
 
-  def _read_two_bytes(self, slv, address):
-    """Read two byte from a slave i2c device.
+  def _read_two_bytes(self, child, address):
+    """Read two byte from a child i2c device.
 
     Args:
-      slv: 7-bit address of the slave device.
+      child: 7-bit address of the child device.
       address: data address to read.
 
     Returns:
@@ -144,13 +145,13 @@ class BBi2c(i2c_base.BaseI2CBus):
       BBi2cError: If read (i2cget call) fails.
     """
     read_bytes = []
-    args = ['i2cget', '-y', str(self._bus_num), '0x%x' % slv, address, 'w']
+    args = ['i2cget', '-y', str(self._bus_num), '0x%x' % child, address, 'w']
     try:
       logging.debug(' '.join(args))
       read_value = subprocess.check_output(args)
     except subprocess.CalledProcessError:
-      raise BBi2cError('Failed i2c read of 2 bytes from slave address: %s, '
-                       'data address: %s.' % (slv, address))
+      raise BBi2cError('Failed i2c read of 2 bytes from child address: %s, '
+                       'data address: %s.' % (child, address))
     read_value_int = int(read_value, 0)
     # Grab the second byte first (converting little endian to big).
     read_bytes.append(read_value_int & 0xff)
@@ -158,12 +159,12 @@ class BBi2c(i2c_base.BaseI2CBus):
     read_bytes.append(read_value_int >> 8)
     return read_bytes
 
-  def _raw_wr_rd(self, slv, wlist, rcnt):
-    """Write and/or read a slave i2c device.
+  def _raw_wr_rd(self, child, wlist, rcnt):
+    """Write and/or read a child i2c device.
 
     Args:
-      slv: 7-bit address of the slave device
-      wlist: list of bytes to write to the slave.  If list length is zero its
+      child: 7-bit address of the child device
+      wlist: list of bytes to write to the child.  If list length is zero its
           just a read.
       rcnt: number of bytes (0-2) to read from the device. If zero, its just a
           write.
@@ -171,13 +172,13 @@ class BBi2c(i2c_base.BaseI2CBus):
     Returns:
       list of bytes read from i2c device.
     """
-    self._logger.debug('wr_rd. slv: 0x%x, wlist: %s, rcnt: %s', slv, wlist,
+    self._logger.debug('wr_rd. child: 0x%x, wlist: %s, rcnt: %s', child, wlist,
                        rcnt)
     address = '0x%02x' % wlist[0]
     if wlist:
-      self._write(slv, address, wlist[1:])
+      self._write(child, address, wlist[1:])
 
-    return self._read(slv, address, rcnt)
+    return self._read(child, address, rcnt)
 
 
 def test():
@@ -189,19 +190,19 @@ def test():
   i2c = BBi2c(3)
 
   wbuf = [0]
-  slv = 0x21
-  rbuf = i2c.wr_rd(slv, wbuf, 1)
-  logging.info('first: i2c read of slv=0x%02x reg=0x%02x == 0x%02x', slv,
+  child = 0x21
+  rbuf = i2c.wr_rd(child, wbuf, 1)
+  logging.info('first: i2c read of child=0x%02x reg=0x%02x == 0x%02x', child,
                wbuf[0], rbuf[0])
   errcnt = 0
   for cnt in range(1000):
     try:
-      rbuf = i2c.wr_rd(slv, [], 1)
+      rbuf = i2c.wr_rd(child, [], 1)
     except:
       errcnt += 1
       logging.error('errs = %d cnt = %d', errcnt, cnt)
 
-  logging.info('last: i2c read of slv=0x%02x reg=0x%02x == 0x%02x', slv,
+  logging.info('last: i2c read of child=0x%02x reg=0x%02x == 0x%02x', child,
                wbuf[0], rbuf[0])
 
 

@@ -45,33 +45,33 @@ def pca95xx(interface, params):
     pca95xx instance that has inherited from either pc9500 or pca9537 driver.
   """
 
-  def determine_device(interface, slave):
+  def determine_device(interface, child):
     """Determine which i2c device is present.
 
     There are number of these I2c->GPIO expanders that all share similar
-    functionality and unfortunately slave addresses.  Two such are the pca9500
+    functionality and unfortunately child addresses.  Two such are the pca9500
     (NXP) and pca953x (TI) devices.  They don't have any ID registers to
     formally distiguish them but the pca9500 does have an EEPROM at + 0x30 from
-    the base slave address which serves as a reasonable identifier.
+    the base child address which serves as a reasonable identifier.
 
     Returns:
       driver object pca9500 if EEPROM identified else pca9537.
     """
-    eeprom_slave = 0x30 + slave
+    eeprom_child = 0x30 + child
 
     try:
-      # Due to stderr messages generated for failure to read pca9500 slave we
+      # Due to stderr messages generated for failure to read pca9500 child we
       # quiet stderr for those flex cables that have pca9537 instead.  See
       # crbug.com/233747 for more details.
       with stderr_redirected():
-        interface.wr_rd(eeprom_slave, [], 1)
+        interface.wr_rd(eeprom_child, [], 1)
       base = pca9500.pca9500
     except Exception:
       base = pca9537.pca9537
 
     return base
 
-  slave = int(params['slv'], 0)
-  base = determine_device(interface, slave)
+  child = int(params['child'], 0)
+  base = determine_device(interface, child)
 
   return base(interface, params)

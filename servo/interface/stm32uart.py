@@ -183,7 +183,7 @@ class Suart(uart.Uart):
 
     tty.setraw(self._ptym, termios.TCSADRAIN)
 
-    # Generate a HUP flag on pty slave fd.
+    # Generate a HUP flag on pty child fd.
     os.fdopen(s).close()
 
     self._logger.debug('stm32 uart pty is %s' % self.get_pty())

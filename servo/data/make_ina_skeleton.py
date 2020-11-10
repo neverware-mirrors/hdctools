@@ -34,7 +34,7 @@ ina_tag_str = """
 # include all types of supported tuples, depending on your needs.
 # See other .py files for examples.
 # DRV: what driver the inas use. 'ina219' 'ina231' 'ina3221' 'sweetberry'.
-# SLV: i2c slave addr. For sweetberry this can also be a medusa header pin
+# SLV: i2c child addr. For sweetberry this can also be a medusa header pin
 #      tuple, e.g. (1,3).
 # SUFFIX: in combination with 'ina3221': channel of the INA rail is on.
 #                             'sweetberry': i2c port the INA is on.

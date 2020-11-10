@@ -75,7 +75,7 @@ class ina2xx(hw_driver.HwDriver):
       cast to types detailed below.
 
     Mandatory Params:
-      slv: integer, 7-bit i2c slave address
+      child: integer, 7-bit i2c child address
       subtype: string, used by get/set method of base class to decide
         how to dispatch request.  Examples are: millivolts, milliamps,
         milliwatts
@@ -90,11 +90,11 @@ class ina2xx(hw_driver.HwDriver):
     """
     super(ina2xx, self).__init__(interface, params)
     self._logger.debug('')
-    self._slave = int(self._params['slv'], 0)
+    self._child = int(self._params['child'], 0)
     # TODO(tbroch) Re-visit enabling use_reg_cache once re-req's are
     # incorporated into cache's key field ( crosbug.com/p/2678 )
     self._i2c_obj = i2c_reg.I2cReg.get_device(
-        self._interface, self._slave, addr_len=1, reg_len=2, msb_first=True,
+        self._interface, self._child, addr_len=1, reg_len=2, msb_first=True,
         no_read=False, use_reg_cache=False)
     if 'subtype' not in self._params:
       raise Ina2xxError('Unable to find subtype param')
@@ -518,7 +518,7 @@ def testit(testname, adc):
 
   Args:
     testname: string name of test
-    adc: integer of 7-bit i2c slave address
+    adc: integer of 7-bit i2c child address
   """
   for i in range(0, 6):
     print('%s: [%d] = 0x%04x' % (testname, i, adc._read_reg(i)))
@@ -543,15 +543,15 @@ def test():
   i2c.open()
   i2c.setclock(100000)
 
-  slv = 0x40
+  child = 0x40
   wbuf = [0]
   # try raw transaction to ftdii2c library reading cfg reg 0x399f
-  rbuf = i2c.wr_rd(slv, wbuf, 2)
-  logging.info('001: i2c read of slv=0x%02x reg=0x%02x == 0x%02x%02x', slv,
+  rbuf = i2c.wr_rd(child, wbuf, 2)
+  logging.info('001: i2c read of child=0x%02x reg=0x%02x == 0x%02x%02x', child,
                wbuf[0], rbuf[0], rbuf[1])
 
   # same read of cfg (0x399f) using ina219 module
-  adc = ina219.ina219(i2c, slv, 'foo', 0.010)
+  adc = ina219.ina219(i2c, child, 'foo', 0.010)
 
   adc.calibrate()
   testit('POR  ', adc)

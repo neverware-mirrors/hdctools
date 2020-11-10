@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 # These devices are ina3221 (3-channels/i2c address) devices
-#        drvname,   slv,      name,              nom,  sense, mux,   is_calib
+#        drvname,   child,      name,              nom,  sense, mux,   is_calib
 #
 # To measure values on these INAs, make sure to run:
 # dut-control i2c_mux_en:on i2c_mux:rem dut_i2c_mux:inas

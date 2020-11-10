@@ -28,7 +28,7 @@
   <control>
     <name>uart2_en</name>
     <alias>ec_uart_en</alias>
-    <params clobber_ok="" interface="2" drv="tca6416" slv="0x24"
+    <params clobber_ok="" interface="2" drv="tca6416" child="0x24"
     port="0" offset="6" map="onoff_i" init="on"></params>
   </control>
   <control>

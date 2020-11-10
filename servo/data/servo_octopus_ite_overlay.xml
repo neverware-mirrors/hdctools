@@ -14,7 +14,7 @@
     <name>dut_i2c_mux</name>
     <doc>Controls 2-to-1 i2c mux (TCA9543) on dut switching between
     inas and ec_prog.</doc>
-    <params clobber_ok="" interface="2" drv="pca9546" slv="0x70"
+    <params clobber_ok="" interface="2" drv="pca9546" child="0x70"
     map="dut_i2c_mux"></params>
   </control>
   <control>

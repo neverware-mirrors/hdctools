@@ -60,7 +60,7 @@ LCD_DATA1_AS_INIT = 0x30
 LCD_DATA2_AS_INIT = 0x20
 
 # Devices shared among driver objects:
-#   (interface instance, slv) => Lcm2004Device instance
+#   (interface instance, child) => Lcm2004Device instance
 lcm2004_devices = {}
 
 
@@ -98,14 +98,14 @@ class lcm2004(hw_driver.HwDriver):
           below.
 
     Mandatory Params:
-      slv: integer, 7-bit i2c slave address
+      child: integer, 7-bit i2c child address
 
     Optional Params:
       N/A
     """
     super(lcm2004, self).__init__(interface, params)
 
-    device_key = (interface, self._get_slave())
+    device_key = (interface, self._get_child())
     if device_key not in lcm2004_devices:
       self._device = Lcm2004Device()
       lcm2004_devices[device_key] = self._device
@@ -148,19 +148,19 @@ class lcm2004(hw_driver.HwDriver):
     if v & 0xFF != v:
       raise LcmError('0x%x is not 8-bit' % v)
 
-  def _get_slave(self):
+  def _get_child(self):
     """Checks and return needed params to call driver.
 
     Returns:
-      slave: 7-bit i2c address
+      child: 7-bit i2c address
 
     Raises:
-      LcmError: If the 'slv' doesn't exist.
+      LcmError: If the 'child' doesn't exist.
     """
-    if 'slv' not in self._params:
-      raise LcmError('Missing slave address "slv"')
-    slave = int(self._params['slv'], 0)
-    return slave
+    if 'child' not in self._params:
+      raise LcmError('Missing child address "child"')
+    child = int(self._params['child'], 0)
+    return child
 
   def _write_byte(self, byte):
     """Writes one byte to PCF8574(remote IO expander).
@@ -169,7 +169,7 @@ class lcm2004(hw_driver.HwDriver):
       byte: One byte sent to IIC bus.
     """
     self._check_8bit(byte)
-    self._interface.wr_rd(self._get_slave(), [byte], 0)
+    self._interface.wr_rd(self._get_child(), [byte], 0)
 
   def _write_expander(self, byte):
     """Writes the byte to expander.

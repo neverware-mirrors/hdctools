@@ -15,12 +15,12 @@
 #define MAX_BUF_SIZE 128
 
 static void usage(char *progname) {
-  printf("%s [switch args] <slv> [<reg0> [ <reg1> ] ] rd <cnt>\n", progname);
+  printf("%s [switch args] <child> [<reg0> [ <reg1> ] ] rd <cnt>\n", progname);
   puts("\tor");
-  printf("%s [switch args] <slv> wr <b0> [<b1> ... <bn>]\n", progname);
+  printf("%s [switch args] <child> wr <b0> [<b1> ... <bn>]\n", progname);
   puts("\nWhere:");
-  puts("        <slv>      : slave device ( 1 byte )");
-  puts("        <regX>     : index register into slave.  Can be 1 || 2 bytes");
+  puts("        <child>      : child device ( 1 byte )");
+  puts("        <regX>     : index register into child.  Can be 1 || 2 bytes");
   puts("        rd|wr      : read or write");
   puts("        <cnt>      : bytes to read");
   puts("        <b1>..<bn> : bytes to write");
@@ -44,22 +44,22 @@ static void prn_output(uint8_t *buf, int cnt) {
 }
 
 static int parse_i2c_args(uint8_t *wbuf, int *wcnt, int *rcnt,
-                          uint8_t *slv, unsigned argc, char **argv) {
+                          uint8_t *child, unsigned argc, char **argv) {
   unsigned i;
   int cnt = 0;
-  unsigned long int slv_ul;
+  unsigned long int child_ul;
 
   if (argc < 4) {
     prn_error("More arguments please\n\n");
     usage(argv[0]);
   }
-  slv_ul = strtoul(argv[1], NULL, 0);
-  // 7-bit i2c has 112 valid slaves from 0x8 -> 0x77 only
-  if ((slv_ul < 0x8) || (slv_ul > 0x77)) {
-    prn_error("Invalid slave address 0x%lx\n", slv_ul);
+  child_ul = strtoul(argv[1], NULL, 0);
+  // 7-bit i2c has 112 valid childs from 0x8 -> 0x77 only
+  if ((child_ul < 0x8) || (child_ul > 0x77)) {
+    prn_error("Invalid child address 0x%lx\n", child_ul);
     return -1;
   }
-  *slv = (uint8_t)slv_ul;
+  *child = (uint8_t)child_ul;
 
   /* argc[2] == rd|wr :: raw read|write */
   /* argc[3:4] == rd :: registered read */
@@ -96,7 +96,7 @@ int main (int argc, char **argv) {
 
   uint8_t wbuf[MAX_BUF_SIZE];
   uint8_t rbuf[MAX_BUF_SIZE];
-  uint8_t slv;
+  uint8_t child;
 
   int wcnt = 0;
   int rcnt = 0;
@@ -117,7 +117,7 @@ int main (int argc, char **argv) {
   if ((args_consumed = fcom_args(&fargs, argc, argv)) < 0) {
     usage(argv[0]);
   }
-  parse_i2c_args(wbuf, &wcnt, &rcnt, &slv, (argc - args_consumed),
+  parse_i2c_args(wbuf, &wcnt, &rcnt, &child, (argc - args_consumed),
                  &argv[args_consumed]);
 
   if (!rcnt && !wcnt) {
@@ -136,7 +136,7 @@ int main (int argc, char **argv) {
 
   if ((rv = fi2c_setclock(&fic, 100000)))
     return rv;
-  fic.slv = slv;
+  fic.child = child;
 
   if ((rv = fi2c_wr_rd(&fic, wbuf, wcnt, rbuf, rcnt))) {
     prn_error("Problem reading/writing i2c\n");

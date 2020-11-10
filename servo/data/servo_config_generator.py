@@ -70,7 +70,7 @@ class ServoControlGenerator(object):
   """
 
   # order of the attributes for the params element.
-  params_attr_order = ['cmd', 'interface', 'drv', 'slv',
+  params_attr_order = ['cmd', 'interface', 'drv', 'child',
                        'channel', 'type', 'subtype']
 
   def __init__(self, name, docstring, params, params2=None):

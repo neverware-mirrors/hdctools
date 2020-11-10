@@ -16,12 +16,12 @@ inline = """
     <name>adc_mux</name>
     <doc>4 to 1 mux to steer remote i2c i2c_mux:rem to two sets of
     16 INA219 ADCs. Note they are only on leg0 and leg1</doc>
-    <params clobber_ok="" interface="2" drv="pca9546" slv="0x70"
+    <params clobber_ok="" interface="2" drv="pca9546" child="0x70"
     map="adc_mux"></params>
   </control>
 """
 
-#         drvname,  slv,    name,          nom,   sense,  mux, is_calib
+#         drvname,  child,    name,          nom,   sense,  mux, is_calib
 inas = [('ina219', '0x40', 'vs_wlan',      3.300, 0.100, 'rem', True),
         ('ina219', '0x41', 'vs',           0.975, 0.040, 'rem', True),
         ('ina219', '0x42', 'v_vddq',       1.200, 0.010, 'rem', True),

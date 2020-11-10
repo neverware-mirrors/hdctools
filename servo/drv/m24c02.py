@@ -4,14 +4,14 @@
 """EEPROM driver for ST M24C02.
 
 The driver provides functions to read data from or write data to
-one of 8 ST M24C02 EEPROMs, which slave addresses are 0x50 - 0x57.
+one of 8 ST M24C02 EEPROMs, which child addresses are 0x50 - 0x57.
 """
 
 # servo libs
 import hw_driver
 
 # Devices shared among driver objects:
-#   (interface instance, slv) => M24C02Device instance
+#   (interface instance, child) => M24C02Device instance
 m24c02_devices = {}
 
 
@@ -57,7 +57,7 @@ class M24C02Device(object):
 class m24c02(hw_driver.HwDriver):
   """Provides drv=m24c02 control."""
 
-  # Supported M24C02 slave addresses.
+  # Supported M24C02 child addresses.
   SUPPORTED_ADDRESS = (80, 81, 82, 83, 84, 85, 86, 87)
 
   _EEPROM_SIZE = 256
@@ -77,19 +77,19 @@ class m24c02(hw_driver.HwDriver):
       dut-control plankton_rom_1_data:"Hello"  # write "Hello" to  offset 10
     """
 
-  def _get_slave(self):
+  def _get_child(self):
     """Checks and return needed params to call driver.
 
     Returns:
-      slave: 7-bit i2c address.
+      child: 7-bit i2c address.
 
     Raises:
-      EepromError: If the 'slv' doesn't exist.
+      EepromError: If the 'child' doesn't exist.
     """
-    if 'slv' not in self._params:
-      raise EepromError('Missing slave address "slv"')
-    slave = int(self._params['slv'], 0)
-    return slave
+    if 'child' not in self._params:
+      raise EepromError('Missing child address "child"')
+    child = int(self._params['child'], 0)
+    return child
 
   def __init__(self, interface, params):
     """Constructor.
@@ -99,17 +99,17 @@ class m24c02(hw_driver.HwDriver):
       params: Dictionary of params needed to perform operations on the device.
 
     Raises:
-      ValueError: If slave address doesn't make sense.
+      ValueError: If child address doesn't make sense.
     """
     super(m24c02, self).__init__(interface, params)
 
-    slave = self._get_slave()
-    if slave not in m24c02.SUPPORTED_ADDRESS:
-      raise ValueError('Slave address(%d) error.' % slave)
+    child = self._get_child()
+    if child not in m24c02.SUPPORTED_ADDRESS:
+      raise ValueError('Slave address(%d) error.' % child)
 
     offset = 0
     read_count = m24c02._EEPROM_SIZE
-    device_key = (interface, slave)
+    device_key = (interface, child)
     if device_key not in m24c02_devices:
       m24c02_devices[device_key] = M24C02Device(offset, read_count)
 
@@ -124,7 +124,7 @@ class m24c02(hw_driver.HwDriver):
     Returns:
       Read back one byte.
     """
-    buffer = self._interface.wr_rd(self._get_slave(), [offset], 1)
+    buffer = self._interface.wr_rd(self._get_child(), [offset], 1)
     return buffer[0]
 
   def _read_bytes(self, offset, count):
@@ -147,7 +147,7 @@ class m24c02(hw_driver.HwDriver):
       offset: Start address for writing.
       value: One byte written to EEPROM.
     """
-    self._interface.wr_rd(self._get_slave(), [offset, value], 0)
+    self._interface.wr_rd(self._get_child(), [offset, value], 0)
 
   def _write_bytes(self, offset, text):
     """Writes one or more bytes to EEPROM.
@@ -170,9 +170,9 @@ class m24c02(hw_driver.HwDriver):
     """Gets operating paramters.
 
     Returns:
-      Show slave address, offset, and read count.
+      Show child address, offset, and read count.
     """
-    return (self._get_slave(),) + self._device.get()
+    return (self._get_child(),) + self._device.get()
 
   def _Set_rom_params(self, params):
     """Sets offset and read count.

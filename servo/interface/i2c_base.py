@@ -36,7 +36,7 @@ class BaseI2CBus(interface.Interface):
 
   Usage:
     class MyI2CBus(BaseI2CBus):
-      def _raw_wr_rd(self, slave_address, write_list, read_count):
+      def _raw_wr_rd(self, child_address, write_list, read_count):
         # Implement hdctools wr_rd() interface here.
   """
 
@@ -99,8 +99,8 @@ class BaseI2CBus(interface.Interface):
     transaction.
 
     Args:
-      transactions: iterable of (slave_address, write_list, read_count) tuples
-        slave_address: 7 bit I2C slave address.
+      transactions: iterable of (child_address, write_list, read_count) tuples
+        child_address: 7 bit I2C child address.
         write_list: list of output byte values [0~255], or None for no write
         read_count: number of byte values to read from device, or None for no
             read
@@ -119,7 +119,7 @@ class BaseI2CBus(interface.Interface):
     with self.__lock:
       return [self._raw_wr_rd(*args) for args in transactions]
 
-  def wr_rd(self, slave_address, write_list, read_count):
+  def wr_rd(self, child_address, write_list, read_count):
     """Implements hdctools wr_rd() interface.
 
     This function writes byte values list to I2C device (if given), then reads
@@ -130,7 +130,7 @@ class BaseI2CBus(interface.Interface):
     executing, the rest will block.
 
     Args:
-      slave_address: 7 bit I2C slave address.
+      child_address: 7 bit I2C child address.
       write_list: list of output byte values [0~255], or None for no write
       read_count: number of byte values to read from device, or None for no read
 
@@ -143,14 +143,14 @@ class BaseI2CBus(interface.Interface):
     with self.__lock:
       self.__logger.debug(
           'i2c_base.BaseI2CBus.wr_rd(0x%02X, %s, %s) called' %
-          (slave_address, _format_write_list(write_list), read_count))
-      retval = self._raw_wr_rd(slave_address, write_list, read_count)
+          (child_address, _format_write_list(write_list), read_count))
+      retval = self._raw_wr_rd(child_address, write_list, read_count)
       self.__logger.debug(
           'i2c_base.BaseI2CBus.wr_rd(0x%02X, %r, %s) returning %s' %
-          (slave_address, _format_write_list(write_list), read_count, retval))
+          (child_address, _format_write_list(write_list), read_count, retval))
     return retval
 
-  def _raw_wr_rd(self, slave_address, write_list, read_count):
+  def _raw_wr_rd(self, child_address, write_list, read_count):
     """Implements hdctools wr_rd() interface.
 
     This function writes byte values list to I2C device (if given), then reads
@@ -161,7 +161,7 @@ class BaseI2CBus(interface.Interface):
     calls from multiple threads.
 
     Args:
-      slave_address: 7 bit I2C slave address.
+      child_address: 7 bit I2C child address.
       write_list: list of output byte values [0~255], or None for no write
       read_count: number of byte values to read from device, or None for no read
 

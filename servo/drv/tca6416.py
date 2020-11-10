@@ -53,15 +53,15 @@ class tca6416(hw_driver.HwDriver):
     remains off ( use_reg_cache=False )
 
     Mandatory Params:
-      slv: integer, 7-bit i2c slave address
+      child: integer, 7-bit i2c child address
       port: integer, either 0 || 1
       offset: integer, gpio's bit position from lsb
     Optional Params:
     """
     super(tca6416, self).__init__(interface, params)
-    slave = self._get_slave()
+    child = self._get_child()
     self._i2c_obj = i2c_reg.I2cReg.get_device(
-        self._interface, slave, addr_len=1, reg_len=1, msb_first=True,
+        self._interface, child, addr_len=1, reg_len=1, msb_first=True,
         no_read=False, use_reg_cache=False)
     self._port = self._get_port()
 
@@ -127,16 +127,16 @@ class tca6416(hw_driver.HwDriver):
     if new_dir_reg != current_dir_reg:
       self._i2c_obj._write_reg(self.REG_DIR + self._port, new_dir_reg)
 
-  def _get_slave(self):
+  def _get_child(self):
     """Check and return needed params to call driver.
 
     Returns:
-      slave: 7-bit i2c address
+      child: 7-bit i2c address
     """
-    if 'slv' not in self._params:
-      raise Tca6416Error('getting slave address')
-    slave = int(self._params['slv'], 0)
-    return slave
+    if 'child' not in self._params:
+      raise Tca6416Error('getting child address')
+    child = int(self._params['child'], 0)
+    return child
 
   def _get_port(self):
     """Check and return needed params to call driver.

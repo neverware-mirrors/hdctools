@@ -23,14 +23,14 @@
   <control>
     <name>bec_en</name>
     <doc>BEC_EN</doc>
-    <params clobber_ok="" interface="2" drv="tca6416" slv="0x20" od="PP"
+    <params clobber_ok="" interface="2" drv="tca6416" child="0x20" od="PP"
       port="0" offset="7" map="onoff" init="on"></params>
   </control>
   <!-- Move warm_reset to tp2 since we can't delete it. -->
   <control>
     <name>warm_reset</name>
     <doc>redirect to tp2</doc>
-    <params clobber_ok="" interface="2" drv="tca6416" slv="0x20" od="PU"
+    <params clobber_ok="" interface="2" drv="tca6416" child="0x20" od="PU"
       port="1" offset="7" map="onoff" init="off"></params>
   </control>
 </root>
