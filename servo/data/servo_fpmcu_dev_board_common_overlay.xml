@@ -57,4 +57,14 @@
     <alias>fpmcu_reset,usbpd_reset</alias>
     <params clobber_ok=""></params>
   </control>
+  <control>
+    <name>hpd</name>
+    <alias>slp_s0</alias>
+    <params clobber_ok="" od="PP" map="onoff_i"></params>
+  </control>
+  <control>
+    <name>fw_up</name>
+    <alias>slp_s3</alias>
+    <params clobber_ok="" od="PP" map="onoff_i"></params>
+  </control>
 </root>
