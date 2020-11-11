@@ -13,9 +13,16 @@ Newer Chrome OS devices have a secure microcontroller in them which runs an
 embedded OS called Cr50. Among other capabilities, this chip allows developers
 to securely debug the device without physically opening it.
 
-Current Cr50 capabilities allow read/write access to a UART on the AP and
-read-only UART access to the EC. More interfaces will be exposed in the future.
-Eventually it should replace all Servo capabilities.
+Current Cr50 capabilities allow read/write access to a UART on the AP and a UART
+on the EC, as well as a SPI interface (normally used to access the flash chips)
+and an I2C interface (normally used to access INAs, but may be used to flash the
+EC).  Closed Case Debug replaces the capabilities that previously relied on the
+servo header.  Outside of ccd, the servo USB connection also provides:
+
+*   power supply
+*   a network interface
+*   the ability to mux a USB device between the DUT and the servo host
+*   keyboard emulation
 
 This document describes basic "Closed Case Debug" (CCD) and debug cable (SuzyQ)
 information. For more in depth instructions on using CCD see the following:
@@ -91,7 +98,8 @@ signaling on the CC lines debug accessory mode), so it can be used as an
 alternative to the SuzyQ cable. During debugging, Servo v4 will normally allow
 the device-under-test to act as a USB host, providing it with an Ethernet
 interface and USB flash device that may be used for a recovery image. Servo v4
-allows USB Type-C connection automation (both data and charging).
+allows USB Type-C connection automation (both data and charging).  Servo v4
+also has a keyboard emulator.
 
 ## Using CCD
 
@@ -163,7 +171,7 @@ Once the SuzyQ is plugged in, three `/dev/ttyUSB` devices will enumerate:
 
 1.  Cr50 console
 1.  CPU/AP console (RW)
-1.  EC console (RO only)
+1.  EC console (RW)
 
 ## Device Support
 
