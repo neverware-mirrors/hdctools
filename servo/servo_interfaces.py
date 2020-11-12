@@ -7,9 +7,7 @@ import collections
 
 INTERFACE_DEFAULTS = collections.defaultdict(dict)
 
-SERVO_ID_DEFAULTS = [(0x0403, 0x6014), (0x18d1, 0x5001), (0x18d1, 0x5002),
-                     (0x18d1, 0x5004), (0x18d1, 0x500f), (0x18d1, 0x5014),
-                     (0x18d1, 0x501a)]
+SERVO_ID_DEFAULTS = [(0x0403, 0x6014), (0x18d1, 0x5001)]
 
 # servo v1
 INTERFACE_DEFAULTS[0x18d1][0x5001] = \
@@ -45,6 +43,8 @@ for vid, pid in SERVO_V2_DEFAULTS:
       'raw_pty': 'raw_cpu_uart_pty', 'source': 'CPU'},
     ]
 
+SERVO_ID_DEFAULTS.extend(SERVO_V2_DEFAULTS)
+
 # servo v3
 SERVO_V3_DEFAULTS = [(0x18d1, 0x5004)]
 for vid, pid in SERVO_V3_DEFAULTS:
@@ -68,6 +68,7 @@ for vid, pid in SERVO_V3_DEFAULTS:
     ]
 
 INTERFACE_DEFAULTS[0x0403][0x6014] = INTERFACE_DEFAULTS[0x18d1][0x5004]
+SERVO_ID_DEFAULTS.extend(SERVO_V3_DEFAULTS)
 
 # Ryu Raiden CCD
 RAIDEN_DEFAULTS = [(0x18d1, 0x500f)]
@@ -87,6 +88,8 @@ for vid, pid in RAIDEN_DEFAULTS:
       'raw_pty': 'raw_ec_uart_pty', 'source': 'EC'},
      'empty',                                #11
     ]
+
+SERVO_ID_DEFAULTS.extend(RAIDEN_DEFAULTS)
 
 # cr50 CCD
 CCD_DEFAULTS = [(0x18d1, 0x5014)]
@@ -108,6 +111,8 @@ for vid, pid in CCD_DEFAULTS:
      {'name': 'ec3po_uart',                  #11: EC3PO(AP)
       'raw_pty': 'raw_cpu_uart_pty', 'source': 'CPU'},
     ]
+
+SERVO_ID_DEFAULTS.extend(CCD_DEFAULTS)
 
 # Sweetberry
 SWEETBERRY_ID_DEFAULTS = [(0x18d1, 0x5020)]
@@ -142,6 +147,8 @@ for vid, pid in SERVO_MICRO_DEFAULTS:
      {'name': 'ec3po_uart',                  #11: EC3PO for CPU
       'raw_pty': 'raw_cpu_uart_pty', 'source': 'CPU'},
     ]
+
+SERVO_ID_DEFAULTS.extend(SERVO_MICRO_DEFAULTS)
 
 # C2D2
 C2D2_DEFAULTS = [(0x18d1, 0x5041)]
