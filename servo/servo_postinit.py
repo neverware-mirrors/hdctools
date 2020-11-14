@@ -291,8 +291,11 @@ class ServoV4PostInit(BasePostInit):
 
     # Fail if we requested board control but don't have an interface for this.
     if self.servod._board:
-      if self.servod.get('servo_v4_type') == 'type-c':
-        utils.diagnose.diagnose_ccd(self.servod)
+      ccd_capable = self.servod.get('servo_v4_type') == 'type-c'
+      if ccd_capable:
+        faults = utils.diagnose.diagnose_ccd(self.servod)
+        if utils.diagnose.SBU_VOLTAGE_FLOAT in faults:
+          self.servod.set('dut_sbu_voltage_float_fault', 'on')
 
       self._logger.error('No servo micro or CCD detected for board %s',
           self.servod._board)

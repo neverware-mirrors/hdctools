@@ -355,6 +355,13 @@
     <params interface="26" drv="ec3po_driver" input_type="str"
     subtype="loglevel"></params>
   </control>
+  <!-- Fault detection controls to help debug/recover issues.-->
+  <control>
+    <name>dut_sbu_voltage_float_fault</name>
+    <doc>Whether the ccd sbu voltage was floating between high and low (i.e.
+      over 300mV and under 2500mV.</doc>
+    <params interface="servo" drv="sflag" map="onoff"></params>
+  </control>
   <!-- Servo V4 Console Automation Controls -->
   <control>
     <name>servo_v4_uart_cmd</name>

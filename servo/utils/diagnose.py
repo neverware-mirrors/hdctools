@@ -1,16 +1,32 @@
 # Copyright 2020 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Collection of diagnosis tools for servod."""
 
 import logging
 
+# Voltage levels indicating ~0V or ~3.3V
+NC_LOW = 300
+NC_HIGH = 2800
+
+# This is a list of 'faults' that the diagnose might report on.
+SBU_VOLTAGE_FLOAT = 1
+SBU_VOLTAGE_LOW = 2
+
+
 def diagnose_ccd(servo_dev):
+  """Diagnose ccd related issue and report all faults found.
+
+  Args:
+    servo_dev: instance to query controls from to diagnose
+
+  Returns:
+    faults, a list of fault numbers (defined above). Caller can then
+    check against specific faults to see whether they are in the list
+  """
   logger = logging.getLogger('CCD-Diagnosis')
-  # Voltage levels indicating ~0V or ~3.3V
-  NC_LOW = 300
-  NC_HIGH = 2800
+
+  faults = []
 
   # Check ADC values for SBU lines
   sbu1 = int(servo_dev.get('servo_v4_sbu1_mv'))
@@ -59,12 +75,16 @@ def diagnose_ccd(servo_dev):
   if sbu1 < NC_LOW and sbu2 < NC_LOW:
     logger.error('No USB exported from DUT Cr50')
     logger.error('')
+    faults.append(SBU_VOLTAGE_LOW)
+  elif (sbu1 > NC_LOW and sbu1 < NC_HIGH) or (sbu1 > NC_LOW and sbu1 < NC_HIGH):
+    faults.append(SBU_VOLTAGE_FLOAT)
 
   cr50_orientation = None
   if sbu1 > NC_HIGH and sbu2 < NC_LOW:
     cr50_orientation = 'flip'
   if sbu1 < NC_LOW and sbu2 > NC_HIGH:
     cr50_orientation = 'direct'
+
 
   suzyq_orientation = 'flip' if sbu_flip else 'direct'
 
@@ -88,3 +108,4 @@ def diagnose_ccd(servo_dev):
       '%s, SuzyQ orientation: %s' % (sbu_en, suzyq_orientation))
   logger.error('')
 
+  return faults

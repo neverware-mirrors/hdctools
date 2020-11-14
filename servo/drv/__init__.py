@@ -70,6 +70,7 @@ import sarien_power
 import servo_metadata
 import servo_v4
 import servo_watchdog
+import sflag
 import sleep
 import storm_power
 import stumpy_power
