@@ -101,6 +101,37 @@ cache_servov4_hub_and_servo_micro() {
   update_config "${config_file}" SERVO_MICRO_SERIAL "${SERVO_MICRO_SERIAL}"
 }
 
+slam_servov4_hub() {
+  local hub=$1
+
+  if [ -n "${hub}" ]; then
+    if [ -f "${hub}/authorized" ]; then
+      log_output "Restarting USB interface on ${hub}"
+      echo 0 > "${hub}/authorized"
+      sleep 1
+      echo 1 > "${hub}/authorized"
+      sleep 3
+    else
+      log_output "Hub control ${hub}/authorized doesn't exist"
+    fi
+  else
+    log_output "Hub not specified"
+  fi
+}
+
+update_firmware() {
+  local board=$1
+  local serial=$2
+  local vidpid=$3
+
+  # Check for the presence of a board with this serialno.
+  lsusb -d "${vidpid}" -v | grep -q "${serial}" || return
+
+  log_output "Check for ${board} update"
+  servo_updater -b ${board} -s "${serial}" --reboot || return
+  log_output "Completed ${board} update without reported errors."
+}
+
 # For testing:
 test_servo_utils () {
   logger() {
