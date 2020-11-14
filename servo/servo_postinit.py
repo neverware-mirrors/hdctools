@@ -296,6 +296,9 @@ class ServoV4PostInit(BasePostInit):
         faults = utils.diagnose.diagnose_ccd(self.servod)
         if utils.diagnose.SBU_VOLTAGE_FLOAT in faults:
           self.servod.set('dut_sbu_voltage_float_fault', 'on')
+      # No need to check for the LOW voltage signal here as the fault
+      # is valid for both ccd and for servo micro: a controller is missing
+      self.servod.set('dut_controller_missing_fault', 'on')
 
       self._logger.error('No servo micro or CCD detected for board %s',
           self.servod._board)
