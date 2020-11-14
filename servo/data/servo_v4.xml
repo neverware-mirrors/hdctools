@@ -359,13 +359,15 @@
   <control>
     <name>dut_controller_missing_fault</name>
     <doc>Whether a main dut-controller is missing.</doc>
-    <params interface="servo" drv="sflag" map="onoff"></params>
+    <params interface="servo" drv="sflag" map="onoff" tags="fault_flag">
+    </params>
   </control>
   <control>
     <name>dut_sbu_voltage_float_fault</name>
     <doc>Whether the ccd sbu voltage was floating between high and low (i.e.
       over 300mV and under 2500mV.</doc>
-    <params interface="servo" drv="sflag" map="onoff"></params>
+    <params interface="servo" drv="sflag" map="onoff" tags="fault_flag">
+    </params>
   </control>
   <!-- Servo V4 Console Automation Controls -->
   <control>

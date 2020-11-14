@@ -134,6 +134,12 @@
       subtype="init_default_keyboard" handler_type="ChromeEC"></params>
   </control>
   <control>
+    <name>fault_flag_controls</name>
+    <doc>Known fault flags that servod can report on</doc>
+    <params drv="servo_metadata" interface="servo" tag="fault_flag"
+    subtype="tagged_controls"></params>
+  </control>
+  <control>
     <name>servo_console_command_controls</name>
     <doc>List of all controls to issue commands to servo device consoles</doc>
     <params drv="servo_metadata" interface="servo" tag="servo_cmd_ctrl"
