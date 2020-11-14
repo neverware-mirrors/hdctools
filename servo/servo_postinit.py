@@ -12,6 +12,7 @@ import subprocess
 import time
 import usb
 
+import recovery
 import servo_interfaces
 import system_config
 import utils.diagnose
@@ -300,8 +301,12 @@ class ServoV4PostInit(BasePostInit):
                          'servo v4 type C.')
       self._logger.error('If flipping the cable allows CCD, please file a bug '
                          'against the DUT platform with reproducing details.')
-      raise ServoPostInitError('No device interface '
-                               '(servo micro or CCD) connected.')
+      if recovery.is_recovery_active():
+        self._logger.info('Will continue startup as recovery mode has '
+                          'been requested')
+      else:
+        raise ServoPostInitError('No device interface '
+                                 '(servo micro or CCD) connected.')
     else:
       self._logger.info('No servo micro and CCD detected.')
 

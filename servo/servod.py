@@ -26,6 +26,7 @@ import threading
 import time
 
 import interface.ftdi_common
+import recovery
 import servo_interfaces
 import servo_logging
 import servo_parsing
@@ -138,6 +139,10 @@ class ServodStarter(object):
     self._logger = logging.getLogger(os.path.basename(sys.argv[0]))
     sopts, devopts = self._parse_args(cmdline)
     self._host = sopts.host
+
+    # Turn on recovery mode if requested.
+    if sopts.recovery_mode:
+      recovery.set_recovery_active()
 
     if servo_parsing.ArgMarkedAsUserSupplied(sopts, 'port'):
       start_port = sopts.port
@@ -317,6 +322,10 @@ class ServodStarter(object):
     server_pars.add_argument('--allow-dual-v4', dest='dual_v4', default=False,
                              action='store_true',
                              help='Allow dual micro and ccd on servo v4.')
+    server_pars.add_argument('--recovery_mode', default=False,
+                             action='store_true',
+                             help='Start servod through issues to allow for '
+                             'inspection and recovery mechanisms.')
     # ServodRCParser adds configs for -name/-rcfile & serialname & parses them.
     dev_pars = servo_parsing.ServodRCParser(add_help=False)
     dev_pars.add_argument('--vendor', default=None, type=lambda x: int(x, 0),
