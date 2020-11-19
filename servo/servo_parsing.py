@@ -199,9 +199,10 @@ class BaseServodParser(_BaseServodParser):
                 or to create mutual exclusion with serialname and name (clients)
       **kwargs: keyword arguments forwarded to _BaseServodParser
     """
-    if 'version' not in kwargs:
-      kwargs['version'] = VERSION
+    # Remove version from the kwargs and add it yourself.
+    v = kwargs.pop('version', VERSION)
     super(BaseServodParser, self).__init__(**kwargs)
+    self.add_argument('-v', '--version', action='version', version=v)
     self.add_argument('--sversion', action='version', version=SVERSION)
     self.add_argument('-d', '--debug', action='store_true', default=False,
                       help='enable debug messages')
