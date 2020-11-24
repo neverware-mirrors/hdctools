@@ -32,7 +32,7 @@ class activeV4Device(hw_driver.HwDriver):
 
   # Dictionary of the active devices servo v4 supports. With the device type as
   # the key. The value is True if it's a servo flex device.
-  V4_DEVICES = {'ccd_cr50' : False, 'servo_micro' : True}
+  V4_DEVICES = {'ccd_cr50' : False, 'servo_micro' : True, 'c2d2': True}
 
   # This is a flag in CR50 board property, which shows EC-CR50 communication
   # support.

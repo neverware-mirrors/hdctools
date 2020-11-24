@@ -290,7 +290,7 @@
   </control>
   <control>
     <name>active_v4_device</name>
-    <doc>shows the active servo device servo_micro or ccd_cr50</doc>
+    <doc>shows the active servo device servo_micro, ccd_cr50, or c2d2</doc>
     <params drv="active_v4_device" interface="servo" input_type="str"
       subtype="device"></params>
   </control>
