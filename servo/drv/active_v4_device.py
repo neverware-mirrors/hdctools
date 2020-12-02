@@ -65,7 +65,8 @@ class activeV4Device(hw_driver.HwDriver):
     self._interface.v4_device_info['usable_devices'] = list(usable_devices)
     self._interface._can_control_cr50 = (
         self._interface._syscfg.is_control('cr50_servo'))
-    self._interface._can_control_servo = 'servo_micro' in devices
+    self._interface._can_control_servo = \
+      ('servo_micro' in devices) or ('c2d2' in devices)
 
   def get_v4_device_info(self, info_type):
     """Get the requested v4 device information.
@@ -115,8 +116,10 @@ class activeV4Device(hw_driver.HwDriver):
       # need force_servo_detect anymore.
       self._interface.set('cr50_force_servo_detect', 'off')
 
-    if device != self._Get_device():
-      raise activeV4DeviceError('Could not set %r as active device' % device)
+    actual_device = self._Get_device()
+    if device != actual_device:
+      raise activeV4DeviceError('Could not set %r as active device, got %r' % \
+                                (device, actual_device))
 
     self._logger.info('active_v4_device: %s', device)
 
@@ -124,6 +127,11 @@ class activeV4Device(hw_driver.HwDriver):
     """Return True if servo uart is enabled."""
     return (self._interface._can_control_servo and
             self._interface.get('ec_uart_en') == 'on')
+
+  def _using_c2d2(self):
+    """Return True if this is a C2D2 device."""
+    return (self._interface._can_control_servo and
+            self._interface.get('c2d2_ec_boot_mode_uut') == 'off')
 
   def _using_ccd(self):
     """Return True if ccd uart TX is enabled."""
@@ -145,6 +153,7 @@ class activeV4Device(hw_driver.HwDriver):
     """Return the active device.
 
     Returns:
+      'c2d2' if a C2D2 unit is plugged in to the uservo port.
       'servo_micro' if cr50 has enabled servo in ccdstate and
                        servod has enabled EC uart, or
       'ccd_cr50' if cr50 has disabled servo in ccdstate and
@@ -152,6 +161,7 @@ class activeV4Device(hw_driver.HwDriver):
       'neither' otherwise.
     """
     try:
+      using_c2d2 = self._using_c2d2()
       using_servo = self._using_servo()
       using_ccd = self._using_ccd()
     except Exception as e:
@@ -162,8 +172,8 @@ class activeV4Device(hw_driver.HwDriver):
       self._logger.info('Assuming default device.')
       return self.get_v4_device_info('default')
 
-    if using_servo == using_ccd:
-      self._logger.warn('Neither v4 device is enabled.')
+    if using_servo == using_ccd and using_servo == using_c2d2:
+      self._logger.warn('No v4 device is enabled.')
       return 'neither'
 
     devices = self.get_v4_device_info('usable_devices')
